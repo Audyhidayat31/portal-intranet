@@ -1,0 +1,353 @@
+<!DOCTYPE html><html lang="id" style=""><head><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Beranda - Portal Intranet Perpusnas</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&amp;family=Inter:wght@100..900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#727782",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-surface-variant": "#424751",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed-variant": "#574500",
+                        "inverse-primary": "#a7c8ff",
+                        "on-tertiary-fixed-variant": "#793100",
+                        "inverse-surface": "#2e3132",
+                        "outline-variant": "#c2c6d2",
+                        "primary-fixed": "#d5e3ff",
+                        "on-primary-fixed-variant": "#004689",
+                        "tertiary-container": "#7f3502",
+                        "on-primary-fixed": "#001b3c",
+                        "tertiary-fixed-dim": "#ffb691",
+                        "surface-variant": "#e1e3e4",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#edeeef",
+                        "secondary-fixed": "#ffe088",
+                        "on-secondary": "#ffffff",
+                        "surface-muted": "#E9ECEF",
+                        "secondary-container": "#fed65b",
+                        "surface": "#f8f9fa",
+                        "on-primary": "#ffffff",
+                        "on-secondary-container": "#745c00",
+                        "on-error-container": "#93000a",
+                        "institutional-navy": "#003366",
+                        "primary-container": "#004b91",
+                        "on-background": "#191c1d",
+                        "on-surface": "#191c1d",
+                        "surface-tint": "#255fa6",
+                        "inverse-on-surface": "#f0f1f2",
+                        "on-tertiary-fixed": "#341100",
+                        "on-primary-container": "#95bdff",
+                        "error-ruby": "#DC3545",
+                        "surface-bright": "#f8f9fa",
+                        "tertiary": "#5c2400",
+                        "background": "#f8f9fa",
+                        "surface-container-high": "#e7e8e9",
+                        "primary": "#003469",
+                        "surface-container-highest": "#e1e3e4",
+                        "surface-container-low": "#f3f4f5",
+                        "secondary-fixed-dim": "#e9c349",
+                        "heritage-gold": "#B8860B",
+                        "success-emerald": "#198754",
+                        "on-secondary-fixed": "#241a00",
+                        "secondary": "#735c00",
+                        "primary-fixed-dim": "#a7c8ff",
+                        "on-tertiary-container": "#ffa678",
+                        "tertiary-fixed": "#ffdbcb",
+                        "info-cerulean": "#0D6EFD",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#d9dadb"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "margin-desktop": "32px",
+                        "container-max": "1280px",
+                        "base": "8px",
+                        "section-gap": "64px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "display-hero-mobile": ["Atkinson Hyperlegible Next"],
+                        "headline-lg": ["Atkinson Hyperlegible Next"],
+                        "label-caps": ["Inter"],
+                        "label-bold": ["Inter"],
+                        "headline-md": ["Atkinson Hyperlegible Next"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display-hero": ["Atkinson Hyperlegible Next"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-hero-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "800" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.25", "fontWeight": "700" }],
+                        "label-caps": ["12px", { "lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "label-bold": ["14px", { "lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "display-hero": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased pt-20">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md shadow-md">
+<div class="flex justify-between items-center w-full px-margin-desktop max-w-container-max mx-auto h-20">
+<!-- Brand -->
+<div class="flex items-center gap-4">
+<img alt="Logo Portal Intranet Perpusnas" class="h-10 w-10 object-contain rounded-md" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnwn8PAjVoBTeQhB2SbiMqaSdoW8DEZYHRW09DpyH0syMTXu_rGKWljMSEo6EYPpVruRw7SrnErnedOP2OfciQrI0RMlw_VMJJyvrQh-mhslN11Vs2IqTD3hf3qhjhks_3GP3RS-S2p51sJFUX27V84AcR_RPrVh4rj20xcijlpRTUiKcVas5KqyEMQTvU9O6OgUuYM8h8jn-CrxBcC-RhdYmpivQ2lw7v2ZrpSaOqr61foF_InsYpHGj-mk0tnLGSwg">
+<span class="text-headline-md font-headline-md font-extrabold text-institutional-navy hidden sm:block">Portal Intranet Perpusnas</span>
+</div>
+<!-- Navigation Links -->
+<div class="hidden md:flex items-center gap-6"><a class="text-primary border-b-2 border-heritage-gold pb-1 font-label-bold text-label-bold font-bold" href="#">Beranda</a><a class="text-on-surface-variant hover:text-primary transition-colors font-label-bold text-label-bold hover:bg-surface-container-low rounded-lg px-3 py-2 transition-all duration-200" href="#">Tentang</a><div class="group relative"><button class="flex items-center gap-1 text-on-surface-variant hover:text-primary transition-colors font-label-bold text-label-bold hover:bg-surface-container-low rounded-lg px-3 py-2 transition-all duration-200">Kabar Kedinasan<span class="material-symbols-outlined text-sm">expand_more</span></button></div><div class="group relative"><button class="flex items-center gap-1 text-on-surface-variant hover:text-primary transition-colors font-label-bold text-label-bold hover:bg-surface-container-low rounded-lg px-3 py-2 transition-all duration-200">Antar Pegawai<span class="material-symbols-outlined text-sm">expand_more</span></button></div><a class="text-on-surface-variant hover:text-primary transition-colors font-label-bold text-label-bold hover:bg-surface-container-low rounded-lg px-3 py-2 transition-all duration-200" href="#">Kupas Sosok</a><div class="group relative"><button class="flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors font-label-bold text-label-bold hover:bg-surface-container-low rounded-lg px-3 py-2 transition-all duration-200"><img alt="Profil Budi Santoso" class="w-6 h-6 rounded-full object-cover border border-heritage-gold shadow-sm" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&amp;fit=crop&amp;q=80&amp;w=100&amp;h=100">Profil<span class="material-symbols-outlined text-sm">expand_more</span></button><div class="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-outline-variant opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto overflow-hidden z-50"><a class="block px-4 py-3 text-on-surface hover:bg-surface-container-low transition-colors font-label-bold" href="#">Profil Saya</a><div class="p-2 border-t border-outline-variant"><button class="w-full flex items-center gap-2 px-3 py-2 bg-heritage-gold text-institutional-navy rounded-lg font-label-bold hover:opacity-90 transition-opacity"><span class="material-symbols-outlined text-sm">logout</span>Logout</button></div></div></div></div>
+<!-- Trailing Actions -->
+<div class="flex items-center gap-4">
+</div>
+</div>
+</nav>
+<main class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-section-gap space-y-section-gap">
+<!-- Hero Section -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-gutter items-center bg-surface-container-lowest rounded-xl shadow-sm border border-surface-muted overflow-hidden">
+<div class="p-8 lg:p-12 space-y-6">
+<h1 class="font-display-hero-mobile text-display-hero-mobile md:font-display-hero md:text-display-hero text-institutional-navy">
+                    Halo, <span class="text-primary-container">Budi Santoso</span>!
+                </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-lg">
+                    Selamat datang di Portal Intranet Perpustakaan Nasional Republik Indonesia. Akses informasi terkini, kelola data kepegawaian, dan terhubung dengan rekan kerja Anda dalam satu platform yang terintegrasi.
+                </p>
+<div class="pt-4">
+<button class="bg-heritage-gold text-institutional-navy font-label-bold text-label-bold px-6 py-3 rounded-lg hover:opacity-90 transition-opacity shadow-sm flex items-center gap-2 font-bold">
+                        Lihat Kabar Kedinasan
+                        <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="h-64 lg:h-full min-h-[400px] w-full bg-surface-container relative" data-alt="A modern, abstract digital illustration showing interconnected nodes and books, representing a digital library network. The color palette uses deep navy blues, bright golds, and soft white light, conveying efficiency, knowledge, and institutional stability in a contemporary flat vector style." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBe60IjEYe9ck8Q8Wxld4AZgkIMGUS8BTyjCADpMMuEj81Dd6woz4ChNLmAyKkGTnVA0Ui0E4RlW85FcqqtJmWSfceO5-k64fEu931JMkpfIysW8m90RrIRCkOZPaPz7yhZPHBzVNk-5-N17-kwSxnD-qT-UXlaUXi1XF5d8tdICyL-nBjvC-JjLmTolXwONo983q2wmlmTRWoqWl2SFmblDVhRZrXtlS3pEX8rde7kVGLuPGoVNGHv')">
+<!-- Decorative gradient overlay -->
+<div class="absolute inset-0 bg-gradient-to-r from-surface-container-lowest/80 to-transparent lg:hidden"></div>
+</div>
+</section>
+<!-- Akses Cepat Section (Bento-ish) -->
+<section class="space-y-6">
+<h2 class="font-headline-lg text-headline-lg text-institutional-navy">Akses Cepat</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<a class="group bg-surface-container-lowest p-6 rounded-xl border border-surface-muted shadow-sm hover:shadow-md transition-all duration-300 flex flex-col items-start gap-4" href="#">
+<div class="h-12 w-12 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary-container group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl" data-icon="person" style="font-variation-settings: 'FILL' 1;">person</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">Profil Kepegawaian</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Kelola data diri, riwayat jabatan, dan dokumen administrasi.</p>
+</div>
+</a>
+<a class="group bg-surface-container-lowest p-6 rounded-xl border border-surface-muted shadow-sm hover:shadow-md transition-all duration-300 flex flex-col items-start gap-4" href="#">
+<div class="h-12 w-12 rounded-lg bg-heritage-gold/20 flex items-center justify-center text-heritage-gold group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl" data-icon="campaign" style="font-variation-settings: 'FILL' 1;">campaign</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">Kabar Kedinasan</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Update terbaru seputar kebijakan dan pengumuman internal.</p>
+</div>
+</a>
+<a class="group bg-surface-container-lowest p-6 rounded-xl border border-surface-muted shadow-sm hover:shadow-md transition-all duration-300 flex flex-col items-start gap-4" href="#">
+<div class="h-12 w-12 rounded-lg bg-info-cerulean/10 flex items-center justify-center text-info-cerulean group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl" data-icon="groups" style="font-variation-settings: 'FILL' 1;">groups</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">Antar Pegawai</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Direktori kontak dan forum komunikasi antar divisi.</p>
+</div>
+</a>
+</div>
+</section>
+<!-- Informasi Terbaru Section -->
+<section class="space-y-6">
+<div class="flex justify-between items-end border-b border-surface-muted pb-4">
+<h2 class="font-headline-lg text-headline-lg text-institutional-navy">Informasi Terbaru</h2>
+<a class="font-label-bold text-label-bold text-primary hover:underline flex items-center gap-1" href="#">
+                    Lihat Semua <span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+<!-- Card 1: Berita -->
+<article class="bg-surface-container-lowest rounded-lg overflow-hidden border border-surface-muted shadow-[0_4px_15px_-3px_rgba(0,51,102,0.05)] hover:shadow-[0_8px_20px_-5px_rgba(0,51,102,0.08)] transition-shadow">
+<div class="h-48 w-full bg-surface-container relative" data-alt="A well-lit modern library interior showing a row of sleek digital catalog kiosks next to traditional wooden bookshelves. Professional photography, bright natural light coming from large windows, conveying a blend of modern technology and institutional heritage." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCgPNxoz0WGLHUGvp2t5LVEz0-RHzA7TOPy6XHICd1psbTqkhIhgAENtmYxxVx5Oi3YWXRwYuUMswJcFyceWjpHRZde7D_1DJ0oLuRadJaf9uu86F2ywcArB9OhDnabfUK6cZN1gXujC_CxPljVlKv5fxTFawLboS9CPMMP-SduUJDhHAdCNhyM_7iFHJIByDgSYFYaL2PtRbgGU3_0D3xebe9OWyT9Ez4eQaUARk6AvABRs1dKH44u')">
+<div class="absolute top-4 left-4 bg-primary text-white font-label-caps text-label-caps px-2 py-1 rounded">BERITA</div>
+</div>
+<div class="p-6 space-y-3">
+<time class="font-body-sm text-body-sm text-outline">12 Oktober 2024</time>
+<h3 class="font-label-bold text-label-bold text-lg text-on-surface line-clamp-2">Implementasi Sistem Kearsipan Digital Baru Berbasis AI</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-3">Perpusnas meluncurkan sistem baru untuk mempercepat proses pengarsipan dokumen internal menggunakan teknologi kecerdasan buatan.</p>
+</div>
+</article>
+<!-- Card 2: Pengumuman -->
+<article class="bg-surface-container-lowest rounded-lg overflow-hidden border border-surface-muted shadow-[0_4px_15px_-3px_rgba(0,51,102,0.05)] hover:shadow-[0_8px_20px_-5px_rgba(0,51,102,0.08)] transition-shadow">
+<div class="h-48 w-full bg-surface-container relative" data-alt="A close-up shot of a professional signing an official document with a premium fountain pen on a polished mahogany desk. Soft, warm directional lighting highlighting the document and pen, conveying formality and importance." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDdp3rV2tGW0a9OI7yXY7T58SvAB4Lx12yyo0NrrxqsFAdQB7wcFhxQ6ei_aNARTmF0y7gESo6XrXyi7wcJOmwIpK249NsXlLO4tFCltskZ4OtESRq1kyCyOIt4CDgzh3brWOG09686r3ZssPEwCLQeOtbYLT9uGtzYDXIYfxGnHkBGdRsxze43SHAaHcCEl5tPlmUl9B7CtP1B3cx1OUMJ0ZUCs0A0rXnP79TkUnKDnUp5pSIIzFkr')">
+<div class="absolute top-4 left-4 bg-error-ruby text-white font-label-caps text-label-caps px-2 py-1 rounded">PENGUMUMAN</div>
+</div>
+<div class="p-6 space-y-3">
+<time class="font-body-sm text-body-sm text-outline">10 Oktober 2024</time>
+<h3 class="font-label-bold text-label-bold text-lg text-on-surface line-clamp-2">Pembaruan Pedoman Tata Naskah Dinas Perpusnas 2024</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-3">Harap diperhatikan perubahan format penomoran dan penggunaan logo pada dokumen resmi mulai kuartal ke-4 tahun ini.</p>
+</div>
+</article>
+<!-- Card 3: Agenda -->
+<article class="bg-surface-container-lowest rounded-lg overflow-hidden border border-surface-muted shadow-[0_4px_15px_-3px_rgba(0,51,102,0.05)] hover:shadow-[0_8px_20px_-5px_rgba(0,51,102,0.08)] transition-shadow flex flex-col justify-between">
+<div class="p-6 space-y-4">
+<div class="flex items-center justify-between">
+<span class="bg-secondary-container text-on-secondary-container font-label-caps text-label-caps px-2 py-1 rounded">AGENDA</span>
+<span class="material-symbols-outlined text-outline" data-icon="event">event</span>
+</div>
+<div>
+<h3 class="font-label-bold text-label-bold text-lg text-on-surface mb-2">Rapat Koordinasi Evaluasi Kinerja Triwulan III</h3>
+<div class="space-y-2 mt-4">
+<div class="flex items-center gap-2 text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-sm" data-icon="calendar_today">calendar_today</span>
+<span class="">Senin, 15 Okt 2024</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-sm" data-icon="schedule">schedule</span>
+<span class="">09:00 - 12:00 WIB</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-sm" data-icon="location_on">location_on</span>
+<span class="">Ruang Teater, Gedung Fasilitas</span>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 border-t border-surface-muted">
+<button class="w-full text-center text-primary font-label-bold text-label-bold hover:text-primary-container transition-colors">Lihat Detail</button>
+</div>
+</article>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-institutional-navy w-full py-16 mt-section-gap">
+<div class="px-margin-desktop max-w-container-max mx-auto text-white">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-8 lg:gap-12 mb-12">
+<!-- Column 1: Brand & About -->
+<div class="col-span-1 space-y-6">
+<div class="flex items-start gap-4">
+<div class="bg-white rounded-full p-2 w-12 h-12 flex items-center justify-center"><img alt="Logo Perpusnas" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPuordDg9gX823ADeAXxkZCSYOy0D8cVHy_1JkS809HO9VBlRmKDAA5Y-DPE4Dx2XwdcyL9NNUqIKnLZbDqFjA6SNOFvZe2UpcbwTZZieRoMEM02fscX66qDASHBuRcfZCGg_maAN804T673OJ8aMCP9QU-Uxj-1omo8xZEvBhERNrEfD0EX0zWZ8lkRCNuDY2fOQP3odnY6yAK60KOFLYcDqN0Z--l7aNuN1WaW6B_w1Z4wLQGX2QPspBG2XHFUW6sA"></div>
+<div>
+<h3 class="font-headline-md text-lg font-bold text-white leading-tight">Portal Intranet</h3>
+<p class="font-body-sm text-surface-variant/90 text-sm">Perpustakaan Nasional Republik Indonesia</p>
+</div>
+</div>
+<p class="font-body-sm text-surface-variant/90 text-sm leading-relaxed">Pusat informasi, kolaborasi, dan interaksi digital bagi seluruh pegawai Perpustakaan Nasional Republik Indonesia.</p><div class="flex items-center gap-4 pt-2">
+<a aria-label="Facebook" class="text-white hover:text-heritage-gold transition-colors" href="#"><i class="fab fa-facebook fa-lg"></i></a>
+<a aria-label="YouTube" class="text-white hover:text-heritage-gold transition-colors" href="#"><i class="fab fa-youtube fa-lg"></i></a>
+<a aria-label="X (Twitter)" class="text-white hover:text-heritage-gold transition-colors" href="#"><i class="fab fa-x-twitter fa-lg"></i></a>
+<a aria-label="Instagram" class="text-white hover:text-heritage-gold transition-colors" href="#"><i class="fab fa-instagram fa-lg"></i></a>
+<a aria-label="TikTok" class="text-white hover:text-heritage-gold transition-colors" href="#"><i class="fab fa-tiktok fa-lg"></i></a>
+</div>
+</div>
+<!-- Column 2: Statistik Pengunjung -->
+<div class="col-span-1 space-y-6">
+<h4 class="font-headline-md text-lg font-bold text-white">Statistik pengunjung</h4>
+<div class="space-y-4 font-body-sm text-surface-variant/90 text-sm">
+<div class="flex justify-between">
+<span class="">Hari ini</span>
+<span class="">: 1.060</span>
+</div>
+<div class="flex justify-between">
+<span class="">Bulan ini</span>
+<span class="">: 41.709</span>
+</div>
+<div class="flex justify-between">
+<span class="">Tahun ini</span>
+<span class="">: 378.783</span>
+</div>
+</div>
+</div>
+<!-- Column 3: Layanan Digital -->
+<div class="col-span-1 space-y-6"><h4 class="font-headline-md text-lg font-bold text-white">Navigasi</h4>
+<ul class="space-y-3 font-body-sm text-surface-variant/90 text-sm">
+<li class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-white block"><img alt="Logo Perpusnas" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPuordDg9gX823ADeAXxkZCSYOy0D8cVHy_1JkS809HO9VBlRmKDAA5Y-DPE4Dx2XwdcyL9NNUqIKnLZbDqFjA6SNOFvZe2UpcbwTZZieRoMEM02fscX66qDASHBuRcfZCGg_maAN804T673OJ8aMCP9QU-Uxj-1omo8xZEvBhERNrEfD0EX0zWZ8lkRCNuDY2fOQP3odnY6yAK60KOFLYcDqN0Z--l7aNuN1WaW6B_w1Z4wLQGX2QPspBG2XHFUW6sA"></span>
+<a class="hover:text-white hover:underline transition-colors" href="#">Beranda</a>
+</li>
+<li class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-white block"><img alt="Logo Perpusnas" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPuordDg9gX823ADeAXxkZCSYOy0D8cVHy_1JkS809HO9VBlRmKDAA5Y-DPE4Dx2XwdcyL9NNUqIKnLZbDqFjA6SNOFvZe2UpcbwTZZieRoMEM02fscX66qDASHBuRcfZCGg_maAN804T673OJ8aMCP9QU-Uxj-1omo8xZEvBhERNrEfD0EX0zWZ8lkRCNuDY2fOQP3odnY6yAK60KOFLYcDqN0Z--l7aNuN1WaW6B_w1Z4wLQGX2QPspBG2XHFUW6sA"></span>
+<a class="hover:text-white hover:underline transition-colors" href="#">Tentang</a>
+</li>
+<li class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-white block"><img alt="Logo Perpusnas" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPuordDg9gX823ADeAXxkZCSYOy0D8cVHy_1JkS809HO9VBlRmKDAA5Y-DPE4Dx2XwdcyL9NNUqIKnLZbDqFjA6SNOFvZe2UpcbwTZZieRoMEM02fscX66qDASHBuRcfZCGg_maAN804T673OJ8aMCP9QU-Uxj-1omo8xZEvBhERNrEfD0EX0zWZ8lkRCNuDY2fOQP3odnY6yAK60KOFLYcDqN0Z--l7aNuN1WaW6B_w1Z4wLQGX2QPspBG2XHFUW6sA"></span>
+<a class="hover:text-white hover:underline transition-colors" href="#">Profil</a>
+</li>
+<li class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-white block"><img alt="Logo Perpusnas" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPuordDg9gX823ADeAXxkZCSYOy0D8cVHy_1JkS809HO9VBlRmKDAA5Y-DPE4Dx2XwdcyL9NNUqIKnLZbDqFjA6SNOFvZe2UpcbwTZZieRoMEM02fscX66qDASHBuRcfZCGg_maAN804T673OJ8aMCP9QU-Uxj-1omo8xZEvBhERNrEfD0EX0zWZ8lkRCNuDY2fOQP3odnY6yAK60KOFLYcDqN0Z--l7aNuN1WaW6B_w1Z4wLQGX2QPspBG2XHFUW6sA"></span>
+<a class="hover:text-white hover:underline transition-colors" href="#">Kupas Sosok</a>
+</li>
+<li class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-white block"><img alt="Logo Perpusnas" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPuordDg9gX823ADeAXxkZCSYOy0D8cVHy_1JkS809HO9VBlRmKDAA5Y-DPE4Dx2XwdcyL9NNUqIKnLZbDqFjA6SNOFvZe2UpcbwTZZieRoMEM02fscX66qDASHBuRcfZCGg_maAN804T673OJ8aMCP9QU-Uxj-1omo8xZEvBhERNrEfD0EX0zWZ8lkRCNuDY2fOQP3odnY6yAK60KOFLYcDqN0Z--l7aNuN1WaW6B_w1Z4wLQGX2QPspBG2XHFUW6sA"></span>
+<a class="hover:text-white hover:underline transition-colors" href="#">Kabar Kedinasan</a>
+</li>
+<li class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-white block"><img alt="Logo Perpusnas" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPuordDg9gX823ADeAXxkZCSYOy0D8cVHy_1JkS809HO9VBlRmKDAA5Y-DPE4Dx2XwdcyL9NNUqIKnLZbDqFjA6SNOFvZe2UpcbwTZZieRoMEM02fscX66qDASHBuRcfZCGg_maAN804T673OJ8aMCP9QU-Uxj-1omo8xZEvBhERNrEfD0EX0zWZ8lkRCNuDY2fOQP3odnY6yAK60KOFLYcDqN0Z--l7aNuN1WaW6B_w1Z4wLQGX2QPspBG2XHFUW6sA"></span>
+<a class="hover:text-white hover:underline transition-colors" href="#">Antar Pegawai</a>
+</li>
+</ul></div>
+<!-- Column 4: Kontak Kami -->
+<div class="col-span-1 space-y-6">
+<h4 class="font-headline-md text-lg font-bold text-white">Kontak Kami</h4>
+<ul class="space-y-4 font-body-sm text-surface-variant/90 text-sm">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-sm mt-0.5">call</span>
+<span class="">085717147303</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-sm mt-0.5">mail</span>
+<a class="hover:text-white hover:underline transition-colors" href="mailto:persuratan@perpusnas.go.id">persuratan@perpusnas.go.id</a>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-sm mt-0.5">location_on</span>
+<span class="">Jl. Salemba Raya No. 28A, Jakarta 10430</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-sm mt-0.5 opacity-0">location_on</span>
+<span class="">Jl. Medan Merdeka Selatan No. 11, Jakarta 10110</span>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- Copyright Bar -->
+<div class="w-full border-t border-white/20">
+<div class="px-margin-desktop max-w-container-max mx-auto py-6 text-center">
+<p class="font-body-sm text-surface-variant/90 text-sm">
+        © Copyright 2026, All Rights Reserved | Perpustakaan Nasional Republik Indonesia.
+    </p>
+</div>
+</div>
+</footer>
+
+
+</body></html>

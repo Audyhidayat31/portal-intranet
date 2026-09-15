@@ -1,0 +1,210 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String            @id @default(cuid())
+  nip              String            @unique
+  name             String
+  email            String            @unique
+  password         String
+  roleId           String
+  role             Role              @relation(fields: [roleId], references: [id])
+  status           String            @default("ACTIVE") // ACTIVE, INACTIVE, SUSPENDED
+  profile          EmployeeProfile?
+  contents         Content[]         @relation("AuthorContents")
+  employeePosts    EmployeePost[]    @relation("AuthorPosts")
+  postComments     PostComment[]
+  consultations    ConsultationTopic[] @relation("UserConsultations")
+  consultationReplies ConsultationReply[]
+  activityLogs     ActivityLog[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model EmployeeProfile {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nip           String    @unique
+  fullName      String
+  position      String    // Jabatan
+  unitKerja     String    // Unit Kerja / Direktorat
+  golRuang      String?   // e.g. IV/a - Pembina
+  phone         String?
+  avatarUrl     String?
+  birthDate     DateTime?
+  education     String?   // Riwayat pendidikan
+  careerHistory String?   // Riwayat pekerjaan/posisi
+  achievements  String?   // Prestasi
+  bio           String?   // Catatan biografi singkat
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Role {
+  id          String           @id @default(cuid())
+  name        String           @unique // ADMINISTRATOR, PEGAWAI
+  description String?
+  users       User[]
+  permissions RolePermission[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model Permission {
+  id          String           @id @default(cuid())
+  code        String           @unique // e.g. USERS_READ, USERS_WRITE, CONTENTS_WRITE
+  module      String           // e.g. USERS, ROLES, CONTENTS, LOGS
+  description String?
+  roles       RolePermission[]
+}
+
+model RolePermission {
+  id           String     @id @default(cuid())
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  group       String    // KABAR_KEDINASAN, ANTAR_PEGAWAI
+  description String?
+  contents    Content[]
+  createdAt   DateTime  @default(now())
+}
+
+model Content {
+  id              String    @id @default(cuid())
+  title           String
+  slug            String    @unique
+  excerpt         String?
+  body            String
+  coverImage      String?
+  type            String    // NEWS, ANNOUNCEMENT, AGENDA, BUSINESS_TRIP, INTERNAL_DOCUMENT
+  status          String    @default("PUBLISHED") // DRAFT, PUBLISHED, ARCHIVED
+  categoryId      String?
+  category        Category? @relation(fields: [categoryId], references: [id])
+  authorId        String
+  author          User      @relation("AuthorContents", fields: [authorId], references: [id])
+  publishedAt     DateTime  @default(now())
+  
+  // Specific metadata fields
+  eventStartDate  DateTime? // For AGENDA
+  eventEndDate    DateTime? // For AGENDA
+  eventLocation   String?   // For AGENDA
+  destinationCity String?   // For BUSINESS_TRIP
+  attachmentUrl   String?   // For INTERNAL_DOCUMENT or ANNOUNCEMENT
+  attachmentName  String?
+  fileSize        String?
+  isPinned        Boolean   @default(false)
+  viewCount       Int       @default(0)
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model EmployeePost {
+  id           String        @id @default(cuid())
+  title        String
+  slug         String        @unique
+  body         String
+  categorySlug String        // opini, humor, jelajah-bumi, kabar-keluarga, kalimat-bijak, karya-akademik, tips-gaya-hidup, olahraga, tahukah-anda
+  authorId     String
+  author       User          @relation("AuthorPosts", fields: [authorId], references: [id])
+  coverImage   String?
+  status       String        @default("PUBLISHED") // DRAFT, PUBLISHED, ARCHIVED
+  likesCount   Int           @default(0)
+  viewsCount   Int           @default(0)
+  comments     PostComment[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model PostComment {
+  id        String       @id @default(cuid())
+  postId    String
+  post      EmployeePost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime     @default(now())
+}
+
+model ConsultationTopic {
+  id          String              @id @default(cuid())
+  title       String
+  category    String              // KEPEGAWAIAN, IT, KESEHATAN
+  question    String
+  authorId    String
+  author      User                @relation("UserConsultations", fields: [authorId], references: [id], onDelete: Cascade)
+  status      String              @default("OPEN") // OPEN, ANSWERED, CLOSED
+  isPrivate   Boolean             @default(false)
+  replies     ConsultationReply[]
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+}
+
+model ConsultationReply {
+  id           String            @id @default(cuid())
+  topicId      String
+  topic        ConsultationTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  authorId     String
+  author       User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  replyText    String
+  isAdminReply Boolean           @default(false)
+  createdAt    DateTime          @default(now())
+}
+
+model FigureProfile {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  position      String   // e.g. Pustakawan Ahli Utama
+  unitKerja     String   // e.g. Deputi Bidang Pengembangan Bahan Pustaka
+  quote         String   // Kutipan inspiratif
+  fullStory     String   // Cerita perjalanan dan kontribusi
+  photoUrl      String?
+  achievements  String?  // JSON string or structured text of achievements
+  careerHistory String?  // Riwayat karier & jabatan penting
+  isSpotlight   Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model HomepageSetting {
+  id                 String   @id @default(cuid())
+  heroTitle          String   @default("Selamat Datang di Portal Intranet Perpusnas RI")
+  heroSubtitle       String   @default("Pusat Informasi Internal, Kolaborasi, dan Layanan Terintegrasi Pegawai Perpustakaan Nasional Republik Indonesia")
+  heroBadge          String   @default("Kiprah Literasi Bangsa")
+  heroBannerUrl      String?
+  quoteText          String   @default("Membaca adalah jembatan emas menuju peradaban bangsa yang unggul dan berkarakter.")
+  quoteAuthor        String   @default("Prof. Dr. Ir. Muhammad Syarif Bando, M.M.")
+  quoteAuthorRole    String   @default("Kepala Perpustakaan Nasional RI (Periode 2016-2023)")
+  announcementTicker String?  @default("Pemberitahuan: Seluruh pegawai dihimbau melengkapi data profil kepegawaian terkini sebelum akhir bulan.")
+  updatedAt          DateTime @updatedAt
+}
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action      String   // LOGIN, LOGOUT, CREATE, UPDATE, DELETE, CHANGE_ROLE, CHANGE_STATUS
+  module      String   // AUTH, USERS, ROLES, HOMEPAGE, NEWS, ANNOUNCEMENTS, AGENDAS, DOCUMENTS, POSTS, FIGURE, PERMISSIONS
+  targetId    String?
+  description String
+  ipAddress   String?  @default("127.0.0.1")
+  userAgent   String?
+  createdAt   DateTime @default(now())
+}

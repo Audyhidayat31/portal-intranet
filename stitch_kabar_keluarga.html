@@ -1,0 +1,382 @@
+<!DOCTYPE html><html lang="id"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Kabar Keluarga - Cakrawala</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;600;700&amp;family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-background": "#1a1b20",
+                      "on-tertiary-fixed-variant": "#783018",
+                      "surface-variant": "#e3e2e8",
+                      "error": "#ba1a1a",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-dim": "#dad9e0",
+                      "outline-variant": "#c5c6d2",
+                      "surface-container-highest": "#e3e2e8",
+                      "on-primary": "#ffffff",
+                      "primary-fixed-dim": "#b3c5ff",
+                      "on-tertiary": "#ffffff",
+                      "inverse-primary": "#b3c5ff",
+                      "secondary-fixed-dim": "#88d982",
+                      "primary-container": "#002366",
+                      "tertiary-fixed-dim": "#ffb59e",
+                      "tertiary": "#2d0700",
+                      "on-secondary-fixed": "#002204",
+                      "tertiary-container": "#501300",
+                      "on-primary-container": "#758dd5",
+                      "on-surface-variant": "#444650",
+                      "primary": "#00113a",
+                      "on-primary-fixed": "#00174a",
+                      "on-primary-fixed-variant": "#2a4386",
+                      "surface-container-low": "#f4f3f9",
+                      "secondary": "#1b6d24",
+                      "on-tertiary-container": "#d37758",
+                      "secondary-fixed": "#a3f69c",
+                      "on-surface": "#1a1b20",
+                      "surface": "#faf8ff",
+                      "on-error-container": "#93000a",
+                      "surface-tint": "#435b9f",
+                      "on-secondary-fixed-variant": "#005312",
+                      "on-secondary": "#ffffff",
+                      "on-tertiary-fixed": "#390b00",
+                      "surface-container": "#efedf3",
+                      "error-container": "#ffdad6",
+                      "tertiary-fixed": "#ffdbd0",
+                      "on-error": "#ffffff",
+                      "secondary-container": "#a0f399",
+                      "surface-bright": "#faf8ff",
+                      "inverse-surface": "#2f3035",
+                      "inverse-on-surface": "#f1f0f6",
+                      "primary-fixed": "#dbe1ff",
+                      "background": "#faf8ff",
+                      "surface-container-high": "#e9e7ee",
+                      "on-secondary-container": "#217128",
+                      "outline": "#757682"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "margin-tablet": "32px",
+                      "gutter": "24px",
+                      "container-max": "1280px",
+                      "margin-mobile": "16px",
+                      "margin-desktop": "64px",
+                      "section-gap": "80px",
+                      "base": "8px"
+              },
+              "fontFamily": {
+                      "headline-lg": [
+                              "Libre Franklin"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "label-bold": [
+                              "Inter"
+                      ],
+                      "headline-sm": [
+                              "Libre Franklin"
+                      ],
+                      "headline-md": [
+                              "Libre Franklin"
+                      ],
+                      "display-hero": [
+                              "Libre Franklin"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Libre Franklin"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-bold": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-sm": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-hero": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings:
+          'FILL' 0,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24
+        }
+        .icon-fill {
+             font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-surface border-b border-outline-variant dark:border-outline docked full-width top w-full"><div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto h-20 bg-surface-container-lowest border-b border-outline-variant"><div class="flex items-center gap-4"><div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-primary"><img src="https://lh3.googleusercontent.com/aida/AEtjO1UnjX3l-KzSjIq2YcVlftr7M1ApQbZdJP-gWJerWpyqYXBJC_SC2IP5YICMAGT8d8l2m7W0cSwyIYQ8GV4cOVt2jwgEXIWsDJCXR5V4bmVGFchx6RlRzJAsMYsosNozZM16Bf8hH5TLvTfcLAyRcyW4u6tj99BQmSzp6JntDqNptnztlANoPzMaWpJixLgUs-ZVcnMwE66LUlLwmitxfuvPnwzcowkJ015fGtJH5UgGvt_4UxExRZxrwk6ckNqXgeL_Wlq896nvXA" alt="Perpusnas Logo" class="w-8 h-8 object-contain"></div><div><h1 class="font-headline-sm text-headline-sm font-bold text-primary">Cakrawala</h1><p class="font-label-bold text-label-bold text-on-surface-variant leading-tight">Portal Intranet<br>Perpustakaan Nasional</p></div></div><div class="hidden md:flex gap-gutter items-center"><a class="font-label-bold text-label-bold text-on-surface-variant hover:text-primary transition-colors" href="#">Beranda</a><a class="font-label-bold text-label-bold text-on-surface-variant hover:text-primary transition-colors" href="#">Tentang</a><a class="font-label-bold text-label-bold text-on-surface-variant hover:text-primary transition-colors" href="#">Kabar Kedinasan</a><a class="font-label-bold text-label-bold text-primary border-b-2 border-primary pb-1 hover:text-primary transition-colors" href="#">Antar Pegawai</a><a class="font-label-bold text-label-bold text-on-surface-variant hover:text-primary transition-colors" href="#">Kupas Sosok</a></div><div class="flex items-center gap-3 border border-outline-variant rounded-lg p-2 bg-surface-container-low cursor-pointer hover:bg-surface-variant transition-colors"><div class="w-8 h-8 rounded-full bg-outline-variant overflow-hidden flex items-center justify-center"><span class="material-symbols-outlined text-on-surface-variant">person</span></div><div class="hidden md:block pr-2"><p class="font-label-bold text-label-bold text-on-surface">[Nama User]</p><div class="flex gap-2"><span class="text-[10px] text-primary">Profil</span><span class="text-[10px] text-error">Logout</span></div></div></div></div></header>
+<main class="flex-grow max-w-container-max mx-auto w-full px-margin-mobile md:px-margin-desktop py-8">
+<!-- Breadcrumb -->
+<nav class="font-body-sm text-body-sm text-on-surface-variant mb-8 flex items-center gap-2">
+<a class="hover:text-primary" href="#">Beranda</a>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<a class="hover:text-primary" href="#">Antar Pegawai</a>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="text-primary font-semibold">Kabar Keluarga</span>
+</nav>
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary mb-2">Kabar Keluarga</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Deskripsi mengenai halaman Kabar Keluarga</p>
+</div>
+<button class="bg-primary-container text-on-primary hover:bg-primary transition-colors px-6 py-3 rounded-lg font-label-bold text-label-bold flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-sm">add</span>
+                Tambah
+            </button>
+</div>
+<!-- Search Bar -->
+<div class="mb-12 max-w-2xl mx-auto flex gap-2">
+<div class="relative flex-grow">
+<input class="w-full border border-outline-variant rounded-lg py-3 px-4 font-body-md text-body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface" placeholder="Cari Kabar Keluarga..." type="text">
+</div>
+<button class="bg-surface-container-high border border-outline-variant rounded-lg px-4 flex items-center justify-center hover:bg-surface-dim transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">search</span>
+</button>
+</div>
+<!-- Grid of Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter mb-12">
+<!-- Card 1 -->
+<article class="bg-surface border border-outline-variant rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-300">
+<div class="bg-cover bg-center w-full h-48 border-b border-outline-variant" data-alt="A warm, inviting image showing a family gathering in a well-lit living room, modern Indonesian interior design style, soft sunlight filtering through sheer curtains, candid and joyful atmosphere." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBXbKS9HBmadkR9xp5dXgYVz9qGqxLE3VUxTtfB51wbfLtscSsdjKtMcD1kWrp_ss93O__8qA9K-grzcZgOnjiwJxSziwKhomU1FXRfqj1LnYea9JpVKWr8YQ1lbkI-ubscJHrrIqk0PTTfRgZuanL5hlhmDHUrFWt4GxO3PzGB2BcajFLFRUpZZSXB2NGQDVxfDynVZS_2Wee8ZbuOjcj2KsW7ksDgEdkiC2Pj__1g0pzU44D_zHl_')"></div>
+<div class="p-6 flex flex-col flex-grow">
+<div class="flex justify-between items-center mb-3 font-body-sm text-body-sm text-on-surface-variant">
+<span class="">19 Agustus 2026</span>
+<span class="text-primary font-medium bg-primary-fixed px-2 py-1 rounded text-xs">Status: Menunggu</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-3 leading-tight line-clamp-2">Minat membaca Warga Indonesia semakin membaik</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6 line-clamp-3 flex-grow">Menurut penelitian pada tanggal 19 Agustus 2026 terlihat bahwa jumlah peminat buku terus mengalami peningkatan yang signifikan di berbagai kalangan usia...</p>
+<div class="flex justify-end">
+<button class="border border-outline hover:border-primary text-primary px-4 py-2 rounded font-label-bold text-label-bold transition-colors">Lihat</button>
+</div>
+</div>
+</article>
+<!-- Card 2 -->
+<article class="bg-surface border border-outline-variant rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-300">
+<div class="bg-cover bg-center w-full h-48 border-b border-outline-variant" data-alt="A bright, cheerful photo of children reading books together in a modern, colorful library space, natural lighting, high quality institutional photography." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC0hoFDEntBbynudceGHbUrpUndOwe_-OzX6ui5ZCXSZd0F_i-c9cBBnlFqQRw5jwSlsMG47XxrWPcXObde1toXaIGQZvEYsDrdIkFOCoW-g2nyS1hst_rTPcp4PBVcCpg4NmMicgU88pvkjVhDmNbunbxgsYBoDSxQsP9ctgZcTbck70praJbVpNops0D50-TeQ1Ec0ExA9rzTyWW_MlaF4d17MO_m6FPcH_5-FLBCclRrokUGBONR')"></div>
+<div class="p-6 flex flex-col flex-grow">
+<div class="flex justify-between items-center mb-3 font-body-sm text-body-sm text-on-surface-variant">
+<span class="">19 Agustus 2026</span>
+<span class="text-primary font-medium bg-primary-fixed px-2 py-1 rounded text-xs">Status: Menunggu</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-3 leading-tight line-clamp-2">Minat membaca Warga Indonesia semakin membaik</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6 line-clamp-3 flex-grow">Menurut penelitian pada tanggal 19 Agustus 2026 terlihat bahwa jumlah peminat buku terus mengalami peningkatan yang signifikan di berbagai kalangan usia...</p>
+<div class="flex justify-end">
+<button class="border border-outline hover:border-primary text-primary px-4 py-2 rounded font-label-bold text-label-bold transition-colors">Lihat</button>
+</div>
+</div>
+</article>
+<!-- Card 3 -->
+<article class="bg-surface border border-outline-variant rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-300">
+<div class="bg-cover bg-center w-full h-48 border-b border-outline-variant" data-alt="A professional looking adult reading a tablet device while sitting on a comfortable modern sofa, minimalist home setting, daylight." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCsse6Kxsi0XWlFeMVqBTcuw72xTY2poUjRFiLyXLFgsa_u3GdR1WeEudGPJeUNdYWtg0JFb8OgWE0of0rlzZPoKZqlwBtgUIBgpfY6e_Z8WciLzMsQQtNaVAg9xScji_36eMWwPAq8_QJ0txe5kRlpOd75kewGXRprEDedOUpEi0FLIwFzYd8gAPCqsY-R2cZic3g-NNMHYhIzIDuN-LPwihLfmcsa6F3rDFM6KirhvSHus8O9SkfY')"></div>
+<div class="p-6 flex flex-col flex-grow">
+<div class="flex justify-between items-center mb-3 font-body-sm text-body-sm text-on-surface-variant">
+<span class="">19 Agustus 2026</span>
+<span class="text-primary font-medium bg-primary-fixed px-2 py-1 rounded text-xs">Status: Menunggu</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-3 leading-tight line-clamp-2">Minat membaca Warga Indonesia semakin membaik</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6 line-clamp-3 flex-grow">Menurut penelitian pada tanggal 19 Agustus 2026 terlihat bahwa jumlah peminat buku terus mengalami peningkatan yang signifikan di berbagai kalangan usia...</p>
+<div class="flex justify-end">
+<button class="border border-outline hover:border-primary text-primary px-4 py-2 rounded font-label-bold text-label-bold transition-colors">Lihat</button>
+</div>
+</div>
+</article>
+<!-- Card 4 -->
+<article class="bg-surface border border-outline-variant rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-300">
+<div class="bg-cover bg-center w-full h-48 border-b border-outline-variant" data-alt="A close up of hands holding an open book, soft focus background showing a cozy domestic setting, warm tones." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD9iTWhG29dX7fn6yNqeuM_t1_Ng5yAmCNijpV6Pz6MPFj-2LnjQQMwn5WV_CJmcoXCcrgxGNlgTnMc2uzPPKT-w5qjBRKNCUSS5kbFHi8Gfk2Ikmdun5KxcPc_MCeb9Gh2Nb5DotfpWPGLBNAhkVUlmz8324dvnDI8f_boG7667BaywZmFQrfh3nkQIE_W1JynOf04h2savhUceW5vdsALxLV7lBDrX3lSx_MHjTj-RW1r6fSVcKVd')"></div>
+<div class="p-6 flex flex-col flex-grow">
+<div class="flex justify-between items-center mb-3 font-body-sm text-body-sm text-on-surface-variant">
+<span class="">19 Agustus 2026</span>
+<span class="text-secondary font-medium bg-secondary-container px-2 py-1 rounded text-xs">Status: Terbit</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-3 leading-tight line-clamp-2">Minat membaca Warga Indonesia semakin membaik</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6 line-clamp-3 flex-grow">Menurut penelitian pada tanggal 19 Agustus 2026 terlihat bahwa jumlah peminat buku terus mengalami peningkatan yang signifikan di berbagai kalangan usia...</p>
+<div class="flex justify-end">
+<button class="border border-outline hover:border-primary text-primary px-4 py-2 rounded font-label-bold text-label-bold transition-colors">Lihat</button>
+</div>
+</div>
+</article>
+<!-- Card 5 -->
+<article class="bg-surface border border-outline-variant rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-300">
+<div class="bg-cover bg-center w-full h-48 border-b border-outline-variant" data-alt="A modern architectural shot of a local community library building in Indonesia, clear blue sky, clean lines." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBIZHO9JEnZmkB_rEoSTYvuNVPSxrYO3gYBPdtn4e6-Y_0ZwipY06QBCrwXIW77Bw_wLK6Y2_XR44sn_tJyzf0tOxtPIRBKCiJ4pb3YZU7rNFS2HHyMZMK_bbdOqY5paYl5h1O2ecXM7wmVmNADpnjului7eNT3G5d2vZGXfR38FsxNlRtx9MpEd9Nb12NuVkRsFm-cmvQzT8YTWLHvZa0yyxmcoCFBT2M2GkwqZSftUprJrBozmsU9')"></div>
+<div class="p-6 flex flex-col flex-grow">
+<div class="flex justify-between items-center mb-3 font-body-sm text-body-sm text-on-surface-variant">
+<span class="">19 Agustus 2026</span>
+<span class="text-secondary font-medium bg-secondary-container px-2 py-1 rounded text-xs">Status: Terbit</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-3 leading-tight line-clamp-2">Minat membaca Warga Indonesia semakin membaik</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6 line-clamp-3 flex-grow">Menurut penelitian pada tanggal 19 Agustus 2026 terlihat bahwa jumlah peminat buku terus mengalami peningkatan yang signifikan di berbagai kalangan usia...</p>
+<div class="flex justify-end">
+<button class="border border-outline hover:border-primary text-primary px-4 py-2 rounded font-label-bold text-label-bold transition-colors">Lihat</button>
+</div>
+</div>
+</article>
+<!-- Card 6 -->
+<article class="bg-surface border border-outline-variant rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-300">
+<div class="bg-cover bg-center w-full h-48 border-b border-outline-variant" data-alt="A father and daughter reading a book together in a sunny park, relaxed and educational environment." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCoOp5T7iJ6NHriKK0SWjaxx8B2K-Qod1IaXB4qKbAa_0fPgExpvpzVrTqlTlzCkNnRV-HcB5_8JQxP_ddrbdmn3LYSmzV8C46ywCLp5A4D9JTJ2obDkKejj3L5SIFuYjkr0uXSxquSffAxwRJur5WOhqH0NOeiOCJr1JKSH-KLrXKrpK9YGTmwvM4huNRRWXVBymADujEi1rUx9c2u_ltWUx_3yFaVsVzFbDraW8FvfxdkY4a5bNUj')"></div>
+<div class="p-6 flex flex-col flex-grow">
+<div class="flex justify-between items-center mb-3 font-body-sm text-body-sm text-on-surface-variant">
+<span class="">19 Agustus 2026</span>
+<span class="text-secondary font-medium bg-secondary-container px-2 py-1 rounded text-xs">Status: Terbit</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-3 leading-tight line-clamp-2">Minat membaca Warga Indonesia semakin membaik</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6 line-clamp-3 flex-grow">Menurut penelitian pada tanggal 19 Agustus 2026 terlihat bahwa jumlah peminat buku terus mengalami peningkatan yang signifikan di berbagai kalangan usia...</p>
+<div class="flex justify-end">
+<button class="border border-outline hover:border-primary text-primary px-4 py-2 rounded font-label-bold text-label-bold transition-colors">Lihat</button>
+</div>
+</div>
+</article>
+<!-- Card 7 -->
+<article class="bg-surface border border-outline-variant rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-300">
+<div class="bg-cover bg-center w-full h-48 border-b border-outline-variant" data-alt="An abstract graphic representation of reading statistics, showing positive upward trends with elegant corporate styling." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBLQJuNSNg_bceX1ZsnVm_4w8wrUrSH0mILsH8785OA8RaxinbXmsWJUHUKWdMqcJoTbEylxbquPQy7IvzFbxwZ7-ywdUHwN824GKaB9qeLDB5DLmox6txYbHk9K3ooAQNR-FTiJKv0yAGo2eLNPPb1xYh0hPigyftWtiL-a4a6q5KvXHMBHtFqTUjUm2nDPGlLYw1SSimOoGavBMjl8Z6mx1IZl5Pycq6LSjTjdgokdbQyvfJxXrGy')"></div>
+<div class="p-6 flex flex-col flex-grow">
+<div class="flex justify-between items-center mb-3 font-body-sm text-body-sm text-on-surface-variant">
+<span class="">19 Agustus 2026</span>
+<span class="text-primary font-medium bg-primary-fixed px-2 py-1 rounded text-xs">Status: Menunggu</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-3 leading-tight line-clamp-2">Minat membaca Warga Indonesia semakin membaik</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6 line-clamp-3 flex-grow">Menurut penelitian pada tanggal 19 Agustus 2026 terlihat bahwa jumlah peminat buku terus mengalami peningkatan yang signifikan di berbagai kalangan usia...</p>
+<div class="flex justify-end">
+<button class="border border-outline hover:border-primary text-primary px-4 py-2 rounded font-label-bold text-label-bold transition-colors">Lihat</button>
+</div>
+</div>
+</article>
+<!-- Card 8 -->
+<article class="bg-surface border border-outline-variant rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-300">
+<div class="bg-cover bg-center w-full h-48 border-b border-outline-variant" data-alt="A well-organized home bookshelf filled with various books, neat and inspiring aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDfkgXd0JaS7lDAKpNdhcdiCfIiVoLsrDjk4dpRv1NxkSsw669czYkfGgi8HaendZYl6iYk72LlhBQMpy_oQj4rps0meXvolNFNcTbTCP-lCbg9JSoMumW21wD3ibdedo1avGVSK3XrzMqbYTXFZwCSZ-QpWOImtR5zXcCXWSHJd_dMUrGD8l2Ws_gOeYgeRb0wQ08mbQz6qb8Y0vL9pvN-g4C9g3x_cCkc0NRcekWQK1hNklgYdV-L')"></div>
+<div class="p-6 flex flex-col flex-grow">
+<div class="flex justify-between items-center mb-3 font-body-sm text-body-sm text-on-surface-variant">
+<span class="">19 Agustus 2026</span>
+<span class="text-primary font-medium bg-primary-fixed px-2 py-1 rounded text-xs">Status: Menunggu</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-3 leading-tight line-clamp-2">Minat membaca Warga Indonesia semakin membaik</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6 line-clamp-3 flex-grow">Menurut penelitian pada tanggal 19 Agustus 2026 terlihat bahwa jumlah peminat buku terus mengalami peningkatan yang signifikan di berbagai kalangan usia...</p>
+<div class="flex justify-end">
+<button class="border border-outline hover:border-primary text-primary px-4 py-2 rounded font-label-bold text-label-bold transition-colors">Lihat</button>
+</div>
+</div>
+</article>
+<!-- Card 9 -->
+<article class="bg-surface border border-outline-variant rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-300">
+<div class="bg-cover bg-center w-full h-48 border-b border-outline-variant" data-alt="Students studying in a university library, focused and quiet atmosphere, soft overhead lighting." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA_-ChAJ7p8konsJxDDS0WKHC9JOGhbLN6cLm7LU2-qSJmbQzeRuc5kBQQGyLCf-Jec5gsKzOluGCrWFMlqoxCD_OKVfcyFfz7FZe0HuZg7NN-zso5Uoaa9ewM3jPcvSyVvbzTIBcdky8JhMGzUYEJ_BAvidqxBLwCpJC5zs0hdqeWw-EXOs5QtmmZ0vygxfvqeUXePDK06FfWBBe7WHL5b6ed_sI9yulp8hwyPXVj7Z75Gk4HT7X-c')"></div>
+<div class="p-6 flex flex-col flex-grow">
+<div class="flex justify-between items-center mb-3 font-body-sm text-body-sm text-on-surface-variant">
+<span class="">19 Agustus 2026</span>
+<span class="text-primary font-medium bg-primary-fixed px-2 py-1 rounded text-xs">Status: Menunggu</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-3 leading-tight line-clamp-2">Minat membaca Warga Indonesia semakin membaik</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6 line-clamp-3 flex-grow">Menurut penelitian pada tanggal 19 Agustus 2026 terlihat bahwa jumlah peminat buku terus mengalami peningkatan yang signifikan di berbagai kalangan usia...</p>
+<div class="flex justify-end">
+<button class="border border-outline hover:border-primary text-primary px-4 py-2 rounded font-label-bold text-label-bold transition-colors">Lihat</button>
+</div>
+</div>
+</article>
+</div>
+<!-- Pagination -->
+<div class="flex justify-center items-center gap-2 font-body-md text-on-surface-variant">
+<button class="p-2 hover:bg-surface-dim rounded-full transition-colors">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-full bg-primary-container text-on-primary-container font-semibold">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-dim transition-colors">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-dim transition-colors">3</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-dim transition-colors">4</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-dim transition-colors">5</button>
+<span class="">...</span>
+<button class="p-2 hover:bg-surface-dim rounded-full transition-colors">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full bg-primary-container text-on-primary py-section-gap px-margin-mobile md:px-margin-desktop mt-section-gap"><div class="max-w-container-max mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter mb-12"><div class="space-y-4"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-on-primary flex items-center justify-center text-primary-container"><img src="https://lh3.googleusercontent.com/aida/AEtjO1UnjX3l-KzSjIq2YcVlftr7M1ApQbZdJP-gWJerWpyqYXBJC_SC2IP5YICMAGT8d8l2m7W0cSwyIYQ8GV4cOVt2jwgEXIWsDJCXR5V4bmVGFchx6RlRzJAsMYsosNozZM16Bf8hH5TLvTfcLAyRcyW4u6tj99BQmSzp6JntDqNptnztlANoPzMaWpJixLgUs-ZVcnMwE66LUlLwmitxfuvPnwzcowkJ015fGtJH5UgGvt_4UxExRZxrwk6ckNqXgeL_Wlq896nvXA" alt="Perpusnas Logo" class="w-6 h-6 object-contain"></div><div><h2 class="font-headline-sm text-headline-sm font-bold text-on-primary leading-tight">Cakrawala<br>Portal Intranet<br>Perpustakaan Nasional</h2></div></div><p class="font-body-sm text-body-sm text-inverse-primary mt-4">Platform layanan internal yang menyediakan informasi dan mendukung kebutuhan pegawai Perpustakaan Nasional Republik Indonesia secara efektif, efisien, dan mudah diakses.</p><div class="flex gap-4 pt-4"><a href="#" class="w-8 h-8 rounded bg-on-primary-fixed-variant flex items-center justify-center cursor-pointer hover:bg-primary-fixed-dim transition-colors overflow-hidden"><img src="https://lh3.googleusercontent.com/aida/AEtjO1X9QRzAtmXOy7fC9MzCwOK3E1I_-EV-jRAOdHuV4fWdGtUH6dzSmatFiIXL68IEjC-ZidsGKgoYXer0F1RZIJZ7oujfgc-TZglmEIKbew03u07rrbnGE7qJzTor8I8fkFLuz0PUdaXtxP6vlsKI8pnRMvC_aHNxEIGVO7e-GeESumcmK5TNh5dgJUcE4S78f5SGjV2B7RlOflnHKvmu_F0hurXxdjw2FFvfCgQ5cf9q3csGbNyGzUXxrwsTJ003qFPk_FiqM_1zrg" alt="Instagram" class="w-5 h-5 object-contain"></a><a href="#" class="w-8 h-8 rounded bg-on-primary-fixed-variant flex items-center justify-center cursor-pointer hover:bg-primary-fixed-dim transition-colors overflow-hidden"><img src="https://lh3.googleusercontent.com/aida/AEtjO1U6ixSFbabSVue1NFIHz3Zp0ZwrNcIj0Lk9SQ7n0T_jU-fTUPMVlT8Pmwsg8NhBLrcHxBleM9j0-k9YiwDCLjLnKAjfleSbtqzxKiEMDe20_0-E9V-l08FXSzZj5Kt_S2P2h2SZvO11D6yfwRB5KMeiD2vk3-5-hcQNDEJQnFnqNuY4Av3A18wMaKzkQLT4mAg0uiAuvku47py4y1QL_7mE5ENFGP5Go8KHWoW3XjArDKkPNCI3ZdUa34Zbqo3gKivC9FmMK2uA6w" alt="Facebook" class="w-5 h-5 object-contain"></a><a href="#" class="w-8 h-8 rounded bg-on-primary-fixed-variant flex items-center justify-center cursor-pointer hover:bg-primary-fixed-dim transition-colors overflow-hidden"><img src="https://lh3.googleusercontent.com/aida/AEtjO1UpR5UtNKLiXmLCgyDO6BBmZsw6HOdw0Tu3f5uUwi6AnjbxzQUJrKDxjtXUQS6Eo0J3OP4k4lZEC2d6aRQwP2VBW_f28O1o0X9U3YfuXOFLltXhFYvu-0BY-oKOKOxr3vM73Uomwsu_I1aFkNlFqltjq99JGSQP823504sI0DTdzo03ZwXQrRjdbQQyXp0RK9kUzqBd745R1guToKPusjVhUu7lV4gnw53IhNph85uaxd0rvB8g90hTHIHHpXnEwXKd2DXaVr0-hQ" alt="TikTok" class="w-5 h-5 object-contain"></a><a href="#" class="w-8 h-8 rounded bg-on-primary-fixed-variant flex items-center justify-center cursor-pointer hover:bg-primary-fixed-dim transition-colors overflow-hidden"><img src="https://lh3.googleusercontent.com/aida/AEtjO1VG-xtmUMhE5QZXUX-StUVY1JCbu92U2_7sUwqJW6p8KFEwp65zBWD66UV9HuOFfE5HEeZPs5imXsNrk-vISgIYqXJMtuozXJSiD0SYDct72cyGcEfO4n7jLM-B2oKYCl1Ag7wInZY3oagsQ9yXpGQtJai00_XbY1oHMzSRkaP5vt9rTNay1rc2tJNE1FFsuMZ9735TFvHcZik-pN38pdJuZQ66mTS_l0WEaTGZ9PlUaD90LE0oiqO5kch06I4u9vizu67K6fvsTQ" alt="YouTube" class="w-5 h-5 object-contain"></a><a href="#" class="w-8 h-8 rounded bg-on-primary-fixed-variant flex items-center justify-center cursor-pointer hover:bg-primary-fixed-dim transition-colors overflow-hidden"><img src="https://lh3.googleusercontent.com/aida/AEtjO1Vjh8kpt0ivez9vLD_osu59jiEoCWFnS82_3OJ-N1wmy76nx4DCmwE9B_LdqvxmZlzwYQOoCZiG0V3wXuk4J63MYtDHQvvAsmBD749kH4SbIoyRCJJX3cb2YB1Dj4B8yDABGbyvaMRnT8bGV5_PUpeyQcEWQQc_CICY2Qn1Gruw8uUOMQEfOggfzNEMxV5n8oPDffc5V7CIGpuCbne4TAgqpDQAI-3irP1spqJhHaJfJmqznwoZFvfE_P-KkN7m78MW1m0xIb6-IQ" alt="X" class="w-4 h-4 object-contain"></a></div></div><div class="space-y-4"><h3 class="font-headline-sm text-headline-sm font-bold text-on-primary mb-6">Statistik Pengunjung</h3><div class="flex justify-between font-body-sm text-body-sm text-inverse-primary border-b border-on-primary-fixed-variant pb-2"><span class="">Hari ini</span><span class="">: 1.060</span></div><div class="flex justify-between font-body-sm text-body-sm text-inverse-primary border-b border-on-primary-fixed-variant pb-2"><span class="">Bulan ini</span><span class="">: 41.709</span></div><div class="flex justify-between font-body-sm text-body-sm text-inverse-primary border-b border-on-primary-fixed-variant pb-2"><span class="">Tahun ini</span><span class="">: 378.783</span></div></div><div class="space-y-4"><h3 class="font-headline-sm text-headline-sm font-bold text-on-primary mb-6">Layanan Digital</h3><ul class="font-body-sm text-body-sm text-inverse-primary space-y-2 list-disc pl-5"><li class="hover:text-on-primary cursor-pointer transition-colors">ISBN</li><li class="hover:text-on-primary cursor-pointer transition-colors">OPAC</li><li class="hover:text-on-primary cursor-pointer transition-colors">IOS</li><li class="hover:text-on-primary cursor-pointer transition-colors">K-OL</li><li class="hover:text-on-primary cursor-pointer transition-colors">iPusnas</li><li class="hover:text-on-primary cursor-pointer transition-colors">BintangPusnas Edu</li><li class="hover:text-on-primary cursor-pointer transition-colors">E-Resources</li></ul></div><div class="space-y-4"><h3 class="font-headline-sm text-headline-sm font-bold text-on-primary mb-6">Kontak Kami</h3><div class="font-body-sm text-body-sm text-inverse-primary space-y-4"><p class="">085717147303</p><p class="">persuratan@perpusnas.go.id</p><p class="">Jl. Salemba Raya No. 28A, Jakarta 10430</p><p class="">Jl. Medan Merdeka Selatan No. 11, Jakarta 10110</p></div></div></div><div class="max-w-container-max mx-auto text-center border-t border-on-primary-fixed-variant pt-8"><p class="font-body-sm text-body-sm text-inverse-primary">© 2026 Perpusnas RI. Seluruh Hak Cipta Dilindungi.</p></div></footer>
+
+
+
+
+</body></html>

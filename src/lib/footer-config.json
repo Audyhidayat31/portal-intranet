@@ -1,0 +1,98 @@
+{
+  "deskripsi": "Platform layanan internal yang menyediakan informasi dan mendukung kebutuhan pegawai Perpustakaan Nasional Republik Indonesia secara efektif, efisien, dan mudah diakses.",
+  "socialMedia": [
+    {
+      "id": "soc-1",
+      "platform": "youtube",
+      "nama": "Perpustakaan Nasional Republik Indonesia, @PerpustakaanNasionalRI",
+      "link": "https://www.youtube.com/@PerpustakaanNasionalRI",
+      "status": "ACTIVE",
+      "updatedBy": "Admin 1",
+      "updatedAt": "2026-01-01T08:30:00.000Z"
+    },
+    {
+      "id": "soc-2",
+      "platform": "x",
+      "nama": "X Perpusnas RI (@perpusnas1)",
+      "link": "https://x.com/perpusnas1",
+      "status": "ACTIVE",
+      "updatedBy": "Administrator Perpusnas",
+      "updatedAt": "2026-09-07T02:17:23.770Z"
+    },
+    {
+      "id": "soc-3",
+      "platform": "instagram",
+      "nama": "Instagram Resmi Perpusnas RI (@perpusnas.go.id)",
+      "link": "https://www.instagram.com/perpusnas.go.id",
+      "status": "ACTIVE",
+      "updatedBy": "Admin 1",
+      "updatedAt": "2026-01-01T09:30:00.000Z"
+    },
+    {
+      "id": "soc-4",
+      "platform": "facebook",
+      "nama": "Facebook Resmi Perpustakaan Nasional RI",
+      "link": "https://www.facebook.com/ayokeperpusnas",
+      "status": "ACTIVE",
+      "updatedBy": "Admin 1",
+      "updatedAt": "2026-01-01T10:00:00.000Z"
+    }
+  ],
+  "digitalServices": [
+    {
+      "id": "svc-1",
+      "nama": "ISBN",
+      "link": "https://isbn.perpusnas.go.id",
+      "status": "INACTIVE",
+      "updatedBy": "Administrator Perpusnas",
+      "updatedAt": "2026-09-07T02:17:19.617Z"
+    },
+    {
+      "id": "svc-2",
+      "nama": "OPAC",
+      "link": "https://opac.perpusnas.go.id",
+      "status": "ACTIVE",
+      "updatedBy": "Admin 1",
+      "updatedAt": "2026-01-01T08:30:00.000Z"
+    },
+    {
+      "id": "svc-3",
+      "nama": "IOS",
+      "link": "https://onesearch.id",
+      "status": "ACTIVE",
+      "updatedBy": "Admin 1",
+      "updatedAt": "2026-01-01T08:30:00.000Z"
+    },
+    {
+      "id": "svc-4",
+      "nama": "K-OL",
+      "link": "https://keanggotaan.perpusnas.go.id",
+      "status": "ACTIVE",
+      "updatedBy": "Admin 1",
+      "updatedAt": "2026-01-01T08:30:00.000Z"
+    },
+    {
+      "id": "svc-5",
+      "nama": "e-Pusnas",
+      "link": "https://ipusnas.id",
+      "status": "ACTIVE",
+      "updatedBy": "Admin 1",
+      "updatedAt": "2026-01-01T08:30:00.000Z"
+    },
+    {
+      "id": "svc-1788847597543",
+      "nama": "Perpustakaan Digital Nasional",
+      "link": "https://perpusnas.go.id",
+      "status": "Diterbitkan",
+      "updatedBy": "Admin 1",
+      "updatedAt": "2026-09-08T06:08:11.542Z"
+    }
+  ],
+  "kontak": {
+    "telepon": "085717147303",
+    "email": "persuratan@perpusnas.go.id",
+    "alamat1": "Jl. Salemba Raya No. 28A, Jakarta 10430",
+    "alamat2": "Jl. Medan Merdeka Selatan No. 11, Jakarta 10110"
+  },
+  "copyright": "© Copyright 2026, All Rights Reserved | Perpustakaan Nasional RI."
+}

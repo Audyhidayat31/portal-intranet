@@ -1,0 +1,246 @@
+<!DOCTYPE html><html lang="id"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Login - Portal Intranet Perpusnas</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline": "#727782",
+                      "on-error": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "on-surface-variant": "#424751",
+                      "error": "#ba1a1a",
+                      "on-secondary-fixed-variant": "#574500",
+                      "inverse-primary": "#a7c8ff",
+                      "on-tertiary-fixed-variant": "#793100",
+                      "inverse-surface": "#2e3132",
+                      "outline-variant": "#c2c6d2",
+                      "primary-fixed": "#d5e3ff",
+                      "on-primary-fixed-variant": "#004689",
+                      "tertiary-container": "#7f3502",
+                      "on-primary-fixed": "#001b3c",
+                      "tertiary-fixed-dim": "#ffb691",
+                      "surface-variant": "#e1e3e4",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container": "#edeeef",
+                      "secondary-fixed": "#ffe088",
+                      "on-secondary": "#ffffff",
+                      "surface-muted": "#E9ECEF",
+                      "secondary-container": "#fed65b",
+                      "surface": "#f8f9fa",
+                      "on-primary": "#ffffff",
+                      "on-secondary-container": "#745c00",
+                      "on-error-container": "#93000a",
+                      "institutional-navy": "#003366",
+                      "primary-container": "#004b91",
+                      "on-background": "#191c1d",
+                      "on-surface": "#191c1d",
+                      "surface-tint": "#255fa6",
+                      "inverse-on-surface": "#f0f1f2",
+                      "on-tertiary-fixed": "#341100",
+                      "on-primary-container": "#95bdff",
+                      "error-ruby": "#DC3545",
+                      "surface-bright": "#f8f9fa",
+                      "tertiary": "#5c2400",
+                      "background": "#f8f9fa",
+                      "surface-container-high": "#e7e8e9",
+                      "primary": "#003469",
+                      "surface-container-highest": "#e1e3e4",
+                      "surface-container-low": "#f3f4f5",
+                      "secondary-fixed-dim": "#e9c349",
+                      "heritage-gold": "#B8860B",
+                      "success-emerald": "#198754",
+                      "on-secondary-fixed": "#241a00",
+                      "secondary": "#735c00",
+                      "primary-fixed-dim": "#a7c8ff",
+                      "on-tertiary-container": "#ffa678",
+                      "tertiary-fixed": "#ffdbcb",
+                      "info-cerulean": "#0D6EFD",
+                      "on-tertiary": "#ffffff",
+                      "surface-dim": "#d9dadb"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "24px",
+                      "margin-desktop": "32px",
+                      "container-max": "1280px",
+                      "base": "8px",
+                      "section-gap": "64px",
+                      "margin-mobile": "16px"
+              },
+              "fontFamily": {
+                      "display-hero-mobile": [
+                              "Atkinson Hyperlegible Next"
+                      ],
+                      "headline-lg": [
+                              "Atkinson Hyperlegible Next"
+                      ],
+                      "label-caps": [
+                              "Inter"
+                      ],
+                      "label-bold": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Atkinson Hyperlegible Next"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "display-hero": [
+                              "Atkinson Hyperlegible Next"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "display-hero-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.25",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-bold": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-hero": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+          .ambient-shadow {
+              box-shadow: 0 4px 15px rgba(0, 51, 102, 0.05);
+          }
+      </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md min-h-screen flex flex-col justify-between selection:bg-primary-container selection:text-white">
+<!-- Main Content Area -->
+<main class="flex-grow flex items-center justify-center p-margin-mobile md:p-margin-desktop">
+<!-- Login Card -->
+<div class="bg-white rounded-lg ambient-shadow w-full max-w-[480px] p-8 md:p-12 relative overflow-hidden">
+<!-- Decorative elements -->
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary-container opacity-5 rounded-bl-[100px] pointer-events-none"></div>
+<div class="absolute bottom-0 left-0 w-24 h-24 bg-heritage-gold opacity-10 rounded-tr-[80px] pointer-events-none"></div>
+<!-- Logo & Header -->
+<div class="flex flex-col items-center mb-8 relative z-10">
+<img alt="Logo Portal Intranet Perpusnas" class="w-24 h-24 mb-6 rounded-md shadow-sm border border-surface-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAffeyKkjwoqm0crjABcKOYpib_-U4b8JUCe_phTbuccQquBbHkm_ORECDzYyuku1V5ay9XsPOAggixmZB_URJyCTyxWyNAS8tDHAjRbi_o7z9asER3FlUCeqwT7iNKIBZU6Hi1pqItwIba0V_dzIsvxEKeK9v3sygkef-TYyWutoJApYGudQ2XJYJrBuoV6PmJ02mEhygsNl5kjKoMvV4xR8dDbQOKnd23EhDTWo9UKzGGI82afUBA">
+<h1 class="font-headline-md text-headline-md text-center text-institutional-navy mb-2">Selamat Datang di Portal Intranet</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant text-center">Silakan masuk menggunakan NIP Anda.</p>
+</div>
+<!-- Login Form -->
+<form class="space-y-6 relative z-10">
+<!-- NIP Field -->
+<div>
+<label class="block font-label-bold text-label-bold text-institutional-navy mb-2" for="nip">NIP</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline">badge</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-3 border border-outline-variant rounded-md leading-5 bg-white placeholder-outline focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-primary-container transition-shadow text-on-surface font-body-md" id="nip" name="nip" placeholder="Masukkan NIP Anda" required="" type="text">
+</div>
+</div>
+<!-- Password Field -->
+<div>
+<div class="flex items-center justify-between mb-2">
+<label class="block font-label-bold text-label-bold text-institutional-navy" for="password">Kata Sandi</label>
+</div>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline">lock</span>
+</div>
+<input class="block w-full pl-10 pr-10 py-3 border border-outline-variant rounded-md leading-5 bg-white placeholder-outline focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-primary-container transition-shadow text-on-surface font-body-md" id="password" name="password" placeholder="••••••••" required="" type="password">
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer">
+<span class="material-symbols-outlined text-outline hover:text-institutional-navy transition-colors">visibility_off</span>
+</div>
+</div>
+</div>
+<!-- Submit Button -->
+<button class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm font-label-bold text-label-bold text-white bg-primary-container hover:bg-institutional-navy focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-container transition-colors duration-200" type="submit">
+                    Login
+                </button>
+</form>
+<div class="mt-6 text-center">
+<a class="font-body-sm text-body-sm text-info-cerulean hover:underline transition-all" href="#">Lupa Kata Sandi?</a>
+</div>
+</div>
+</main>
+<!-- Footer Component from JSON -->
+
+
+
+
+
+</body></html>
