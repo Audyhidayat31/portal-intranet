@@ -259,10 +259,10 @@ export default function KaryaAkademikPage() {
                       {/* Tombol Lihat with Arrow as per Wireframe */}
                       <Link
                         href={`/antar-pegawai/karya-akademik/${item.id}`}
-                        className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full text-xs font-semibold text-slate-700 hover:text-[#007BFF] bg-slate-50 hover:bg-blue-50/80 border border-slate-200/80 hover:border-blue-300 transition-all group/btn"
+                        className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[#00113a] hover:bg-[#2a4386] text-white transition-all group/btn cursor-pointer"
                       >
                         <span>Lihat</span>
-                        <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover/btn:text-[#007BFF] group-hover/btn:translate-x-0.5 transition-all" />
+                        <ChevronRight className="w-3.5 h-3.5 text-white group-hover/btn:translate-x-0.5 transition-all" />
                       </Link>
                     </div>
                   </div>

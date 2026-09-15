@@ -352,7 +352,7 @@ export default function KonsultasiPage() {
 
                     <Link
                       href={`/antar-pegawai/konsultasi/${item.id}`}
-                      className="border border-[#c5c6d2] hover:border-[#00113a] hover:bg-[#f4f3f9] text-[#1a1b20] hover:text-[#00113a] text-xs sm:text-sm font-medium px-5 py-1 rounded-full transition-colors self-end sm:self-auto"
+                      className="bg-[#00113a] hover:bg-[#2a4386] text-white text-xs sm:text-sm font-medium px-5 py-1 rounded-full transition-colors self-end sm:self-auto inline-block text-center cursor-pointer"
                     >
                       Lihat
                     </Link>

@@ -272,7 +272,7 @@ export default function KalimatBijakPage() {
                   {/* Tombol Lihat matching Wireframe pill button */}
                   <Link
                     href={`/antar-pegawai/kalimat-bijak/${item.id}`}
-                    className="px-5 py-1 rounded-full border border-slate-300 text-slate-700 hover:text-[#007BFF] hover:border-[#007BFF] bg-slate-50 hover:bg-blue-50/60 text-xs font-semibold transition-all shadow-2xs cursor-pointer"
+                    className="px-5 py-1 rounded-full bg-[#00113a] hover:bg-[#2a4386] text-white text-xs font-semibold transition-all shadow-2xs cursor-pointer inline-block text-center"
                   >
                     Lihat
                   </Link>
