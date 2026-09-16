@@ -4,7 +4,7 @@ import { getCurrentUser } from '@/lib/auth';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser();
@@ -19,7 +19,7 @@ export async function POST(
 
     const comment = await prisma.postComment.create({
       data: {
-        postId: params.id,
+        postId: (await params).id,
         authorId: user.userId,
         content: content.trim(),
       },

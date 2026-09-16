@@ -167,9 +167,9 @@ export default function BeritaPage() {
             Beranda
           </Link>
           <ChevronRight className="w-4 h-4 text-[#757682]" />
-          <Link href="/kabar-kedinasan" className="hover:text-[#00113a] transition-colors">
+          <span>
             Kabar Kedinasan
-          </Link>
+          </span>
           <ChevronRight className="w-4 h-4 text-[#757682]" />
           <span className="text-[#00113a] font-semibold">Berita</span>
         </nav>

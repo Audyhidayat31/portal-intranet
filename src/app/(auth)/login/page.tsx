@@ -4,14 +4,13 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, AlertCircle, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
-import RecaptchaMock from '@/components/auth/RecaptchaMock';
-
+import ReCAPTCHA from 'react-google-recaptcha';
 export default function LoginPage() {
   const router = useRouter();
   const [nip, setNip] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isCaptchaVerified, setIsCaptchaVerified] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -54,8 +53,8 @@ export default function LoginPage() {
       return;
     }
 
-    if (!isCaptchaVerified) {
-      setErrorMessage('Silakan selesaikan verifikasi reCAPTCHA ("I\'m not a robot") terlebih dahulu.');
+    if (!recaptchaToken) {
+      setErrorMessage('Silakan selesaikan verifikasi reCAPTCHA terlebih dahulu.');
       return;
     }
 
@@ -65,7 +64,7 @@ export default function LoginPage() {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nip: nip.trim(), password }),
+        body: JSON.stringify({ nip: nip.trim(), password, recaptchaToken }),
       });
 
       const data = await res.json();
@@ -97,7 +96,6 @@ export default function LoginPage() {
     setNip(nipVal);
     setPassword(passVal);
     setErrorMessage('');
-    setIsCaptchaVerified(true);
   };
 
   return (
@@ -129,7 +127,7 @@ export default function LoginPage() {
 
             {/* Heading */}
             <h1 className="text-lg sm:text-xl font-bold text-[#00113a] tracking-tight mb-5">
-              Masukkan dengan menggunakan Kredensial Anda
+              Masuk dengan menggunakan Kredensial Anda
             </h1>
 
             {/* Feedback Alerts */}
@@ -202,10 +200,9 @@ export default function LoginPage() {
 
               {/* reCAPTCHA Widget */}
               <div className="pt-0.5">
-                <RecaptchaMock
-                  verified={isCaptchaVerified}
-                  onVerifyChange={setIsCaptchaVerified}
-                  hasError={!!errorMessage && !isCaptchaVerified}
+                <ReCAPTCHA
+                  sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ''}
+                  onChange={(token) => setRecaptchaToken(token)}
                 />
               </div>
 

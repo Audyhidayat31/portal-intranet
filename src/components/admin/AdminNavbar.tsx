@@ -21,12 +21,6 @@ import { cn } from '@/lib/utils';
 
 export const ADMIN_MENU_ITEMS = [
   {
-    label: 'Dashboard',
-    href: '/admin/dashboard',
-    icon: LayoutDashboard,
-    desc: 'Pusat kendali & ringkasan statistik sistem',
-  },
-  {
     label: 'Kelola Homepage',
     href: '/admin/homepage',
     icon: LayoutTemplate,
@@ -284,7 +278,7 @@ export function AdminNavbar({ onToggleSidebar }: { onToggleSidebar?: () => void 
                   : 'text-[#444650] hover:text-[#00113a]'
               )}
             >
-              <ShieldCheck className="w-4 h-4 text-gold-600" />
+
               <span>Kelola Admin</span>
               <ChevronDown className="w-4 h-4 opacity-70" />
             </Link>
@@ -303,7 +297,7 @@ export function AdminNavbar({ onToggleSidebar }: { onToggleSidebar?: () => void 
                 <div className="py-1 space-y-0.5">
                   {ADMIN_MENU_ITEMS.map((item) => {
                     const Icon = item.icon;
-                    const isActive = pathname === item.href || (item.href !== '/admin/dashboard' && pathname.startsWith(item.href));
+                    const isActive = pathname === item.href || pathname.startsWith(item.href);
 
                     return (
                       <Link

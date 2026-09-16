@@ -145,7 +145,7 @@ export default function BerandaPage() {
         <div className="w-full sm:w-1/2 md:w-1/4 p-4 flex flex-col items-center justify-center text-center gap-2">
           <MessageSquare className="w-8 h-8 text-[#00113a]" />
           <h3 className="text-2xl font-bold text-[#00113a]">3.500+</h3>
-          <p className="text-xs text-[#444650]">Curahan Opini</p>
+          <p className="text-xs text-[#444650]">Coretan Opini</p>
         </div>
         <div className="w-full sm:w-1/2 md:w-1/4 p-4 flex flex-col items-center justify-center text-center gap-2">
           <Lightbulb className="w-8 h-8 text-[#00113a]" />
@@ -275,12 +275,9 @@ export default function BerandaPage() {
                   </p>
                 </div>
                 <div className="flex justify-end mt-auto pt-2">
-                  <Link
-                    href="/antar-pegawai"
-                    className="bg-[#00113a] text-white font-bold text-xs px-4 py-1.5 rounded-md hover:bg-[#2a4386] transition-colors shadow-sm"
-                  >
+                  <span>
                     Lihat
-                  </Link>
+                  </span>
                 </div>
               </div>
             </div>

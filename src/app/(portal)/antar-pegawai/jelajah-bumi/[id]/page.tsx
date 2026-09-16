@@ -141,9 +141,9 @@ Melalui karya ini diharapkan generasi muda semakin terinspirasi untuk terus berk
             Beranda
           </Link>
           <span className="text-[#757682]">&gt;</span>
-          <Link href="/antar-pegawai" className="hover:text-[#00113a] transition-colors">
+          <span>
             Antar Pegawai
-          </Link>
+          </span>
           <span className="text-[#757682]">&gt;</span>
           <Link href="/antar-pegawai/jelajah-bumi" className="hover:text-[#00113a] transition-colors">
             Jelajah Bumi

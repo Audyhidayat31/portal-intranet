@@ -4,10 +4,10 @@ import { getCurrentUser } from '@/lib/auth';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const topicId = params.id;
+    const topicId = (await params).id;
     const body = await request.json();
     const { content, replyText, authorName } = body;
 

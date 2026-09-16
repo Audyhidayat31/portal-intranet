@@ -263,7 +263,7 @@ export function PortalNavbar() {
                       : 'text-[#444650] hover:text-[#00113a]'
                   )}
                 >
-                  <ShieldCheck className="w-4 h-4 text-gold-600" />
+
                   <span>Kelola Admin</span>
                   <ChevronDown className="w-4 h-4 opacity-70" />
                 </Link>
@@ -282,7 +282,7 @@ export function PortalNavbar() {
                     <div className="py-1 space-y-0.5">
                       {ADMIN_MENU_ITEMS.map((item) => {
                         const Icon = item.icon;
-                        const isActive = pathname === item.href || (item.href !== '/admin/dashboard' && pathname.startsWith(item.href));
+                        const isActive = pathname === item.href || pathname.startsWith(item.href);
 
                         return (
                           <Link
@@ -406,7 +406,7 @@ export function PortalNavbar() {
                 <div className="space-y-1 pl-2">
                   {ADMIN_MENU_ITEMS.map((item) => {
                     const Icon = item.icon;
-                    const isActive = pathname === item.href || (item.href !== '/admin/dashboard' && pathname.startsWith(item.href));
+                    const isActive = pathname === item.href || pathname.startsWith(item.href);
                     return (
                       <Link
                         key={item.href}

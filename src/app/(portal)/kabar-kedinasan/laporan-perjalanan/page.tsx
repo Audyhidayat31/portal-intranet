@@ -140,9 +140,9 @@ export default function LaporanPerjalananPage() {
             Beranda
           </Link>
           <span className="text-[#757682]">&gt;</span>
-          <Link href="/kabar-kedinasan" className="hover:text-[#00113a] transition-colors">
+          <span>
             Kabar Kedinasan
-          </Link>
+          </span>
           <span className="text-[#757682]">&gt;</span>
           <span className="text-[#1a1b20] font-bold">Laporan Perjalanan Dinas</span>
         </nav>

@@ -109,9 +109,9 @@ export default function DaftarPegawaiPage() {
             Beranda
           </Link>
           <ChevronRight className="w-4 h-4 text-[#757682]" />
-          <Link href="/antar-pegawai" className="hover:text-[#00113a] transition-colors">
+          <span>
             Antar Pegawai
-          </Link>
+          </span>
           <ChevronRight className="w-4 h-4 text-[#757682]" />
           <span className="text-[#00113a] font-semibold">Daftar Pegawai</span>
         </nav>

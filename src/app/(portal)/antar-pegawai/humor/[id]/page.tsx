@@ -137,9 +137,9 @@ Ternyata buku itu bukan peninggalan bersejarah, melainkan buku catatan milik Pak
             Beranda
           </Link>
           <span className="text-[#757682]">&gt;</span>
-          <Link href="/antar-pegawai" className="hover:text-[#00113a] transition-colors">
+          <span>
             Antar Pegawai
-          </Link>
+          </span>
           <span className="text-[#757682]">&gt;</span>
           <Link href="/antar-pegawai/humor" className="hover:text-[#00113a] transition-colors">
             Humor

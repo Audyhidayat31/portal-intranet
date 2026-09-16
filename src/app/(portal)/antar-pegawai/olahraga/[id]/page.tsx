@@ -134,9 +134,9 @@ export default function DetailOlahragaPage() {
             Beranda
           </Link>
           <span className="text-[#757682]">&gt;</span>
-          <Link href="/antar-pegawai" className="hover:text-[#00113a] transition-colors">
+          <span>
             Antar Pegawai
-          </Link>
+          </span>
           <span className="text-[#757682]">&gt;</span>
           <Link href="/antar-pegawai/olahraga" className="hover:text-[#00113a] transition-colors">
             Olahraga

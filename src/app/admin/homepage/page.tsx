@@ -594,11 +594,11 @@ export default function AdminHomepageKelolaPage() {
     const updatedList: SocialMediaItem[] = socialMediaList.map((s) =>
       s.id === item.id
         ? {
-            ...s,
-            status: nextStatus,
-            updatedAt: new Date().toISOString(),
-            updatedBy: adminUser?.name || s.updatedBy || 'Admin 1',
-          }
+          ...s,
+          status: nextStatus,
+          updatedAt: new Date().toISOString(),
+          updatedBy: adminUser?.name || s.updatedBy || 'Admin 1',
+        }
         : s
     );
     const success = await persistFooterData({ socialMedia: updatedList });
@@ -662,11 +662,11 @@ export default function AdminHomepageKelolaPage() {
     const updatedList: DigitalServiceItem[] = digitalServiceList.map((s) =>
       s.id === item.id
         ? {
-            ...s,
-            status: nextStatus,
-            updatedAt: new Date().toISOString(),
-            updatedBy: adminUser?.name || s.updatedBy || 'Admin 1',
-          }
+          ...s,
+          status: nextStatus,
+          updatedAt: new Date().toISOString(),
+          updatedBy: adminUser?.name || s.updatedBy || 'Admin 1',
+        }
         : s
     );
     const success = await persistFooterData({ digitalServices: updatedList });
@@ -768,11 +768,10 @@ export default function AdminHomepageKelolaPage() {
       {/* Toast Alert Feedback */}
       {statusMsg && (
         <div
-          className={`p-4 rounded-xl flex items-center gap-3 text-xs font-medium shadow-xs transition-all animate-fadeIn ${
-            statusMsg.type === 'success'
+          className={`p-4 rounded-xl flex items-center gap-3 text-xs font-medium shadow-xs transition-all animate-fadeIn ${statusMsg.type === 'success'
               ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
               : 'bg-red-50 text-red-800 border border-red-200'
-          }`}
+            }`}
         >
           {statusMsg.type === 'success' ? (
             <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -789,11 +788,10 @@ export default function AdminHomepageKelolaPage() {
           <button
             type="button"
             onClick={() => setActiveTab('utama')}
-            className={`px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
-              activeTab === 'utama'
+            className={`px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${activeTab === 'utama'
                 ? 'bg-white text-[#00113a] shadow-xs ring-1 ring-slate-200/80 font-extrabold'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/40'
-            }`}
+              }`}
           >
             <Sliders className="w-3.5 h-3.5" />
             Utama
@@ -801,11 +799,10 @@ export default function AdminHomepageKelolaPage() {
           <button
             type="button"
             onClick={() => setActiveTab('beranda')}
-            className={`px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
-              activeTab === 'beranda'
+            className={`px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${activeTab === 'beranda'
                 ? 'bg-white text-[#00113a] shadow-xs ring-1 ring-slate-200/80 font-extrabold'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/40'
-            }`}
+              }`}
           >
             <Layout className="w-3.5 h-3.5" />
             Beranda
@@ -813,11 +810,10 @@ export default function AdminHomepageKelolaPage() {
           <button
             type="button"
             onClick={() => setActiveTab('tentang')}
-            className={`px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
-              activeTab === 'tentang'
+            className={`px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${activeTab === 'tentang'
                 ? 'bg-white text-[#00113a] shadow-xs ring-1 ring-slate-200/80 font-extrabold'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/40'
-            }`}
+              }`}
           >
             <Info className="w-3.5 h-3.5" />
             Tentang
@@ -825,11 +821,10 @@ export default function AdminHomepageKelolaPage() {
           <button
             type="button"
             onClick={() => setActiveTab('footer')}
-            className={`px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
-              activeTab === 'footer'
+            className={`px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${activeTab === 'footer'
                 ? 'bg-white text-[#00113a] shadow-xs ring-1 ring-slate-200/80 font-extrabold'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/40'
-            }`}
+              }`}
           >
             <Layers className="w-3.5 h-3.5" />
             Footer
@@ -842,7 +837,7 @@ export default function AdminHomepageKelolaPage() {
       {/* ========================================================= */}
       {activeTab === 'footer' && (
         <div className="space-y-6 text-left">
-          
+
           {/* ---------------- CARD 1: DESKRIPSI FOOTER ---------------- */}
           <section className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 sm:p-7 space-y-4">
             <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
@@ -1045,14 +1040,12 @@ export default function AdminHomepageKelolaPage() {
                               type="button"
                               onClick={() => handleToggleSocialStatus(item)}
                               title={`Ubah status menjadi ${item.status === 'ACTIVE' ? 'Nonaktif' : 'Aktif'}`}
-                              className={`relative inline-flex h-3.5 w-6 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                                item.status === 'ACTIVE' ? 'bg-emerald-600' : 'bg-slate-300'
-                              }`}
+                              className={`relative inline-flex h-3.5 w-6 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${item.status === 'ACTIVE' ? 'bg-emerald-600' : 'bg-slate-300'
+                                }`}
                             >
                               <span
-                                className={`pointer-events-none inline-block h-2.5 w-2.5 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${
-                                  item.status === 'ACTIVE' ? 'translate-x-[13px]' : 'translate-x-0'
-                                }`}
+                                className={`pointer-events-none inline-block h-2.5 w-2.5 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${item.status === 'ACTIVE' ? 'translate-x-[13px]' : 'translate-x-0'
+                                  }`}
                               />
                             </button>
                           </div>
@@ -1211,14 +1204,12 @@ export default function AdminHomepageKelolaPage() {
                               type="button"
                               onClick={() => handleToggleServiceStatus(item)}
                               title={`Ubah status menjadi ${item.status === 'ACTIVE' || item.status === 'Diterbitkan' ? 'Nonaktif' : 'Aktif'}`}
-                              className={`relative inline-flex h-3.5 w-6 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                                item.status === 'ACTIVE' || item.status === 'Diterbitkan' ? 'bg-emerald-600' : 'bg-slate-300'
-                              }`}
+                              className={`relative inline-flex h-3.5 w-6 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${item.status === 'ACTIVE' || item.status === 'Diterbitkan' ? 'bg-emerald-600' : 'bg-slate-300'
+                                }`}
                             >
                               <span
-                                className={`pointer-events-none inline-block h-2.5 w-2.5 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${
-                                  item.status === 'ACTIVE' || item.status === 'Diterbitkan' ? 'translate-x-[13px]' : 'translate-x-0'
-                                }`}
+                                className={`pointer-events-none inline-block h-2.5 w-2.5 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${item.status === 'ACTIVE' || item.status === 'Diterbitkan' ? 'translate-x-[13px]' : 'translate-x-0'
+                                  }`}
                               />
                             </button>
                           </div>
@@ -1251,7 +1242,7 @@ export default function AdminHomepageKelolaPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* No. Telepon */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                     <Phone className="w-3.5 h-3.5 text-slate-500" />
                     No. Telepon / Hotline
                   </label>
@@ -1266,7 +1257,7 @@ export default function AdminHomepageKelolaPage() {
 
                 {/* Email */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                     <Mail className="w-3.5 h-3.5 text-slate-500" />
                     Email Resmi Dinas
                   </label>
@@ -1281,7 +1272,7 @@ export default function AdminHomepageKelolaPage() {
 
                 {/* Alamat 1 */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                     <MapPin className="w-3.5 h-3.5 text-slate-500" />
                     Alamat Gedung 1 (Salemba)
                   </label>
@@ -1296,7 +1287,7 @@ export default function AdminHomepageKelolaPage() {
 
                 {/* Alamat 2 */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                     <Building2 className="w-3.5 h-3.5 text-slate-500" />
                     Alamat Gedung 2 (Merdeka Selatan)
                   </label>
@@ -1572,114 +1563,112 @@ export default function AdminHomepageKelolaPage() {
 
             {/* Banner Table */}
             <div className="border border-slate-200/80 rounded-xl overflow-hidden shadow-2xs">
-                <table className="w-full table-fixed text-left border-collapse">
-                  <thead>
-                    <tr className="bg-slate-50/90 text-slate-600 border-b border-slate-200 text-[10px] font-bold uppercase tracking-wider">
-                      <th className="py-2 px-1 w-[4%] text-center">No.</th>
-                      <th className="py-2 px-2 w-[10%]">Preview</th>
-                      <th className="py-2 px-2 w-[27%]">Headline</th>
-                      <th className="py-2 px-2 w-[26%]">Subheadline</th>
-                      <th className="py-2 px-1 w-[11%] text-center">Status</th>
-                      <th className="py-2 px-2 w-[13%] text-left">Dibuat Oleh</th>
-                      <th className="py-2 px-1 w-[9%] text-center">Aksi</th>
+              <table className="w-full table-fixed text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/90 text-slate-600 border-b border-slate-200 text-[10px] font-bold uppercase tracking-wider">
+                    <th className="py-2 px-1 w-[4%] text-center">No.</th>
+                    <th className="py-2 px-2 w-[10%]">Preview</th>
+                    <th className="py-2 px-2 w-[27%]">Headline</th>
+                    <th className="py-2 px-2 w-[26%]">Subheadline</th>
+                    <th className="py-2 px-1 w-[11%] text-center">Status</th>
+                    <th className="py-2 px-2 w-[13%] text-left">Dibuat Oleh</th>
+                    <th className="py-2 px-1 w-[9%] text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 bg-white">
+                  {banners.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="py-8 text-center text-xs text-slate-400">
+                        Belum ada banner yang ditambahkan. Klik tombol "Tambah Banner" di atas untuk menambahkan banner baru.
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 bg-white">
-                    {banners.length === 0 ? (
-                      <tr>
-                        <td colSpan={7} className="py-8 text-center text-xs text-slate-400">
-                          Belum ada banner yang ditambahkan. Klik tombol "Tambah Banner" di atas untuk menambahkan banner baru.
+                  ) : (
+                    banners.map((item, idx) => (
+                      <tr key={item.id || idx} className="hover:bg-slate-50/70 transition-colors">
+                        <td className="py-2 px-1 text-center text-[11px] font-medium text-slate-400">
+                          {idx + 1}
+                        </td>
+                        <td className="py-2 px-2">
+                          <div className="w-16 h-10 rounded-md bg-slate-100 border border-slate-200 overflow-hidden relative shadow-2xs flex items-center justify-center">
+                            {item.imageUrl ? (
+                              <img src={item.imageUrl} alt={item.headline} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="text-[9px] text-slate-400 flex flex-col items-center gap-0.5">
+                                <ImageIcon className="w-3 h-3" />
+                                <span>Banner</span>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-2 px-2">
+                          <p className="text-[11px] font-bold text-slate-900 line-clamp-2 leading-snug">
+                            {item.headline}
+                          </p>
+                        </td>
+                        <td className="py-2 px-2">
+                          <p className="text-[10px] text-slate-500 line-clamp-2 leading-relaxed">
+                            {item.subheadline || '-'}
+                          </p>
+                        </td>
+                        <td className="py-2 px-1 text-center">
+                          {item.status === 'PUBLISHED' ? (
+                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
+                              <span className="w-1 h-1 rounded-full bg-emerald-600 shrink-0" />
+                              Terbit
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-50 text-amber-700 border border-amber-200 whitespace-nowrap">
+                              <span className="w-1 h-1 rounded-full bg-amber-600 shrink-0" />
+                              Menunggu
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-2 px-2 text-left">
+                          <span className="font-semibold text-[11px] text-slate-800 block truncate">
+                            {item.createdBy || 'Admin 1'}
+                          </span>
+                          <span className="text-[9px] text-slate-400 flex items-center gap-1 mt-0.5">
+                            <Clock className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                            <span className="truncate">{item.createdAt ? formatDate(item.createdAt) : '01/01/2026'}</span>
+                          </span>
+                        </td>
+                        <td className="py-2 px-1 text-center">
+                          <div className="inline-flex items-center justify-center gap-0.5">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEditBanner(item)}
+                              title="Edit Banner"
+                              className="p-0.5 rounded-md text-slate-500 hover:bg-amber-50 hover:text-amber-600 transition-colors cursor-pointer"
+                            >
+                              <Pencil className="w-3 h-3" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setBannerToDelete(item)}
+                              title="Hapus Banner"
+                              className="p-0.5 rounded-md text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleBannerStatus(item)}
+                              title={`Ubah status menjadi ${item.status === 'PUBLISHED' ? 'Menunggu' : 'Terbit'}`}
+                              className={`relative inline-flex h-3.5 w-6 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${item.status === 'PUBLISHED' ? 'bg-emerald-600' : 'bg-slate-300'
+                                }`}
+                            >
+                              <span
+                                className={`pointer-events-none inline-block h-2.5 w-2.5 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${item.status === 'PUBLISHED' ? 'translate-x-[13px]' : 'translate-x-0'
+                                  }`}
+                              />
+                            </button>
+                          </div>
                         </td>
                       </tr>
-                    ) : (
-                      banners.map((item, idx) => (
-                        <tr key={item.id || idx} className="hover:bg-slate-50/70 transition-colors">
-                          <td className="py-2 px-1 text-center text-[11px] font-medium text-slate-400">
-                            {idx + 1}
-                          </td>
-                          <td className="py-2 px-2">
-                            <div className="w-16 h-10 rounded-md bg-slate-100 border border-slate-200 overflow-hidden relative shadow-2xs flex items-center justify-center">
-                              {item.imageUrl ? (
-                                <img src={item.imageUrl} alt={item.headline} className="w-full h-full object-cover" />
-                              ) : (
-                                <div className="text-[9px] text-slate-400 flex flex-col items-center gap-0.5">
-                                  <ImageIcon className="w-3 h-3" />
-                                  <span>Banner</span>
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                          <td className="py-2 px-2">
-                            <p className="text-[11px] font-bold text-slate-900 line-clamp-2 leading-snug">
-                              {item.headline}
-                            </p>
-                          </td>
-                          <td className="py-2 px-2">
-                            <p className="text-[10px] text-slate-500 line-clamp-2 leading-relaxed">
-                              {item.subheadline || '-'}
-                            </p>
-                          </td>
-                          <td className="py-2 px-1 text-center">
-                            {item.status === 'PUBLISHED' ? (
-                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
-                                <span className="w-1 h-1 rounded-full bg-emerald-600 shrink-0" />
-                                Terbit
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-50 text-amber-700 border border-amber-200 whitespace-nowrap">
-                                <span className="w-1 h-1 rounded-full bg-amber-600 shrink-0" />
-                                Menunggu
-                              </span>
-                            )}
-                          </td>
-                          <td className="py-2 px-2 text-left">
-                            <span className="font-semibold text-[11px] text-slate-800 block truncate">
-                              {item.createdBy || 'Admin 1'}
-                            </span>
-                            <span className="text-[9px] text-slate-400 flex items-center gap-1 mt-0.5">
-                              <Clock className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                              <span className="truncate">{item.createdAt ? formatDate(item.createdAt) : '01/01/2026'}</span>
-                            </span>
-                          </td>
-                          <td className="py-2 px-1 text-center">
-                            <div className="inline-flex items-center justify-center gap-0.5">
-                              <button
-                                type="button"
-                                onClick={() => handleOpenEditBanner(item)}
-                                title="Edit Banner"
-                                className="p-0.5 rounded-md text-slate-500 hover:bg-amber-50 hover:text-amber-600 transition-colors cursor-pointer"
-                              >
-                                <Pencil className="w-3 h-3" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setBannerToDelete(item)}
-                                title="Hapus Banner"
-                                className="p-0.5 rounded-md text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
-                              >
-                                <Trash2 className="w-3 h-3" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleToggleBannerStatus(item)}
-                                title={`Ubah status menjadi ${item.status === 'PUBLISHED' ? 'Menunggu' : 'Terbit'}`}
-                                className={`relative inline-flex h-3.5 w-6 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                                  item.status === 'PUBLISHED' ? 'bg-emerald-600' : 'bg-slate-300'
-                                }`}
-                              >
-                                <span
-                                  className={`pointer-events-none inline-block h-2.5 w-2.5 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${
-                                    item.status === 'PUBLISHED' ? 'translate-x-[13px]' : 'translate-x-0'
-                                  }`}
-                                />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
           </section>
 

@@ -169,7 +169,7 @@ export default function DynamicCategoryPage() {
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-1">
             <Link href="/beranda" className="hover:text-perpusnas-800">Beranda</Link>
             <span>/</span>
-            <Link href="/antar-pegawai" className="hover:text-perpusnas-800">Antar Pegawai</Link>
+            <span>Antar Pegawai</span>
             <span>/</span>
             <span className="text-perpusnas-900 font-bold capitalize">{currentCategory.name}</span>
           </div>
@@ -181,11 +181,11 @@ export default function DynamicCategoryPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Link href="/antar-pegawai">
+          <span>
             <Button variant="outline" size="sm">
               <ArrowLeft className="w-4 h-4" /> Semua Kanal
             </Button>
-          </Link>
+          </span>
           <Button
             onClick={() => setIsModalOpen(true)}
             variant="primary"

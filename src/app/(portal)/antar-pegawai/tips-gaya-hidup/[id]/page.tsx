@@ -129,9 +129,9 @@ Mari jadikan gaya hidup sehat sebagai bagian tak terpisahkan dari dedikasi kita 
             Beranda
           </Link>
           <span className="text-[#757682]">&gt;</span>
-          <Link href="/antar-pegawai" className="hover:text-[#00113a] transition-colors">
+          <span>
             Antar Pegawai
-          </Link>
+          </span>
           <span className="text-[#757682]">&gt;</span>
           <Link href="/antar-pegawai/tips-gaya-hidup" className="hover:text-[#00113a] transition-colors">
             Tips dan Gaya Hidup
