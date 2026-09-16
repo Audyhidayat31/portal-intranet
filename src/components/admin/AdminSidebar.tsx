@@ -17,7 +17,7 @@ import {
 import { cn } from '@/lib/utils';
 
 const adminNavLinks = [
-  { label: 'Kelola Homepage', href: '/admin/homepage', icon: LayoutTemplate },
+  { label: 'Kelola Halaman Utama', href: '/admin/halaman-utama', icon: LayoutTemplate },
   { label: 'Kelola Pengguna', href: '/admin/pengguna', icon: Users },
   { label: 'Hak Akses & Role', href: '/admin/hak-akses', icon: KeyRound },
   { label: 'Log Aktivitas', href: '/admin/log-aktivitas', icon: History },

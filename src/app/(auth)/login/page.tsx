@@ -76,13 +76,8 @@ export default function LoginPage() {
       }
 
       setSuccessMessage('Login berhasil! Mengarahkan ke sistem...');
-      const role = data.data.user.role;
       setTimeout(() => {
-        if (role === 'ADMINISTRATOR') {
-          router.push('/admin/dashboard');
-        } else {
-          router.push('/beranda');
-        }
+        router.push('/beranda');
         router.refresh();
       }, 400);
     } catch (error) {
