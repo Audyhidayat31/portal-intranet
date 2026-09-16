@@ -17,7 +17,6 @@ import {
 import { cn } from '@/lib/utils';
 
 const adminNavLinks = [
-  { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { label: 'Kelola Homepage', href: '/admin/homepage', icon: LayoutTemplate },
   { label: 'Kelola Pengguna', href: '/admin/pengguna', icon: Users },
   { label: 'Hak Akses & Role', href: '/admin/hak-akses', icon: KeyRound },

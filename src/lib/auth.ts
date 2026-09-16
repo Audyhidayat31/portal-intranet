@@ -37,7 +37,7 @@ export function verifyToken(token: string): TokenPayload | null {
 }
 
 export async function getCurrentUser(): Promise<(TokenPayload & { avatarUrl?: string | null; unitKerja?: string | null; position?: string | null }) | null> {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const token = cookieStore.get(TOKEN_COOKIE_NAME)?.value;
   if (!token) return null;
 

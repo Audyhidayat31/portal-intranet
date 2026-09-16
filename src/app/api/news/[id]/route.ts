@@ -41,10 +41,10 @@ function formatMockNews(mock: any) {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params?.id;
+    const { id } = await params;
 
     try {
       const item = await prisma.content.findFirst({
@@ -100,10 +100,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params?.id;
+    const { id } = await params;
     const body = await request.json();
     const { title, excerpt, content, coverImage, publishedAt, status } = body;
 
@@ -181,10 +181,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params?.id;
+    const { id } = await params;
 
     try {
       const existing = await prisma.content.findFirst({

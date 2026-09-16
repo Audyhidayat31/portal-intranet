@@ -143,9 +143,9 @@ export default function DetailKaryaAkademikPage() {
             Beranda
           </Link>
           <span className="text-[#757682]">&gt;</span>
-          <Link href="/antar-pegawai" className="hover:text-[#00113a] transition-colors">
+          <span>
             Antar Pegawai
-          </Link>
+          </span>
           <span className="text-[#757682]">&gt;</span>
           <Link href="/antar-pegawai/karya-akademik" className="hover:text-[#00113a] font-bold text-[#1a1b20] transition-colors">
             Karya Akademik

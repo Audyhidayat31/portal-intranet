@@ -7,6 +7,7 @@ import { z } from 'zod';
 const loginSchema = z.object({
   nip: z.string().min(1, 'NIP wajib diisi'),
   password: z.string().min(1, 'Password wajib diisi'),
+  recaptchaToken: z.string().min(1, 'Captcha wajib diselesaikan'),
 });
 
 export async function POST(request: NextRequest) {
@@ -21,7 +22,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { nip, password } = result.data;
+    const { nip, password, recaptchaToken } = result.data;
+
+    const recaptchaSecret = process.env.RECAPTCHA_SECRET_KEY;
+    if (recaptchaSecret && recaptchaToken) {
+      const verifyRes = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `secret=${recaptchaSecret}&response=${recaptchaToken}`,
+      });
+      const verifyData = await verifyRes.json();
+      if (!verifyData.success) {
+        return NextResponse.json(
+          { success: false, message: 'Verifikasi reCAPTCHA gagal. Silakan coba lagi.' },
+          { status: 400 }
+        );
+      }
+    }
 
     // Find user by NIP with auto-retry for cold starts
     const user = await withDbRetry(() =>

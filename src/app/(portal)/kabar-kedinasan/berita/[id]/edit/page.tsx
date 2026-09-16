@@ -288,9 +288,9 @@ export default function EditBeritaPage() {
           Beranda
         </Link>
         <ChevronRight className="w-4 h-4 text-[#757682]" />
-        <Link href="/kabar-kedinasan" className="hover:text-[#00113a] transition-colors">
+        <span>
           Kabar Kedinasan
-        </Link>
+        </span>
         <ChevronRight className="w-4 h-4 text-[#757682]" />
         <Link href="/kabar-kedinasan/berita" className="hover:text-[#00113a] transition-colors">
           Berita

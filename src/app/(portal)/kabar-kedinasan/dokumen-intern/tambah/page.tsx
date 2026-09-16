@@ -288,9 +288,9 @@ export default function TambahDokumenInternalPage() {
             Beranda
           </Link>
           <span className="text-[#757682]">&gt;</span>
-          <Link href="/kabar-kedinasan" className="hover:text-[#00113a] transition-colors">
+          <span>
             Kabar Kedinasan
-          </Link>
+          </span>
           <span className="text-[#757682]">&gt;</span>
           <Link href="/kabar-kedinasan/dokumen-intern" className="hover:text-[#00113a] transition-colors">
             Dokumen Internal

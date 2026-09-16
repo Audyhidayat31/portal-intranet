@@ -16,10 +16,10 @@ function findMockFigure(slug: string) {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const slug = params.slug;
+    const { slug } = await params;
 
     try {
       const figure = await prisma.figureProfile.findFirst({
@@ -65,10 +65,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const slug = params.slug;
+    const { slug } = await params;
     const body = await request.json();
     const { name, position, unitKerja, quote, fullStory, photoUrl, isSpotlight } = body;
 
@@ -139,10 +139,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const slug = params.slug;
+    const { slug } = await params;
 
     try {
       const existing = await prisma.figureProfile.findFirst({

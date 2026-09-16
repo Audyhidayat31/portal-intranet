@@ -128,9 +128,9 @@ Keluarga besar Perpustakaan Nasional senantiasa mendukung para pegawai dalam men
             Beranda
           </Link>
           <span className="text-[#757682]">&gt;</span>
-          <Link href="/antar-pegawai" className="hover:text-[#00113a] transition-colors">
+          <span>
             Antar Pegawai
-          </Link>
+          </span>
           <span className="text-[#757682]">&gt;</span>
           <Link href="/antar-pegawai/kabar-keluarga" className="hover:text-[#00113a] transition-colors">
             Kabar Keluarga

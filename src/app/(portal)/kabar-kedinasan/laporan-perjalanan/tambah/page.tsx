@@ -347,9 +347,9 @@ export default function TambahLaporanPerjalananPage() {
             Beranda
           </Link>
           <span className="text-[#757682]">&gt;</span>
-          <Link href="/kabar-kedinasan" className="hover:text-[#00113a] transition-colors">
+          <span>
             Kabar Kedinasan
-          </Link>
+          </span>
           <span className="text-[#757682]">&gt;</span>
           <Link href="/kabar-kedinasan/laporan-perjalanan" className="hover:text-[#00113a] transition-colors">
             Laporan Perjalanan Dinas

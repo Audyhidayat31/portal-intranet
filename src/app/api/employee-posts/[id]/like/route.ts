@@ -3,11 +3,11 @@ import { prisma } from '@/lib/prisma';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const post = await prisma.employeePost.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         likesCount: { increment: 1 },
       },

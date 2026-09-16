@@ -188,12 +188,9 @@ export default function DetailBeritaPage() {
             <li>
               <div className="flex items-center">
                 <span className="mx-2 text-[#757682]">&gt;</span>
-                <Link
-                  href="/kabar-kedinasan"
-                  className="hover:text-[#00113a] transition-colors"
-                >
+                <span>
                   Kabar Kedinasan
-                </Link>
+                </span>
               </div>
             </li>
             <li>

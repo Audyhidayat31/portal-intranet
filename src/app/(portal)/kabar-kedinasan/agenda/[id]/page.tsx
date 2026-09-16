@@ -119,9 +119,9 @@ export default function DetailAgendaKegiatanPage() {
             Beranda
           </Link>
           <span className="text-[#757682]">&gt;</span>
-          <Link href="/kabar-kedinasan" className="hover:text-[#00113a] transition-colors">
+          <span>
             Kabar Kedinasan
-          </Link>
+          </span>
           <span className="text-[#757682]">&gt;</span>
           <Link href="/kabar-kedinasan/agenda" className="hover:text-[#00113a] transition-colors">
             Agenda Kegiatan

@@ -93,9 +93,9 @@ export default function AdminLayout({
               Beranda
             </Link>
             <span>&gt;</span>
-            <Link href="/admin/dashboard" className="hover:text-[#00113a] transition-colors">
+            <span>
               Kelola Admin
-            </Link>
+            </span>
             <span>&gt;</span>
             <span className="text-[#00113a] font-bold">{getBreadcrumbPageTitle(pathname)}</span>
           </nav>

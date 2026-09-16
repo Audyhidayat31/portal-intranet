@@ -327,9 +327,9 @@ export default function EditJelajahBumiPage() {
           Beranda
         </Link>
         <ChevronRight className="w-4 h-4 text-[#757682]" />
-        <Link href="/antar-pegawai" className="hover:text-[#00113a] transition-colors">
+        <span>
           Antar Pegawai
-        </Link>
+        </span>
         <ChevronRight className="w-4 h-4 text-[#757682]" />
         <Link href="/antar-pegawai/jelajah-bumi" className="hover:text-[#00113a] transition-colors">
           Jelajah Bumi
