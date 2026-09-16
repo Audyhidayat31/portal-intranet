@@ -7,7 +7,6 @@ import {
   X,
   FileText,
   Trash2,
-  Edit3,
   CheckCircle,
   AlertTriangle,
   Download,
@@ -34,16 +33,9 @@ export default function DetailKupasSosokPage() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   // Modals state
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState('');
-
-  // Edit fields
-  const [editName, setEditName] = useState(matchedInitial?.name || '');
-  const [editPosition, setEditPosition] = useState(matchedInitial?.position || '');
-  const [editContent, setEditContent] = useState(matchedInitial?.fullStory || '');
 
   useEffect(() => {
     if (!rawSlug) return;
@@ -58,9 +50,6 @@ export default function DetailKupasSosokPage() {
         if (data.success && data.data) {
           const item = data.data;
           setFigureItem(item);
-          setEditName(item.name || '');
-          setEditPosition(item.position || '');
-          setEditContent(item.fullStory || '');
         } else {
           // Check mock items
           const matchedMock = STITCH_MOCK_FIGURES_6.find(
@@ -73,9 +62,6 @@ export default function DetailKupasSosokPage() {
               body: matchedMock.fullStory,
             };
             setFigureItem(fullItem);
-            setEditName(matchedMock.name);
-            setEditPosition(matchedMock.position);
-            setEditContent(matchedMock.fullStory);
           } else {
             const fallback = {
               id: rawSlug,
@@ -90,9 +76,6 @@ Beliau memimpin proyek integrasi katalog induk nasional dan layanan akses reposi
 Prinsip open-source dan kolaborasi antarpengembang menjadi pilar penting yang terus ia tularkan kepada para pranata komputer di lingkungan Perpusnas RI.`,
             };
             setFigureItem(fallback);
-            setEditName(fallback.name);
-            setEditPosition(fallback.position);
-            setEditContent(fallback.fullStory);
           }
         }
         setIsLoading(false);
@@ -103,9 +86,6 @@ Prinsip open-source dan kolaborasi antarpengembang menjadi pilar penting yang te
         );
         if (matchedMock) {
           setFigureItem(matchedMock);
-          setEditName(matchedMock.name);
-          setEditPosition(matchedMock.position);
-          setEditContent(matchedMock.fullStory);
         } else {
           const fallback = {
             id: rawSlug,
@@ -118,66 +98,11 @@ Prinsip open-source dan kolaborasi antarpengembang menjadi pilar penting yang te
 Beliau memimpin proyek integrasi katalog induk nasional dan layanan akses repositori digital terdistribusi, memungkinkan pemustaka di seluruh pelosok mengakses koleksi ilmiah secara instan dan andal.`,
           };
           setFigureItem(fallback);
-          setEditName(fallback.name);
-          setEditPosition(fallback.position);
-          setEditContent(fallback.fullStory);
         }
         setIsLoading(false);
       });
   }, [rawSlug]);
 
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editName.trim()) return;
-
-    setIsSaving(true);
-    try {
-      const res = await fetch(`/api/figure-profiles/${figureItem?.slug || figureItem?.id || rawSlug}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: editName,
-          position: editPosition,
-          fullStory: editContent,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        setFigureItem((prev: any) => ({
-          ...prev,
-          name: editName,
-          position: editPosition,
-          fullStory: editContent,
-        }));
-        setIsEditModalOpen(false);
-        setFeedbackMsg('Data sosok berhasil diperbarui!');
-        setTimeout(() => setFeedbackMsg(''), 4000);
-      } else {
-        setFigureItem((prev: any) => ({
-          ...prev,
-          name: editName,
-          position: editPosition,
-          fullStory: editContent,
-        }));
-        setIsEditModalOpen(false);
-        setFeedbackMsg('Data sosok berhasil diperbarui secara lokal!');
-        setTimeout(() => setFeedbackMsg(''), 4000);
-      }
-    } catch (err) {
-      setFigureItem((prev: any) => ({
-        ...prev,
-        name: editName,
-        position: editPosition,
-        fullStory: editContent,
-      }));
-      setIsEditModalOpen(false);
-      setFeedbackMsg('Data sosok berhasil diperbarui secara lokal!');
-      setTimeout(() => setFeedbackMsg(''), 4000);
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -332,18 +257,12 @@ Beliau memimpin proyek integrasi katalog induk nasional dan layanan akses reposi
 
             {/* Right: Edit & Hapus Buttons matching Stitch */}
             <div className="flex items-center gap-3 self-end sm:self-auto">
-              <button
-                type="button"
-                onClick={() => {
-                  setEditName(figureItem?.name || '');
-                  setEditPosition(figureItem?.position || '');
-                  setEditContent(figureItem?.fullStory || figureItem?.body || '');
-                  setIsEditModalOpen(true);
-                }}
-                className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer"
+              <Link
+                href={`/kupas-sosok/${rawSlug}/edit`}
+                className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs inline-block text-center"
               >
                 Edit
-              </button>
+              </Link>
               <button
                 type="button"
                 onClick={() => setIsDeleteModalOpen(true)}
@@ -393,81 +312,6 @@ Beliau memimpin proyek integrasi katalog induk nasional dan layanan akses reposi
         </div>
       )}
 
-      {/* Edit Modal matching Stitch */}
-      {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 sm:p-8 max-w-2xl w-full border border-[#c5c6d2] shadow-2xl space-y-6">
-            <div className="flex justify-between items-center border-b border-[#c5c6d2] pb-4">
-              <h2 className="text-lg sm:text-xl font-black text-[#00113a]">
-                Edit Profil Kupas Sosok
-              </h2>
-              <button
-                onClick={() => setIsEditModalOpen(false)}
-                className="text-slate-400 hover:text-slate-700 p-1 cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleUpdate} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-[#1a1b20] mb-1">
-                  Nama Sosok
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  className="w-full border border-[#c5c6d2] rounded p-2.5 text-sm text-[#1a1b20] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#1a1b20] mb-1">
-                  Jabatan & Unit Kerja
-                </label>
-                <input
-                  type="text"
-                  value={editPosition}
-                  onChange={(e) => setEditPosition(e.target.value)}
-                  className="w-full border border-[#c5c6d2] rounded p-2.5 text-sm text-[#1a1b20] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#1a1b20] mb-1">
-                  Kisah & Uraian
-                </label>
-                <textarea
-                  rows={7}
-                  required
-                  value={editContent}
-                  onChange={(e) => setEditContent(e.target.value)}
-                  className="w-full border border-[#c5c6d2] rounded p-2.5 text-sm text-[#1a1b20] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-[#c5c6d2]">
-                <button
-                  type="button"
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="px-5 py-2 border border-[#757682] text-[#444650] rounded font-bold text-xs hover:bg-[#f4f3f9] cursor-pointer"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="px-6 py-2 bg-[#00113a] text-white rounded font-bold text-xs hover:bg-[#002366] disabled:opacity-50 cursor-pointer shadow-xs"
-                >
-                  {isSaving ? 'Menyimpan...' : 'Simpan Perubahan'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* Delete Confirmation Modal matching Stitch */}
       {isDeleteModalOpen && (

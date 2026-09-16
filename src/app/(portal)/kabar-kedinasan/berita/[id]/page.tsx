@@ -87,13 +87,6 @@ export default function DetailBeritaPage() {
   const [copiedLink, setCopiedLink] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
-  // Edit State
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editTitle, setEditTitle] = useState('');
-  const [editContent, setEditContent] = useState('');
-  const [editCoverImage, setEditCoverImage] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
-
   // Delete State
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -110,9 +103,6 @@ export default function DetailBeritaPage() {
       .then((data) => {
         if (data.success && data.data) {
           setNews(data.data);
-          setEditTitle(data.data.title || '');
-          setEditContent(data.data.body || data.data.content || '');
-          setEditCoverImage(data.data.coverImage || '');
         } else {
           throw new Error('API returned unsuccessful');
         }
@@ -128,9 +118,6 @@ export default function DetailBeritaPage() {
             : 'Judul Berita',
         };
         setNews(fallback);
-        setEditTitle(fallback.title);
-        setEditContent(fallback.body);
-        setEditCoverImage(fallback.coverImage);
         setIsLoading(false);
       });
   }, [rawId]);
@@ -154,55 +141,6 @@ export default function DetailBeritaPage() {
       navigator.clipboard.writeText(currentUrl);
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2500);
-    }
-  };
-
-  // Edit Handler
-  const handleUpdateNews = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editTitle.trim()) return;
-
-    setIsSaving(true);
-    try {
-      const res = await fetch(`/api/news/${rawId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: editTitle,
-          content: editContent,
-          coverImage: editCoverImage,
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setNews((prev: any) => ({
-          ...prev,
-          title: editTitle,
-          body: editContent,
-          coverImage: editCoverImage,
-        }));
-        setIsEditModalOpen(false);
-      } else {
-        // If it's a mock item, update local state
-        setNews((prev: any) => ({
-          ...prev,
-          title: editTitle,
-          body: editContent,
-          coverImage: editCoverImage,
-        }));
-        setIsEditModalOpen(false);
-      }
-    } catch {
-      // Mock fallback
-      setNews((prev: any) => ({
-        ...prev,
-        title: editTitle,
-        body: editContent,
-        coverImage: editCoverImage,
-      }));
-      setIsEditModalOpen(false);
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -473,18 +411,17 @@ export default function DetailBeritaPage() {
 
             {/* Action Buttons: Edit Berita & Hapus Berita matching Stitch */}
             <div className="flex flex-wrap gap-4 pt-2">
-              <button
-                type="button"
-                onClick={() => setIsEditModalOpen(true)}
-                className="px-8 py-3 bg-transparent border border-[#c5c6d2] text-[#1a1b20] font-bold text-sm rounded-md hover:bg-[#efedf3] hover:border-[#00113a] transition-all min-w-[140px] text-center shadow-xs"
+              <Link
+                href={`/kabar-kedinasan/berita/${rawId}/edit`}
+                className="px-8 py-3 bg-transparent border border-[#c5c6d2] text-[#1a1b20] font-bold text-sm rounded-md hover:bg-[#efedf3] hover:border-[#00113a] transition-all min-w-[140px] text-center shadow-xs inline-block"
               >
                 Edit Berita
-              </button>
+              </Link>
 
               <button
                 type="button"
                 onClick={() => setIsDeleteModalOpen(true)}
-                className="px-8 py-3 bg-transparent border border-[#c5c6d2] text-[#1a1b20] hover:text-red-700 hover:border-red-400 font-bold text-sm rounded-md hover:bg-red-50 transition-all min-w-[140px] text-center shadow-xs"
+                className="px-8 py-3 bg-transparent border border-[#c5c6d2] text-[#1a1b20] hover:text-red-700 hover:border-red-400 font-bold text-sm rounded-md hover:bg-red-50 transition-all min-w-[140px] text-center shadow-xs cursor-pointer"
               >
                 Hapus Berita
               </button>
@@ -512,81 +449,6 @@ export default function DetailBeritaPage() {
             >
               <X className="w-6 h-6" />
             </button>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Berita Modal */}
-      {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-[#c5c6d2] max-h-[90vh] overflow-y-auto animate-fadeIn">
-            <div className="flex justify-between items-center pb-4 border-b border-slate-200">
-              <h2 className="text-xl font-bold text-[#00113a]">Edit Berita</h2>
-              <button
-                type="button"
-                onClick={() => setIsEditModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 p-1"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleUpdateNews} className="space-y-4 mt-4">
-              <div>
-                <label className="block text-xs font-bold text-[#1a1b20] mb-1.5">
-                  Judul Berita
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                  className="w-full border border-[#c5c6d2] rounded-md p-2.5 text-sm focus:outline-none focus:border-[#00113a]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#1a1b20] mb-1.5">
-                  URL Gambar Utama (Cover Image)
-                </label>
-                <input
-                  type="url"
-                  value={editCoverImage}
-                  onChange={(e) => setEditCoverImage(e.target.value)}
-                  className="w-full border border-[#c5c6d2] rounded-md p-2.5 text-sm focus:outline-none focus:border-[#00113a]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#1a1b20] mb-1.5">
-                  Deskripsi / Isi Berita Lengkap
-                </label>
-                <textarea
-                  rows={8}
-                  required
-                  value={editContent}
-                  onChange={(e) => setEditContent(e.target.value)}
-                  className="w-full border border-[#c5c6d2] rounded-md p-2.5 text-sm focus:outline-none focus:border-[#00113a] leading-relaxed"
-                />
-              </div>
-
-              <div className="pt-4 flex justify-end gap-3 border-t border-slate-200">
-                <button
-                  type="button"
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="px-5 py-2.5 text-sm font-bold text-[#444650] hover:bg-[#f4f3f9] rounded-md transition-colors"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="px-6 py-2.5 text-sm font-bold bg-[#00113a] text-white hover:bg-[#2a4386] rounded-md transition-colors shadow-sm disabled:opacity-50"
-                >
-                  {isSaving ? 'Menyimpan...' : 'Simpan Perubahan'}
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}

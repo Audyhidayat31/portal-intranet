@@ -34,16 +34,9 @@ export default function DetailAgendaKegiatanPage() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   // Modals state
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState('');
-
-  // Edit fields
-  const [editTitle, setEditTitle] = useState(matchedInitial?.title || '');
-  const [editContent, setEditContent] = useState(matchedInitial?.content || '');
-  const [editLocation, setEditLocation] = useState(matchedInitial?.eventLocation || '');
 
   useEffect(() => {
     if (!rawId) return;
@@ -57,9 +50,6 @@ export default function DetailAgendaKegiatanPage() {
         if (data.success && data.data) {
           const item = data.data;
           setAgendaItem(item);
-          setEditTitle(item.title || '');
-          setEditContent(item.body || item.content || '');
-          setEditLocation(item.eventLocation || '');
         } else {
           const matchedMock = STITCH_MOCK_AGENDAS_6.find(
             (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
@@ -71,9 +61,6 @@ export default function DetailAgendaKegiatanPage() {
               body: matchedMock.content,
             };
             setAgendaItem(fullItem);
-            setEditTitle(matchedMock.title);
-            setEditContent(matchedMock.content);
-            setEditLocation(matchedMock.eventLocation || '');
           } else {
             const fallback = {
               id: rawId,
@@ -83,9 +70,6 @@ export default function DetailAgendaKegiatanPage() {
               body: `Rapat koordinasi nasional dan pemaparan hasil riset indeks kegemaran membaca masyarakat Indonesia bersama pemangku kepentingan perpustakaan daerah. Menampilkan inovasi pojok baca terpadu dan layanan perpustakaan digital inklusif.\n\nKegiatan ini berfokus pada sinkronisasi data repositori daerah dengan server induk Perpustakaan Nasional RI demi mendukung satu data literasi nusantara.`,
             };
             setAgendaItem(fallback);
-            setEditTitle(fallback.title);
-            setEditContent(fallback.body);
-            setEditLocation(fallback.eventLocation);
           }
         }
         setIsLoading(false);
@@ -94,69 +78,10 @@ export default function DetailAgendaKegiatanPage() {
         const matchedMock = STITCH_MOCK_AGENDAS_6.find((m) => m.id === rawId);
         if (matchedMock) {
           setAgendaItem(matchedMock);
-          setEditTitle(matchedMock.title);
-          setEditContent(matchedMock.content);
-          setEditLocation(matchedMock.eventLocation || '');
         }
         setIsLoading(false);
       });
   }, [rawId]);
-
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editTitle.trim()) return;
-
-    setIsSaving(true);
-    try {
-      const res = await fetch(`/api/agendas/${agendaItem?.id || rawId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: editTitle,
-          body: editContent,
-          eventLocation: editLocation,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        setAgendaItem((prev: any) => ({
-          ...prev,
-          title: editTitle,
-          body: editContent,
-          content: editContent,
-          eventLocation: editLocation,
-        }));
-        setIsEditModalOpen(false);
-        setFeedbackMsg('Agenda kegiatan berhasil diperbarui!');
-        setTimeout(() => setFeedbackMsg(''), 4000);
-      } else {
-        setAgendaItem((prev: any) => ({
-          ...prev,
-          title: editTitle,
-          body: editContent,
-          content: editContent,
-          eventLocation: editLocation,
-        }));
-        setIsEditModalOpen(false);
-        setFeedbackMsg('Agenda kegiatan berhasil diperbarui!');
-        setTimeout(() => setFeedbackMsg(''), 4000);
-      }
-    } catch {
-      setAgendaItem((prev: any) => ({
-        ...prev,
-        title: editTitle,
-        body: editContent,
-        content: editContent,
-        eventLocation: editLocation,
-      }));
-      setIsEditModalOpen(false);
-      setFeedbackMsg('Agenda kegiatan berhasil diperbarui!');
-      setTimeout(() => setFeedbackMsg(''), 4000);
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -302,13 +227,12 @@ export default function DetailAgendaKegiatanPage() {
 
             {/* Right: Edit & Hapus Buttons matching Coretan Opini Detail */}
             <div className="flex items-center gap-3 self-end sm:self-auto">
-              <button
-                type="button"
-                onClick={() => setIsEditModalOpen(true)}
-                className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer"
+              <Link
+                href={`/kabar-kedinasan/agenda/${rawId}/edit`}
+                className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs inline-block text-center cursor-pointer"
               >
                 Edit
-              </button>
+              </Link>
               <button
                 type="button"
                 onClick={() => setIsDeleteModalOpen(true)}
@@ -345,77 +269,6 @@ export default function DetailAgendaKegiatanPage() {
                 className="w-full h-full object-contain"
               />
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Modal */}
-      {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white rounded-lg p-6 max-w-lg w-full relative shadow-2xl border border-[#c5c6d2] animate-scaleUp">
-            <button
-              type="button"
-              onClick={() => setIsEditModalOpen(false)}
-              className="absolute top-4 right-4 text-[#757682] hover:text-[#1a1b20]"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <h2 className="text-xl font-bold text-[#00113a] mb-4">
-              Edit Agenda Kegiatan
-            </h2>
-            <form onSubmit={handleUpdate} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-[#444650] mb-1">
-                  Judul
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                  className="w-full border border-[#c5c6d2] rounded p-2.5 text-sm text-[#1a1b20] focus:border-[#00113a] outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-[#444650] mb-1">
-                  Lokasi Kegiatan
-                </label>
-                <input
-                  type="text"
-                  value={editLocation}
-                  onChange={(e) => setEditLocation(e.target.value)}
-                  className="w-full border border-[#c5c6d2] rounded p-2.5 text-sm text-[#1a1b20] focus:border-[#00113a] outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-[#444650] mb-1">
-                  Uraian Agenda Kegiatan
-                </label>
-                <textarea
-                  rows={5}
-                  required
-                  value={editContent}
-                  onChange={(e) => setEditContent(e.target.value)}
-                  className="w-full border border-[#c5c6d2] rounded p-2.5 text-sm text-[#1a1b20] focus:border-[#00113a] outline-none"
-                />
-              </div>
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="px-4 py-2 border border-[#c5c6d2] rounded text-sm text-[#444650] hover:bg-[#f4f3f9]"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="px-5 py-2 bg-[#00113a] text-white rounded text-sm font-bold hover:bg-[#002366] disabled:opacity-50"
-                >
-                  {isSaving ? 'Menyimpan...' : 'Simpan'}
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}

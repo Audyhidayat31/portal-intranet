@@ -29,19 +29,9 @@ export default function DetailKalimatBijakPage() {
   const [isLoading, setIsLoading] = useState(!matchedInitial);
 
   // Modals state
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState('');
-
-  // Edit fields
-  const [editQuote, setEditQuote] = useState(matchedInitial?.quote || matchedInitial?.content || '');
-  const [editFigure, setEditFigure] = useState(
-    matchedInitial?.figure
-      ? `${matchedInitial.figure}${matchedInitial.figureDate ? `, ${matchedInitial.figureDate}` : ''}`
-      : 'Soekarno, 1-06-1940'
-  );
 
   useEffect(() => {
     if (!rawId) return;
@@ -58,95 +48,29 @@ export default function DetailKalimatBijakPage() {
             excerpt: apiData.excerpt || apiData.title,
             content: apiData.body || '',
             figure: apiData.title || 'Soekarno',
-            figureDate: '1-06-1940',
-            coverImage: apiData.coverImage || '/images/kabar-keluarga/card-1.jpg',
-            publishedAt: apiData.createdAt
-              ? formatDate(apiData.createdAt)
-              : '20 Agustus 2026',
-            status: apiData.status === 'DRAFT' || apiData.status === 'Menunggu' ? 'Menunggu' : 'Terbit',
-            authorName: apiData.author?.name || 'Budi Sujatmiko',
-            authorPosition: apiData.author?.profile?.position || 'Pustakawan Ahli Madya',
+            figureDate: apiData.publishedAt ? formatDate(apiData.publishedAt) : '1-06-1940',
+            publishedAt: apiData.publishedAt ? formatDate(apiData.publishedAt) : '20-08-2026',
+            status: apiData.status === 'PUBLISHED' ? 'Terbit' : 'Menunggu',
           };
           setItem(formatted);
-          setEditQuote(formatted.quote);
-          setEditFigure(
-            formatted.figure
-              ? `${formatted.figure}${formatted.figureDate ? `, ${formatted.figureDate}` : ''}`
-              : 'Soekarno, 1-06-1940'
-          );
         } else {
-          const matched = STITCH_MOCK_KALIMAT_BIJAK.find(
+          const matchedMock = STITCH_MOCK_KALIMAT_BIJAK.find(
             (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
           );
-          if (matched) {
-            setItem(matched);
-            setEditQuote(matched.quote || matched.content || '');
-            setEditFigure(
-              matched.figure
-                ? `${matched.figure}${matched.figureDate ? `, ${matched.figureDate}` : ''}`
-                : 'Soekarno, 1-06-1940'
-            );
+          if (matchedMock) {
+            setItem(matchedMock);
           }
         }
+        setIsLoading(false);
       })
       .catch(() => {
-        // Keep initial
-      })
-      .finally(() => {
+        const matchedMock = STITCH_MOCK_KALIMAT_BIJAK.find((m) => m.id === rawId);
+        if (matchedMock) {
+          setItem(matchedMock);
+        }
         setIsLoading(false);
       });
   }, [rawId]);
-
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editQuote.trim()) return;
-
-    setIsSaving(true);
-    try {
-      await fetch(`/api/employee-posts/${rawId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: editFigure.split(',')[0]?.trim() || item?.title || 'Kalimat Bijak',
-          body: editQuote,
-        }),
-      });
-
-      setItem((prev) =>
-        prev
-          ? {
-              ...prev,
-              title: editFigure.split(',')[0]?.trim() || prev.title,
-              quote: editQuote,
-              content: editQuote,
-              figure: editFigure.split(',')[0]?.trim() || prev.figure,
-              figureDate: editFigure.split(',')[1]?.trim() || prev.figureDate,
-            }
-          : null
-      );
-      setIsEditModalOpen(false);
-      setFeedbackMsg('Kalimat bijak berhasil diperbarui!');
-      setTimeout(() => setFeedbackMsg(''), 4000);
-    } catch {
-      setItem((prev) =>
-        prev
-          ? {
-              ...prev,
-              title: editFigure.split(',')[0]?.trim() || prev.title,
-              quote: editQuote,
-              content: editQuote,
-              figure: editFigure.split(',')[0]?.trim() || prev.figure,
-              figureDate: editFigure.split(',')[1]?.trim() || prev.figureDate,
-            }
-          : null
-      );
-      setIsEditModalOpen(false);
-      setFeedbackMsg('Perubahan tersimpan (mode lokal)!');
-      setTimeout(() => setFeedbackMsg(''), 4000);
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -254,13 +178,12 @@ export default function DetailKalimatBijakPage() {
 
             {/* Right: Edit & Hapus Buttons matching Wireframe */}
             <div className="flex items-center gap-3 self-end sm:self-auto">
-              <button
-                type="button"
-                onClick={() => setIsEditModalOpen(true)}
-                className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer"
+              <Link
+                href={`/antar-pegawai/kalimat-bijak/${item?.id || rawId}/edit`}
+                className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer inline-flex items-center justify-center"
               >
                 Edit
-              </button>
+              </Link>
               <button
                 type="button"
                 onClick={() => setIsDeleteModalOpen(true)}
@@ -272,72 +195,6 @@ export default function DetailKalimatBijakPage() {
           </div>
         </div>
       </div>
-
-      {/* Edit Modal Dialog */}
-      {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-[#c5c6d2] max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center pb-4 border-b border-[#e2e3ea]">
-              <h2 className="text-lg font-bold text-[#00113a] flex items-center gap-2">
-                <Edit3 className="w-5 h-5 text-[#00113a]" />
-                Edit Kalimat Bijak
-              </h2>
-              <button
-                type="button"
-                onClick={() => setIsEditModalOpen(false)}
-                className="text-slate-400 hover:text-slate-700 p-1"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleUpdate} className="space-y-4 mt-4">
-              <div>
-                <label className="block text-xs font-bold text-[#1a1b20] mb-1">
-                  Deskripsi Kutipan Kalimat Bijak
-                </label>
-                <textarea
-                  rows={5}
-                  required
-                  value={editQuote}
-                  onChange={(e) => setEditQuote(e.target.value)}
-                  className="w-full border border-[#c5c6d2] rounded p-2.5 text-sm focus:outline-none focus:border-[#00113a] leading-relaxed"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#1a1b20] mb-1">
-                  Tokoh / Sumber Kutipan (contoh: Soekarno, 1-06-1940)
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={editFigure}
-                  onChange={(e) => setEditFigure(e.target.value)}
-                  className="w-full border border-[#c5c6d2] rounded p-2.5 text-sm focus:outline-none focus:border-[#00113a]"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-[#e2e3ea]">
-                <button
-                  type="button"
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="px-4 py-2 border border-[#c5c6d2] text-[#1a1b20] font-semibold text-xs rounded hover:bg-[#f4f3f9]"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="px-6 py-2 bg-[#00113a] text-white font-semibold text-xs rounded hover:bg-[#1a2d60] disabled:opacity-50"
-                >
-                  {isSaving ? 'Menyimpan...' : 'Simpan Perubahan'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* Delete Confirmation Modal Dialog */}
       {isDeleteModalOpen && (

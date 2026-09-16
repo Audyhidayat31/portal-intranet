@@ -35,15 +35,9 @@ export default function DetailKaryaAkademikPage() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   // Modals state
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState('');
-
-  // Edit fields
-  const [editTitle, setEditTitle] = useState(matchedInitial?.title || '');
-  const [editContent, setEditContent] = useState(matchedInitial?.content || '');
 
   useEffect(() => {
     if (!rawId) return;
@@ -70,94 +64,27 @@ export default function DetailKaryaAkademikPage() {
                   year: 'numeric',
                 })
               : '20 Agustus 2026',
-            status: apiData.status === 'DRAFT' || apiData.status === 'Menunggu' ? 'Menunggu' : 'Terbit',
+            status: apiData.status === 'PUBLISHED' ? 'Terbit' : 'Menunggu',
             authorName: apiData.author?.name || 'Budi Sujatmiko',
-            authorPosition: apiData.author?.profile?.position || 'Pustakawan Ahli Madya',
-            authorUnit: apiData.author?.profile?.unitKerja || 'Pusat Preservasi dan Alih Media Bahan Perpustakaan',
-            authorAvatar: apiData.author?.profile?.avatarUrl,
-            attachments: MOCK_KARYA_AKADEMIK_ATTACHMENTS_5,
+            authorPosition: apiData.author?.profile?.position || 'Peneliti Ahli Madya',
           };
           setItem(formatted);
-          setEditTitle(formatted.title);
-          setEditContent(formatted.content);
         } else {
-          const matchedMock = STITCH_MOCK_KARYA_AKADEMIK.find(
+          const matched = STITCH_MOCK_KARYA_AKADEMIK.find(
             (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
           );
-          if (matchedMock) {
-            setItem(matchedMock);
-            setEditTitle(matchedMock.title);
-            setEditContent(matchedMock.content);
+          if (matched) {
+            setItem(matched);
           }
         }
       })
       .catch(() => {
-        // Fallback to matched initial
+        // Keep initial
       })
       .finally(() => {
         setIsLoading(false);
       });
-  }, [rawId]);
-
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editTitle.trim()) return;
-
-    setIsSaving(true);
-    try {
-      const res = await fetch(`/api/employee-posts/${item?.id || rawId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: editTitle,
-          body: editContent,
-        }),
-      });
-
-      if (res.ok) {
-        setItem((prev) =>
-          prev
-            ? {
-                ...prev,
-                title: editTitle,
-                content: editContent,
-              }
-            : null
-        );
-        setIsEditModalOpen(false);
-        setFeedbackMsg('Karya akademik berhasil diperbarui!');
-        setTimeout(() => setFeedbackMsg(''), 4000);
-      } else {
-        setItem((prev) =>
-          prev
-            ? {
-                ...prev,
-                title: editTitle,
-                content: editContent,
-              }
-            : null
-        );
-        setIsEditModalOpen(false);
-        setFeedbackMsg('Karya akademik berhasil diperbarui!');
-        setTimeout(() => setFeedbackMsg(''), 4000);
-      }
-    } catch {
-      setItem((prev) =>
-        prev
-          ? {
-              ...prev,
-              title: editTitle,
-              content: editContent,
-            }
-          : null
-      );
-      setIsEditModalOpen(false);
-      setFeedbackMsg('Karya akademik berhasil diperbarui!');
-      setTimeout(() => setFeedbackMsg(''), 4000);
-    } finally {
-      setIsSaving(false);
-    }
-  };
+  }, [rawId, matchedInitial]);
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -316,13 +243,12 @@ export default function DetailKaryaAkademikPage() {
 
             {/* Right: Edit & Hapus Buttons matching Wireframe Gambar 3 & Gambar 2 */}
             <div className="flex items-center gap-3 self-end sm:self-auto">
-              <button
-                type="button"
-                onClick={() => setIsEditModalOpen(true)}
-                className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer"
+              <Link
+                href={`/antar-pegawai/karya-akademik/${item?.id || rawId}/edit`}
+                className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer inline-flex items-center justify-center"
               >
                 Edit
-              </button>
+              </Link>
               <button
                 type="button"
                 onClick={() => setIsDeleteModalOpen(true)}
@@ -378,68 +304,6 @@ export default function DetailKaryaAkademikPage() {
                 Tutup
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Modal */}
-      {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-[#c5c6d2] max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center pb-4 border-b border-[#e2e3ea]">
-              <h2 className="text-lg font-bold text-[#00113a] flex items-center gap-2">
-                <Edit3 className="w-5 h-5 text-[#00113a]" />
-                Edit Karya Akademik
-              </h2>
-              <button
-                type="button"
-                onClick={() => setIsEditModalOpen(false)}
-                className="text-slate-400 hover:text-slate-700 p-1"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleUpdate} className="space-y-4 mt-4">
-              <div>
-                <label className="block text-xs font-bold text-[#1a1b20] mb-1">Judul Karya Akademik</label>
-                <input
-                  type="text"
-                  required
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                  className="w-full border border-[#c5c6d2] rounded p-2.5 text-sm focus:outline-none focus:border-[#00113a]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#1a1b20] mb-1">Uraian Karya Akademik</label>
-                <textarea
-                  rows={8}
-                  required
-                  value={editContent}
-                  onChange={(e) => setEditContent(e.target.value)}
-                  className="w-full border border-[#c5c6d2] rounded p-2.5 text-sm focus:outline-none focus:border-[#00113a]"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-[#e2e3ea]">
-                <button
-                  type="button"
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="px-4 py-2 border border-[#c5c6d2] text-[#1a1b20] font-semibold text-xs rounded hover:bg-[#f4f3f9]"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="px-6 py-2 bg-[#00113a] text-white font-semibold text-xs rounded hover:bg-[#1a2d60] disabled:opacity-50"
-                >
-                  {isSaving ? 'Menyimpan...' : 'Simpan Perubahan'}
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}

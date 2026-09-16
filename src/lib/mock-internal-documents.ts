@@ -62,3 +62,25 @@ export const STITCH_MOCK_INTERNAL_DOCS_5: InternalDocument[] = [
     fileSize: '520 KB',
   },
 ];
+
+const STORAGE_KEY_INTERNAL_DOCS = 'portal_internal_docs_data';
+
+export const getStoredInternalDocs = (): InternalDocument[] => {
+  if (typeof window === 'undefined') return STITCH_MOCK_INTERNAL_DOCS_5;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_INTERNAL_DOCS);
+    if (!raw) return STITCH_MOCK_INTERNAL_DOCS_5;
+    return JSON.parse(raw);
+  } catch {
+    return STITCH_MOCK_INTERNAL_DOCS_5;
+  }
+};
+
+export const saveStoredInternalDocs = (items: InternalDocument[]) => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(STORAGE_KEY_INTERNAL_DOCS, JSON.stringify(items));
+  } catch (err) {
+    console.error('Failed to save internal docs to storage', err);
+  }
+};

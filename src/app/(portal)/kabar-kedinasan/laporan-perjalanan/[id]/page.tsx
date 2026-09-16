@@ -5,14 +5,10 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import {
   X,
-  MapPin,
   FileText,
-  Trash2,
-  Edit3,
   CheckCircle,
   AlertTriangle,
   Download,
-  ImageIcon,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { STITCH_MOCK_BUSINESS_TRIPS_5 } from '@/lib/mock-business-trips';
@@ -44,17 +40,9 @@ export default function DetailLaporanPerjalananPage() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   // Modals state
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState('');
-
-  // Edit fields
-  const [editTitle, setEditTitle] = useState(matchedInitial?.title || '');
-  const [editCity, setEditCity] = useState(matchedInitial?.destinationCity || '');
-  const [editContent, setEditContent] = useState(matchedInitial?.content || matchedInitial?.body || '');
-  const [editAttachmentName, setEditAttachmentName] = useState(matchedInitial?.attachmentName || '');
 
   useEffect(() => {
     if (!rawId) return;
@@ -68,10 +56,6 @@ export default function DetailLaporanPerjalananPage() {
         if (data.success && data.data) {
           const item = data.data;
           setReport(item);
-          setEditTitle(item.title || '');
-          setEditCity(item.destinationCity || '');
-          setEditContent(item.body || item.content || '');
-          setEditAttachmentName(item.attachmentName || '');
         } else {
           // Check if it matches our mock items
           const matchedMock = STITCH_MOCK_BUSINESS_TRIPS_5.find(
@@ -84,10 +68,6 @@ export default function DetailLaporanPerjalananPage() {
               body: matchedMock.content || matchedMock.body,
             };
             setReport(fullItem);
-            setEditTitle(matchedMock.title);
-            setEditCity(matchedMock.destinationCity);
-            setEditContent(matchedMock.content || matchedMock.body || '');
-            setEditAttachmentName(matchedMock.attachmentName || '');
           } else {
             const fallback = {
               id: rawId,
@@ -112,10 +92,6 @@ Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedan
               },
             };
             setReport(fallback);
-            setEditTitle(fallback.title);
-            setEditCity(fallback.destinationCity);
-            setEditContent(fallback.body);
-            setEditAttachmentName(fallback.attachmentName);
           }
         }
         setIsLoading(false);
@@ -124,68 +100,13 @@ Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedan
         const matchedMock = STITCH_MOCK_BUSINESS_TRIPS_5.find((m) => m.id === rawId);
         if (matchedMock) {
           setReport(matchedMock);
-          setEditTitle(matchedMock.title);
-          setEditCity(matchedMock.destinationCity);
-          setEditContent(matchedMock.content);
-          setEditAttachmentName(matchedMock.attachmentName);
         } else {
           setReport(STITCH_MOCK_BUSINESS_TRIPS_5[0]);
-          setEditTitle(STITCH_MOCK_BUSINESS_TRIPS_5[0].title);
-          setEditCity(STITCH_MOCK_BUSINESS_TRIPS_5[0].destinationCity);
-          setEditContent(STITCH_MOCK_BUSINESS_TRIPS_5[0].content);
-          setEditAttachmentName(STITCH_MOCK_BUSINESS_TRIPS_5[0].attachmentName);
         }
         setIsLoading(false);
       });
   }, [rawId]);
 
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editTitle.trim()) return;
-
-    setIsSaving(true);
-    try {
-      const res = await fetch(`/api/business-trips/${report?.id || rawId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: editTitle,
-          destinationCity: editCity,
-          content: editContent,
-          attachmentName: editAttachmentName,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        setReport((prev: any) => ({
-          ...prev,
-          title: editTitle,
-          destinationCity: editCity,
-          body: editContent,
-          attachmentName: editAttachmentName,
-        }));
-        setIsEditModalOpen(false);
-        setFeedbackMsg('Laporan perjalanan dinas berhasil diperbarui!');
-        setTimeout(() => setFeedbackMsg(''), 4000);
-      } else {
-        setReport((prev: any) => ({
-          ...prev,
-          title: editTitle,
-          destinationCity: editCity,
-          body: editContent,
-          attachmentName: editAttachmentName,
-        }));
-        setIsEditModalOpen(false);
-        setFeedbackMsg('Laporan perjalanan dinas berhasil diperbarui!');
-        setTimeout(() => setFeedbackMsg(''), 4000);
-      }
-    } catch {
-      alert('Terjadi kesalahan saat memperbarui laporan.');
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -339,13 +260,12 @@ Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedan
             </div>
 
             <div className="flex gap-4 w-full md:w-auto">
-              <button
-                type="button"
-                onClick={() => setIsEditModalOpen(true)}
-                className="flex-1 md:flex-none px-6 py-2 border border-[#757682] text-[#1a1b20] rounded font-bold text-xs sm:text-sm hover:bg-[#efedf3] transition-colors"
+              <Link
+                href={`/kabar-kedinasan/laporan-perjalanan/${rawId}/edit`}
+                className="flex-1 md:flex-none px-6 py-2 border border-[#757682] text-[#1a1b20] rounded font-bold text-xs sm:text-sm hover:bg-[#efedf3] transition-colors inline-block text-center"
               >
                 Edit
-              </button>
+              </Link>
               <button
                 type="button"
                 onClick={() => setIsDeleteModalOpen(true)}
@@ -381,92 +301,6 @@ Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedan
         </div>
       )}
 
-      {/* Edit Modal */}
-      {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-[#c5c6d2] max-h-[90vh] overflow-y-auto animate-fadeIn">
-            <div className="flex justify-between items-center pb-4 border-b border-slate-200">
-              <h2 className="text-xl font-bold text-[#00113a]">Edit Laporan Perjalanan Dinas</h2>
-              <button
-                type="button"
-                onClick={() => setIsEditModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 p-1"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleUpdate} className="space-y-4 mt-4">
-              <div>
-                <label className="block text-xs font-bold text-[#1a1b20] mb-1.5">
-                  Judul Laporan
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                  className="w-full border border-[#c5c6d2] rounded-md p-2.5 text-sm focus:outline-none focus:border-[#00113a]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#1a1b20] mb-1.5">
-                  Kota / Daerah Tujuan
-                </label>
-                <input
-                  type="text"
-                  value={editCity}
-                  onChange={(e) => setEditCity(e.target.value)}
-                  className="w-full border border-[#c5c6d2] rounded-md p-2.5 text-sm focus:outline-none focus:border-[#00113a]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#1a1b20] mb-1.5">
-                  Nama File Lampiran Dokumen
-                </label>
-                <input
-                  type="text"
-                  value={editAttachmentName}
-                  onChange={(e) => setEditAttachmentName(e.target.value)}
-                  className="w-full border border-[#c5c6d2] rounded-md p-2.5 text-sm focus:outline-none focus:border-[#00113a]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#1a1b20] mb-1.5">
-                  Uraian Laporan Dinas
-                </label>
-                <textarea
-                  rows={8}
-                  required
-                  value={editContent}
-                  onChange={(e) => setEditContent(e.target.value)}
-                  className="w-full border border-[#c5c6d2] rounded-md p-2.5 text-sm focus:outline-none focus:border-[#00113a] leading-relaxed"
-                />
-              </div>
-
-              <div className="pt-4 flex justify-end gap-3 border-t border-slate-200">
-                <button
-                  type="button"
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="px-5 py-2 text-sm font-bold text-[#444650] hover:bg-[#f4f3f9] rounded-md transition-colors"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="px-6 py-2 text-sm font-bold bg-[#00113a] text-white hover:bg-[#2a4386] rounded-md transition-colors shadow-sm disabled:opacity-50"
-                >
-                  {isSaving ? 'Menyimpan...' : 'Perbarui Laporan'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* Delete Confirmation Modal */}
       {isDeleteModalOpen && (

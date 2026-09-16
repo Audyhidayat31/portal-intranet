@@ -106,3 +106,26 @@ Menghadirkan kisah sukses pustakawan penggerak dari berbagai pelosok tanah air.`
     attachments: MOCK_AGENDA_ATTACHMENTS_5,
   },
 ];
+
+const STORAGE_KEY_AGENDAS = 'portal_agendas_data';
+
+export const getStoredAgendas = (): AgendaItem[] => {
+  if (typeof window === 'undefined') return STITCH_MOCK_AGENDAS_6;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_AGENDAS);
+    if (!raw) return STITCH_MOCK_AGENDAS_6;
+    return JSON.parse(raw);
+  } catch {
+    return STITCH_MOCK_AGENDAS_6;
+  }
+};
+
+export const saveStoredAgendas = (items: AgendaItem[]) => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(STORAGE_KEY_AGENDAS, JSON.stringify(items));
+  } catch (err) {
+    console.error('Failed to save agendas to storage', err);
+  }
+};
+

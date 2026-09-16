@@ -46,15 +46,9 @@ export default function DetailJelajahBumiPage() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   // Modals state
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState('');
-
-  // Edit fields
-  const [editTitle, setEditTitle] = useState(matchedInitial?.title || '');
-  const [editContent, setEditContent] = useState(matchedInitial?.content || '');
 
   useEffect(() => {
     if (!rawId) return;
@@ -66,8 +60,6 @@ export default function DetailJelajahBumiPage() {
       rawId.includes('penerbitan')
     ) {
       setItem(DEFAULT_STITCH_JELAJAH_DETAIL);
-      setEditTitle(DEFAULT_STITCH_JELAJAH_DETAIL.title);
-      setEditContent(DEFAULT_STITCH_JELAJAH_DETAIL.content);
       setIsLoading(false);
       return;
     }
@@ -81,8 +73,6 @@ export default function DetailJelajahBumiPage() {
         if (data.success && data.data) {
           const apiItem = data.data;
           setItem(apiItem);
-          setEditTitle(apiItem.title || '');
-          setEditContent(apiItem.body || apiItem.content || '');
         } else {
           const matchedMock = STITCH_MOCK_JELAJAH_BUMI_9.find(
             (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
@@ -94,12 +84,8 @@ export default function DetailJelajahBumiPage() {
               body: matchedMock.content,
             };
             setItem(fullItem);
-            setEditTitle(matchedMock.title);
-            setEditContent(matchedMock.content);
           } else {
             setItem(DEFAULT_STITCH_JELAJAH_DETAIL);
-            setEditTitle(DEFAULT_STITCH_JELAJAH_DETAIL.title);
-            setEditContent(DEFAULT_STITCH_JELAJAH_DETAIL.content);
           }
         }
         setIsLoading(false);
@@ -108,55 +94,12 @@ export default function DetailJelajahBumiPage() {
         const matchedMock = STITCH_MOCK_JELAJAH_BUMI_9.find((m) => m.id === rawId);
         if (matchedMock) {
           setItem({ ...matchedMock, body: matchedMock.content });
-          setEditTitle(matchedMock.title);
-          setEditContent(matchedMock.content);
         } else {
           setItem(DEFAULT_STITCH_JELAJAH_DETAIL);
-          setEditTitle(DEFAULT_STITCH_JELAJAH_DETAIL.title);
-          setEditContent(DEFAULT_STITCH_JELAJAH_DETAIL.content);
         }
         setIsLoading(false);
       });
-  }, [rawId]);
-
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editTitle.trim()) return;
-
-    setIsSaving(true);
-    try {
-      await fetch(`/api/employee-posts/${item?.id || rawId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: editTitle,
-          body: editContent,
-        }),
-      });
-
-      setItem((prev: any) => ({
-        ...prev,
-        title: editTitle,
-        body: editContent,
-        content: editContent,
-      }));
-      setIsEditModalOpen(false);
-      setFeedbackMsg('Catatan Jelajah Bumi berhasil diperbarui!');
-      setTimeout(() => setFeedbackMsg(''), 4000);
-    } catch {
-      setItem((prev: any) => ({
-        ...prev,
-        title: editTitle,
-        body: editContent,
-        content: editContent,
-      }));
-      setIsEditModalOpen(false);
-      setFeedbackMsg('Catatan Jelajah Bumi berhasil diperbarui!');
-      setTimeout(() => setFeedbackMsg(''), 4000);
-    } finally {
-      setIsSaving(false);
-    }
-  };
+  }, [rawId, matchedInitial]);
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -300,13 +243,12 @@ Melalui karya ini diharapkan generasi muda semakin terinspirasi untuk terus berk
 
             {/* Right: Edit & Hapus Buttons matching Stitch */}
             <div className="flex items-center gap-3 self-end sm:self-auto">
-              <button
-                type="button"
-                onClick={() => setIsEditModalOpen(true)}
-                className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer"
+              <Link
+                href={`/antar-pegawai/jelajah-bumi/${item?.id || rawId}/edit`}
+                className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer inline-flex items-center justify-center"
               >
                 Edit
-              </button>
+              </Link>
               <button
                 type="button"
                 onClick={() => setIsDeleteModalOpen(true)}
@@ -360,68 +302,6 @@ Melalui karya ini diharapkan generasi muda semakin terinspirasi untuk terus berk
                 Tutup
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Modal */}
-      {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-[#c5c6d2] max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center pb-4 border-b border-[#e2e3ea]">
-              <h2 className="text-lg font-bold text-[#00113a] flex items-center gap-2">
-                <Edit3 className="w-5 h-5 text-[#00113a]" />
-                Edit Jelajah Bumi
-              </h2>
-              <button
-                type="button"
-                onClick={() => setIsEditModalOpen(false)}
-                className="text-slate-400 hover:text-slate-700 p-1"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleUpdate} className="space-y-4 mt-4">
-              <div>
-                <label className="block text-xs font-bold text-[#1a1b20] mb-1">Judul Artikel</label>
-                <input
-                  type="text"
-                  required
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                  className="w-full border border-[#c5c6d2] rounded p-2.5 text-sm focus:outline-none focus:border-[#00113a]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#1a1b20] mb-1">Uraian Jelajah Bumi</label>
-                <textarea
-                  rows={8}
-                  required
-                  value={editContent}
-                  onChange={(e) => setEditContent(e.target.value)}
-                  className="w-full border border-[#c5c6d2] rounded p-2.5 text-sm focus:outline-none focus:border-[#00113a] leading-relaxed"
-                />
-              </div>
-
-              <div className="pt-4 flex justify-end gap-3 border-t border-[#e2e3ea]">
-                <button
-                  type="button"
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="px-5 py-2 text-sm font-bold text-[#444650] hover:bg-slate-100 rounded"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="px-6 py-2 text-sm font-bold bg-[#00113a] text-white hover:bg-[#2a4386] rounded shadow-sm disabled:opacity-50"
-                >
-                  {isSaving ? 'Menyimpan...' : 'Simpan Perubahan'}
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}

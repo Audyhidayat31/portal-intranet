@@ -28,9 +28,6 @@ export default function DetailKonsultasiPage() {
   const [feedbackMsg, setFeedbackMsg] = useState('');
 
   // Modals for Consultation
-  const [isEditConsultationOpen, setIsEditConsultationOpen] = useState(false);
-  const [editTitle, setEditTitle] = useState('');
-  const [editDescription, setEditDescription] = useState('');
   const [isDeleteConsultationOpen, setIsDeleteConsultationOpen] = useState(false);
 
   // Modals for Tanggapan (Replies)
@@ -53,8 +50,6 @@ export default function DetailKonsultasiPage() {
 
     if (found) {
       setItem(found);
-      setEditTitle(found.title);
-      setEditDescription(found.description);
       setIsLoading(false);
     }
 
@@ -100,8 +95,6 @@ export default function DetailKonsultasiPage() {
             })),
           };
           setItem(mapped);
-          setEditTitle(mapped.title);
-          setEditDescription(mapped.description);
         }
       })
       .catch((err) => {
@@ -122,38 +115,6 @@ export default function DetailKonsultasiPage() {
       saveStoredConsultations(allStored);
     } else {
       saveStoredConsultations([updated, ...allStored]);
-    }
-  };
-
-  // 1. Handle Update Consultation
-  const handleSaveConsultation = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!item) return;
-
-    const updated: ConsultationItem = {
-      ...item,
-      title: editTitle.trim(),
-      description: editDescription.trim(),
-    };
-
-    updateLocalItem(updated);
-    setIsEditConsultationOpen(false);
-    setFeedbackMsg('Konsultasi berhasil diperbarui!');
-    setTimeout(() => setFeedbackMsg(''), 3500);
-
-    // Call API in background
-    try {
-      await fetch(`/api/consultations/${item.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: updated.title,
-          description: updated.description,
-          question: updated.description,
-        }),
-      });
-    } catch (err) {
-      console.warn('API update fallback:', err);
     }
   };
 
@@ -375,17 +336,12 @@ export default function DetailKonsultasiPage() {
 
             {/* Action Buttons: Edit & Hapus */}
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setEditTitle(currentItem.title);
-                  setEditDescription(currentItem.description);
-                  setIsEditConsultationOpen(true);
-                }}
-                className="border border-[#c5c6d2] hover:border-[#00113a] hover:bg-[#f4f3f9] text-[#1a1b20] text-sm font-semibold px-6 py-1.5 rounded-lg transition-colors cursor-pointer min-w-[90px]"
+              <Link
+                href={`/antar-pegawai/konsultasi/${id}/edit`}
+                className="border border-[#c5c6d2] hover:border-[#00113a] hover:bg-[#f4f3f9] text-[#1a1b20] text-sm font-semibold px-6 py-1.5 rounded-lg transition-colors cursor-pointer min-w-[90px] inline-block text-center"
               >
                 Edit
-              </button>
+              </Link>
               <button
                 type="button"
                 onClick={() => setIsDeleteConsultationOpen(true)}
@@ -622,70 +578,6 @@ export default function DetailKonsultasiPage() {
                   Ya, Hapus
                 </button>
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* Modal: Edit Konsultasi */}
-        {isEditConsultationOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-            <div className="bg-white border border-[#c5c6d2] rounded-xl shadow-xl w-full max-w-xl p-6 animate-fadeIn">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-bold text-[#00113a]">
-                  Edit Topik Konsultasi
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setIsEditConsultationOpen(false)}
-                  className="p-1 rounded text-[#757682] hover:text-[#00113a] cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <form onSubmit={handleSaveConsultation} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-[#1a1b20] mb-1">
-                    Judul Konsultasi
-                  </label>
-                  <input
-                    type="text"
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    required
-                    className="w-full border border-[#c5c6d2] rounded-lg p-2.5 text-sm text-[#1a1b20] outline-none focus:border-[#00113a]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-[#1a1b20] mb-1">
-                    Deskripsi Konsultasi
-                  </label>
-                  <textarea
-                    rows={6}
-                    value={editDescription}
-                    onChange={(e) => setEditDescription(e.target.value)}
-                    required
-                    className="w-full border border-[#c5c6d2] rounded-lg p-2.5 text-sm text-[#1a1b20] outline-none focus:border-[#00113a]"
-                  />
-                </div>
-
-                <div className="flex justify-end gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsEditConsultationOpen(false)}
-                    className="px-4 py-2 text-sm font-medium text-[#444650] hover:bg-[#f4f3f9] rounded-lg transition-colors cursor-pointer"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    className="bg-[#00113a] hover:bg-[#002366] text-white font-semibold text-sm px-5 py-2 rounded-lg transition-colors cursor-pointer"
-                  >
-                    Simpan Perubahan
-                  </button>
-                </div>
-              </form>
             </div>
           </div>
         )}

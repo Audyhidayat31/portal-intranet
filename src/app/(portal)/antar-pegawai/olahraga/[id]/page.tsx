@@ -41,15 +41,9 @@ export default function DetailOlahragaPage() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   // Modals state
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState('');
-
-  // Edit fields
-  const [editTitle, setEditTitle] = useState(matchedInitial?.title || DEFAULT_STITCH_OLAHRAGA_DETAIL.title);
-  const [editContent, setEditContent] = useState(matchedInitial?.content || DEFAULT_STITCH_OLAHRAGA_DETAIL.content);
 
   useEffect(() => {
     if (!rawId) return;
@@ -58,39 +52,29 @@ export default function DetailOlahragaPage() {
     const foundStored = currentStored.find((m) => m.id === rawId);
 
     if (foundStored) {
-      setOlahragaItem({ ...foundStored, body: foundStored.content });
-      setEditTitle(foundStored.title);
-      setEditContent(foundStored.content);
+      setOlahragaItem({
+        ...foundStored,
+        body: foundStored.content,
+      });
       setIsLoading(false);
       return;
     }
 
-    setIsLoading(true);
     fetch(`/api/employee-posts/${rawId}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data) {
           const item = data.data;
           setOlahragaItem(item);
-          setEditTitle(item.title || '');
-          setEditContent(item.body || '');
         } else {
           const matchedMock = STITCH_MOCK_OLAHRAGA_9.find(
             (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
           );
-
           if (matchedMock) {
-            const fullItem = {
+            setOlahragaItem({
               ...matchedMock,
               body: matchedMock.content,
-            };
-            setOlahragaItem(fullItem);
-            setEditTitle(matchedMock.title);
-            setEditContent(matchedMock.content);
-          } else {
-            setOlahragaItem(DEFAULT_STITCH_OLAHRAGA_DETAIL);
-            setEditTitle(DEFAULT_STITCH_OLAHRAGA_DETAIL.title);
-            setEditContent(DEFAULT_STITCH_OLAHRAGA_DETAIL.content);
+            });
           }
         }
         setIsLoading(false);
@@ -98,66 +82,14 @@ export default function DetailOlahragaPage() {
       .catch(() => {
         const matchedMock = STITCH_MOCK_OLAHRAGA_9.find((m) => m.id === rawId);
         if (matchedMock) {
-          setOlahragaItem(matchedMock);
-          setEditTitle(matchedMock.title);
-          setEditContent(matchedMock.content);
-        } else {
-          setOlahragaItem(DEFAULT_STITCH_OLAHRAGA_DETAIL);
-          setEditTitle(DEFAULT_STITCH_OLAHRAGA_DETAIL.title);
-          setEditContent(DEFAULT_STITCH_OLAHRAGA_DETAIL.content);
+          setOlahragaItem({
+            ...matchedMock,
+            body: matchedMock.content,
+          });
         }
         setIsLoading(false);
       });
   }, [rawId]);
-
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editTitle.trim()) return;
-
-    setIsSaving(true);
-    try {
-      // Try API update
-      await fetch(`/api/employee-posts/${olahragaItem?.id || rawId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: editTitle,
-          body: editContent,
-        }),
-      });
-
-      // Update in localStorage as well
-      const list = getStoredOlahraga();
-      const updated = list.map((it) =>
-        it.id === (olahragaItem?.id || rawId)
-          ? { ...it, title: editTitle, content: editContent, excerpt: editContent.slice(0, 140) + '...' }
-          : it
-      );
-      saveStoredOlahraga(updated);
-
-      setOlahragaItem((prev: any) => ({
-        ...prev,
-        title: editTitle,
-        body: editContent,
-        content: editContent,
-      }));
-      setIsEditModalOpen(false);
-      setFeedbackMsg('Artikel olahraga berhasil diperbarui!');
-      setTimeout(() => setFeedbackMsg(''), 4000);
-    } catch {
-      setOlahragaItem((prev: any) => ({
-        ...prev,
-        title: editTitle,
-        body: editContent,
-        content: editContent,
-      }));
-      setIsEditModalOpen(false);
-      setFeedbackMsg('Artikel olahraga berhasil diperbarui!');
-      setTimeout(() => setFeedbackMsg(''), 4000);
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -304,13 +236,12 @@ export default function DetailOlahragaPage() {
 
             {/* Right: Edit & Hapus Buttons matching Wireframe 2 */}
             <div className="flex items-center gap-3 self-end sm:self-auto">
-              <button
-                type="button"
-                onClick={() => setIsEditModalOpen(true)}
-                className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer"
+              <Link
+                href={`/antar-pegawai/olahraga/${olahragaItem?.id || rawId}/edit`}
+                className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer inline-flex items-center justify-center"
               >
                 Edit
-              </button>
+              </Link>
               <button
                 type="button"
                 onClick={() => setIsDeleteModalOpen(true)}
@@ -364,68 +295,6 @@ export default function DetailOlahragaPage() {
                 Tutup
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Modal */}
-      {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-[#c5c6d2] max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center pb-4 border-b border-[#e2e3ea]">
-              <h2 className="text-lg font-bold text-[#00113a] flex items-center gap-2">
-                <Edit3 className="w-5 h-5 text-[#00113a]" />
-                Edit Artikel Olahraga
-              </h2>
-              <button
-                type="button"
-                onClick={() => setIsEditModalOpen(false)}
-                className="text-slate-400 hover:text-slate-700 p-1 cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleUpdate} className="space-y-4 mt-4">
-              <div>
-                <label className="block text-xs font-bold text-[#1a1b20] mb-1">Judul Artikel Olahraga</label>
-                <input
-                  type="text"
-                  required
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                  className="w-full border border-[#c5c6d2] rounded p-2.5 text-sm focus:outline-none focus:border-[#00113a]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#1a1b20] mb-1">Uraian Artikel Olahraga</label>
-                <textarea
-                  rows={8}
-                  required
-                  value={editContent}
-                  onChange={(e) => setEditContent(e.target.value)}
-                  className="w-full border border-[#c5c6d2] rounded p-2.5 text-sm focus:outline-none focus:border-[#00113a] leading-relaxed"
-                />
-              </div>
-
-              <div className="pt-4 flex justify-end gap-3 border-t border-[#e2e3ea]">
-                <button
-                  type="button"
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="px-5 py-2 text-sm font-bold text-[#444650] hover:bg-slate-100 rounded cursor-pointer"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="px-6 py-2 text-sm font-bold bg-[#00113a] text-white hover:bg-[#2a4386] rounded shadow-sm disabled:opacity-50 cursor-pointer"
-                >
-                  {isSaving ? 'Menyimpan...' : 'Simpan Perubahan'}
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}

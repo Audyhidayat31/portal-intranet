@@ -160,3 +160,25 @@ Terapkan teknik manajemen waktu seperti metode Pomodoro (25 menit fokus bekerja,
     attachments: MOCK_TIPS_ATTACHMENTS_5,
   },
 ];
+
+const STORAGE_KEY_TIPS = 'portal_tips_gaya_hidup_data';
+
+export const getStoredTipsGayaHidup = (): TipsGayaHidupItem[] => {
+  if (typeof window === 'undefined') return STITCH_MOCK_TIPS_GAYA_HIDUP_9;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_TIPS);
+    if (!raw) return STITCH_MOCK_TIPS_GAYA_HIDUP_9;
+    return JSON.parse(raw);
+  } catch {
+    return STITCH_MOCK_TIPS_GAYA_HIDUP_9;
+  }
+};
+
+export const saveStoredTipsGayaHidup = (items: TipsGayaHidupItem[]) => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(STORAGE_KEY_TIPS, JSON.stringify(items));
+  } catch (err) {
+    console.error('Failed to save tips to storage', err);
+  }
+};
