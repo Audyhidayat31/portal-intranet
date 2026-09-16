@@ -209,9 +209,18 @@ export default function BerandaPage() {
               </div>
               <div className="p-5 flex flex-col flex-grow justify-between">
                 <div>
-                  <span className="font-bold text-[10px] text-[#757682] mb-1.5 block">
-                    {item.publishedAt ? formatDate(item.publishedAt) : '19 Agustus 2026'}
-                  </span>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className="font-bold text-[10px] text-[#757682]">
+                      {item.publishedAt ? formatDate(item.publishedAt) : '19 Agustus 2026'}
+                    </span>
+                    <span className={`text-[10px] px-2 py-0.5 rounded border font-medium ${
+                      item.status === 'DRAFT' || item.status === 'Menunggu'
+                        ? 'bg-blue-100 text-blue-700 border-blue-200'
+                        : 'bg-green-100 text-green-700 border-green-200'
+                    }`}>
+                      Status: {item.status === 'DRAFT' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+                    </span>
+                  </div>
                   <h3 className="text-base font-bold text-[#00113a] mb-2 line-clamp-2 group-hover:text-[#1b6d24] transition-colors leading-snug">
                     {item.title}
                   </h3>
@@ -264,9 +273,18 @@ export default function BerandaPage() {
               </div>
               <div className="p-5 flex flex-col flex-grow justify-between">
                 <div>
-                  <span className="font-bold text-[10px] text-[#757682] mb-1.5 block">
-                    {post.createdAt ? formatDate(post.createdAt) : '19 Agustus 2026'}
-                  </span>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className="font-bold text-[10px] text-[#757682]">
+                      {post.createdAt ? formatDate(post.createdAt) : '19 Agustus 2026'}
+                    </span>
+                    <span className={`text-[10px] px-2 py-0.5 rounded border font-medium ${
+                      post.status === 'DRAFT' || post.status === 'Menunggu'
+                        ? 'bg-blue-100 text-blue-700 border-blue-200'
+                        : 'bg-green-100 text-green-700 border-green-200'
+                    }`}>
+                      Status: {post.status === 'DRAFT' || post.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+                    </span>
+                  </div>
                   <h3 className="text-base font-bold text-[#00113a] mb-2 line-clamp-2 group-hover:text-[#1b6d24] transition-colors leading-snug">
                     {post.title}
                   </h3>
@@ -275,9 +293,12 @@ export default function BerandaPage() {
                   </p>
                 </div>
                 <div className="flex justify-end mt-auto pt-2">
-                  <span>
+                  <Link
+                    href={`/antar-pegawai/${post.categorySlug || (post.category || 'opini').toLowerCase().replace(/\s+/g, '-')}`}
+                    className="bg-[#00113a] text-white font-bold text-xs px-4 py-1.5 rounded-md hover:bg-[#2a4386] transition-colors shadow-sm"
+                  >
                     Lihat
-                  </span>
+                  </Link>
                 </div>
               </div>
             </div>

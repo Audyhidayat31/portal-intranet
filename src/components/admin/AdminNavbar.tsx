@@ -21,8 +21,8 @@ import { cn } from '@/lib/utils';
 
 export const ADMIN_MENU_ITEMS = [
   {
-    label: 'Kelola Homepage',
-    href: '/admin/homepage',
+    label: 'Kelola Halaman Utama',
+    href: '/admin/halaman-utama',
     icon: LayoutTemplate,
     desc: 'Kelola banner, ucapan selamat datang & konten utama',
   },

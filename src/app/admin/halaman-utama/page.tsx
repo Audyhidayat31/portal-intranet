@@ -1429,104 +1429,7 @@ export default function AdminHomepageKelolaPage() {
             </div>
           </div>
 
-          {/* Section: Pengaturan Konten Pendukung (Kutipan & Running Ticker) */}
-          <details className="group bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
-            <summary className="flex items-center justify-between p-5 cursor-pointer hover:bg-slate-50/70 transition-colors select-none">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
-                  <Sliders className="w-4 h-4 text-amber-700" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">
-                    Pengaturan Tambahan Beranda (Kutipan Inspiratif & Running Text)
-                  </h3>
-                  <p className="text-[11px] text-slate-500">
-                    Kustomisasi badge hero, kutipan bijak kepustakaan, dan running ticker pengumuman.
-                  </p>
-                </div>
-              </div>
-              <span className="text-xs text-slate-400 font-semibold group-open:rotate-180 transition-transform">
-                ▼
-              </span>
-            </summary>
 
-            <div className="p-6 pt-2 border-t border-slate-100">
-              <form onSubmit={handleSaveUtama} className="space-y-4">
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-800">
-                    Badge Headline Hero
-                  </label>
-                  <input
-                    type="text"
-                    value={utamaData.heroBadge}
-                    onChange={(e) => setUtamaData({ ...utamaData, heroBadge: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs sm:text-sm text-slate-800 focus:bg-white focus:border-[#00113a] focus:ring-2 focus:ring-[#00113a]/15 focus:outline-none transition-all"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-800">
-                    Teks Kutipan Inspiratif (Kalimat Bijak)
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={utamaData.quoteText}
-                    onChange={(e) => setUtamaData({ ...utamaData, quoteText: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-xs sm:text-sm text-slate-800 focus:bg-white focus:border-[#00113a] focus:ring-2 focus:ring-[#00113a]/15 focus:outline-none transition-all resize-none"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-bold text-slate-800">
-                      Tokoh / Penulis Kutipan
-                    </label>
-                    <input
-                      type="text"
-                      value={utamaData.quoteAuthor}
-                      onChange={(e) => setUtamaData({ ...utamaData, quoteAuthor: e.target.value })}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-xs sm:text-sm text-slate-800 focus:bg-white focus:border-[#00113a] focus:ring-2 focus:ring-[#00113a]/15 focus:outline-none transition-all"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-bold text-slate-800">
-                      Jabatan / Keterangan Tokoh
-                    </label>
-                    <input
-                      type="text"
-                      value={utamaData.quoteAuthorRole}
-                      onChange={(e) => setUtamaData({ ...utamaData, quoteAuthorRole: e.target.value })}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-xs sm:text-sm text-slate-800 focus:bg-white focus:border-[#00113a] focus:ring-2 focus:ring-[#00113a]/15 focus:outline-none transition-all"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-800">
-                    Running Text / Ticker Pengumuman
-                  </label>
-                  <input
-                    type="text"
-                    value={utamaData.announcementTicker}
-                    onChange={(e) => setUtamaData({ ...utamaData, announcementTicker: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-xs sm:text-sm text-slate-800 focus:bg-white focus:border-[#00113a] focus:ring-2 focus:ring-[#00113a]/15 focus:outline-none transition-all"
-                  />
-                </div>
-
-                <div className="flex justify-end pt-3 border-t border-slate-100">
-                  <button
-                    type="submit"
-                    disabled={isSaving}
-                    className="px-6 py-2 rounded-xl bg-[#00113a] hover:bg-[#2a4386] text-white text-xs font-bold transition-all shadow-xs disabled:opacity-50 flex items-center gap-1.5 active:scale-95 cursor-pointer"
-                  >
-                    <Save className="w-3.5 h-3.5" />
-                    Simpan Pengaturan Tambahan
-                  </button>
-                </div>
-              </form>
-            </div>
-          </details>
         </div>
       )}
 
@@ -1871,6 +1774,7 @@ export default function AdminHomepageKelolaPage() {
                     {tentangData.latarBelakang || 'Background.png'}
                   </div>
                 </div>
+                <p className="text-xs text-slate-500 mt-1">File maksimal berukuran 10MB</p>
                 <div className="flex justify-end">
                   <button
                     type="button"
@@ -1911,6 +1815,7 @@ export default function AdminHomepageKelolaPage() {
                     {tentangData.panduanAplikasi || 'panduan.pdf'}
                   </div>
                 </div>
+                <p className="text-xs text-slate-500 mt-1">File maksimal berukuran 10MB</p>
                 <div className="flex justify-end">
                   <button
                     type="button"
@@ -1926,13 +1831,6 @@ export default function AdminHomepageKelolaPage() {
           </section>
         </div>
       )}
-
-      {/* 4. BOTTOM COPYRIGHT BAR */}
-      <footer className="pt-6 pb-6 text-center border-t border-slate-200/80">
-        <p className="text-xs text-slate-400 font-medium">
-          © Copyright 2026, All Rights Reserved | Perpustakaan Nasional RI.
-        </p>
-      </footer>
 
       {/* 5. MODALS & DIALOGS */}
       {/* Modal: Tambah/Edit Banner */}
