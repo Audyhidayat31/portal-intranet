@@ -98,12 +98,6 @@ export default function TambahBeritaPage() {
       ) {
         setIsStatusMenuOpen(false);
       }
-      if (
-        stylingMenuRef.current &&
-        !stylingMenuRef.current.contains(event.target as Node)
-      ) {
-        setIsStylingMenuOpen(false);
-      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -211,7 +205,7 @@ export default function TambahBeritaPage() {
             gambarPreview ||
             'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80',
           publishedAt: tanggal.toISOString(),
-          status: status === 'Menunggu' ? 'DRAFT' : 'PUBLISHED',
+          status: status === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
           attachmentName: lampiranFileName || null,
         }),
       });
@@ -276,7 +270,7 @@ export default function TambahBeritaPage() {
               Judul <span className="float-right hidden md:inline">:</span>
             </label>
             <div>
-              <input
+              <input suppressHydrationWarning 
                 id="judul"
                 type="text"
                 required
@@ -292,7 +286,7 @@ export default function TambahBeritaPage() {
               Tanggal <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="relative w-full md:w-1/3" ref={datePickerRef}>
-              <input
+              <input suppressHydrationWarning 
                 id="tanggal"
                 type="text"
                 readOnly
@@ -492,70 +486,7 @@ export default function TambahBeritaPage() {
                   <Link2 className="w-4 h-4" />
                 </button>
 
-                {/* Styling Dropdown */}
-                <div className="relative ml-auto mr-2" ref={stylingMenuRef}>
-                  <button
-                    type="button"
-                    onClick={() => setIsStylingMenuOpen(!isStylingMenuOpen)}
-                    className="text-xs font-semibold text-[#757682] hover:text-[#00113a] flex items-center gap-1 transition-colors cursor-pointer"
-                  >
-                    <span>Styling</span>
-                    <ChevronDown className="w-3.5 h-3.5" />
-                  </button>
 
-                  {isStylingMenuOpen && (
-                    <div className="absolute top-7 right-0 z-50 bg-white border border-[#c5c6d2] rounded-lg shadow-xl py-1.5 w-44 text-xs animate-fadeIn">
-                      <button
-                        type="button"
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          execFormat('formatBlock', '<h1>');
-                          setIsStylingMenuOpen(false);
-                        }}
-                        className="w-full px-3 py-2 text-left hover:bg-[#f4f3f9] flex items-center gap-2 text-[#1a1b20]"
-                      >
-                        <Heading1 className="w-4 h-4 text-[#00113a]" />
-                        <span>Judul Utama (H1)</span>
-                      </button>
-                      <button
-                        type="button"
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          execFormat('formatBlock', '<h2>');
-                          setIsStylingMenuOpen(false);
-                        }}
-                        className="w-full px-3 py-2 text-left hover:bg-[#f4f3f9] flex items-center gap-2 text-[#1a1b20]"
-                      >
-                        <Heading2 className="w-4 h-4 text-[#00113a]" />
-                        <span>Sub Judul (H2)</span>
-                      </button>
-                      <button
-                        type="button"
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          execFormat('formatBlock', '<p>');
-                          setIsStylingMenuOpen(false);
-                        }}
-                        className="w-full px-3 py-2 text-left hover:bg-[#f4f3f9] flex items-center gap-2 text-[#1a1b20]"
-                      >
-                        <Type className="w-4 h-4 text-[#00113a]" />
-                        <span>Paragraf Normal</span>
-                      </button>
-                      <button
-                        type="button"
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          execFormat('formatBlock', '<blockquote>');
-                          setIsStylingMenuOpen(false);
-                        }}
-                        className="w-full px-3 py-2 text-left hover:bg-[#f4f3f9] flex items-center gap-2 text-[#1a1b20]"
-                      >
-                        <Quote className="w-4 h-4 text-[#00113a]" />
-                        <span>Kutipan (Quote)</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
               </div>
 
               {/* Contenteditable Editor area */}
@@ -580,7 +511,7 @@ export default function TambahBeritaPage() {
             </label>
             <div className="flex flex-col gap-4">
               <div className="flex">
-                <input
+                <input suppressHydrationWarning 
                   type="text"
                   readOnly
                   value={gambarFileName}
@@ -594,7 +525,7 @@ export default function TambahBeritaPage() {
                 >
                   Upload
                 </button>
-                <input
+                <input suppressHydrationWarning 
                   ref={gambarInputRef}
                   type="file"
                   accept="image/*"
@@ -631,7 +562,7 @@ export default function TambahBeritaPage() {
             </label>
             <div className="flex flex-col gap-4">
               <div className="flex">
-                <input
+                <input suppressHydrationWarning 
                   type="text"
                   readOnly
                   value={lampiranFileName}
@@ -645,7 +576,7 @@ export default function TambahBeritaPage() {
                 >
                   Upload
                 </button>
-                <input
+                <input suppressHydrationWarning 
                   ref={lampiranInputRef}
                   type="file"
                   accept=".pdf,.doc,.docx,.jpg,.png"
@@ -698,3 +629,4 @@ export default function TambahBeritaPage() {
     </div>
   );
 }
+

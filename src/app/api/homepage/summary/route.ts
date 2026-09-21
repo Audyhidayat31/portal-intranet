@@ -16,24 +16,24 @@ export async function GET() {
     ] = await Promise.all([
       prisma.homepageSetting.findFirst(),
       prisma.content.findMany({
-        where: { type: 'NEWS', status: 'PUBLISHED' },
+        where: { type: 'NEWS', status: 'TERBIT' },
         orderBy: [{ isPinned: 'desc' }, { publishedAt: 'desc' }],
         take: 4,
         include: { author: { select: { name: true } }, category: true },
       }),
       prisma.content.findMany({
-        where: { type: 'ANNOUNCEMENT', status: 'PUBLISHED' },
+        where: { type: 'ANNOUNCEMENT', status: 'TERBIT' },
         orderBy: [{ isPinned: 'desc' }, { publishedAt: 'desc' }],
         take: 4,
         include: { category: true },
       }),
       prisma.content.findMany({
-        where: { type: 'AGENDA', status: 'PUBLISHED' },
+        where: { type: 'AGENDA', status: 'TERBIT' },
         orderBy: { eventStartDate: 'asc' },
         take: 4,
       }),
       prisma.employeePost.findMany({
-        where: { status: 'PUBLISHED' },
+        where: { status: 'TERBIT' },
         orderBy: { createdAt: 'desc' },
         take: 4,
         include: { author: { select: { name: true, profile: { select: { avatarUrl: true, unitKerja: true } } } } },
@@ -52,7 +52,7 @@ export async function GET() {
         },
       }),
       prisma.user.count({ where: { role: { name: 'PEGAWAI' }, status: 'ACTIVE' } }),
-      prisma.employeePost.count({ where: { status: 'PUBLISHED' } }),
+      prisma.employeePost.count({ where: { status: 'TERBIT' } }),
     ]);
 
     // Calculate birthdays this month

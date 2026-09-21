@@ -33,7 +33,7 @@ export default function JelajahBumiPage() {
           content: item.body || '',
           coverImage: item.coverImage || `/images/jelajah-bumi/card-${(idx % 9) + 1}.jpg`,
           publishedAt: item.createdAt || '2026-08-19',
-          status: item.status === 'DRAFT' ? 'Menunggu' : 'Terbit',
+          status: item.status === 'MENUNGGU' ? 'Menunggu' : 'Terbit',
           authorName: item.author?.name || 'Pegawai Perpusnas',
           location: 'Indonesia',
         }));
@@ -263,3 +263,4 @@ export default function JelajahBumiPage() {
     </div>
   );
 }
+

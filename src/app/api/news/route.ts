@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     if (statusParam) {
       where.status = statusParam;
     } else {
-      where.status = { in: ['PUBLISHED', 'DRAFT'] };
+      where.status = { in: ['TERBIT', 'MENUNGGU'] };
     }
 
     if (search) {
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
     }
 
     const postStatus =
-      status === 'Menunggu' || status === 'DRAFT' ? 'DRAFT' : 'PUBLISHED';
+      status === 'Menunggu' || status === 'MENUNGGU' ? 'MENUNGGU' : 'TERBIT';
 
     const slug = `${title
       .toLowerCase()

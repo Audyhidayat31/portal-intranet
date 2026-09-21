@@ -221,19 +221,21 @@ export default function LaporanPerjalananPage() {
               return (
                 <div
                   key={item.id}
-                  className="border border-[#c5c6d2] rounded-lg p-6 hover:shadow-md hover:bg-[#f4f3f9] transition-all group flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white"
+                  className="border border-[#c5c6d2] rounded-lg p-4 sm:p-6 hover:shadow-md hover:bg-[#f4f3f9] transition-all group flex flex-col md:flex-row gap-4 justify-between items-stretch bg-white"
                 >
-                  <div className="flex-grow pr-0 md:pr-4">
-                    <Link
-                      href={`/kabar-kedinasan/laporan-perjalanan/${item.id}`}
-                      className="text-lg sm:text-xl font-bold text-[#002366] group-hover:text-[#00113a] transition-colors mb-2 block leading-snug"
-                    >
-                      {item.title}
-                    </Link>
-                    <p className="text-sm sm:text-base text-[#444650] mb-2 leading-relaxed">
-                      {item.excerpt || item.body?.slice(0, 140) || item.content?.slice(0, 140)}
-                    </p>
-                    <div className="flex items-center gap-3 text-xs font-semibold text-[#757682]">
+                  <div className="flex-grow pr-0 md:pr-4 flex flex-col justify-between">
+                    <div>
+                      <Link
+                        href={`/kabar-kedinasan/laporan-perjalanan/${item.id}`}
+                        className="text-lg sm:text-xl font-bold text-[#002366] group-hover:text-[#00113a] transition-colors mb-2 block leading-snug"
+                      >
+                        {item.title}
+                      </Link>
+                      <p className="text-sm sm:text-base text-[#444650] mb-3 leading-relaxed">
+                        {item.excerpt || item.body?.slice(0, 140) || item.content?.slice(0, 140)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs font-semibold text-[#757682] mt-3">
                       <span>{displayDate}</span>
                       {item.destinationCity && (
                         <>
@@ -247,12 +249,23 @@ export default function LaporanPerjalananPage() {
                     </div>
                   </div>
 
-                  <Link
-                    href={`/kabar-kedinasan/laporan-perjalanan/${item.id}`}
-                    className="bg-[#00113a] text-white font-bold text-xs sm:text-sm px-5 py-2 rounded hover:bg-[#2a4386] transition-colors flex-shrink-0 shadow-xs inline-block text-center"
-                  >
-                    Lihat
-                  </Link>
+                  <div className="shrink-0 mt-4 md:mt-auto self-end flex items-center gap-3">
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-tight ${
+                        (item.status === 'MENUNGGU' || item.status === 'Menunggu' || item.status === 'DRAFT')
+                          ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                          : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      }`}
+                    >
+                      Status: {(item.status === 'MENUNGGU' || item.status === 'Menunggu' || item.status === 'DRAFT') ? 'Menunggu' : 'Terbit'}
+                    </span>
+                    <Link
+                      href={`/kabar-kedinasan/laporan-perjalanan/${item.id}`}
+                      className="bg-[#00113a] text-white hover:bg-[#2a4386] font-semibold text-xs py-1.5 px-4 rounded-full transition-all shadow-sm cursor-pointer inline-flex items-center justify-center"
+                    >
+                      <span>Lihat</span>
+                    </Link>
+                  </div>
                 </div>
               );
             })}
@@ -406,3 +419,4 @@ export default function LaporanPerjalananPage() {
     </div>
   );
 }
+

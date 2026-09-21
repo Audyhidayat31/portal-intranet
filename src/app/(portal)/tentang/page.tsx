@@ -1,9 +1,27 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 export default function TentangPage() {
+  const [tentangData, setTentangData] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/admin/homepage')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data?.tentang) {
+          setTentangData(data.data.tentang);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handlePanduanClick = (e: React.MouseEvent) => {
+    if (!tentangData?.panduanAplikasi) {
+      e.preventDefault();
+    }
+  };
   return (
     <div className="relative min-h-[calc(100vh-80px)] w-full bg-cover bg-center bg-fixed" style={{ backgroundImage: "url('/images/tentang-bg.jpg')" }}>
       {/* Semi-transparent Backdrop Overlay */}
@@ -83,7 +101,10 @@ export default function TentangPage() {
 
             <div className="pt-2">
               <a
-                href="/kabar-kedinasan/dokumen-intern"
+                href={tentangData?.panduanAplikasi ? `/uploads/${tentangData.panduanAplikasi}` : '#'}
+                onClick={handlePanduanClick}
+                target={tentangData?.panduanAplikasi ? '_blank' : undefined}
+                rel={tentangData?.panduanAplikasi ? 'noreferrer' : undefined}
                 className="inline-flex items-center justify-center bg-[#00113a] text-white font-bold px-8 py-3.5 rounded-md hover:bg-[#2a4386] transition-colors shadow-sm text-sm sm:text-base"
               >
                 Panduan Aplikasi
@@ -96,3 +117,4 @@ export default function TentangPage() {
     </div>
   );
 }
+

@@ -763,7 +763,7 @@ export default function AdminPenggunaPage() {
 
       {/* Footer */}
       <footer className="pt-8 border-t border-[#c5c6d2] mt-8 text-center text-[11px] text-slate-500">
-        © Copyright 2026, All Rights Reserved | Perpustakaan Nasional RI.
+        © Hak Cipta 2026, Perpustakaan Nasional Republik Indonesia.
       </footer>
 
       {/* Create User Modal - Full Wireframe Implementation */}
@@ -1302,3 +1302,4 @@ function ToggleSwitch({
     </button>
   );
 }
+

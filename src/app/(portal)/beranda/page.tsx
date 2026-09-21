@@ -8,6 +8,8 @@ import {
   MessageSquare,
   Lightbulb,
   User,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 
@@ -15,6 +17,8 @@ export default function BerandaPage() {
   const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [userSession, setUserSession] = useState<any>(null);
+  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+  const [currentPostPage, setCurrentPostPage] = useState(0);
 
   useEffect(() => {
     Promise.all([
@@ -49,6 +53,25 @@ export default function BerandaPage() {
 
   const { setting, latestNews, latestPosts, spotlightFigure, birthdaysThisMonth } = data || {};
 
+  // Parse banners
+  let parsedBanners: any[] = [];
+  try {
+    if (setting?.heroBannerUrl) {
+      parsedBanners = JSON.parse(setting.heroBannerUrl);
+    }
+  } catch (e) {
+    console.error('Failed to parse banners', e);
+  }
+  const activeBanners = parsedBanners.filter((b: any) => b.status === 'TERBIT' || b.status === 'Terbit' || b.status === 'Aktif');
+
+  const nextBanner = () => {
+    setCurrentBannerIndex((prev) => (prev + 1) % activeBanners.length);
+  };
+
+  const prevBanner = () => {
+    setCurrentBannerIndex((prev) => (prev - 1 + activeBanners.length) % activeBanners.length);
+  };
+
   // Mock fallbacks exactly matching Stitch Screen design
   const newsList = latestNews && latestNews.length > 0 ? latestNews.slice(0, 3) : [
     {
@@ -74,32 +97,23 @@ export default function BerandaPage() {
     },
   ];
 
-  const postsList = latestPosts && latestPosts.length > 0 ? latestPosts.slice(0, 3) : [
-    {
-      id: 'p1',
-      title: 'Minat membaca Warga Indonesia semakin membaik',
-      content: 'Menurut penelitian pada tanggal 19 Agustus 2026 terlihat bahwa jumlah peminat buku...',
-      category: 'HUMOR',
-      coverImage: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBFmsQV5G444GOPEiBQmUDg0EimQGDtFLEcXXq5P1w9-nKwv4eWjePtkY-kW_EvS0EetnaQGSU--yGWdZF3CZERlTmj1GFqNxK8B_PHsuwYdaOWICZvAnLMOS6URsSZ9SATrogeMiqUHWbL5cHfXooB8QjBhQAqROIJGSe-FJf--DtPm7aLl-zxiBFZplX3DNjacuoYeURqvdKXrhE-6ZiHvKC52-ftmKi6hXXJxVGHey1gRcEDDp6d',
-      createdAt: '2026-08-19',
-    },
-    {
-      id: 'p2',
-      title: 'Minat membaca Warga Indonesia semakin membaik',
-      content: 'Menurut penelitian pada tanggal 19 Agustus 2026 terlihat bahwa jumlah peminat buku...',
-      category: 'HUMOR',
-      coverImage: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB9bzcndqYsDsEmRnwkxthuLGjFNPN9JOJtvc1Nge6Df9GjOv30GrDKbn3CyXV-qUiwLvWwIsQhdahF_pOOgi7BAtzJCIrBzc_5BwqrOVdlJjIb72GOXgB6HlhvLvHoxqhndqzIu4Gr_tCShorbnvGYNF6OI8vb9XyWFekAB1EuZzPPCfRIMqi4Iw6tJsn7iJj729H_LvafPLyLu2tOhzya8gPDF2aqFucSYmJNh94lJ39sGwu2nnQE',
-      createdAt: '2026-08-19',
-    },
-    {
-      id: 'p3',
-      title: 'Minat membaca Warga Indonesia semakin membaik',
-      content: 'Menurut penelitian pada tanggal 19 Agustus 2026 terlihat bahwa jumlah peminat buku...',
-      category: 'HUMOR',
-      coverImage: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBGRNk0oza_46EDS_OJlfiAY8kuwEDe380BVQyO6-tzN1j-8kr9EXDOHLqJexHh153m5oeAZYf3P_M2lUfvhZEWmUCzh13D7IkEoO1TJqzaje_qVF5ocpSXph3sbNtW9-oXUAuM5gVrOQxEsguu_g0HAQWhEjmLHcHoBzmD9UPl815ID6sJZvRqht91ubgXw7JiLxWvUgK2_KH683-p3KxNYufCJtjL9bDUllPT05Cg1jKf5Jtkivat',
-      createdAt: '2026-08-19',
-    },
-  ];
+  const categories = ['HUMOR', 'KONSULTASI', 'OPINI', 'OLAHRAGA', 'TAHUKAH ANDA', 'TIPS GAYA HIDUP', 'KARYA AKADEMIK'];
+  const generatedPosts = Array.from({ length: 15 }).map((_, idx) => ({
+    id: `p${idx + 1}`,
+    title: `Minat membaca Warga Indonesia semakin membaik - Bagian ${idx + 1}`,
+    content: 'Menurut penelitian pada tanggal 19 Agustus 2026 terlihat bahwa jumlah peminat buku...',
+    category: categories[idx % categories.length],
+    coverImage: [
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuBFmsQV5G444GOPEiBQmUDg0EimQGDtFLEcXXq5P1w9-nKwv4eWjePtkY-kW_EvS0EetnaQGSU--yGWdZF3CZERlTmj1GFqNxK8B_PHsuwYdaOWICZvAnLMOS6URsSZ9SATrogeMiqUHWbL5cHfXooB8QjBhQAqROIJGSe-FJf--DtPm7aLl-zxiBFZplX3DNjacuoYeURqvdKXrhE-6ZiHvKC52-ftmKi6hXXJxVGHey1gRcEDDp6d',
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuB9bzcndqYsDsEmRnwkxthuLGjFNPN9JOJtvc1Nge6Df9GjOv30GrDKbn3CyXV-qUiwLvWwIsQhdahF_pOOgi7BAtzJCIrBzc_5BwqrOVdlJjIb72GOXgB6HlhvLvHoxqhndqzIu4Gr_tCShorbnvGYNF6OI8vb9XyWFekAB1EuZzPPCfRIMqi4Iw6tJsn7iJj729H_LvafPLyLu2tOhzya8gPDF2aqFucSYmJNh94lJ39sGwu2nnQE',
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuBGRNk0oza_46EDS_OJlfiAY8kuwEDe380BVQyO6-tzN1j-8kr9EXDOHLqJexHh153m5oeAZYf3P_M2lUfvhZEWmUCzh13D7IkEoO1TJqzaje_qVF5ocpSXph3sbNtW9-oXUAuM5gVrOQxEsguu_g0HAQWhEjmLHcHoBzmD9UPl815ID6sJZvRqht91ubgXw7JiLxWvUgK2_KH683-p3KxNYufCJtjL9bDUllPT05Cg1jKf5Jtkivat'
+    ][idx % 3],
+    createdAt: '2026-08-19',
+    status: 'Terbit'
+  }));
+
+  const postsList = latestPosts && latestPosts.length >= 15 ? latestPosts.slice(0, 15) : generatedPosts;
+  const currentPosts = postsList.slice(currentPostPage * 3, currentPostPage * 3 + 3);
 
   const birthdays = birthdaysThisMonth && birthdaysThisMonth.length > 0 ? birthdaysThisMonth.slice(0, 4) : [
     { id: 'b1', fullName: 'Nama' },
@@ -111,23 +125,110 @@ export default function BerandaPage() {
   return (
     <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 flex flex-col gap-12 md:gap-16 bg-white">
       {/* Hero Section */}
-      <section className="flex flex-col md:flex-row items-center gap-8 pt-4 sm:pt-6">
-        <div className="flex-1 space-y-4 sm:space-y-5 text-left">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#00113a] tracking-tight">
-            Halo, {userSession?.name || 'Budi Santoso'}!
-          </h1>
-          <p className="text-sm sm:text-base text-[#444650] max-w-2xl leading-relaxed">
-            Selamat datang di Portal Intranet Perpustakaan Nasional Republik Indonesia. Akses informasi terkini, kelola data kepegawaian, dan terhubung dengan rekan kerja Anda dalam satu platform terintegrasi.
-          </p>
-          <div className="pt-2">
-            <Link
-              href="/kabar-kedinasan/pengumuman"
-              className="inline-flex items-center bg-[#00113a] text-white font-bold py-2.5 px-6 rounded-md hover:bg-[#2a4386] transition-colors shadow-sm text-sm"
-            >
-              Lihat Pengumuman
-            </Link>
+      <section className="relative w-full rounded-2xl overflow-hidden shadow-md aspect-auto md:aspect-[21/9] bg-[#00113a] mt-4 sm:mt-6 group min-h-[400px]">
+        {activeBanners.length > 0 ? (
+          <>
+            {/* Banner Image Background */}
+            <div className="absolute inset-0 w-full h-full">
+               <img
+                  src={activeBanners[currentBannerIndex].imageUrl || '/images/hero-illustration.webp'}
+                  alt={activeBanners[currentBannerIndex].headline}
+                  className="w-full h-full object-cover transition-opacity duration-500 opacity-60"
+                />
+            </div>
+            
+            {/* Left Gradient Overlay to make left text readable */}
+            <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/80 to-transparent md:w-2/3" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#00113a]/90 via-transparent to-transparent" />
+            
+            {/* Content Container */}
+            <div className="relative z-10 p-6 sm:p-10 md:p-12 h-full flex flex-col justify-between min-h-[400px]">
+               {/* Left Top: Greeting */}
+               <div className="max-w-xl space-y-3 sm:space-y-4">
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#00113a] tracking-tight drop-shadow-sm">
+                    Halo, {userSession?.name || 'Budi Santoso'}!
+                  </h1>
+                  <p className="text-xs sm:text-sm md:text-base text-[#1a1b20] font-medium leading-relaxed drop-shadow-sm">
+                    Selamat datang di Portal Intranet Perpustakaan Nasional Republik Indonesia. Akses informasi terkini, kelola data kepegawaian, dan terhubung dengan rekan kerja Anda dalam satu platform terintegrasi.
+                  </p>
+               </div>
+               
+               {/* Bottom Row */}
+               <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mt-8">
+                  {/* Bottom Left: Button */}
+                  <div>
+                    <Link
+                      href="/kabar-kedinasan/pengumuman"
+                      className="inline-flex items-center bg-[#00113a] text-white font-bold py-2.5 px-6 rounded-md hover:bg-[#2a4386] transition-colors shadow-sm text-sm"
+                    >
+                      Lihat Pengumuman
+                    </Link>
+                  </div>
+                  
+                  {/* Bottom Right: Banner Headline & Subheadline */}
+                  <div className="text-left md:text-right max-w-lg mt-auto">
+                    <h3 className="text-white font-bold text-base sm:text-lg md:text-xl leading-tight mb-2 drop-shadow-md">
+                      {activeBanners[currentBannerIndex].headline}
+                    </h3>
+                    <p className="text-white/90 text-xs sm:text-sm line-clamp-2 drop-shadow-md">
+                      {activeBanners[currentBannerIndex].subheadline}
+                    </p>
+                  </div>
+               </div>
+            </div>
+
+            {/* Nav Arrows */}
+            {activeBanners.length > 1 && (
+              <>
+                <button
+                  onClick={prevBanner}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center text-white backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-20"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={nextBanner}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center text-white backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-20"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+                
+                {/* Dot Indicators */}
+                <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
+                  {activeBanners.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentBannerIndex(idx)}
+                      className={`w-2 h-2 rounded-full transition-all ${
+                        currentBannerIndex === idx ? 'bg-white w-4' : 'bg-white/50 hover:bg-white/80'
+                      }`}
+                      aria-label={`Go to slide ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </>
+        ) : (
+          <div className="p-6 sm:p-10 md:p-12 h-full flex flex-col justify-between">
+            <div className="max-w-xl space-y-3 sm:space-y-4">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight">
+                Halo, {userSession?.name || 'Budi Santoso'}!
+              </h1>
+              <p className="text-sm md:text-base text-white/90 font-medium leading-relaxed">
+                Selamat datang di Portal Intranet Perpustakaan Nasional Republik Indonesia. Akses informasi terkini, kelola data kepegawaian, dan terhubung dengan rekan kerja Anda dalam satu platform terintegrasi.
+              </p>
+            </div>
+            <div className="mt-8">
+              <Link
+                href="/kabar-kedinasan/pengumuman"
+                className="inline-flex items-center bg-white text-[#00113a] font-bold py-2.5 px-6 rounded-md hover:bg-slate-100 transition-colors shadow-sm text-sm"
+              >
+                Lihat Pengumuman
+              </Link>
+            </div>
           </div>
-        </div>
+        )}
       </section>
 
       {/* Stats Bar */}
@@ -214,11 +315,11 @@ export default function BerandaPage() {
                       {item.publishedAt ? formatDate(item.publishedAt) : '19 Agustus 2026'}
                     </span>
                     <span className={`text-[10px] px-2 py-0.5 rounded border font-medium ${
-                      item.status === 'DRAFT' || item.status === 'Menunggu'
+                      item.status === 'MENUNGGU' || item.status === 'Menunggu'
                         ? 'bg-blue-100 text-blue-700 border-blue-200'
                         : 'bg-green-100 text-green-700 border-green-200'
                     }`}>
-                      Status: {item.status === 'DRAFT' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+                      Status: {item.status === 'MENUNGGU' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
                     </span>
                   </div>
                   <h3 className="text-base font-bold text-[#00113a] mb-2 line-clamp-2 group-hover:text-[#1b6d24] transition-colors leading-snug">
@@ -230,7 +331,7 @@ export default function BerandaPage() {
                 </div>
                 <div className="flex justify-end mt-auto pt-2">
                   <Link
-                    href={item.slug ? `/kabar-kedinasan/berita#${item.slug}` : '/kabar-kedinasan/berita'}
+                    href={`/kabar-kedinasan/berita/${(item.id || item.slug || '1').replace(/^stitch-/, '')}`}
                     className="bg-[#00113a] text-white font-bold text-xs px-4 py-1.5 rounded-md hover:bg-[#2a4386] transition-colors shadow-sm"
                   >
                     Lihat
@@ -243,7 +344,7 @@ export default function BerandaPage() {
         <div className="flex justify-center pt-2">
           <Link
             href="/kabar-kedinasan/berita"
-            className="inline-flex items-center bg-[#007BFF] text-white font-bold py-2.5 px-6 rounded-md hover:bg-[#0056b3] transition-colors shadow-sm text-sm"
+            className="inline-flex items-center bg-[#00113a] text-white font-bold py-2.5 px-6 rounded-md hover:bg-[#2a4386] transition-colors shadow-sm text-sm"
           >
             Lihat Semua Berita
           </Link>
@@ -256,7 +357,7 @@ export default function BerandaPage() {
           <h2 className="text-2xl sm:text-3xl font-bold text-[#00113a]">Antar Pegawai</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {postsList.map((post: any, idx: number) => (
+          {currentPosts.map((post: any, idx: number) => (
             <div
               key={post.id || idx}
               className="border border-[#c5c6d2] rounded-xl overflow-hidden bg-white shadow-sm flex flex-col group cursor-pointer hover:shadow-md transition-shadow"
@@ -278,11 +379,11 @@ export default function BerandaPage() {
                       {post.createdAt ? formatDate(post.createdAt) : '19 Agustus 2026'}
                     </span>
                     <span className={`text-[10px] px-2 py-0.5 rounded border font-medium ${
-                      post.status === 'DRAFT' || post.status === 'Menunggu'
+                      post.status === 'MENUNGGU' || post.status === 'Menunggu'
                         ? 'bg-blue-100 text-blue-700 border-blue-200'
                         : 'bg-green-100 text-green-700 border-green-200'
                     }`}>
-                      Status: {post.status === 'DRAFT' || post.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+                      Status: {post.status === 'MENUNGGU' || post.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
                     </span>
                   </div>
                   <h3 className="text-base font-bold text-[#00113a] mb-2 line-clamp-2 group-hover:text-[#1b6d24] transition-colors leading-snug">
@@ -303,6 +404,40 @@ export default function BerandaPage() {
               </div>
             </div>
           ))}
+        </div>
+        
+        {/* Pagination Controls */}
+        <div className="flex justify-center items-center gap-4 pt-4">
+          <button 
+            onClick={() => setCurrentPostPage(prev => Math.max(0, prev - 1))}
+            disabled={currentPostPage === 0}
+            className="w-8 h-8 rounded-full bg-[#00113a] text-white flex items-center justify-center disabled:opacity-50 hover:bg-[#2a4386] transition-colors"
+            aria-label="Previous page"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          
+          <div className="flex gap-2">
+            {Array.from({ length: 5 }).map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentPostPage(idx)}
+                className={`w-3 h-3 rounded-full transition-colors ${
+                  currentPostPage === idx ? 'bg-[#00113a]' : 'bg-[#c5c6d2] hover:bg-[#a0a2af]'
+                }`}
+                aria-label={`Go to page ${idx + 1}`}
+              />
+            ))}
+          </div>
+
+          <button 
+            onClick={() => setCurrentPostPage(prev => Math.min(4, prev + 1))}
+            disabled={currentPostPage === 4}
+            className="w-8 h-8 rounded-full bg-[#00113a] text-white flex items-center justify-center disabled:opacity-50 hover:bg-[#2a4386] transition-colors"
+            aria-label="Next page"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
         </div>
       </section>
 
@@ -354,3 +489,4 @@ export default function BerandaPage() {
     </div>
   );
 }
+

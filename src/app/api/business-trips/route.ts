@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
 
     const where: any = {
       type: 'BUSINESS_TRIP',
-      status: 'PUBLISHED',
+      status: 'TERBIT',
     };
 
     if (search) {
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '')}-${Date.now()}`;
 
-    const tripStatus = status === 'Menunggu' || status === 'DRAFT' ? 'DRAFT' : 'PUBLISHED';
+    const tripStatus = status === 'Menunggu' || status === 'MENUNGGU' ? 'MENUNGGU' : 'TERBIT';
 
     const created = await prisma.content.create({
       data: {

@@ -57,7 +57,7 @@ export default function DaftarTahukahAndaPage() {
             item.coverImage ||
             'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=800&q=80',
           publishedAt: item.createdAt || new Date().toISOString(),
-          status: item.status === 'DRAFT' ? 'Menunggu' : 'Terbit',
+          status: item.status === 'MENUNGGU' ? 'Menunggu' : 'Terbit',
           authorName: item.author?.name || 'Budi Sujatmiko',
         }));
 
@@ -454,3 +454,4 @@ export default function DaftarTahukahAndaPage() {
     </div>
   );
 }
+

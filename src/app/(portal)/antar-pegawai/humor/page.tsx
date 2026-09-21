@@ -48,7 +48,7 @@ export default function HumorPage() {
           content: item.body || '',
           coverImage: item.coverImage || STITCH_MOCK_HUMOR_9[0].coverImage,
           publishedAt: item.createdAt || new Date().toISOString(),
-          status: item.status === 'DRAFT' ? 'Menunggu' : 'Terbit',
+          status: item.status === 'MENUNGGU' ? 'Menunggu' : 'Terbit',
           authorName: item.author?.name || 'Pegawai Perpusnas',
         }));
 
@@ -433,3 +433,4 @@ export default function HumorPage() {
     </div>
   );
 }
+

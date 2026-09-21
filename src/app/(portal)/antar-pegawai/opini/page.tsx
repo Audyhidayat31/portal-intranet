@@ -57,7 +57,7 @@ export default function CoretanOpiniPage() {
           content: item.body || '',
           coverImage: item.coverImage || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBhefV1hDm9BZoapbWl8hj_Kx1fuSBMpUmJDa11zIMETtaj9OBZb42EHgmNOnQjlqWRTe9jiJf6RLK4ERfJpZZpSzk0AOJ28mos_9lk-LHMZC-4x9NZDJPGhF52TW2LIYUjuaj2COj729JUMGyJUbQygyE5WN3W9BAJPCA3AQLjqiwZLA_Qr4QGpAmOJ3lal-v90BJnf8Gl_h38YItMGssmkdiFMavJzoZDZulwDcrsn87gSHudNcnY',
           publishedAt: item.createdAt || new Date().toISOString(),
-          status: item.status === 'DRAFT' ? 'Menunggu' : 'Terbit',
+          status: item.status === 'MENUNGGU' ? 'Menunggu' : 'Terbit',
           authorName: item.author?.name || 'Pegawai Perpusnas',
         }));
 
@@ -578,3 +578,4 @@ export default function CoretanOpiniPage() {
     </div>
   );
 }
+

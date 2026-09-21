@@ -111,7 +111,7 @@ export default function BeritaPage() {
               ? item.coverImage
               : 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80',
           publishedAt: item.publishedAt || item.createdAt || new Date().toISOString(),
-          status: item.status === 'DRAFT' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit',
+          status: item.status === 'MENUNGGU' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit',
           authorName: item.author?.name || 'Humas Perpusnas',
         }));
 
@@ -242,7 +242,7 @@ export default function BeritaPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             {newsList.map((item) => {
               const displayDate = item.publishedAt ? formatDate(item.publishedAt) : '19 Agustus 2026';
-              const isPublished = item.status === 'Terbit' || (item.status as any) === 'PUBLISHED' || !item.status;
+              const isPublished = item.status === 'Terbit' || (item.status as any) === 'TERBIT' || !item.status;
 
               return (
                 <article
@@ -345,3 +345,4 @@ export default function BeritaPage() {
     </div>
   );
 }
+

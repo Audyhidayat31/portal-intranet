@@ -27,7 +27,7 @@ function formatMockInternalDoc(mock: any) {
     attachmentName: mock.attachmentName || 'Surat_Edaran.pdf',
     fileSize: mock.fileSize || '1.8 MB',
     type: 'INTERNAL_DOCUMENT',
-    status: 'PUBLISHED',
+    status: 'TERBIT',
     publishedAt: mock.publishedAt ? new Date(mock.publishedAt).toISOString() : new Date().toISOString(),
     author: {
       name: 'Bagian Hukum dan Regulasi',
@@ -122,9 +122,9 @@ export async function PUT(
             attachmentName: attachmentName !== undefined ? attachmentName : existing.attachmentName,
             status:
               status !== undefined
-                ? status === 'Menunggu' || status === 'DRAFT'
-                  ? 'DRAFT'
-                  : 'PUBLISHED'
+                ? status === 'Menunggu' || status === 'MENUNGGU'
+                  ? 'MENUNGGU'
+                  : 'TERBIT'
                 : existing.status,
           },
         });
@@ -149,7 +149,7 @@ export async function PUT(
             body: keterangan || '',
             attachmentName: attachmentName || 'Dokumen_Internal.pdf',
             type: 'INTERNAL_DOCUMENT',
-            status: status === 'Menunggu' || status === 'DRAFT' ? 'DRAFT' : 'PUBLISHED',
+            status: status === 'Menunggu' || status === 'MENUNGGU' ? 'MENUNGGU' : 'TERBIT',
             authorId: defaultUser.id,
             categoryId: docCat?.id || null,
           },

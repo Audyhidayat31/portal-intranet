@@ -70,7 +70,7 @@ function EmailKonfirmasiContent() {
 
       {/* Bottom Footer Bar Matching Wireframe */}
       <footer className="w-full bg-[#f4f5f7] border-t border-slate-200/80 py-3.5 px-4 text-center text-xs sm:text-sm text-[#444] font-normal">
-        © Copyright 2026, All Rights Reserved | Perpustakaan Nasional RI.
+        © Hak Cipta 2026, Perpustakaan Nasional Republik Indonesia.
       </footer>
     </div>
   );
@@ -89,3 +89,4 @@ export default function EmailKonfirmasiPage() {
     </Suspense>
   );
 }
+
