@@ -96,12 +96,6 @@ export default function EditKalimatBijakPage() {
       ) {
         setIsStatusMenuOpen(false);
       }
-      if (
-        stylingMenuRef.current &&
-        !stylingMenuRef.current.contains(event.target as Node)
-      ) {
-        setIsStylingMenuOpen(false);
-      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -128,7 +122,7 @@ export default function EditKalimatBijakPage() {
               setViewDate(d);
             }
           }
-          setStatus(item.status === 'DRAFT' ? 'Menunggu' : 'Terbit');
+          setStatus(item.status === 'MENUNGGU' ? 'Menunggu' : 'Terbit');
           const content = item.body || item.content || item.quote || '';
           setDeskripsiHtml(content);
           if (editorRef.current) {
@@ -252,7 +246,7 @@ export default function EditKalimatBijakPage() {
         body: JSON.stringify({
           title: judul,
           body: htmlContent || rawText || judul,
-          status: status === 'Menunggu' ? 'DRAFT' : 'PUBLISHED',
+          status: status === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
         }),
       });
 

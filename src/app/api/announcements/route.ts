@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
 
     const where: any = {
       type: 'ANNOUNCEMENT',
-      status: 'PUBLISHED',
+      status: 'TERBIT',
     };
 
     if (search) {
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
         excerpt: excerpt || content.slice(0, 150),
         body: content,
         type: 'ANNOUNCEMENT',
-        status: 'PUBLISHED',
+        status: 'TERBIT',
         isPinned: Boolean(isPinned),
         attachmentName: attachmentName || null,
         authorId: defaultUser.id,

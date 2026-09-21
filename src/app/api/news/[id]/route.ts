@@ -21,7 +21,7 @@ function formatMockNews(mock: any) {
     body: mock.content,
     coverImage: mock.coverImage,
     type: 'NEWS',
-    status: mock.status === 'Menunggu' ? 'DRAFT' : 'PUBLISHED',
+    status: mock.status === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
     publishedAt: mock.publishedAt ? new Date(mock.publishedAt).toISOString() : new Date().toISOString(),
     author: {
       name: mock.authorName || 'Humas Perpusnas',
@@ -124,7 +124,7 @@ export async function PUT(
             ...(content && { body: content }),
             ...(coverImage && { coverImage }),
             ...(publishedAt && { publishedAt: new Date(publishedAt) }),
-            ...(status && { status: status === 'Menunggu' || status === 'DRAFT' ? 'DRAFT' : 'PUBLISHED' }),
+            ...(status && { status: status === 'Menunggu' || status === 'MENUNGGU' ? 'MENUNGGU' : 'TERBIT' }),
           },
         });
 
@@ -148,7 +148,7 @@ export async function PUT(
             body: content || '',
             coverImage: coverImage || null,
             type: 'NEWS',
-            status: status === 'Menunggu' || status === 'DRAFT' ? 'DRAFT' : 'PUBLISHED',
+            status: status === 'Menunggu' || status === 'MENUNGGU' ? 'MENUNGGU' : 'TERBIT',
             authorId: defaultUser.id,
             categoryId: newsCat?.id || null,
             publishedAt: publishedAt ? new Date(publishedAt) : new Date(),

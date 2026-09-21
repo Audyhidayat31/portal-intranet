@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils';
 const adminNavLinks = [
   { label: 'Kelola Halaman Utama', href: '/admin/halaman-utama', icon: LayoutTemplate },
   { label: 'Kelola Pengguna', href: '/admin/pengguna', icon: Users },
-  { label: 'Hak Akses & Role', href: '/admin/hak-akses', icon: KeyRound },
+  { label: 'Kelola Hak Akses', href: '/admin/hak-akses', icon: KeyRound },
   { label: 'Log Aktivitas', href: '/admin/log-aktivitas', icon: History },
 ];
 
@@ -50,7 +50,7 @@ export function AdminSidebar({
       >
         {/* Brand Header */}
         <div className="p-5 border-b border-slate-800/80 flex items-center justify-between">
-          <Link href="/admin/dashboard" className="flex items-center gap-3">
+          <div className="flex items-center gap-3 cursor-default">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-gold-600 to-amber-500 text-slate-950 flex items-center justify-center font-bold shadow-lg">
               <BookOpen className="w-5 h-5" />
             </div>
@@ -58,11 +58,11 @@ export function AdminSidebar({
               <span className="text-sm font-black text-white tracking-tight block">
                 ADMIN PANEL
               </span>
-              <span className="text-[10px] font-bold text-gold-400 uppercase tracking-widest block">
-                Perpusnas Intranet
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                PORTAL INTRANET
               </span>
             </div>
-          </Link>
+          </div>
         </div>
 
         {/* Nav Links */}
@@ -120,3 +120,4 @@ export function AdminSidebar({
     </>
   );
 }
+

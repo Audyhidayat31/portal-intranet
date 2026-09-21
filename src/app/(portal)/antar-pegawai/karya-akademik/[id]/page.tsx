@@ -64,7 +64,7 @@ export default function DetailKaryaAkademikPage() {
                   year: 'numeric',
                 })
               : '20 Agustus 2026',
-            status: apiData.status === 'PUBLISHED' ? 'Terbit' : 'Menunggu',
+            status: apiData.status === 'TERBIT' ? 'Terbit' : 'Menunggu',
             authorName: apiData.author?.name || 'Budi Sujatmiko',
             authorPosition: apiData.author?.profile?.position || 'Peneliti Ahli Madya',
           };

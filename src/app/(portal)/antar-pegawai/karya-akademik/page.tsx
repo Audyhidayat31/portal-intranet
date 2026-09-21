@@ -48,7 +48,7 @@ export default function KaryaAkademikPage() {
                 year: 'numeric',
               })
             : '20 Agustus 2026',
-          status: item.status === 'DRAFT' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit',
+          status: item.status === 'MENUNGGU' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit',
           authorName: item.author?.name || 'Budi Sujatmiko',
           authorPosition: item.author?.profile?.position || 'Pustakawan Ahli',
           authorUnit: item.author?.profile?.unitKerja || 'Perpustakaan Nasional RI',
@@ -206,10 +206,8 @@ export default function KaryaAkademikPage() {
             {currentCards.map((item) => (
               <div
                 key={item.id}
-                className="bg-white rounded-2xl border border-slate-200/90 hover:border-blue-300 p-5 sm:p-6 transition-all duration-200 hover:shadow-[0_8px_24px_rgba(0,51,102,0.06)] group relative overflow-hidden"
+                className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 transition-all duration-200 hover:shadow-[0_8px_24px_rgba(0,51,102,0.06)] group relative overflow-hidden"
               >
-                {/* Accent Top Subtle Bar */}
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#007BFF] to-[#255fa6] opacity-0 group-hover:opacity-100 transition-opacity" />
 
                 <div className="flex flex-col justify-between gap-3">
                   {/* Judul */}
@@ -315,3 +313,4 @@ export default function KaryaAkademikPage() {
     </div>
   );
 }
+

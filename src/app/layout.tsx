@@ -15,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className="h-full">
+    <html lang="id" className="h-full" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -28,9 +28,10 @@ export default function RootLayout({
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         />
       </head>
-      <body className="min-h-screen flex flex-col font-sans antialiased text-slate-900 bg-[#f8f9fa]">
+      <body suppressHydrationWarning className="min-h-screen flex flex-col font-sans antialiased text-slate-900 bg-[#f8f9fa]">
         {children}
       </body>
     </html>
   );
 }
+

@@ -8,10 +8,11 @@ export default function PortalLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div suppressHydrationWarning className="min-h-screen flex flex-col bg-white">
       <PortalNavbar />
       <main className="flex-1">{children}</main>
       <PortalFooter />
     </div>
   );
 }
+

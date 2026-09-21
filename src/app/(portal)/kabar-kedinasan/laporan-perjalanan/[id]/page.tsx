@@ -252,7 +252,7 @@ Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedan
                 Dibuat oleh
               </span>
               <div className="text-sm sm:text-base font-medium text-[#1a1b20]">
-                {report?.author?.name || '© 2026 Perpusnas RI. Seluruh Hak Cipta Dilindungi.'}
+                {report?.author?.name || '© Hak Cipta 2026, Perpustakaan Nasional Republik Indonesia.'}
               </div>
               <div className="text-xs text-[#757682] mt-0.5">
                 {report?.publishedAt ? formatDate(report.publishedAt) : '19 Agustus 2026'}

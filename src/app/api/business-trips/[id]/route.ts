@@ -21,7 +21,7 @@ function formatMockBusinessTrip(mock: any) {
     destinationCity: mock.destinationCity || 'Jakarta',
     attachmentName: mock.attachmentName || 'Laporan_Dinas.pdf',
     type: 'BUSINESS_TRIP',
-    status: 'PUBLISHED',
+    status: 'TERBIT',
     publishedAt: mock.publishedAt ? new Date(mock.publishedAt).toISOString() : new Date().toISOString(),
     author: {
       name: mock.author?.name || 'Budi Sujatmiko',
@@ -116,9 +116,9 @@ export async function PUT(
             attachmentName: attachmentName !== undefined ? attachmentName : existing.attachmentName,
             status:
               status !== undefined
-                ? status === 'Menunggu' || status === 'DRAFT'
-                  ? 'DRAFT'
-                  : 'PUBLISHED'
+                ? status === 'Menunggu' || status === 'MENUNGGU'
+                  ? 'MENUNGGU'
+                  : 'TERBIT'
                 : existing.status,
           },
         });
@@ -144,7 +144,7 @@ export async function PUT(
             destinationCity: destinationCity || 'Jakarta',
             attachmentName: attachmentName || 'Laporan_Dinas.pdf',
             type: 'BUSINESS_TRIP',
-            status: status === 'Menunggu' || status === 'DRAFT' ? 'DRAFT' : 'PUBLISHED',
+            status: status === 'Menunggu' || status === 'MENUNGGU' ? 'MENUNGGU' : 'TERBIT',
             authorId: defaultUser.id,
             categoryId: tripCat?.id || null,
           },

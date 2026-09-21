@@ -41,7 +41,7 @@ export default function AgendaKegiatanPage() {
             : '19 Agustus 2026',
           eventStartDate: item.eventStartDate,
           eventLocation: item.eventLocation,
-          status: item.status === 'DRAFT' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit',
+          status: item.status === 'MENUNGGU' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit',
           authorName: item.author?.name || 'Biro Umum Perpusnas',
         }));
 
@@ -272,3 +272,4 @@ export default function AgendaKegiatanPage() {
     </div>
   );
 }
+

@@ -234,8 +234,9 @@ export default function LupaKataSandiPage() {
 
       {/* Footer Matching Wireframe */}
       <footer className="pt-2 pb-1 text-center text-xs sm:text-sm text-black font-normal">
-        © Copyright 2026, All Rights Reserved | Perpustakaan Nasional RI.
+        © Hak Cipta 2026, Perpustakaan Nasional Republik Indonesia.
       </footer>
     </div>
   );
 }
+

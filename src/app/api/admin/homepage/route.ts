@@ -13,7 +13,7 @@ const DEFAULT_BANNERS = [
     imageName: 'Banner_Layanan_Digital.png',
     headline: 'Sosialisasi Sistem Perpustakaan Digital Nasional',
     subheadline: 'Akses koleksi digital dan naskah kuno nusantara dalam genggaman pegawai.',
-    status: 'PUBLISHED',
+    status: 'TERBIT',
     createdBy: 'Admin 1',
     createdAt: '2026-01-01T08:30:00.000Z',
   },
@@ -33,7 +33,7 @@ const DEFAULT_BANNERS = [
     imageName: 'Banner_Workshop_Inovasi.png',
     headline: 'Workshop Transformasi Perpustakaan Berbasis Inklusi Sosial',
     subheadline: 'Penguatan peran pustakawan dalam memberdayakan kesejahteraan masyarakat.',
-    status: 'PUBLISHED',
+    status: 'TERBIT',
     createdBy: 'Admin 1',
     createdAt: '2026-01-01T10:00:00.000Z',
   },
@@ -43,7 +43,7 @@ const DEFAULT_BANNERS = [
     imageName: 'Banner_Pelayanan_Prima.png',
     headline: 'Gerakan Peningkatan Kualitas Tata Kelola Dokumen Kedinasan',
     subheadline: 'Implementasi tata naskah dinas elektronik terintegrasi 2026.',
-    status: 'PUBLISHED',
+    status: 'TERBIT',
     createdBy: 'Admin 1',
     createdAt: '2026-01-01T11:45:00.000Z',
   },
@@ -51,6 +51,34 @@ const DEFAULT_BANNERS = [
 
 const FOOTER_FILE_PATH = path.join(process.cwd(), 'src', 'lib', 'footer-config.json');
 const INFO_PENTING_FILE = path.join(process.cwd(), 'src', 'lib', 'info-penting-config.json');
+const TENTANG_FILE_PATH = path.join(process.cwd(), 'src', 'lib', 'tentang-config.json');
+
+function getTentangConfig() {
+  try {
+    if (fs.existsSync(TENTANG_FILE_PATH)) {
+      return JSON.parse(fs.readFileSync(TENTANG_FILE_PATH, 'utf-8'));
+    }
+  } catch (err) {}
+  return {
+    deskripsi: 'Portal Intranet Perpustakaan Nasional Republik Indonesia merupakan media digital internal yang dirancang untuk mendukung kebutuhan informasi, komunikasi, dan interaksi antarpegawai dalam lingkungan Perpustakaan Nasional RI.',
+    syaratKetentuan: `1. Setiap pegawai Perpusnas yang masih aktif dan memiliki NIP terdaftar pada Bagian Kepegawaian berhak memiliki akun pada Portal Intranet Perpusnas.\n2. Registrasi akun Portal Intranet Perpusnas hanya boleh dilakukan oleh pegawai yang bersangkutan. Tidak diperkenankan melakukan registrasi atas nama pegawai lain.\n3. Untuk keamanan dan kenyamanan bersama, setiap pemilik akun hendaknya tidak memberitahukan password login kepada pegawai lain.\n4. Manfaatkanlah rubrik yang tersedia untuk meningkatkan wawasan keilmuan, kinerja, dan integritas ASN.\n5. Gunakanlah bahasa yang sopan, santun, dan menjunjung tinggi etika kedinasan.`,
+    latarBelakang: 'Background.png',
+    latarBelakangUrl: '/images/tentang-bg.jpg',
+    panduanAplikasi: '',
+    panduanAplikasiUrl: '',
+    status: 'TERBIT',
+  };
+}
+
+function saveTentangConfig(data: any) {
+  try {
+    fs.writeFileSync(TENTANG_FILE_PATH, JSON.stringify(data, null, 2), 'utf-8');
+    return true;
+  } catch (err) {
+    console.error('Error saving tentang config:', err);
+    return false;
+  }
+}
 
 function getInfoPentingConfig() {
   try {
@@ -174,7 +202,7 @@ function getFooterConfig() {
       alamat1: 'Jl. Salemba Raya No. 28A, Jakarta 10430',
       alamat2: 'Jl. Medan Merdeka Selatan No. 11, Jakarta 10110',
     },
-    copyright: '© Copyright 2026, All Rights Reserved | Perpustakaan Nasional RI.',
+    copyright: '© Hak Cipta 2026, Perpustakaan Nasional Republik Indonesia.',
   };
 }
 
@@ -214,18 +242,10 @@ export async function GET() {
       subheadline: isOldDefaultGreeting
         ? 'Doa terbaik kami untuk Bapak/Ibu di momen bertambahnya usia. Semoga selalu dianugerahi kesehatan, kebahagiaan, kelancaran, serta kesuksesan dalam setiap karya.'
         : (setting?.heroSubtitle || 'Doa terbaik kami untuk Bapak/Ibu di momen bertambahnya usia. Semoga selalu dianugerahi kesehatan, kebahagiaan, kelancaran, serta kesuksesan dalam setiap karya.'),
-      status: 'PUBLISHED',
+      status: 'TERBIT',
     };
 
-    const tentang = {
-      deskripsi: 'Portal Intranet Perpustakaan Nasional Republik Indonesia merupakan media digital internal yang dirancang untuk mendukung kebutuhan informasi, komunikasi, dan interaksi antarpegawai dalam lingkungan Perpustakaan Nasional RI.',
-      syaratKetentuan: `1. Setiap pegawai Perpusnas yang masih aktif dan memiliki NIP terdaftar pada Bagian Kepegawaian berhak memiliki akun pada Portal Intranet Perpusnas.\n2. Registrasi akun Portal Intranet Perpusnas hanya boleh dilakukan oleh pegawai yang bersangkutan. Tidak diperkenankan melakukan registrasi atas nama pegawai lain.\n3. Untuk keamanan dan kenyamanan bersama, setiap pemilik akun hendaknya tidak memberitahukan password login kepada pegawai lain.\n4. Manfaatkanlah rubrik yang tersedia untuk meningkatkan wawasan keilmuan, kinerja, dan integritas ASN.\n5. Gunakanlah bahasa yang sopan, santun, dan menjunjung tinggi etika kedinasan.`,
-      latarBelakang: 'Background.png',
-      latarBelakangUrl: '/images/tentang-bg.jpg',
-      panduanAplikasi: 'panduan.pdf',
-      panduanAplikasiUrl: '',
-      status: 'PUBLISHED',
-    };
+    const tentang = getTentangConfig();
 
     const footer = getFooterConfig();
     const infoPenting = getInfoPentingConfig();
@@ -250,7 +270,7 @@ export async function GET() {
         greeting: {
           headline: 'Selamat Ulang Tahun',
           subheadline: 'Doa terbaik kami untuk Bapak/Ibu di momen bertambahnya usia. Semoga selalu dianugerahi kesehatan, kebahagiaan, kelancaran, serta kesuksesan dalam setiap karya.',
-          status: 'PUBLISHED',
+          status: 'TERBIT',
         },
         footer: getFooterConfig(),
         infoPenting: getInfoPentingConfig(),
@@ -279,6 +299,7 @@ export async function PUT(request: NextRequest) {
       announcementTicker,
       footer,
       infoPenting,
+      tentang,
     } = body;
 
     // Handle infoPenting update if provided
@@ -309,6 +330,18 @@ export async function PUT(request: NextRequest) {
       };
       saveFooterConfig(mergedFooter);
       savedFooter = mergedFooter;
+    }
+
+    // Handle tentang update if provided
+    let savedTentang = null;
+    if (tentang) {
+      const currentTentang = getTentangConfig();
+      const mergedTentang = {
+        ...currentTentang,
+        ...tentang,
+      };
+      saveTentangConfig(mergedTentang);
+      savedTentang = mergedTentang;
     }
 
     const existing = await prisma.homepageSetting.findFirst();
@@ -364,7 +397,7 @@ export async function PUT(request: NextRequest) {
         greeting: {
           headline: setting.heroTitle,
           subheadline: setting.heroSubtitle,
-          status: 'PUBLISHED',
+          status: 'TERBIT',
         },
         footer: savedFooter || getFooterConfig(),
         infoPenting: savedInfoPenting || getInfoPentingConfig(),

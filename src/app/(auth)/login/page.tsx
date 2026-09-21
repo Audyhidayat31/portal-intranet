@@ -291,8 +291,9 @@ export default function LoginPage() {
 
       {/* Footer as per Wireframe: Light gray banner */}
       <footer className="w-full bg-[#f4f5f7] border-t border-slate-200/80 py-3 sm:py-3.5 text-center text-xs text-slate-500 font-normal">
-        © Copyright 2026, All Rights Reserved | Perpustakaan RI.
+        © Hak Cipta 2026, Perpustakaan Nasional Republik Indonesia.
       </footer>
     </div>
   );
 }
+

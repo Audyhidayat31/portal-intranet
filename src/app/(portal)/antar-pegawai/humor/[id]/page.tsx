@@ -230,7 +230,7 @@ Ternyata buku itu bukan peninggalan bersejarah, melainkan buku catatan milik Pak
             <div className="text-xs text-[#757682] space-y-0.5">
               <p className="font-semibold text-[#757682]">Dibuat oleh</p>
               <p className="font-semibold text-[#1a1b20]">
-                © 2026 Perpusnas RI. Seluruh Hak Cipta Dilindungi.
+                © Hak Cipta 2026, Perpustakaan Nasional Republik Indonesia.
               </p>
               <p className="font-medium text-[#757682]">
                 {displayDate}

@@ -26,7 +26,7 @@ export default function AdminKabarKedinasanPage() {
   const [body, setBody] = useState('');
   const [coverImage, setCoverImage] = useState('');
   const [type, setType] = useState('NEWS');
-  const [status, setStatus] = useState('PUBLISHED');
+  const [status, setStatus] = useState('TERBIT');
   const [isPinned, setIsPinned] = useState(false);
   const [eventLocation, setEventLocation] = useState('');
   const [destinationCity, setDestinationCity] = useState('');
@@ -59,7 +59,7 @@ export default function AdminKabarKedinasanPage() {
     setBody('');
     setCoverImage('');
     setType(selectedType === 'ALL' ? 'NEWS' : selectedType);
-    setStatus('PUBLISHED');
+    setStatus('TERBIT');
     setIsPinned(false);
     setEventLocation('');
     setDestinationCity('');
@@ -243,7 +243,7 @@ export default function AdminKabarKedinasanPage() {
                     <td className="py-3.5 px-4 text-slate-700 font-medium">{item.author?.name || 'Admin'}</td>
                     <td className="py-3.5 px-4 text-slate-500">{formatDate(item.publishedAt)}</td>
                     <td className="py-3.5 px-4">
-                      <Badge variant={item.status === 'PUBLISHED' ? 'success' : 'warning'} size="sm">
+                      <Badge variant={item.status === 'TERBIT' ? 'success' : 'warning'} size="sm">
                         {item.status}
                       </Badge>
                     </td>
@@ -307,24 +307,7 @@ export default function AdminKabarKedinasanPage() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                Status Publikasi
-              </label>
-              <div className="relative">
-                <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  className="w-full appearance-none rounded-lg border border-slate-300 bg-white px-3 py-2 pr-8 text-xs text-slate-900 focus:border-perpusnas-700 focus:outline-none cursor-pointer"
-                >
-                  <option value="PUBLISHED">PUBLISHED (Tayang)</option>
-                  <option value="DRAFT">DRAFT (Konsep)</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-500">
-                  <ChevronDown className="w-4 h-4" />
-                </div>
-              </div>
-            </div>
+
           </div>
 
           <Input
@@ -429,3 +412,4 @@ export default function AdminKabarKedinasanPage() {
     </div>
   );
 }
+

@@ -39,7 +39,7 @@ export default function KabarKeluargaPage() {
           content: item.body || '',
           coverImage: item.coverImage || `/images/kabar-keluarga/card-${(idx % 9) + 1}.jpg`,
           publishedAt: item.createdAt || '2026-08-19',
-          status: item.status === 'DRAFT' ? 'Menunggu' : 'Terbit',
+          status: item.status === 'MENUNGGU' ? 'Menunggu' : 'Terbit',
           authorName: item.author?.name || 'Pegawai Perpusnas',
           categoryType: item.tags?.[0] || 'Keluarga',
         }));
@@ -278,3 +278,4 @@ export default function KabarKeluargaPage() {
     </div>
   );
 }
+

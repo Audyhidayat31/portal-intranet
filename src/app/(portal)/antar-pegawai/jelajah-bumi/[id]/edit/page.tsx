@@ -106,12 +106,6 @@ export default function EditJelajahBumiPage() {
       ) {
         setIsStatusMenuOpen(false);
       }
-      if (
-        stylingMenuRef.current &&
-        !stylingMenuRef.current.contains(event.target as Node)
-      ) {
-        setIsStylingMenuOpen(false);
-      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -139,7 +133,7 @@ export default function EditJelajahBumiPage() {
               setViewDate(d);
             }
           }
-          setStatus(item.status === 'DRAFT' ? 'Menunggu' : 'Terbit');
+          setStatus(item.status === 'MENUNGGU' ? 'Menunggu' : 'Terbit');
           const content = item.body || item.content || '';
           setDeskripsiHtml(content);
           if (editorRef.current) {
@@ -292,7 +286,7 @@ export default function EditJelajahBumiPage() {
           title: judul,
           body: htmlContent || rawText || judul,
           coverImage: gambarPreview || 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80',
-          status: status === 'Menunggu' ? 'DRAFT' : 'PUBLISHED',
+          status: status === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
         }),
       });
 

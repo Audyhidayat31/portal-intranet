@@ -9,7 +9,7 @@ export interface BannerItem {
   imageName?: string;
   headline: string;
   subheadline: string;
-  status: 'PUBLISHED' | 'WAITING' | 'DRAFT' | string;
+  status: 'TERBIT' | 'WAITING' | 'MENUNGGU' | string;
   createdBy?: string;
   createdAt?: string;
 }
@@ -22,9 +22,9 @@ interface BannerModalProps {
 }
 
 export const BANNER_STATUS_OPTIONS = [
-  { value: 'PUBLISHED', label: 'Terbit' },
+  { value: 'TERBIT', label: 'Terbit' },
   { value: 'WAITING', label: 'Menunggu' },
-  { value: 'DRAFT', label: 'Draft' },
+  { value: 'MENUNGGU', label: 'Draft' },
 ] as const;
 
 export function BannerModal({
@@ -35,7 +35,7 @@ export function BannerModal({
 }: BannerModalProps) {
   const [headline, setHeadline] = useState('');
   const [subheadline, setSubheadline] = useState('');
-  const [status, setStatus] = useState<string>('PUBLISHED');
+  const [status, setStatus] = useState<string>('TERBIT');
   const [statusDisplay, setStatusDisplay] = useState<string>('Status');
   const [imageUrl, setImageUrl] = useState('');
   const [imageFileName, setImageFileName] = useState('');
@@ -53,11 +53,11 @@ export function BannerModal({
       if (initialData.status === 'WAITING') {
         setStatus('WAITING');
         setStatusDisplay('Menunggu');
-      } else if (initialData.status === 'DRAFT') {
-        setStatus('DRAFT');
+      } else if (initialData.status === 'MENUNGGU') {
+        setStatus('MENUNGGU');
         setStatusDisplay('Draft');
       } else {
-        setStatus('PUBLISHED');
+        setStatus('TERBIT');
         setStatusDisplay('Terbit');
       }
       setImageUrl(initialData.imageUrl || '');
@@ -65,7 +65,7 @@ export function BannerModal({
     } else {
       setHeadline('');
       setSubheadline('');
-      setStatus('PUBLISHED');
+      setStatus('TERBIT');
       setStatusDisplay('Status');
       setImageUrl('');
       setImageFileName('');
@@ -144,7 +144,7 @@ export function BannerModal({
         imageName: imageFileName || 'Banner.png',
         headline: headline.trim(),
         subheadline: subheadline.trim(),
-        status: status || 'PUBLISHED',
+        status: status || 'TERBIT',
         createdBy: initialData?.createdBy || 'Admin 1',
         createdAt: initialData?.createdAt || new Date().toISOString(),
       });
@@ -303,45 +303,8 @@ export function BannerModal({
             />
           </div>
 
-          {/* 4. Status Dropdown & Simpan Button matching Wireframe */}
-          <div className={`flex items-start justify-between pt-1 transition-all duration-200 ${isStatusDropdownOpen ? 'pb-32' : 'pb-2'}`}>
-            {/* Status Dropdown */}
-            <div className="relative" ref={statusDropdownRef}>
-              <button
-                type="button"
-                onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
-                className="w-44 px-3.5 py-2.5 bg-[#5b6b82] hover:bg-[#485568] active:scale-95 text-white text-xs font-bold rounded-lg transition-all cursor-pointer shadow-xs flex items-center justify-between"
-              >
-                <span className="flex-1 text-center pl-3">{statusDisplay || 'Status'}</span>
-                <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {isStatusDropdownOpen && (
-                <div className="absolute left-0 top-full mt-1 w-44 bg-white border border-[#c5c6d2] rounded-lg shadow-lg overflow-hidden py-1 z-50 animate-in fade-in zoom-in-95 duration-150">
-                  {BANNER_STATUS_OPTIONS.map((opt) => {
-                    const isSelected = status === opt.value;
-                    return (
-                      <button
-                        key={opt.value}
-                        type="button"
-                        onClick={() => {
-                          setStatus(opt.value);
-                          setStatusDisplay(opt.label);
-                          setIsStatusDropdownOpen(false);
-                        }}
-                        className={`w-full text-center px-3 py-2 text-xs transition-colors cursor-pointer ${
-                          isSelected
-                            ? 'bg-slate-100 text-[#00113a] font-bold'
-                            : 'text-slate-700 font-semibold hover:bg-slate-50'
-                        }`}
-                      >
-                        {opt.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+          {/* 4. Simpan Button matching Wireframe */}
+          <div className="flex items-start justify-end pt-1 pb-2">
 
             {/* Simpan Button */}
             <button
@@ -357,3 +320,4 @@ export function BannerModal({
     </div>
   );
 }
+

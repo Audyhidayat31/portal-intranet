@@ -174,12 +174,6 @@ export default function EditKupasSosokPage() {
       ) {
         setIsStatusMenuOpen(false);
       }
-      if (
-        stylingMenuRef.current &&
-        !stylingMenuRef.current.contains(event.target as Node)
-      ) {
-        setIsStylingMenuOpen(false);
-      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -590,63 +584,7 @@ export default function EditKupasSosokPage() {
               <div className="border border-[#c5c6d2] rounded overflow-hidden">
                 {/* Formatting Toolbar */}
                 <div className="bg-[#f4f3f9] border-b border-[#c5c6d2] p-2 flex flex-wrap items-center gap-1">
-                  {/* Styling Menu Button */}
-                  <div className="relative" ref={stylingMenuRef}>
-                    <button
-                      type="button"
-                      onClick={() => setIsStylingMenuOpen(!isStylingMenuOpen)}
-                      className="px-3 py-1.5 bg-white border border-[#c5c6d2] rounded text-xs font-semibold text-[#1a1b20] hover:bg-slate-50 transition-colors flex items-center gap-1 shadow-2xs"
-                    >
-                      <Type className="w-3.5 h-3.5 text-[#00113a]" />
-                      <span>Styling</span>
-                      <ChevronDown className="w-3.5 h-3.5 text-[#757682]" />
-                    </button>
 
-                    {isStylingMenuOpen && (
-                      <div className="absolute top-full left-0 mt-1 z-50 bg-white border border-[#c5c6d2] rounded-lg shadow-xl py-1 w-44 animate-fadeIn">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            execFormat('formatBlock', '<h1>');
-                            setIsStylingMenuOpen(false);
-                          }}
-                          className="w-full px-3 py-2 text-left text-xs hover:bg-[#f4f3f9] flex items-center gap-2 text-[#00113a] font-bold"
-                        >
-                          <Heading1 className="w-4 h-4" /> Heading 1
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            execFormat('formatBlock', '<h2>');
-                            setIsStylingMenuOpen(false);
-                          }}
-                          className="w-full px-3 py-2 text-left text-xs hover:bg-[#f4f3f9] flex items-center gap-2 text-[#00113a] font-semibold"
-                        >
-                          <Heading2 className="w-4 h-4" /> Heading 2
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            execFormat('formatBlock', '<p>');
-                            setIsStylingMenuOpen(false);
-                          }}
-                          className="w-full px-3 py-2 text-left text-xs hover:bg-[#f4f3f9] flex items-center gap-2 text-[#1a1b20]"
-                        >
-                          <Type className="w-4 h-4" /> Normal Text
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            execFormat('formatBlock', '<blockquote>');
-                            setIsStylingMenuOpen(false);
-                          }}
-                          className="w-full px-3 py-2 text-left text-xs hover:bg-[#f4f3f9] flex items-center gap-2 text-[#444650] italic"
-                        >
-                          <Quote className="w-4 h-4" /> Kutipan
-                        </button>
-                      </div>
-                    )}
-                  </div>
 
                   <div className="h-5 w-px bg-[#c5c6d2] mx-1" />
 

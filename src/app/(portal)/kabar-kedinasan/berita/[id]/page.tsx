@@ -227,9 +227,18 @@ export default function DetailBeritaPage() {
         ) : (
           <article className="w-full">
             {/* Header Section: Judul Berita */}
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#1a1b20] tracking-tight leading-tight mb-8">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#1a1b20] tracking-tight leading-tight mb-4">
               {news?.title || 'Judul Berita'}
             </h1>
+
+            {/* Riwayat Berita / Metadata */}
+            <div className="flex flex-wrap items-center gap-2 text-sm text-[#757682] mb-8 font-medium">
+              <span>{authorName}</span>
+              <span className="text-[#c5c6d2]">|</span>
+              <span>{displayDate}</span>
+              <span className="text-[#c5c6d2]">|</span>
+              <span>Status: <span className="text-[#1a1b20] capitalize">{news?.status === 'PUBLISHED' || news?.status === 'TERBIT' ? 'Terbit' : (news?.status === 'DRAFT' || news?.status === 'DRAF' ? 'Menunggu' : (news?.status || 'Terbit'))}</span></span>
+            </div>
 
             {/* Featured Image matching Stitch */}
             <div className="w-full aspect-video bg-[#e3e2e8] border border-[#c5c6d2] rounded-lg overflow-hidden flex items-center justify-center text-[#444650] mb-8 shadow-xs relative group">
@@ -247,10 +256,7 @@ export default function DetailBeritaPage() {
               )}
             </div>
 
-            {/* Tanggal Section */}
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#1a1b20] mb-8">
-              {displayDate}
-            </h2>
+            {/* Tanggal Section removed as it's now in metadata */}
 
             {/* Article Body (Deskripsi) matching Stitch */}
             <div className="prose max-w-none text-[#1a1b20] text-base leading-relaxed mb-16">
@@ -335,18 +341,8 @@ export default function DetailBeritaPage() {
               </nav>
             </section>
 
-            {/* Metadata & Social Sharing Section matching Stitch */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 pt-6 mb-10 border-t border-[#c5c6d2]">
-              {/* Riwayat Berita */}
-              <div className="text-sm text-[#444650]">
-                <h3 className="text-lg sm:text-xl font-bold text-[#1a1b20] mb-1">
-                  Riwayat Berita
-                </h3>
-                <p className="text-sm text-[#444650]">
-                  Dibuat oleh <span className="font-semibold text-[#1a1b20]">{authorName}</span> pada tanggal{' '}
-                  <span className="font-semibold text-[#1a1b20]">{displayDate}</span>
-                </p>
-              </div>
+            {/* Social Sharing Section matching Stitch */}
+            <div className="flex flex-col md:flex-row justify-start items-start md:items-end gap-6 pt-6 mb-10 border-t border-[#c5c6d2]">
 
               {/* Social Sharing Icons matching Stitch exact styling */}
               <div className="flex items-center gap-3 sm:gap-4 flex-wrap">

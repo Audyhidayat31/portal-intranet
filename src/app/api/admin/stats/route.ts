@@ -18,8 +18,8 @@ export async function GET() {
       recentContents,
     ] = await Promise.all([
       prisma.user.count(),
-      prisma.content.count({ where: { status: 'PUBLISHED' } }),
-      prisma.employeePost.count({ where: { status: 'PUBLISHED' } }),
+      prisma.content.count({ where: { status: 'TERBIT' } }),
+      prisma.employeePost.count({ where: { status: 'TERBIT' } }),
       prisma.content.count({ where: { type: 'AGENDA' } }),
       prisma.activityLog.findMany({
         orderBy: { createdAt: 'desc' },

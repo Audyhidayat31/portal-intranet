@@ -91,12 +91,6 @@ export default function TambahPengumumanPage() {
       ) {
         setIsDatePickerOpen(false);
       }
-      if (
-        stylingMenuRef.current &&
-        !stylingMenuRef.current.contains(event.target as Node)
-      ) {
-        setIsStylingMenuOpen(false);
-      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -608,82 +602,7 @@ export default function TambahPengumumanPage() {
                     <Link2 className="w-4 h-4" />
                   </button>
 
-                  {/* STYLING MENU DROPDOWN */}
-                  <div className="relative" ref={stylingMenuRef}>
-                    <button
-                      type="button"
-                      onClick={() => setIsStylingMenuOpen(!isStylingMenuOpen)}
-                      className="px-2.5 py-1 hover:bg-[#e9e7ee] rounded text-xs font-bold text-[#00113a] flex items-center gap-1 transition-colors border border-transparent hover:border-[#c5c6d2]"
-                    >
-                      <Sparkles className="w-3.5 h-3.5 text-[#00113a]" />
-                      <span>Styling</span>
-                    </button>
 
-                    {isStylingMenuOpen && (
-                      <div className="absolute top-8 left-0 z-50 bg-white border border-[#c5c6d2] rounded-lg shadow-xl py-1.5 w-48 text-xs animate-fadeIn">
-                        <button
-                          type="button"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            execFormat('formatBlock', '<h1>');
-                            setIsStylingMenuOpen(false);
-                          }}
-                          className="w-full px-3 py-2 text-left hover:bg-[#f4f3f9] flex items-center gap-2 text-[#1a1b20]"
-                        >
-                          <Heading1 className="w-4 h-4 text-[#00113a]" />
-                          <span>Judul Utama (H1)</span>
-                        </button>
-                        <button
-                          type="button"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            execFormat('formatBlock', '<h2>');
-                            setIsStylingMenuOpen(false);
-                          }}
-                          className="w-full px-3 py-2 text-left hover:bg-[#f4f3f9] flex items-center gap-2 text-[#1a1b20]"
-                        >
-                          <Heading2 className="w-4 h-4 text-[#00113a]" />
-                          <span>Sub Judul (H2)</span>
-                        </button>
-                        <button
-                          type="button"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            execFormat('formatBlock', '<p>');
-                            setIsStylingMenuOpen(false);
-                          }}
-                          className="w-full px-3 py-2 text-left hover:bg-[#f4f3f9] flex items-center gap-2 text-[#1a1b20]"
-                        >
-                          <Type className="w-4 h-4 text-[#00113a]" />
-                          <span>Paragraf Normal</span>
-                        </button>
-                        <button
-                          type="button"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            execFormat('formatBlock', '<blockquote>');
-                            setIsStylingMenuOpen(false);
-                          }}
-                          className="w-full px-3 py-2 text-left hover:bg-[#f4f3f9] flex items-center gap-2 text-[#1a1b20]"
-                        >
-                          <Quote className="w-4 h-4 text-[#00113a]" />
-                          <span>Kutipan (Quote)</span>
-                        </button>
-                        <button
-                          type="button"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            execFormat('hiliteColor', '#fef08a');
-                            setIsStylingMenuOpen(false);
-                          }}
-                          className="w-full px-3 py-2 text-left hover:bg-[#f4f3f9] flex items-center gap-2 text-[#1a1b20]"
-                        >
-                          <Highlighter className="w-4 h-4 text-amber-600" />
-                          <span>Sorot Teks (Highlight)</span>
-                        </button>
-                      </div>
-                    )}
-                  </div>
                 </div>
 
                 {/* Direct WYSIWYG ContentEditable Area */}
@@ -778,3 +697,4 @@ export default function TambahPengumumanPage() {
     </div>
   );
 }
+
