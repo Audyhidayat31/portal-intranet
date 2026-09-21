@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
 
     const where: any = {
       type: 'INTERNAL_DOCUMENT',
-      status: 'PUBLISHED',
+      status: 'TERBIT',
     };
 
     if (search) {
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
       ? `[${documentNumber}] ${keterangan || ''}`
       : keterangan || '';
 
-    const docStatus = status === 'Menunggu' || status === 'DRAFT' ? 'DRAFT' : 'PUBLISHED';
+    const docStatus = status === 'Menunggu' || status === 'MENUNGGU' ? 'MENUNGGU' : 'TERBIT';
 
     const created = await prisma.content.create({
       data: {

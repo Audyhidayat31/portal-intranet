@@ -142,7 +142,7 @@ export default function EditLaporanPerjalananPage() {
           if (editorRef.current) {
             editorRef.current.innerHTML = item.body || item.content || '';
           }
-          setStatus(item.status === 'DRAFT' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit');
+          setStatus(item.status === 'MENUNGGU' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit');
         } else {
           throw new Error('Fallback');
         }
@@ -218,12 +218,6 @@ export default function EditLaporanPerjalananPage() {
         activeDatePicker === 2
       ) {
         setActiveDatePicker(null);
-      }
-      if (
-        stylingMenuRef.current &&
-        !stylingMenuRef.current.contains(event.target as Node)
-      ) {
-        setIsStylingMenuOpen(false);
       }
       if (
         statusMenuRef.current &&
@@ -790,70 +784,7 @@ export default function EditLaporanPerjalananPage() {
                     <Link2 className="w-4 h-4" />
                   </button>
 
-                  {/* Styling Menu */}
-                  <div className="relative ml-auto" ref={stylingMenuRef}>
-                    <button
-                      type="button"
-                      onClick={() => setIsStylingMenuOpen(!isStylingMenuOpen)}
-                      className="px-2.5 py-1 text-xs font-bold text-[#444650] hover:text-[#00113a] hover:bg-[#e3e2e8] rounded flex items-center gap-1.5 transition-colors cursor-pointer"
-                    >
-                      <span>Styling</span>
-                      <ChevronDown className="w-3.5 h-3.5" />
-                    </button>
 
-                    {isStylingMenuOpen && (
-                      <div className="absolute top-8 right-0 z-50 bg-white border border-[#c5c6d2] rounded-lg shadow-xl py-1.5 w-44 text-xs animate-fadeIn">
-                        <button
-                          type="button"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            execFormat('formatBlock', '<h1>');
-                            setIsStylingMenuOpen(false);
-                          }}
-                          className="w-full px-3 py-2 text-left hover:bg-[#f4f3f9] flex items-center gap-2 text-[#1a1b20] cursor-pointer"
-                        >
-                          <Heading1 className="w-4 h-4 text-[#00113a]" />
-                          <span>Judul Utama (H1)</span>
-                        </button>
-                        <button
-                          type="button"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            execFormat('formatBlock', '<h2>');
-                            setIsStylingMenuOpen(false);
-                          }}
-                          className="w-full px-3 py-2 text-left hover:bg-[#f4f3f9] flex items-center gap-2 text-[#1a1b20] cursor-pointer"
-                        >
-                          <Heading2 className="w-4 h-4 text-[#00113a]" />
-                          <span>Sub Judul (H2)</span>
-                        </button>
-                        <button
-                          type="button"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            execFormat('formatBlock', '<p>');
-                            setIsStylingMenuOpen(false);
-                          }}
-                          className="w-full px-3 py-2 text-left hover:bg-[#f4f3f9] flex items-center gap-2 text-[#1a1b20] cursor-pointer"
-                        >
-                          <Type className="w-4 h-4 text-[#00113a]" />
-                          <span>Paragraf Normal</span>
-                        </button>
-                        <button
-                          type="button"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            execFormat('formatBlock', '<blockquote>');
-                            setIsStylingMenuOpen(false);
-                          }}
-                          className="w-full px-3 py-2 text-left hover:bg-[#f4f3f9] flex items-center gap-2 text-[#1a1b20] cursor-pointer"
-                        >
-                          <Quote className="w-4 h-4 text-[#00113a]" />
-                          <span>Kutipan (Quote)</span>
-                        </button>
-                      </div>
-                    )}
-                  </div>
                 </div>
 
                 {/* ContentEditable Container */}

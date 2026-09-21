@@ -57,7 +57,7 @@ export default function DaftarOlahragaPage() {
             item.coverImage ||
             'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=800&q=80',
           publishedAt: item.createdAt || new Date().toISOString(),
-          status: item.status === 'DRAFT' ? 'Menunggu' : 'Terbit',
+          status: item.status === 'MENUNGGU' ? 'Menunggu' : 'Terbit',
           authorName: item.author?.name || 'Budi Sujatmiko',
         }));
 
@@ -454,3 +454,4 @@ export default function DaftarOlahragaPage() {
     </div>
   );
 }
+

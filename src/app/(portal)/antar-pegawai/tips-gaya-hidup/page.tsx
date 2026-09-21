@@ -37,7 +37,7 @@ export default function TipsGayaHidupPage() {
           content: item.body || '',
           coverImage: item.coverImage || `/images/tips-gaya-hidup/card-${(idx % 9) + 1}.jpg`,
           publishedAt: item.createdAt || '2026-08-19',
-          status: item.status === 'DRAFT' ? 'Menunggu' : 'Terbit',
+          status: item.status === 'MENUNGGU' ? 'Menunggu' : 'Terbit',
           authorName: item.author?.name || 'Pegawai Perpusnas',
           categoryType: item.tags?.[0] || 'Kesehatan',
         }));
@@ -274,3 +274,4 @@ export default function TipsGayaHidupPage() {
     </div>
   );
 }
+

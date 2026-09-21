@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     const { title, categorySlug, body: contentBody, coverImage, status } = result.data;
     const slug = `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}`;
 
-    const postStatus = status === 'DRAFT' || status === 'Menunggu' ? 'DRAFT' : 'PUBLISHED';
+    const postStatus = status === 'MENUNGGU' || status === 'Menunggu' ? 'MENUNGGU' : 'TERBIT';
 
     const newPost = await prisma.employeePost.create({
       data: {

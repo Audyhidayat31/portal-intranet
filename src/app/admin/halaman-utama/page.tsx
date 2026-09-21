@@ -85,12 +85,12 @@ export default function AdminHomepageKelolaPage() {
   // Data Ucapan Selamat Ulang Tahun
   const [ucapanHeadline, setUcapanHeadline] = useState('');
   const [ucapanSubheadline, setUcapanSubheadline] = useState('');
-  const [ucapanStatus, setUcapanStatus] = useState<'PUBLISHED' | 'WAITING'>('PUBLISHED');
+  const [ucapanStatus, setUcapanStatus] = useState<'TERBIT' | 'WAITING'>('TERBIT');
 
   const [savedGreeting, setSavedGreeting] = useState({
     headline: 'Selamat Ulang Tahun',
     subheadline: 'Doa terbaik kami untuk Bapak/Ibu di momen bertambahnya usia. Semoga selalu dianugerahi kesehatan, kebahagiaan, kelancaran, serta kesuksesan dalam setiap karya.',
-    status: 'PUBLISHED',
+    status: 'TERBIT',
   });
 
   // ---------------- TAB TENTANG ----------------
@@ -99,7 +99,7 @@ export default function AdminHomepageKelolaPage() {
     syaratKetentuan: `1. Setiap pegawai Perpusnas yang masih aktif dan memiliki NIP terdaftar pada Bagian Kepegawaian berhak memiliki akun pada Portal Intranet Perpusnas.\n2. Registrasi akun Portal Intranet Perpusnas hanya boleh dilakukan oleh pegawai yang bersangkutan. Tidak diperkenankan melakukan registrasi atas nama pegawai lain.\n3. Untuk keamanan dan kenyamanan bersama, setiap pemilik akun hendaknya tidak memberitahukan password login kepada pegawai lain.\n4. Manfaatkanlah rubrik yang tersedia untuk meningkatkan wawasan keilmuan, kinerja, dan integritas ASN.\n5. Gunakanlah bahasa yang sopan, santun, dan menjunjung tinggi etika kedinasan.`,
     latarBelakang: 'Background.png',
     panduanAplikasi: 'panduan.pdf',
-    status: 'PUBLISHED',
+    status: 'TERBIT',
   });
 
   const backgroundFileInputRef = useRef<HTMLInputElement | null>(null);
@@ -224,7 +224,7 @@ export default function AdminHomepageKelolaPage() {
             setSavedGreeting(d.greeting);
             setUcapanHeadline(d.greeting.headline || '');
             setUcapanSubheadline(d.greeting.subheadline || '');
-            setUcapanStatus(d.greeting.status || 'PUBLISHED');
+            setUcapanStatus(d.greeting.status || 'TERBIT');
           }
           if (d.infoPenting) {
             setSavedInfoPenting(d.infoPenting);
@@ -283,7 +283,7 @@ export default function AdminHomepageKelolaPage() {
       socialMedia: overrides.socialMedia !== undefined ? overrides.socialMedia : socialMediaList,
       digitalServices: overrides.digitalServices !== undefined ? overrides.digitalServices : digitalServiceList,
       kontak: overrides.kontak !== undefined ? overrides.kontak : kontakData,
-      copyright: '© Copyright 2026, All Rights Reserved | Perpustakaan Nasional RI.',
+      copyright: '© Hak Cipta 2026, Perpustakaan Nasional Republik Indonesia.',
     };
 
     try {
@@ -439,7 +439,7 @@ export default function AdminHomepageKelolaPage() {
   };
 
   const handleToggleBannerStatus = async (item: BannerItem) => {
-    const nextStatus: 'PUBLISHED' | 'WAITING' = item.status === 'PUBLISHED' ? 'WAITING' : 'PUBLISHED';
+    const nextStatus: 'TERBIT' | 'WAITING' = item.status === 'TERBIT' ? 'WAITING' : 'TERBIT';
     const updatedBanners: BannerItem[] = banners.map((b) =>
       b.id === item.id ? { ...b, status: nextStatus } : b
     );
@@ -453,7 +453,7 @@ export default function AdminHomepageKelolaPage() {
       const data = await res.json();
       if (data.success) {
         setBanners(updatedBanners);
-        showNotification('success', `Status banner "${item.headline}" diubah menjadi ${nextStatus === 'PUBLISHED' ? 'Terbit' : 'Menunggu'}`);
+        showNotification('success', `Status banner "${item.headline}" diubah menjadi ${nextStatus === 'TERBIT' ? 'Terbit' : 'Menunggu'}`);
       }
     } catch (e) {
       showNotification('error', 'Gagal memperbarui status banner.');
@@ -589,8 +589,8 @@ export default function AdminHomepageKelolaPage() {
   };
 
   const handleToggleSocialStatus = async (item: SocialMediaItem) => {
-    const isCurrentlyActive = item.status === 'ACTIVE' || item.status === 'Diterbitkan';
-    const nextStatus: any = isCurrentlyActive ? 'Draft' : 'Diterbitkan';
+    const isCurrentlyActive = item.status === 'ACTIVE' || item.status === 'Diterbitkan' || item.status === 'Aktif';
+    const nextStatus: any = isCurrentlyActive ? 'Nonaktif' : 'Aktif';
     const updatedList: SocialMediaItem[] = socialMediaList.map((s) =>
       s.id === item.id
         ? {
@@ -752,11 +752,7 @@ export default function AdminHomepageKelolaPage() {
     <div className="w-full max-w-[1280px] mx-auto space-y-7 text-[#1a1b20] overflow-x-hidden">
       {/* 1. BREADCRUMB, PAGE TITLE & SUBTITLE (WIREFRAME) */}
       <div className="space-y-1.5">
-        <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-          <Link href="/beranda" className="hover:text-[#00113a] transition-colors">Beranda</Link>
-          <span>&gt;</span>
-          <span className="text-[#00113a] font-bold">Kelola Admin</span>
-        </div>
+
         <h1 className="text-2xl sm:text-3xl font-extrabold text-[#00113a] tracking-tight font-sans">
           Kelola Halaman Utama
         </h1>
@@ -841,9 +837,6 @@ export default function AdminHomepageKelolaPage() {
           {/* ---------------- CARD 1: DESKRIPSI FOOTER ---------------- */}
           <section className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 sm:p-7 space-y-4">
             <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-              <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#00113a] flex items-center justify-center shrink-0">
-                <FileText className="w-4.5 h-4.5 text-[#00113a]" />
-              </div>
               <div>
                 <h2 className="text-base font-bold text-slate-900">
                   Deskripsi Singkat Portal
@@ -872,9 +865,7 @@ export default function AdminHomepageKelolaPage() {
                   disabled={isSaving}
                   className="px-6 py-2 rounded-xl bg-[#00113a] hover:bg-[#2a4386] text-white text-xs font-bold transition-all shadow-xs disabled:opacity-50 flex items-center gap-1.5 active:scale-95 cursor-pointer"
                 >
-                  <Save className="w-3.5 h-3.5" />
-                  Simpan Deskripsi
-                </button>
+                  <Save className="w-3.5 h-3.5" />Simpan</button>
               </div>
             </div>
           </section>
@@ -883,9 +874,6 @@ export default function AdminHomepageKelolaPage() {
           <section className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 sm:p-7 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center shrink-0">
-                  <Share2 className="w-4.5 h-4.5 text-purple-700" />
-                </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h2 className="text-sm font-bold text-slate-900">
@@ -906,9 +894,7 @@ export default function AdminHomepageKelolaPage() {
                 onClick={handleOpenAddSocial}
                 className="inline-flex items-center justify-center gap-1.5 bg-[#007BFF] hover:bg-[#0056b3] text-white text-xs font-bold px-4 py-2 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer shrink-0"
               >
-                <Plus className="w-3.5 h-3.5" />
-                Tambah Media Sosial
-              </button>
+                + Tambah</button>
             </div>
 
             {/* Media Sosial Table Container (100% Fit, No Scrollbar) */}
@@ -977,14 +963,15 @@ export default function AdminHomepageKelolaPage() {
 
                         {/* Status */}
                         <td className="py-2 px-1 text-center">
-                          {item.status === 'ACTIVE' || item.status === 'Diterbitkan' ? (
+                          {item.status === 'ACTIVE' || item.status === 'Diterbitkan' || item.status === 'Aktif' ? (
                             <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
                               <span className="w-1 h-1 rounded-full bg-emerald-600 shrink-0" />
-                              {item.status === 'Diterbitkan' ? 'Diterbitkan' : 'Aktif'}
+                              Aktif
                             </span>
-                          ) : item.status === 'Draft' ? (
+                          ) : item.status === 'Draft' || item.status === 'Nonaktif' ? (
                             <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-slate-100 text-slate-700 border border-slate-300 whitespace-nowrap">
-                              Draft
+                              <span className="w-1 h-1 rounded-full bg-slate-400 shrink-0" />
+                              Nonaktif
                             </span>
                           ) : item.status === 'Menunggu Review' ? (
                             <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-50 text-amber-700 border border-amber-200 whitespace-nowrap">
@@ -1039,12 +1026,12 @@ export default function AdminHomepageKelolaPage() {
                             <button
                               type="button"
                               onClick={() => handleToggleSocialStatus(item)}
-                              title={`Ubah status menjadi ${item.status === 'ACTIVE' ? 'Nonaktif' : 'Aktif'}`}
-                              className={`relative inline-flex h-3.5 w-6 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${item.status === 'ACTIVE' ? 'bg-emerald-600' : 'bg-slate-300'
+                              title={`Ubah status menjadi ${item.status === 'ACTIVE' || item.status === 'Diterbitkan' || item.status === 'Aktif' ? 'Nonaktif' : 'Aktif'}`}
+                              className={`relative inline-flex h-3.5 w-6 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${item.status === 'ACTIVE' || item.status === 'Diterbitkan' || item.status === 'Aktif' ? 'bg-emerald-600' : 'bg-slate-300'
                                 }`}
                             >
                               <span
-                                className={`pointer-events-none inline-block h-2.5 w-2.5 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${item.status === 'ACTIVE' ? 'translate-x-[13px]' : 'translate-x-0'
+                                className={`pointer-events-none inline-block h-2.5 w-2.5 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${item.status === 'ACTIVE' || item.status === 'Diterbitkan' || item.status === 'Aktif' ? 'translate-x-[13px]' : 'translate-x-0'
                                   }`}
                               />
                             </button>
@@ -1062,9 +1049,6 @@ export default function AdminHomepageKelolaPage() {
           <section className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 sm:p-7 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center shrink-0">
-                  <Globe className="w-4.5 h-4.5 text-blue-700" />
-                </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h2 className="text-sm font-bold text-slate-900">
@@ -1085,9 +1069,7 @@ export default function AdminHomepageKelolaPage() {
                 onClick={handleOpenAddService}
                 className="inline-flex items-center justify-center gap-1.5 bg-[#007BFF] hover:bg-[#0056b3] text-white text-xs font-bold px-4 py-2 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer shrink-0"
               >
-                <Plus className="w-3.5 h-3.5" />
-                Tambah Layanan Digital
-              </button>
+                + Tambah</button>
             </div>
 
             {/* Layanan Digital Table Container (100% Fit, No Scrollbar) */}
@@ -1144,11 +1126,11 @@ export default function AdminHomepageKelolaPage() {
                           {item.status === 'ACTIVE' || item.status === 'Diterbitkan' ? (
                             <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
                               <span className="w-1 h-1 rounded-full bg-emerald-600 shrink-0" />
-                              {item.status === 'Diterbitkan' ? 'Diterbitkan' : 'Aktif'}
+                              Aktif
                             </span>
                           ) : item.status === 'Draft' ? (
                             <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-slate-100 text-slate-700 border border-slate-300 whitespace-nowrap">
-                              Draft
+                              Nonaktif
                             </span>
                           ) : item.status === 'Menunggu Review' ? (
                             <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-50 text-amber-700 border border-amber-200 whitespace-nowrap">
@@ -1225,9 +1207,6 @@ export default function AdminHomepageKelolaPage() {
           {/* ---------------- CARD 4: KONTAK ---------------- */}
           <section className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 sm:p-7 space-y-5">
             <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-              <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
-                <PhoneCall className="w-4.5 h-4.5 text-emerald-700" />
-              </div>
               <div>
                 <h2 className="text-base font-bold text-slate-900">
                   Informasi Kontak & Lokasi Gedung
@@ -1307,9 +1286,7 @@ export default function AdminHomepageKelolaPage() {
                   disabled={isSaving}
                   className="px-6 py-2.5 rounded-xl bg-[#00113a] hover:bg-[#2a4386] text-white text-xs font-bold transition-all shadow-xs disabled:opacity-50 flex items-center gap-1.5 active:scale-95 cursor-pointer"
                 >
-                  <Save className="w-3.5 h-3.5" />
-                  Simpan Informasi Kontak
-                </button>
+                  <Save className="w-3.5 h-3.5" />Simpan</button>
               </div>
             </form>
           </section>
@@ -1442,9 +1419,6 @@ export default function AdminHomepageKelolaPage() {
           <section className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 sm:p-7 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center shrink-0">
-                  <ImageIcon className="w-4.5 h-4.5 text-blue-700" />
-                </div>
                 <div>
                   <h2 className="text-base font-bold text-slate-900">
                     Banner Promosi & Agenda
@@ -1459,9 +1433,7 @@ export default function AdminHomepageKelolaPage() {
                 onClick={handleOpenAddBanner}
                 className="inline-flex items-center gap-1.5 bg-[#007BFF] hover:bg-[#0056b3] text-white text-xs font-bold px-4 py-2 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
               >
-                <Plus className="w-3.5 h-3.5" />
-                Tambah Banner
-              </button>
+                + Tambah</button>
             </div>
 
             {/* Banner Table */}
@@ -1514,7 +1486,7 @@ export default function AdminHomepageKelolaPage() {
                           </p>
                         </td>
                         <td className="py-2 px-1 text-center">
-                          {item.status === 'PUBLISHED' ? (
+                          {item.status === 'TERBIT' ? (
                             <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
                               <span className="w-1 h-1 rounded-full bg-emerald-600 shrink-0" />
                               Terbit
@@ -1556,12 +1528,12 @@ export default function AdminHomepageKelolaPage() {
                             <button
                               type="button"
                               onClick={() => handleToggleBannerStatus(item)}
-                              title={`Ubah status menjadi ${item.status === 'PUBLISHED' ? 'Menunggu' : 'Terbit'}`}
-                              className={`relative inline-flex h-3.5 w-6 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${item.status === 'PUBLISHED' ? 'bg-emerald-600' : 'bg-slate-300'
+                              title={`Ubah status menjadi ${item.status === 'TERBIT' ? 'Menunggu' : 'Terbit'}`}
+                              className={`relative inline-flex h-3.5 w-6 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${item.status === 'TERBIT' ? 'bg-emerald-600' : 'bg-slate-300'
                                 }`}
                             >
                               <span
-                                className={`pointer-events-none inline-block h-2.5 w-2.5 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${item.status === 'PUBLISHED' ? 'translate-x-[13px]' : 'translate-x-0'
+                                className={`pointer-events-none inline-block h-2.5 w-2.5 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${item.status === 'TERBIT' ? 'translate-x-[13px]' : 'translate-x-0'
                                   }`}
                               />
                             </button>
@@ -1606,7 +1578,7 @@ export default function AdminHomepageKelolaPage() {
                 <div className="flex items-center justify-between pt-4 mt-4 border-t border-slate-200/60">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
-                    {savedGreeting.status === 'PUBLISHED' ? 'Terbit' : 'Menunggu'}
+                    {savedGreeting.status === 'TERBIT' ? 'Terbit' : 'Menunggu'}
                   </span>
 
                   <button
@@ -1662,7 +1634,7 @@ export default function AdminHomepageKelolaPage() {
                       isLoading={isSaving}
                       className="bg-[#00113a] text-white hover:bg-[#2a4386] font-bold px-6 shadow-xs rounded-xl cursor-pointer"
                     >
-                      <Save className="w-3.5 h-3.5" /> Simpan Ucapan
+                      Simpan
                     </Button>
                   </div>
                 </form>
@@ -1679,9 +1651,6 @@ export default function AdminHomepageKelolaPage() {
         <div className="space-y-6 text-left">
           <section className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 sm:p-8 space-y-6">
             <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-              <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#00113a] flex items-center justify-center shrink-0">
-                <Info className="w-4.5 h-4.5 text-[#00113a]" />
-              </div>
               <div>
                 <h2 className="text-base font-bold text-slate-900">
                   Informasi Halaman Tentang Portal
@@ -1710,9 +1679,7 @@ export default function AdminHomepageKelolaPage() {
                   onClick={() => handleSaveTentangSection('Deskripsi')}
                   disabled={isSaving}
                   className="px-6 py-2 rounded-xl bg-[#00113a] hover:bg-[#2a4386] text-white text-xs font-bold transition-all shadow-xs disabled:opacity-50 cursor-pointer"
-                >
-                  Simpan Deskripsi
-                </button>
+                >Simpan</button>
               </div>
             </div>
 
@@ -1736,9 +1703,7 @@ export default function AdminHomepageKelolaPage() {
                   onClick={() => handleSaveTentangSection('Syarat dan Ketentuan')}
                   disabled={isSaving}
                   className="px-6 py-2 rounded-xl bg-[#00113a] hover:bg-[#2a4386] text-white text-xs font-bold transition-all shadow-xs disabled:opacity-50 cursor-pointer"
-                >
-                  Simpan Syarat & Ketentuan
-                </button>
+                >Simpan</button>
               </div>
             </div>
 
@@ -1781,9 +1746,7 @@ export default function AdminHomepageKelolaPage() {
                     onClick={() => handleSaveTentangSection('Berkas Latar Belakang')}
                     disabled={isSaving}
                     className="px-5 py-2 rounded-xl bg-[#00113a] hover:bg-[#2a4386] text-white text-xs font-bold transition-all shadow-xs disabled:opacity-50 cursor-pointer"
-                  >
-                    Simpan Latar Belakang
-                  </button>
+                  >Simpan</button>
                 </div>
               </div>
 
@@ -1822,9 +1785,7 @@ export default function AdminHomepageKelolaPage() {
                     onClick={() => handleSaveTentangSection('Berkas Panduan Aplikasi')}
                     disabled={isSaving}
                     className="px-5 py-2 rounded-xl bg-[#00113a] hover:bg-[#2a4386] text-white text-xs font-bold transition-all shadow-xs disabled:opacity-50 cursor-pointer"
-                  >
-                    Simpan Panduan
-                  </button>
+                  >Simpan</button>
                 </div>
               </div>
             </div>
@@ -1898,3 +1859,4 @@ export default function AdminHomepageKelolaPage() {
     </div>
   );
 }
+

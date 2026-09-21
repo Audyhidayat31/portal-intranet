@@ -286,12 +286,23 @@ export default function DokumenInternPage() {
                       <span className="text-[#002366] font-semibold">{doc.attachmentName}</span>
                     </div>
 
-                    <Link
-                      href={`/kabar-kedinasan/dokumen-intern/${doc.id}`}
-                      className="bg-[#00113a] hover:bg-[#2a4386] text-white font-bold text-xs sm:text-sm px-6 py-1.5 rounded transition-colors shadow-xs self-end sm:self-auto inline-block text-center cursor-pointer"
-                    >
-                      Lihat
-                    </Link>
+                    <div className="shrink-0 mt-4 md:mt-0 self-end flex items-center gap-3">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-tight ${
+                          (doc.status === 'MENUNGGU' || doc.status === 'Menunggu' || doc.status === 'DRAFT')
+                            ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        }`}
+                      >
+                        Status: {(doc.status === 'MENUNGGU' || doc.status === 'Menunggu' || doc.status === 'DRAFT') ? 'Menunggu' : 'Terbit'}
+                      </span>
+                      <Link
+                        href={`/kabar-kedinasan/dokumen-intern/${doc.id}`}
+                        className="bg-[#00113a] text-white hover:bg-[#2a4386] font-semibold text-xs py-1.5 px-4 rounded-full transition-all shadow-sm cursor-pointer inline-flex items-center justify-center"
+                      >
+                        <span>Lihat</span>
+                      </Link>
+                    </div>
                   </div>
                 </div>
               );
@@ -524,3 +535,4 @@ export default function DokumenInternPage() {
     </div>
   );
 }
+

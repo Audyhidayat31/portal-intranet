@@ -27,7 +27,7 @@ async function main() {
       excerpt: 'Menurut penelitian pada tanggal 19 Agustus 2026 terlihat bahwa jumlah peminat buku di berbagai daerah mengalami peningkatan signifikan...',
       body: 'Menurut penelitian yang dirilis pada tanggal 19 Agustus 2026, indeks kegemaran membaca masyarakat Indonesia mengalami lonjakan positif. Hal ini didorong oleh peningkatan penetrasi perpustakaan digital, penyediaan pojok baca terpadu di ruang publik, serta optimalisasi layanan perpustakaan berbasis inklusi sosial yang gencar dilaksanakan oleh Perpustakaan Nasional RI bersama seluruh pemangku kepentingan daerah.',
       coverImage: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80',
-      status: 'PUBLISHED',
+      status: 'TERBIT',
     },
     {
       id: 'stitch-2',
@@ -35,7 +35,7 @@ async function main() {
       excerpt: 'Integrasi teknologi dalam membaca dokumen digital melalui tablet cerdas semakin memudahkan pemustaka dalam menjangkau koleksi naskah kuno...',
       body: 'Integrasi teknologi dalam membaca dokumen digital melalui tablet dan gawai cerdas semakin memudahkan masyarakat dalam menjangkau koleksi naskah kuno, jurnal penelitian, serta buku teks terakreditasi melalui portal iPusnas dan IOS.',
       coverImage: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=800&q=80',
-      status: 'DRAFT',
+      status: 'MENUNGGU',
     },
     {
       id: 'stitch-3',
@@ -43,7 +43,7 @@ async function main() {
       excerpt: 'Gedung fasilitas layanan Perpustakaan Nasional di Jalan Medan Merdeka Selatan terus mencatatkan lonjakan kunjungan pemustaka harian...',
       body: 'Gedung fasilitas layanan Perpustakaan Nasional di Jalan Medan Merdeka Selatan terus mencatatkan lonjakan kunjungan pemustaka harian hingga mencapai rekor tertinggi pada kuartal ketiga tahun ini.',
       coverImage: 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=800&q=80',
-      status: 'PUBLISHED',
+      status: 'TERBIT',
     },
     {
       id: 'stitch-4',
@@ -51,7 +51,7 @@ async function main() {
       excerpt: 'Diskusi kelompok terarah antar civitas akademika dan pustakawan profesional membahas standardisasi kurikulum literasi informasi...',
       body: 'Diskusi kelompok terarah antar civitas akademika dan pustakawan profesional membahas standardisasi kurikulum literasi informasi di era komputasi awan.',
       coverImage: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=800&q=80',
-      status: 'DRAFT',
+      status: 'MENUNGGU',
     },
     {
       id: 'stitch-5',
@@ -59,7 +59,7 @@ async function main() {
       excerpt: 'Penataan tata kelola rak buku tematik dan sistem katalog otomatisasi RFID di seluruh lantai layanan mempercepat waktu temu koleksi...',
       body: 'Penataan tata kelola rak buku tematik dan sistem katalog otomatisasi RFID di seluruh lantai layanan mempercepat waktu temu kembali koleksi referensi.',
       coverImage: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=800&q=80',
-      status: 'PUBLISHED',
+      status: 'TERBIT',
     },
     {
       id: 'stitch-6',
@@ -67,7 +67,7 @@ async function main() {
       excerpt: 'Layanan ruang baca lansia dan disabilitas dilengkapi fasilitas pendukung ergonomis serta perangkat bantu baca audio ramah tuna netra...',
       body: 'Layanan ruang baca lansia dan disabilitas dilengkapi dengan fasilitas pendukung ergonomis serta perangkat bantu baca audio ramah tuna netra demi pemerataan akses informasi.',
       coverImage: 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=800&q=80',
-      status: 'PUBLISHED',
+      status: 'TERBIT',
     },
   ];
 
@@ -128,7 +128,7 @@ async function main() {
       const id = `${cat.prefix}-${i}`;
       const title = `${cat.titlePrefix} #${i}: Minat Membaca & Kemajuan Perpusnas`;
       const body = defaultBodies[cat.slug] || 'Konten artikel antar pegawai Perpustakaan Nasional RI.';
-      const status = i % 2 === 0 ? 'DRAFT' : 'PUBLISHED';
+      const status = i % 2 === 0 ? 'MENUNGGU' : 'TERBIT';
 
       await prisma.employeePost.upsert({
         where: { id },
@@ -169,7 +169,7 @@ async function main() {
         excerpt: 'Rapat koordinasi dan sinkronisasi program kerja strategis perpustakaan nasional bersama seluruh unit kerja.',
         body: 'Rapat koordinasi nasional membahas target kinerja triwulan, tata kelola kearsipan digital, dan penguatan literasi masyarakat berbasis inklusi sosial.',
         type: 'AGENDA',
-        status: i % 2 === 0 ? 'DRAFT' : 'PUBLISHED',
+        status: i % 2 === 0 ? 'MENUNGGU' : 'TERBIT',
         eventLocation: 'Auditorium Gedung Perpusnas Lt. 2 Medan Merdeka Selatan',
         eventStartDate: new Date('2026-08-25T08:30:00.000Z'),
         coverImage: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=800&auto=format&fit=crop',
@@ -203,7 +203,7 @@ async function main() {
         destinationCity: t.city,
         attachmentName: `Laporan_Dinas_${t.city}.pdf`,
         type: 'BUSINESS_TRIP',
-        status: 'PUBLISHED',
+        status: 'TERBIT',
         authorId,
         categoryId: catMap['laporan-perjalanan'] || null,
         publishedAt: new Date(),
@@ -228,7 +228,7 @@ async function main() {
         attachmentName: `Surat_Edaran_${i}.pdf`,
         fileSize: '2.1 MB',
         type: 'INTERNAL_DOCUMENT',
-        status: 'PUBLISHED',
+        status: 'TERBIT',
         authorId,
         categoryId: catMap['dokumen-intern'] || null,
         publishedAt: new Date(),

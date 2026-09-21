@@ -77,3 +77,4 @@ export default function RecaptchaMock({ verified, onVerifyChange, hasError, clas
     </div>
   );
 }
+

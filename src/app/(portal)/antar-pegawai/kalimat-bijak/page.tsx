@@ -49,7 +49,7 @@ export default function KalimatBijakPage() {
                 year: 'numeric',
               })
             : '20 Agustus 2026',
-          status: item.status === 'DRAFT' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit',
+          status: item.status === 'MENUNGGU' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit',
           authorName: item.author?.name || 'Pegawai Perpusnas',
           authorPosition: item.author?.profile?.position || 'Pustakawan Ahli Madya',
         }));
@@ -336,3 +336,4 @@ export default function KalimatBijakPage() {
     </div>
   );
 }
+

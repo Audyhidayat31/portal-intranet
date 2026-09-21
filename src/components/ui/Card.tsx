@@ -54,3 +54,4 @@ export function CardFooter({ className, children, ...props }: React.HTMLAttribut
     </div>
   );
 }
+

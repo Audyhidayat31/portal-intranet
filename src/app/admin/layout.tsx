@@ -32,7 +32,7 @@ export default function AdminLayout({
   }, []);
 
   const getBreadcrumbPageTitle = (path: string) => {
-    if (path.startsWith('/admin/dashboard')) return 'Dashboard Admin';
+    if (path.startsWith('/admin/halaman-utama')) return 'Kelola Halaman Utama';
     if (path.startsWith('/admin/pengguna')) return 'Kelola Pengguna';
     if (path.startsWith('/admin/hak-akses')) return 'Kelola Hak Akses';
     if (path.startsWith('/admin/kabar-kedinasan')) return 'Kabar Kedinasan';
@@ -106,8 +106,9 @@ export default function AdminLayout({
 
       {/* Wireframe Footer */}
       <footer className="w-full bg-[#f8f9fa] border-t border-[#e3e2e8] py-6 text-center text-xs text-slate-600 mt-auto">
-        <p>© Copyright 2026, All Rights Reserved | Perpustakaan Nasional RI.</p>
+        <p>© Hak Cipta 2026, Perpustakaan Nasional Republik Indonesia.</p>
       </footer>
     </div>
   );
 }
+

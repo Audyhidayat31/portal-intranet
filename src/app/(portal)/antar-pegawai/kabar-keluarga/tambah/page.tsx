@@ -96,12 +96,6 @@ export default function TambahKabarKeluargaPage() {
       ) {
         setIsStatusMenuOpen(false);
       }
-      if (
-        stylingMenuRef.current &&
-        !stylingMenuRef.current.contains(event.target as Node)
-      ) {
-        setIsStylingMenuOpen(false);
-      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -208,7 +202,7 @@ export default function TambahKabarKeluargaPage() {
           body: htmlContent || rawText || judul,
           coverImage: gambarPreview || '/images/kabar-keluarga/card-1.jpg',
           publishedAt: tanggal.toISOString(),
-          status: status === 'Menunggu' ? 'DRAFT' : 'PUBLISHED',
+          status: status === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
           attachmentName: lampiranFileName || null,
         }),
       });
@@ -684,3 +678,4 @@ export default function TambahKabarKeluargaPage() {
     </div>
   );
 }
+

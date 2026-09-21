@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
         body: contentBody,
         coverImage,
         type: type || 'NEWS',
-        status: status || 'PUBLISHED',
+        status: status || 'TERBIT',
         isPinned: Boolean(isPinned),
         eventStartDate: eventStartDate ? new Date(eventStartDate) : null,
         eventLocation,

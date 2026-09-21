@@ -96,12 +96,6 @@ export default function TambahTipsGayaHidupPage() {
       ) {
         setIsStatusMenuOpen(false);
       }
-      if (
-        stylingMenuRef.current &&
-        !stylingMenuRef.current.contains(event.target as Node)
-      ) {
-        setIsStylingMenuOpen(false);
-      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -208,7 +202,7 @@ export default function TambahTipsGayaHidupPage() {
           body: htmlContent || rawText || judul,
           coverImage: gambarPreview || '/images/tips-gaya-hidup/card-1.jpg',
           publishedAt: tanggal.toISOString(),
-          status: status === 'Menunggu' ? 'DRAFT' : 'PUBLISHED',
+          status: status === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
           attachmentName: lampiranFileName || null,
         }),
       });
@@ -679,3 +673,4 @@ export default function TambahTipsGayaHidupPage() {
     </div>
   );
 }
+

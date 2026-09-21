@@ -8,6 +8,7 @@ export interface InternalDocument {
   fileSize?: string;
   publishedAt: string;
   authorName?: string;
+  status?: string;
 }
 
 export const STITCH_MOCK_INTERNAL_DOCS_5: InternalDocument[] = [

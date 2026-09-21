@@ -104,7 +104,7 @@ model Content {
   body            String    @db.LongText
   coverImage      String?   @db.Text
   type            String    // NEWS, ANNOUNCEMENT, AGENDA, BUSINESS_TRIP, INTERNAL_DOCUMENT
-  status          String    @default("PUBLISHED") // DRAFT, PUBLISHED, ARCHIVED
+  status          String    @default("TERBIT") // DRAFT, PUBLISHED, ARCHIVED
   categoryId      String?
   category        Category? @relation(fields: [categoryId], references: [id])
   authorId        String
@@ -137,7 +137,7 @@ model EmployeePost {
   authorId     String
   author       User          @relation("AuthorPosts", fields: [authorId], references: [id])
   coverImage   String?       @db.Text
-  status       String        @default("PUBLISHED") // DRAFT, PUBLISHED, ARCHIVED
+  status       String        @default("TERBIT") // DRAFT, PUBLISHED, ARCHIVED
   likesCount   Int           @default(0)
   viewsCount   Int           @default(0)
   comments     PostComment[]

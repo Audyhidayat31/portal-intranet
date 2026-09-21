@@ -230,7 +230,7 @@ export default function DetailOlahragaPage() {
                 {displayAuthor}, {displayDate}
               </p>
               <p className="font-medium text-[#757682]">
-                © 2026 Perpusnas RI. Seluruh Hak Cipta Dilindungi.
+                © Hak Cipta 2026, Perpustakaan Nasional Republik Indonesia.
               </p>
             </div>
 

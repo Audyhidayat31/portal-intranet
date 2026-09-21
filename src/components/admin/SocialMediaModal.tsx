@@ -64,12 +64,12 @@ export function SocialMediaModal({
     if (initialData) {
       setNama(initialData.nama || '');
       setLink(initialData.link || '');
-      if (initialData.status === 'ACTIVE') {
-        setStatus('Diterbitkan');
-      } else if (initialData.status === 'INACTIVE') {
-        setStatus('Draft');
+      if (initialData.status === 'ACTIVE' || initialData.status === 'Diterbitkan' || initialData.status === 'Aktif') {
+        setStatus('Aktif');
+      } else if (initialData.status === 'INACTIVE' || initialData.status === 'Draft' || initialData.status === 'Nonaktif') {
+        setStatus('Nonaktif');
       } else {
-        setStatus(initialData.status || 'Draft');
+        setStatus(initialData.status || 'Nonaktif');
       }
       setImageUrl(initialData.imageUrl || initialData.bannerUrl || initialData.iconUrl || '');
       setImageFileName(initialData.imageFileName || '');
@@ -155,7 +155,7 @@ export function SocialMediaModal({
         platform: effectivePlatform,
         nama: nama.trim(),
         link: link.trim(),
-        status: status === 'Status' ? 'Diterbitkan' : status,
+        status: status === 'Status' ? 'Aktif' : status,
         imageUrl: imageUrl || undefined,
         bannerUrl: imageUrl || undefined,
         iconUrl: imageUrl || undefined,
@@ -315,44 +315,8 @@ export function SocialMediaModal({
             />
           </div>
 
-          {/* 4. Status Dropdown & Simpan Button matching Wireframe */}
-          <div className={`flex items-start justify-between pt-1 transition-all duration-200 ${isStatusDropdownOpen ? 'pb-44' : 'pb-2'}`}>
-            {/* Status Dropdown */}
-            <div className="relative" ref={statusDropdownRef}>
-              <button
-                type="button"
-                onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
-                className="w-44 px-3.5 py-2.5 bg-[#5b6b82] hover:bg-[#485568] active:scale-95 text-white text-xs font-bold rounded-lg transition-all cursor-pointer shadow-xs flex items-center justify-between"
-              >
-                <span className="flex-1 text-center pl-3">{status || 'Status'}</span>
-                <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {isStatusDropdownOpen && (
-                <div className="absolute left-0 top-full mt-1 w-44 bg-white border border-[#c5c6d2] rounded-lg shadow-lg overflow-hidden py-1 z-50 animate-in fade-in zoom-in-95 duration-150">
-                  {STATUS_OPTIONS.map((opt) => {
-                    const isSelected = status === opt;
-                    return (
-                      <button
-                        key={opt}
-                        type="button"
-                        onClick={() => {
-                          setStatus(opt);
-                          setIsStatusDropdownOpen(false);
-                        }}
-                        className={`w-full text-center px-3 py-2 text-xs transition-colors cursor-pointer ${
-                          isSelected
-                            ? 'bg-slate-100 text-[#00113a] font-bold'
-                            : 'text-slate-700 font-semibold hover:bg-slate-50'
-                        }`}
-                      >
-                        {opt}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+          {/* 4. Simpan Button matching Wireframe */}
+          <div className="flex items-start justify-end pt-1 pb-2">
 
             {/* Simpan Button */}
             <button
@@ -368,3 +332,4 @@ export function SocialMediaModal({
     </div>
   );
 }
+

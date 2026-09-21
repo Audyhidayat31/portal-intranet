@@ -39,7 +39,7 @@ export function PortalFooter() {
       alamat1: 'Jl. Salemba Raya No. 28A, Jakarta 10430',
       alamat2: 'Jl. Medan Merdeka Selatan No. 11, Jakarta 10110',
     },
-    copyright: '© 2026 Perpusnas RI. Seluruh Hak Cipta Dilindungi.',
+    copyright: '© Hak Cipta 2026, Perpustakaan Nasional Republik Indonesia.',
   });
 
   useEffect(() => {
@@ -51,8 +51,8 @@ export function PortalFooter() {
           setFooterData((prev) => ({
             ...prev,
             deskripsi: f.deskripsi || prev.deskripsi,
-            socialMedia: f.socialMedia?.filter((s: any) => s.status === 'ACTIVE') || prev.socialMedia,
-            digitalServices: f.digitalServices?.filter((s: any) => s.status === 'ACTIVE') || prev.digitalServices,
+            socialMedia: f.socialMedia?.filter((s: any) => s.status === 'ACTIVE' || s.status === 'Diterbitkan' || s.status === 'Aktif') || prev.socialMedia,
+            digitalServices: f.digitalServices?.filter((s: any) => s.status === 'ACTIVE' || s.status === 'Diterbitkan' || s.status === 'Aktif') || prev.digitalServices,
             kontak: f.kontak || prev.kontak,
             copyright: f.copyright || prev.copyright,
           }));
@@ -225,9 +225,10 @@ export function PortalFooter() {
       {/* Copyright Bar */}
       <div className="max-w-[1280px] mx-auto text-center border-t border-[#2a4386] pt-8">
         <p className="text-xs sm:text-sm text-[#b3c5ff]">
-          {footerData.copyright || '© 2026 Perpusnas RI. Seluruh Hak Cipta Dilindungi.'}
+          {footerData.copyright || '© Hak Cipta 2026, Perpustakaan Nasional Republik Indonesia.'}
         </p>
       </div>
     </footer>
   );
 }
+

@@ -41,7 +41,7 @@ function formatMockItem(mock: any) {
     body: mock.content || mock.quote || mock.body || mock.excerpt || '',
     excerpt: mock.excerpt || '',
     coverImage: mock.coverImage || null,
-    status: mock.status === 'Menunggu' ? 'DRAFT' : 'PUBLISHED',
+    status: mock.status === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
     likesCount: mock.likesCount || 0,
     viewsCount: mock.viewsCount || 0,
     createdAt: mock.publishedAt ? new Date(mock.publishedAt).toISOString() : new Date().toISOString(),
@@ -157,9 +157,9 @@ export async function PUT(
           coverImage: coverImage !== undefined ? coverImage : existing.coverImage,
           status:
             status !== undefined
-              ? status === 'Menunggu' || status === 'DRAFT'
-                ? 'DRAFT'
-                : 'PUBLISHED'
+              ? status === 'Menunggu' || status === 'MENUNGGU'
+                ? 'MENUNGGU'
+                : 'TERBIT'
               : existing.status,
         },
       });
@@ -195,7 +195,7 @@ export async function PUT(
             body: contentBody || title || '',
             coverImage: coverImage || null,
             authorId: defaultUser.id,
-            status: status === 'Menunggu' || status === 'DRAFT' ? 'DRAFT' : 'PUBLISHED',
+            status: status === 'Menunggu' || status === 'MENUNGGU' ? 'MENUNGGU' : 'TERBIT',
           },
         });
 

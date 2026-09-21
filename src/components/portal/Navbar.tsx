@@ -147,7 +147,7 @@ export function PortalNavbar() {
                     onClick={() => setActiveDropdown(null)}
                     className="block p-2.5 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-[#00113a] transition-colors"
                   >
-                    <p className="text-xs font-bold">Berita Kedinasan</p>
+                    <p className="text-xs font-bold">Berita</p>
                     <p className="text-[11px] text-slate-500 mt-0.5">Warta resmi kegiatan Perpusnas RI</p>
                   </Link>
                   <Link
@@ -155,7 +155,7 @@ export function PortalNavbar() {
                     onClick={() => setActiveDropdown(null)}
                     className="block p-2.5 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-[#00113a] transition-colors"
                   >
-                    <p className="text-xs font-bold">Pengumuman Resmi</p>
+                    <p className="text-xs font-bold">Pengumuman</p>
                     <p className="text-[11px] text-slate-500 mt-0.5">Surat edaran, cuti, dan arahan pimpinan</p>
                   </Link>
                   <Link
@@ -216,8 +216,8 @@ export function PortalNavbar() {
                     { label: 'Kalimat Bijak', href: '/antar-pegawai/kalimat-bijak', desc: 'Kutipan inspiratif & motivasi' },
                     { label: 'Karya Akademik', href: '/antar-pegawai/karya-akademik', desc: 'Jurnal, riset, dan karya ilmiah' },
                     { label: 'Tips & Gaya Hidup', href: '/antar-pegawai/tips-gaya-hidup', desc: 'Kesehatan, ergonomis & hobi' },
-                    { label: 'Layanan Konsultasi', href: '/antar-pegawai/konsultasi', desc: 'Tanya jawab Kepegawaian, IT, Kesehatan' },
-                    { label: 'Komunitas Olahraga', href: '/antar-pegawai/olahraga', desc: 'Jadwal latihan & klub olahraga' },
+                    { label: 'Konsultasi', href: '/antar-pegawai/konsultasi', desc: 'Tanya jawab Kepegawaian, IT, Kesehatan' },
+                    { label: 'Olahraga', href: '/antar-pegawai/olahraga', desc: 'Jadwal latihan & klub olahraga' },
                     { label: 'Tahukah Anda', href: '/antar-pegawai/tahukah-anda', desc: 'Trivia & fakta unik perpustakaan' },
                   ].map((sub) => (
                     <Link
@@ -255,7 +255,7 @@ export function PortalNavbar() {
                 onMouseLeave={() => setActiveDropdown(null)}
               >
                 <Link
-                  href="/admin/dashboard"
+                  href="/admin/halaman-utama"
                   className={cn(
                     'flex items-center gap-1 text-sm font-bold transition-all duration-200 pb-1',
                     pathname.startsWith('/admin')
@@ -269,19 +269,9 @@ export function PortalNavbar() {
                 </Link>
 
                 {activeDropdown === 'Kelola Admin' && (
-                  <div className="absolute top-full right-0 lg:left-0 mt-1 w-72 rounded-2xl bg-white p-2 shadow-2xl border border-slate-200 animate-fadeIn z-50">
-                    <div className="px-3 py-2 border-b border-slate-100 flex items-center justify-between">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                        Menu Kelola Admin
-                      </span>
-                      <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">
-                        Admin Mode
-                      </span>
-                    </div>
-
+                  <div className="absolute top-full right-0 lg:left-0 mt-1 w-48 rounded-xl bg-white p-2 shadow-xl border border-slate-100 animate-fadeIn z-50">
                     <div className="py-1 space-y-0.5">
                       {ADMIN_MENU_ITEMS.map((item) => {
-                        const Icon = item.icon;
                         const isActive = pathname === item.href || pathname.startsWith(item.href);
 
                         return (
@@ -290,26 +280,15 @@ export function PortalNavbar() {
                             href={item.href}
                             onClick={() => setActiveDropdown(null)}
                             className={cn(
-                              'flex items-start gap-3 p-2 rounded-xl transition-colors',
+                              'block p-2 rounded-lg transition-colors text-left',
                               isActive
-                                ? 'bg-[#00113a]/5 text-[#00113a] font-bold'
+                                ? 'bg-[#00113a]/5 text-[#00113a]'
                                 : 'text-slate-700 hover:bg-slate-50 hover:text-[#00113a]'
                             )}
                           >
-                            <div className={cn(
-                              'w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5',
-                              isActive ? 'bg-[#00113a] text-white' : 'bg-slate-100 text-slate-600'
-                            )}>
-                              <Icon className="w-3.5 h-3.5" />
-                            </div>
-                            <div className="text-left">
-                              <p className={cn('text-xs leading-tight', isActive ? 'font-bold text-[#00113a]' : 'font-semibold text-slate-800')}>
-                                {item.label}
-                              </p>
-                              <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1 leading-snug">
-                                {item.desc}
-                              </p>
-                            </div>
+                            <p className="text-xs font-bold">
+                              {item.label}
+                            </p>
                           </Link>
                         );
                       })}
@@ -450,3 +429,4 @@ export function PortalNavbar() {
     </>
   );
 }
+

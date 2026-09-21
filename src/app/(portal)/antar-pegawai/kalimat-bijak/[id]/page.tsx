@@ -50,7 +50,7 @@ export default function DetailKalimatBijakPage() {
             figure: apiData.title || 'Soekarno',
             figureDate: apiData.publishedAt ? formatDate(apiData.publishedAt) : '1-06-1940',
             publishedAt: apiData.publishedAt ? formatDate(apiData.publishedAt) : '20-08-2026',
-            status: apiData.status === 'PUBLISHED' ? 'Terbit' : 'Menunggu',
+            status: apiData.status === 'TERBIT' ? 'Terbit' : 'Menunggu',
           };
           setItem(formatted);
         } else {

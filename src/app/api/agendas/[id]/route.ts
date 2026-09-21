@@ -20,7 +20,7 @@ function formatMockAgenda(mock: any) {
     body: mock.content,
     coverImage: mock.coverImage,
     type: 'AGENDA',
-    status: mock.status === 'Menunggu' ? 'DRAFT' : 'PUBLISHED',
+    status: mock.status === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
     eventStartDate: mock.eventStartDate ? new Date(mock.eventStartDate).toISOString() : new Date().toISOString(),
     eventLocation: mock.eventLocation || 'Gedung Perpustakaan Nasional RI',
     publishedAt: mock.publishedAt ? new Date().toISOString() : new Date().toISOString(),
@@ -108,9 +108,9 @@ export async function PUT(
             eventStartDate: eventStartDate ? new Date(eventStartDate) : existing.eventStartDate,
             status:
               status !== undefined
-                ? status === 'Menunggu' || status === 'DRAFT'
-                  ? 'DRAFT'
-                  : 'PUBLISHED'
+                ? status === 'Menunggu' || status === 'MENUNGGU'
+                  ? 'MENUNGGU'
+                  : 'TERBIT'
                 : existing.status,
           },
         });
@@ -134,7 +134,7 @@ export async function PUT(
             body: content || contentBody || '',
             excerpt: (content || contentBody || '').slice(0, 150),
             type: 'AGENDA',
-            status: status === 'Menunggu' || status === 'DRAFT' ? 'DRAFT' : 'PUBLISHED',
+            status: status === 'Menunggu' || status === 'MENUNGGU' ? 'MENUNGGU' : 'TERBIT',
             eventLocation: eventLocation || 'Gedung Perpustakaan Nasional RI',
             eventStartDate: eventStartDate ? new Date(eventStartDate) : new Date(),
             authorId: defaultUser.id,
