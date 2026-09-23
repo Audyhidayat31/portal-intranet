@@ -119,8 +119,7 @@ export default function KabarKeluargaPage() {
               Kabar Keluarga
             </h1>
             <p className="text-base text-[#444650]">
-              Deskripsi mengenai halaman Kabar Keluarga
-            </p>
+              Warta suka & duka keluarga Perpusnas</p>
           </div>
 
           <Link

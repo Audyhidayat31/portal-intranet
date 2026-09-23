@@ -189,7 +189,7 @@ export default function BeritaPage() {
               Berita
             </h1>
             <p className="text-base text-[#444650]">
-              Deskripsi mengenai halaman berita untuk portal Cakrawala.
+              Warta resmi kegiatan Perpusnas RI
             </p>
           </div>
 

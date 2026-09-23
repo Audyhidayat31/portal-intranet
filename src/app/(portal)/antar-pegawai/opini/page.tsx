@@ -195,8 +195,7 @@ export default function CoretanOpiniPage() {
               Coretan Opini
             </h1>
             <p className="text-base text-[#444650]">
-              Deskripsi mengenai halaman Coretan Opini
-            </p>
+              Gagasan & pemikiran pegawai</p>
           </div>
 
           <Link

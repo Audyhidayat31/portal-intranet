@@ -158,8 +158,7 @@ export default function KonsultasiPage() {
                 Konsultasi
               </h1>
               <p className="text-base text-[#444650]">
-                Deskripsi mengenai Halaman Konsultasi
-              </p>
+                Tanya jawab Kepegawaian, IT, Kesehatan</p>
             </div>
 
             {/* + Tambah Button */}

@@ -312,8 +312,7 @@ export default function PengumumanPage() {
               Pengumuman
             </h1>
             <p className="text-sm sm:text-base text-[#444650]">
-              Deskripsi Pengumuman
-            </p>
+              Surat edaran, cuti, dan arahan pimpinan</p>
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full md:w-auto">

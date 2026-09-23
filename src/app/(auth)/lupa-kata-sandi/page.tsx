@@ -87,13 +87,11 @@ export default function LupaKataSandiPage() {
           
           <div className="w-full max-w-[340px] sm:max-w-[350px] flex flex-col items-center text-center">
             {/* Centered Perpusnas Star Logo */}
-            <div className="w-14 h-14 sm:w-16 sm:h-16 relative mb-3.5 shrink-0 flex items-center justify-center">
               <img
                 src="/images/logo-perpusnas.png"
                 alt="Logo Perpustakaan Nasional RI"
-                className="w-full h-full object-contain"
+                className="h-14 sm:h-16 w-auto object-contain shrink-0 mb-3.5"
               />
-            </div>
 
             {/* Title & Subtitle as per Wireframe */}
             <h1 className="text-2xl sm:text-[28px] font-bold text-black tracking-tight mb-1">
@@ -234,9 +232,10 @@ export default function LupaKataSandiPage() {
 
       {/* Footer Matching Wireframe */}
       <footer className="pt-2 pb-1 text-center text-xs sm:text-sm text-black font-normal">
-        © Hak Cipta 2026, Perpustakaan Nasional Republik Indonesia.
+        Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.
       </footer>
     </div>
   );
 }
+
 

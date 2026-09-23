@@ -104,8 +104,7 @@ export default function JelajahBumiPage() {
               Jelajah Bumi
             </h1>
             <p className="text-base text-[#444650]">
-              Deskripsi mengenai halaman Jelajah Bumi
-            </p>
+              Catatan perjalanan wisata & budaya</p>
           </div>
 
           <Link

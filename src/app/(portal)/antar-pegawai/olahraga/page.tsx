@@ -169,8 +169,7 @@ export default function DaftarOlahragaPage() {
               Olahraga
             </h1>
             <p className="text-base text-[#444650]">
-              Deskripsi mengenai halaman Olahraga
-            </p>
+              Jadwal latihan & klub olahraga</p>
           </div>
 
           <Link

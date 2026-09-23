@@ -152,7 +152,7 @@ export default function KaryaAkademikPage() {
               Karya Akademik
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 mt-1 font-normal">
-              Publikasi ilmiah, riset keperpustakaan, jurnal, dan karya tulis akademik pegawai Perpustakaan Nasional RI.
+              Jurnal, riset, dan karya ilmiah
             </p>
           </div>
 
