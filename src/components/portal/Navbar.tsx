@@ -135,7 +135,7 @@ export function PortalNavbar() {
               </button>
 
               {activeDropdown === 'Kabar Kedinasan' && (
-                <div className="absolute top-full left-0 mt-1 w-64 rounded-xl bg-white p-2 shadow-xl border border-slate-100 animate-fadeIn z-50">
+                <div className="absolute top-full left-0 mt-0 w-max min-w-[180px] rounded-xl bg-white p-2 shadow-xl border border-slate-100 animate-fadeIn z-50">
                   <Link
                     href="/kabar-kedinasan/berita"
                     onClick={() => setActiveDropdown(null)}
@@ -195,7 +195,7 @@ export function PortalNavbar() {
               </button>
 
               {activeDropdown === 'Antar Pegawai' && (
-                <div className="absolute top-full left-0 mt-1 w-64 rounded-xl bg-white p-2 shadow-xl border border-slate-100 animate-fadeIn z-50 max-h-[380px] overflow-y-auto">
+                <div className="absolute top-full left-0 mt-0 w-max min-w-[180px] rounded-xl bg-white p-2 shadow-xl border border-slate-100 animate-fadeIn z-50 max-h-[380px] overflow-y-auto">
                   {[
                     { label: 'Daftar Pegawai', href: '/antar-pegawai/daftar-pegawai', desc: 'Direktori data & kontak pegawai' },
                     { label: 'Coretan Opini', href: '/antar-pegawai/opini', desc: 'Gagasan & pemikiran pegawai' },
@@ -257,7 +257,7 @@ export function PortalNavbar() {
                 </Link>
 
                 {activeDropdown === 'Kelola Admin' && (
-                  <div className="absolute top-full right-0 lg:left-0 mt-1 w-48 rounded-xl bg-white p-2 shadow-xl border border-slate-100 animate-fadeIn z-50">
+                  <div className="absolute top-full right-0 lg:left-0 mt-0 w-max min-w-[180px] rounded-xl bg-white p-2 shadow-xl border border-slate-100 animate-fadeIn z-50">
                     <div className="py-1 space-y-0.5">
                       {ADMIN_MENU_ITEMS.map((item) => {
                         const isActive = pathname === item.href || pathname.startsWith(item.href);
