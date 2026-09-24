@@ -53,15 +53,49 @@ export default function BerandaPage() {
 
   const { setting, latestNews, latestPosts, spotlightFigure, birthdaysThisMonth } = data || {};
 
-  // Parse banners
-  let parsedBanners: any[] = [];
+  // Default banners matching the admin page
+  const DEFAULT_BANNERS = [
+    {
+      id: 'b-1',
+      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAYiVIlTvlHWCZXsVWN5BKuXNUOFuVWmKl4EtLECjpaOy9dESc-3QPJSVJp5bXmxWHAow1d7ZRMI2LYZ5tJGkKcpz5-yH5kqvgRBImJwBq_iPLpDXPrffOSljK8yNGkVvtipwLYF0otGU56r_SjT5AXkGqMt713QDk_R1omHKPbPeDubgX7UWOLW_cpHkr6M-H7MhReBGdqjdui0kAAPiGWQWyZUqOTWsLnPHseHwN3rkEYjBhOFgaw',
+      headline: 'Sosialisasi Sistem Perpustakaan Digital Nasional',
+      subheadline: 'Akses koleksi digital dan naskah kuno nusantara dalam genggaman pegawai.',
+      status: 'TERBIT'
+    },
+    {
+      id: 'b-2',
+      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCt5lBUWzhdVxrkyuiafB82wFLsq84XIOyegYfJrMcVB-gfdH9EyMg8wwKSwC0zseXJNUtgoMWG8uyFftr_pN9HUlybMmPppNL07GbZ3GoRf4alC8Sv281OsX-smoOTDl-sz2ftmhsCo0xEZS-pCJXkakqQ_w_OT1dLiUlBVndD4ZxIA-f5B1BXe3Ecb1mDnt3GS_3SUDJBhI5kaLkHiS4MT1CVxIFTe4VP6TBeBYr62-9ozimVWd70',
+      headline: 'Peringatan Bulan K3 Nasional di Lingkungan Perpusnas',
+      subheadline: 'Wujudkan budaya kerja yang sehat, aman, dan berintegritas tinggi.',
+      status: 'WAITING'
+    },
+    {
+      id: 'b-3',
+      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCtvt3SrRcH9vLeIKQjXR-13wmcqrCgl1s9ZzxYkGRgWam6JRAfyfFqOPn3G1BD2GuaaYYiMyp7lCmPCKTE9F0mp9Qbf-S2E3eRqaBFaVr2MKtga9XQlMcL4ls-YdE8-Yyh-bnywt0zaTMOYC5EI2w-Z5fwTsHeRqsUKw1FzbRZILddR1ohK6xzRx0FNIjgimQnjtTfMY2FWHZEV9iHu7C4MLXo0pbcObDK3Tah6nDDOD82f_b2MCmL',
+      headline: 'Workshop Transformasi Perpustakaan Berbasis Inklusi Sosial',
+      subheadline: 'Penguatan peran pustakawan dalam memberdayakan kesejahteraan masyarakat.',
+      status: 'TERBIT'
+    },
+    {
+      id: 'b-4',
+      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBFmsQV5G444GOPEiBQmUDg0EimQGDtFLEcXXq5P1w9-nKwv4eWjePtkY-kW_EvS0EetnaQGSU--yGWdZF3CZERlTmj1GFqNxK8B_PHsuwYdaOWICZvAnLMOS6URsSZ9SATrogeMiqUHWbL5cHfXooB8QjBhQAqROIJGSe-FJf--DtPm7aLl-zxiBFZplX3DNjacuoYeURqvdKXrhE-6ZiHvKC52-ftmKi6hXXJxVGHey1gRcEDDp6d',
+      headline: 'Gerakan Peningkatan Kualitas Tata Kelola Dokumen Kedinasan',
+      subheadline: 'Implementasi tata naskah dinas elektronik terintegrasi 2026.',
+      status: 'TERBIT'
+    },
+  ];
+
+  let parsedBanners: any[] = DEFAULT_BANNERS;
   try {
     if (setting?.heroBannerUrl) {
-      parsedBanners = JSON.parse(setting.heroBannerUrl);
+      if (setting.heroBannerUrl.trim().startsWith('[')) {
+        parsedBanners = JSON.parse(setting.heroBannerUrl);
+      }
     }
   } catch (e) {
     console.error('Failed to parse banners', e);
   }
+  
   const activeBanners = parsedBanners.filter((b: any) => b.status === 'TERBIT' || b.status === 'Terbit' || b.status === 'Aktif');
 
   const nextBanner = () => {
