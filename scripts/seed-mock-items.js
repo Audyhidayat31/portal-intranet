@@ -291,8 +291,8 @@ async function main() {
 
   for (const f of figures) {
     await prisma.figureProfile.upsert({
-      where: { slug: f.slug },
-      update: { name: f.name, position: f.position, unitKerja: f.unitKerja, quote: f.quote },
+      where: { id: f.id },
+      update: { slug: f.slug, name: f.name, position: f.position, unitKerja: f.unitKerja, quote: f.quote },
       create: {
         id: f.id,
         slug: f.slug,

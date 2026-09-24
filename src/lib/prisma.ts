@@ -6,6 +6,13 @@ function getOptimizedDatabaseUrl(): string | undefined {
   let url = process.env.DATABASE_URL;
   if (!url) return undefined;
 
+  if (url.startsWith('mysql:') || url.startsWith('mariadb:')) {
+    if (!url.includes('connection_limit=')) {
+      url += (url.includes('?') ? '&' : '?') + 'connection_limit=10';
+    }
+    return url;
+  }
+
   // Clean up channel_binding if present as it can cause issues with connection poolers
   url = url.replace(/[?&]channel_binding=[^&]*/g, '');
 
