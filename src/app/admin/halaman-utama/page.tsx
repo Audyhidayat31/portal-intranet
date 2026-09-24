@@ -283,7 +283,7 @@ export default function AdminHomepageKelolaPage() {
       socialMedia: overrides.socialMedia !== undefined ? overrides.socialMedia : socialMediaList,
       digitalServices: overrides.digitalServices !== undefined ? overrides.digitalServices : digitalServiceList,
       kontak: overrides.kontak !== undefined ? overrides.kontak : kontakData,
-      copyright: '© Hak Cipta 2026, Perpustakaan Nasional Republik Indonesia.',
+      copyright: 'Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.',
     };
 
     try {
@@ -1212,7 +1212,7 @@ export default function AdminHomepageKelolaPage() {
                   Informasi Kontak & Lokasi Gedung
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Alamat resmi kantor perpustakaan, nomor telepon hotline, dan email persuratan dinas.
+                  Alamat resmi, nomor telepon, dan email persuratan.
                 </p>
               </div>
             </div>
@@ -1223,7 +1223,7 @@ export default function AdminHomepageKelolaPage() {
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                     <Phone className="w-3.5 h-3.5 text-slate-500" />
-                    No. Telepon / Hotline
+                    No. Telepon
                   </label>
                   <input
                     type="text"
@@ -1238,7 +1238,7 @@ export default function AdminHomepageKelolaPage() {
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                     <Mail className="w-3.5 h-3.5 text-slate-500" />
-                    Email Resmi Dinas
+                    Email
                   </label>
                   <input
                     type="email"
@@ -1253,7 +1253,7 @@ export default function AdminHomepageKelolaPage() {
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                     <MapPin className="w-3.5 h-3.5 text-slate-500" />
-                    Alamat Gedung 1 (Salemba)
+                    Alamat 1
                   </label>
                   <input
                     type="text"
@@ -1268,7 +1268,7 @@ export default function AdminHomepageKelolaPage() {
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                     <Building2 className="w-3.5 h-3.5 text-slate-500" />
-                    Alamat Gedung 2 (Merdeka Selatan)
+                    Alamat 2
                   </label>
                   <input
                     type="text"
@@ -1859,4 +1859,5 @@ export default function AdminHomepageKelolaPage() {
     </div>
   );
 }
+
 

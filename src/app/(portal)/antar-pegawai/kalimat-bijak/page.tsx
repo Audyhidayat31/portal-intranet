@@ -163,7 +163,7 @@ export default function KalimatBijakPage() {
               Kalimat Bijak
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 mt-1 font-normal">
-              Deskripsi Kalimat Bijak
+              Kutipan inspiratif & motivasi
             </p>
           </div>
 

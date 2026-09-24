@@ -1,4 +1,4 @@
-export interface JelajahBumiItem {
+﻿export interface JelajahBumiItem {
   id: string;
   title: string;
   excerpt: string;
@@ -31,7 +31,7 @@ Dalam kegiatan ini, dipaparkan berbagai catatan perjalanan dan kekayaan narasi l
   coverImage: '/images/jelajah-bumi/card-1.jpg',
   publishedAt: '2026-08-20',
   status: 'Terbit',
-  authorName: '© Hak Cipta 2026, Perpustakaan Nasional Republik Indonesia.',
+  authorName: 'Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.',
   location: 'Perpustakaan Nasional RI, Jakarta',
   attachments: MOCK_JELAJAH_ATTACHMENTS_5,
 };
@@ -166,3 +166,4 @@ Kolaborasi antar civitas akademika dalam mencari referensi jurnal terakreditasi 
     attachments: MOCK_JELAJAH_ATTACHMENTS_5,
   },
 ];
+

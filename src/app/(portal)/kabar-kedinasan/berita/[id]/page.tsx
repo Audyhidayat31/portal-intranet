@@ -231,32 +231,51 @@ export default function DetailBeritaPage() {
               {news?.title || 'Judul Berita'}
             </h1>
 
-            {/* Riwayat Berita / Metadata */}
-            <div className="flex flex-wrap items-center gap-2 text-sm text-[#757682] mb-8 font-medium">
-              <span>{authorName}</span>
-              <span className="text-[#c5c6d2]">|</span>
-              <span>{displayDate}</span>
-              <span className="text-[#c5c6d2]">|</span>
-              <span>Status: <span className="text-[#1a1b20] capitalize">{news?.status === 'PUBLISHED' || news?.status === 'TERBIT' ? 'Terbit' : (news?.status === 'DRAFT' || news?.status === 'DRAF' ? 'Menunggu' : (news?.status || 'Terbit'))}</span></span>
-            </div>
+            {/* Image and Metadata Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              {/* Featured Image (Left side, takes up 2 columns on lg) */}
+              <div className="lg:col-span-2 w-full aspect-video bg-[#e3e2e8] border border-[#c5c6d2] rounded-lg overflow-hidden flex items-center justify-center text-[#444650] shadow-xs relative group h-full">
+                {news?.coverImage ? (
+                  <img
+                    src={news.coverImage}
+                    alt={news.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center gap-2">
+                    <ImageIcon className="w-12 h-12 text-[#757682]" />
+                    <span className="text-sm font-semibold">Gambar Berita</span>
+                  </div>
+                )}
+              </div>
 
-            {/* Featured Image matching Stitch */}
-            <div className="w-full aspect-video bg-[#e3e2e8] border border-[#c5c6d2] rounded-lg overflow-hidden flex items-center justify-center text-[#444650] mb-8 shadow-xs relative group">
-              {news?.coverImage ? (
-                <img
-                  src={news.coverImage}
-                  alt={news.title}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="flex flex-col items-center gap-2">
-                  <ImageIcon className="w-12 h-12 text-[#757682]" />
-                  <span className="text-sm font-semibold">Gambar Berita</span>
+              {/* Metadata Sidebar (Right side, takes up 1 column on lg) */}
+              <div className="lg:col-span-1 border border-black rounded-lg overflow-hidden shadow-sm flex flex-col h-full bg-white">
+                <div className="bg-[#c5c6d2] px-5 py-3 border-b border-black">
+                  <h3 className="font-bold text-xl text-[#1a1b20]">Detail Berita</h3>
                 </div>
-              )}
+                <div className="p-5 flex flex-col gap-4 flex-grow">
+                  <div>
+                    <h4 className="font-bold text-lg text-[#1a1b20] mb-1">Sumber</h4>
+                    <p className="text-sm text-[#1a1b20]">www.perpusnas.go.id</p>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-lg text-[#1a1b20] mb-1">Dibuat Oleh</h4>
+                    <p className="text-sm text-[#1a1b20]">{authorName}</p>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-lg text-[#1a1b20] mb-1">Tanggal Diperbarui</h4>
+                    <p className="text-sm text-[#1a1b20]">{displayDate}</p>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-lg text-[#1a1b20] mb-1">Status</h4>
+                    <p className="text-sm text-[#1a1b20] capitalize">
+                      {news?.status === 'PUBLISHED' || news?.status === 'TERBIT' ? 'Terbit' : (news?.status === 'DRAFT' || news?.status === 'DRAF' ? 'Menunggu' : (news?.status || 'Terbit'))}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
-
-            {/* Tanggal Section removed as it's now in metadata */}
 
             {/* Article Body (Deskripsi) matching Stitch */}
             <div className="prose max-w-none text-[#1a1b20] text-base leading-relaxed mb-16">
@@ -317,11 +336,10 @@ export default function DetailBeritaPage() {
                     key={page}
                     type="button"
                     onClick={() => setGalleryPage(page)}
-                    className={`w-8 h-8 rounded text-xs font-bold transition-colors flex items-center justify-center cursor-pointer ${
-                      galleryPage === page
+                    className={`w-8 h-8 rounded text-xs font-bold transition-colors flex items-center justify-center cursor-pointer ${galleryPage === page
                         ? 'bg-[#00113a] text-white'
                         : 'text-[#444650] hover:bg-[#efedf3] hover:text-[#00113a]'
-                    }`}
+                      }`}
                   >
                     {page}
                   </button>
@@ -404,12 +422,12 @@ export default function DetailBeritaPage() {
 
             {/* Action Buttons: Edit Berita & Hapus Berita matching Stitch */}
             <div className="flex flex-wrap gap-4 pt-2">
-              <Link
-                href={`/kabar-kedinasan/berita/${rawId}/edit`}
+              <button
+                onClick={() => router.push(`/kabar-kedinasan/berita/${rawId}/edit`)}
                 className="px-8 py-3 bg-transparent border border-[#c5c6d2] text-[#1a1b20] font-bold text-sm rounded-md hover:bg-[#efedf3] hover:border-[#00113a] transition-all min-w-[140px] text-center shadow-xs inline-block"
               >
                 Edit Berita
-              </Link>
+              </button>
 
               <button
                 type="button"

@@ -169,8 +169,7 @@ export default function DaftarTahukahAndaPage() {
               Tahukah Anda
             </h1>
             <p className="text-base text-[#444650]">
-              Deskripsi mengenai halaman Tahukah Anda
-            </p>
+              Trivia & fakta unik perpustakaan</p>
           </div>
 
           <Link

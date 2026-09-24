@@ -125,110 +125,98 @@ export default function BerandaPage() {
   return (
     <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 flex flex-col gap-12 md:gap-16 bg-white">
       {/* Hero Section */}
-      <section className="relative w-full rounded-2xl overflow-hidden shadow-md aspect-auto md:aspect-[21/9] bg-[#00113a] mt-4 sm:mt-6 group min-h-[400px]">
-        {activeBanners.length > 0 ? (
-          <>
-            {/* Banner Image Background */}
-            <div className="absolute inset-0 w-full h-full">
-               <img
-                  src={activeBanners[currentBannerIndex].imageUrl || '/images/hero-illustration.webp'}
-                  alt={activeBanners[currentBannerIndex].headline}
-                  className="w-full h-full object-cover transition-opacity duration-500 opacity-60"
-                />
-            </div>
-            
-            {/* Left Gradient Overlay to make left text readable */}
-            <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/80 to-transparent md:w-2/3" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#00113a]/90 via-transparent to-transparent" />
-            
-            {/* Content Container */}
-            <div className="relative z-10 p-6 sm:p-10 md:p-12 h-full flex flex-col justify-between min-h-[400px]">
-               {/* Left Top: Greeting */}
-               <div className="max-w-xl space-y-3 sm:space-y-4">
-                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#00113a] tracking-tight drop-shadow-sm">
-                    Halo, {userSession?.name || 'Budi Santoso'}!
-                  </h1>
-                  <p className="text-xs sm:text-sm md:text-base text-[#1a1b20] font-medium leading-relaxed drop-shadow-sm">
-                    Selamat datang di Portal Intranet Perpustakaan Nasional Republik Indonesia. Akses informasi terkini, kelola data kepegawaian, dan terhubung dengan rekan kerja Anda dalam satu platform terintegrasi.
-                  </p>
-               </div>
-               
-               {/* Bottom Row */}
-               <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mt-8">
-                  {/* Bottom Left: Button */}
-                  <div>
-                    <Link
-                      href="/kabar-kedinasan/pengumuman"
-                      className="inline-flex items-center bg-[#00113a] text-white font-bold py-2.5 px-6 rounded-md hover:bg-[#2a4386] transition-colors shadow-sm text-sm"
-                    >
-                      Lihat Pengumuman
-                    </Link>
-                  </div>
-                  
-                  {/* Bottom Right: Banner Headline & Subheadline */}
-                  <div className="text-left md:text-right max-w-lg mt-auto">
-                    <h3 className="text-white font-bold text-base sm:text-lg md:text-xl leading-tight mb-2 drop-shadow-md">
-                      {activeBanners[currentBannerIndex].headline}
-                    </h3>
-                    <p className="text-white/90 text-xs sm:text-sm line-clamp-2 drop-shadow-md">
-                      {activeBanners[currentBannerIndex].subheadline}
-                    </p>
-                  </div>
-               </div>
-            </div>
-
-            {/* Nav Arrows */}
-            {activeBanners.length > 1 && (
-              <>
-                <button
-                  onClick={prevBanner}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center text-white backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-20"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={nextBanner}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center text-white backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-20"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-                
-                {/* Dot Indicators */}
-                <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
-                  {activeBanners.map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setCurrentBannerIndex(idx)}
-                      className={`w-2 h-2 rounded-full transition-all ${
-                        currentBannerIndex === idx ? 'bg-white w-4' : 'bg-white/50 hover:bg-white/80'
-                      }`}
-                      aria-label={`Go to slide ${idx + 1}`}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-          </>
-        ) : (
-          <div className="p-6 sm:p-10 md:p-12 h-full flex flex-col justify-between">
-            <div className="max-w-xl space-y-3 sm:space-y-4">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight">
-                Halo, {userSession?.name || 'Budi Santoso'}!
-              </h1>
-              <p className="text-sm md:text-base text-white/90 font-medium leading-relaxed">
-                Selamat datang di Portal Intranet Perpustakaan Nasional Republik Indonesia. Akses informasi terkini, kelola data kepegawaian, dan terhubung dengan rekan kerja Anda dalam satu platform terintegrasi.
-              </p>
-            </div>
-            <div className="mt-8">
-              <Link
-                href="/kabar-kedinasan/pengumuman"
-                className="inline-flex items-center bg-white text-[#00113a] font-bold py-2.5 px-6 rounded-md hover:bg-slate-100 transition-colors shadow-sm text-sm"
-              >
-                Lihat Pengumuman
-              </Link>
-            </div>
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch mt-4 sm:mt-6 min-h-[400px]">
+        {/* Left Column: Greeting */}
+        <div className="flex flex-col justify-center py-6 lg:py-12 pr-0 lg:pr-8 space-y-6">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#1a1b20] tracking-tight">
+            Halo, {userSession?.name || 'Budi Santoso'}!
+          </h1>
+          <p className="text-sm md:text-base text-[#1a1b20] leading-relaxed">
+            Selamat datang di Portal Intranet Perpustakaan Nasional Republik Indonesia. Akses informasi terkini, kelola data kepegawaian, dan terhubung dengan rekan kerja Anda dalam satu platform terintegrasi.
+          </p>
+          <div className="pt-2">
+            <Link
+              href="/kabar-kedinasan/pengumuman"
+              className="inline-flex items-center bg-[#00113a] text-white font-medium py-3 px-8 rounded-md hover:bg-[#001d5c] transition-colors shadow-sm text-sm"
+            >
+              Lihat Pengumuman
+            </Link>
           </div>
-        )}
+        </div>
+
+        {/* Right Column: Banner Carousel */}
+        <div className="relative w-full rounded-2xl overflow-hidden border border-[#c5c6d2] bg-white shadow-sm group">
+          {activeBanners.length > 0 ? (
+            <>
+              {/* Banner Image Background */}
+              <div className="absolute inset-0 w-full h-full">
+                 <img
+                    src={activeBanners[currentBannerIndex].imageUrl || '/images/hero-illustration.webp'}
+                    alt={activeBanners[currentBannerIndex].headline}
+                    className="w-full h-full object-cover transition-opacity duration-500"
+                  />
+              </div>
+              
+              {/* Gradient Overlay for Text (bottom white) */}
+              <div className="absolute inset-0 bg-gradient-to-t from-white via-white/70 to-transparent h-full w-full" />
+              
+              {/* Content Container */}
+              <div className="relative z-10 p-6 sm:p-8 h-full flex flex-col justify-end">
+                <div className="max-w-lg mt-auto">
+                  <h3 className="text-[#1a1b20] font-extrabold text-xl sm:text-2xl md:text-3xl leading-tight mb-2">
+                    {activeBanners[currentBannerIndex].headline}
+                  </h3>
+                  <p className="text-[#1a1b20] text-sm sm:text-base line-clamp-2">
+                    {activeBanners[currentBannerIndex].subheadline}
+                  </p>
+                </div>
+              </div>
+
+              {/* Nav Arrows */}
+              {activeBanners.length > 1 && (
+                <>
+                  <button
+                    onClick={prevBanner}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/10 hover:bg-black/20 flex items-center justify-center text-[#1a1b20] backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-20"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={nextBanner}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/10 hover:bg-black/20 flex items-center justify-center text-[#1a1b20] backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-20"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                  
+                  {/* Dot Indicators */}
+                  <div className="absolute bottom-4 sm:bottom-6 right-8 flex items-center gap-2 z-20">
+                    {activeBanners.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentBannerIndex(idx)}
+                        className={`w-2 h-2 rounded-full transition-all ${
+                          currentBannerIndex === idx ? 'bg-[#00113a] w-4' : 'bg-[#00113a]/30 hover:bg-[#00113a]/50'
+                        }`}
+                        aria-label={`Go to slide ${idx + 1}`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
+          ) : (
+            <div className="p-6 sm:p-8 h-full flex flex-col justify-end">
+              <div className="max-w-lg mt-auto">
+                <h3 className="text-[#1a1b20] font-extrabold text-xl sm:text-2xl md:text-3xl leading-tight mb-2">
+                  Tidak ada banner
+                </h3>
+                <p className="text-[#1a1b20] text-sm sm:text-base line-clamp-2">
+                  Saat ini belum ada banner yang aktif.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
       </section>
 
       {/* Stats Bar */}

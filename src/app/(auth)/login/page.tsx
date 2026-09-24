@@ -103,13 +103,11 @@ export default function LoginPage() {
           <div className="flex flex-col justify-center max-w-[440px] w-full mx-auto md:mx-0">
             {/* Logo Brand */}
             <div className="flex items-center gap-3.5 mb-5">
-              <div className="w-11 h-11 relative shrink-0 flex items-center justify-center">
-                <img
-                  src="/images/logo-perpusnas.png"
-                  alt="Logo Perpustakaan Nasional RI"
-                  className="w-full h-full object-contain"
-                />
-              </div>
+              <img
+                src="/images/logo-perpusnas.png"
+                alt="Logo Perpustakaan Nasional RI"
+                className="h-11 sm:h-12 w-auto object-contain shrink-0"
+              />
               <div className="flex flex-col">
                 <span className="font-extrabold text-2xl text-[#00113a] leading-none tracking-tight">
                   Cakrawala
@@ -266,13 +264,11 @@ export default function LoginPage() {
           {/* Right Column: Centered Star & Pemberitahuan (as per Wireframe) */}
           <div className="flex flex-col items-center justify-center text-center px-4 max-w-[420px] mx-auto w-full">
             {/* Big Perpusnas Star Logo */}
-            <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 mb-5 relative flex items-center justify-center">
-              <img
-                src="/images/logo-perpusnas.png"
-                alt="Logo Perpustakaan Nasional RI"
-                className="w-full h-full object-contain"
-              />
-            </div>
+            <img
+              src="/images/logo-perpusnas.png"
+              alt="Logo Perpustakaan Nasional RI"
+              className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 mb-5 object-contain"
+            />
 
             {/* Pemberitahuan Title */}
             <h2 className="text-xl sm:text-2xl font-bold text-[#00113a] mb-3">
@@ -291,9 +287,10 @@ export default function LoginPage() {
 
       {/* Footer as per Wireframe: Light gray banner */}
       <footer className="w-full bg-[#f4f5f7] border-t border-slate-200/80 py-3 sm:py-3.5 text-center text-xs text-slate-500 font-normal">
-        © Hak Cipta 2026, Perpustakaan Nasional Republik Indonesia.
+        Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.
       </footer>
     </div>
   );
 }
+
 

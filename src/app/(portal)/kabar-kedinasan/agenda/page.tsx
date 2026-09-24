@@ -116,8 +116,7 @@ export default function AgendaKegiatanPage() {
               Agenda Kegiatan
             </h1>
             <p className="text-base text-[#444650]">
-              Deskripsi mengenai halaman Agenda Kegiatan
-            </p>
+              Jadwal rakor, diklat, dan acara dinas</p>
           </div>
 
           <Link

@@ -141,8 +141,7 @@ export default function HumorPage() {
               Humor
             </h1>
             <p className="text-base text-[#444650]">
-              Deskripsi mengenai halaman Humor
-            </p>
+              Pojok rileks & cerita santai</p>
           </div>
 
           <Link

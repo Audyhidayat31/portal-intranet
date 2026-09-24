@@ -78,13 +78,7 @@ export function PortalNavbar() {
         <div className="flex justify-between items-center w-full px-4 sm:px-8 max-w-[1280px] mx-auto h-20">
           {/* Brand Logo & Name */}
           <Link href="/beranda" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-full bg-[#f4f3f9] border border-[#c5c6d2] flex items-center justify-center p-1.5 shrink-0">
-              <img
-                src="/images/logo-perpusnas.png"
-                alt="Perpusnas Logo"
-                className="w-full h-full object-contain"
-              />
-            </div>
+            <img src="/images/logo-perpusnas.png" alt="Perpusnas Logo" className="h-11 sm:h-12 w-auto object-contain shrink-0" />
             <div className="flex flex-col">
               <span className="font-bold text-lg text-[#00113a] leading-tight">Cakrawala</span>
               <span className="text-[10px] sm:text-[11px] text-[#444650] leading-tight font-medium">
@@ -148,7 +142,6 @@ export function PortalNavbar() {
                     className="block p-2.5 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-[#00113a] transition-colors"
                   >
                     <p className="text-xs font-bold">Berita</p>
-                    <p className="text-[11px] text-slate-500 mt-0.5">Warta resmi kegiatan Perpusnas RI</p>
                   </Link>
                   <Link
                     href="/kabar-kedinasan/pengumuman"
@@ -156,7 +149,6 @@ export function PortalNavbar() {
                     className="block p-2.5 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-[#00113a] transition-colors"
                   >
                     <p className="text-xs font-bold">Pengumuman</p>
-                    <p className="text-[11px] text-slate-500 mt-0.5">Surat edaran, cuti, dan arahan pimpinan</p>
                   </Link>
                   <Link
                     href="/kabar-kedinasan/agenda"
@@ -164,7 +156,6 @@ export function PortalNavbar() {
                     className="block p-2.5 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-[#00113a] transition-colors"
                   >
                     <p className="text-xs font-bold">Agenda Kegiatan</p>
-                    <p className="text-[11px] text-slate-500 mt-0.5">Jadwal rakor, diklat, dan acara dinas</p>
                   </Link>
                   <Link
                     href="/kabar-kedinasan/laporan-perjalanan"
@@ -172,7 +163,6 @@ export function PortalNavbar() {
                     className="block p-2.5 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-[#00113a] transition-colors"
                   >
                     <p className="text-xs font-bold">Laporan Perjalanan Dinas</p>
-                    <p className="text-[11px] text-slate-500 mt-0.5">Laporan monitoring & supervisi wilayah</p>
                   </Link>
                   <Link
                     href="/kabar-kedinasan/dokumen-intern"
@@ -180,7 +170,6 @@ export function PortalNavbar() {
                     className="block p-2.5 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-[#00113a] transition-colors"
                   >
                     <p className="text-xs font-bold">Dokumen Intern</p>
-                    <p className="text-[11px] text-slate-500 mt-0.5">SOP, pedoman kerja, dan regulasi internal</p>
                   </Link>
                 </div>
               )}
@@ -210,7 +199,7 @@ export function PortalNavbar() {
                   {[
                     { label: 'Daftar Pegawai', href: '/antar-pegawai/daftar-pegawai', desc: 'Direktori data & kontak pegawai' },
                     { label: 'Coretan Opini', href: '/antar-pegawai/opini', desc: 'Gagasan & pemikiran pegawai' },
-                    { label: 'Humor Pegawai', href: '/antar-pegawai/humor', desc: 'Pojok rileks & cerita santai' },
+                    { label: 'Humor', href: '/antar-pegawai/humor', desc: 'Pojok rileks & cerita santai' },
                     { label: 'Jelajah Bumi', href: '/antar-pegawai/jelajah-bumi', desc: 'Catatan perjalanan wisata & budaya' },
                     { label: 'Kabar Keluarga', href: '/antar-pegawai/kabar-keluarga', desc: 'Warta suka & duka keluarga Perpusnas' },
                     { label: 'Kalimat Bijak', href: '/antar-pegawai/kalimat-bijak', desc: 'Kutipan inspiratif & motivasi' },
@@ -227,7 +216,6 @@ export function PortalNavbar() {
                       className="block p-2 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-[#00113a] transition-colors"
                     >
                       <p className="text-xs font-bold">{sub.label}</p>
-                      <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">{sub.desc}</p>
                     </Link>
                   ))}
                 </div>

@@ -162,8 +162,7 @@ export default function LaporanPerjalananPage() {
               Laporan Perjalanan Dinas
             </h1>
             <p className="text-sm sm:text-base text-[#444650]">
-              Deskripsi Laporan Perjalanan Dinas
-            </p>
+              Laporan monitoring & supervisi wilayah</p>
           </div>
 
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">

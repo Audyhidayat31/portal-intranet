@@ -39,7 +39,7 @@ export function PortalFooter() {
       alamat1: 'Jl. Salemba Raya No. 28A, Jakarta 10430',
       alamat2: 'Jl. Medan Merdeka Selatan No. 11, Jakarta 10110',
     },
-    copyright: '© Hak Cipta 2026, Perpustakaan Nasional Republik Indonesia.',
+    copyright: 'Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.',
   });
 
   useEffect(() => {
@@ -121,13 +121,11 @@ export function PortalFooter() {
         {/* Brand Column */}
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center p-1 shrink-0">
-              <img
-                src="/images/logo-perpusnas.png"
-                alt="Perpusnas Logo"
-                className="w-full h-full object-contain"
-              />
-            </div>
+            <img
+              src="/images/logo-perpusnas.png"
+              alt="Perpusnas Logo"
+              className="h-11 sm:h-12 w-auto object-contain shrink-0"
+            />
             <div>
               <h2 className="font-bold text-base text-white leading-tight">
                 Cakrawala<br />Portal Intranet<br />Perpustakaan Nasional
@@ -225,10 +223,11 @@ export function PortalFooter() {
       {/* Copyright Bar */}
       <div className="max-w-[1280px] mx-auto text-center border-t border-[#2a4386] pt-8">
         <p className="text-xs sm:text-sm text-[#b3c5ff]">
-          {footerData.copyright || '© Hak Cipta 2026, Perpustakaan Nasional Republik Indonesia.'}
+          {footerData.copyright || 'Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.'}
         </p>
       </div>
     </footer>
   );
 }
+
 

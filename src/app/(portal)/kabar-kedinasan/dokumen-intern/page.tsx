@@ -190,8 +190,7 @@ export default function DokumenInternPage() {
               Dokumen Internal
             </h1>
             <p className="text-sm sm:text-base text-[#444650]">
-              Deskripsi Dokumen Intern
-            </p>
+              SOP, pedoman kerja, dan regulasi internal</p>
           </div>
 
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">

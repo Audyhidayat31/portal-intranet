@@ -115,8 +115,7 @@ export default function TipsGayaHidupPage() {
               Tips dan Gaya Hidup
             </h1>
             <p className="text-base text-[#444650]">
-              Deskripsi mengenai halaman Tips dan Gaya Hidup
-            </p>
+              Kesehatan, ergonomis & hobi</p>
           </div>
 
           <Link
