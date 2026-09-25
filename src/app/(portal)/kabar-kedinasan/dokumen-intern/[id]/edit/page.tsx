@@ -565,6 +565,171 @@ export default function EditDokumenInternalPage() {
                 <div className="border border-[#c5c6d2] rounded overflow-hidden focus-within:border-[#00113a] focus-within:ring-1 focus-within:ring-[#00113a] transition-colors">
                   {/* Toolbar */}
                   <div className="bg-[#f4f3f9] border-b border-[#c5c6d2] px-3 py-2 flex flex-wrap items-center gap-1">
+                    <button
+                      type="button"
+                      title="Tebal (Bold)"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        execFormat('bold');
+                      }}
+                      className={`p-1.5 rounded transition-colors cursor-pointer ${
+                        activeStyles.bold
+                          ? 'bg-[#d8d6e1] text-[#00113a]'
+                          : 'hover:bg-[#e9e7ee] text-[#1a1b20]'
+                      }`}
+                    >
+                      <Bold className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      title="Miring (Italic)"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        execFormat('italic');
+                      }}
+                      className={`p-1.5 rounded transition-colors cursor-pointer ${
+                        activeStyles.italic
+                          ? 'bg-[#d8d6e1] text-[#00113a]'
+                          : 'hover:bg-[#e9e7ee] text-[#1a1b20]'
+                      }`}
+                    >
+                      <Italic className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      title="Garis Bawah (Underline)"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        execFormat('underline');
+                      }}
+                      className={`p-1.5 rounded transition-colors cursor-pointer ${
+                        activeStyles.underline
+                          ? 'bg-[#d8d6e1] text-[#00113a]'
+                          : 'hover:bg-[#e9e7ee] text-[#1a1b20]'
+                      }`}
+                    >
+                      <Underline className="w-4 h-4" />
+                    </button>
 
+                    <div className="w-px h-4 bg-[#c5c6d2] mx-1" />
+
+                    <button
+                      type="button"
+                      title="Daftar Bulat (Bullet List)"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        execFormat('insertUnorderedList');
+                      }}
+                      className={`p-1.5 rounded transition-colors cursor-pointer ${
+                        activeStyles.unorderedList
+                          ? 'bg-[#d8d6e1] text-[#00113a]'
+                          : 'hover:bg-[#e9e7ee] text-[#1a1b20]'
+                      }`}
+                    >
+                      <List className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      title="Daftar Angka (Numbered List)"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        execFormat('insertOrderedList');
+                      }}
+                      className={`p-1.5 rounded transition-colors cursor-pointer ${
+                        activeStyles.orderedList
+                          ? 'bg-[#d8d6e1] text-[#00113a]'
+                          : 'hover:bg-[#e9e7ee] text-[#1a1b20]'
+                      }`}
+                    >
+                      <ListOrdered className="w-4 h-4" />
+                    </button>
+
+                    <div className="w-px h-4 bg-[#c5c6d2] mx-1" />
+
+                    <button
+                      type="button"
+                      title="Sisipkan Tautan Web (Link)"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleLinkInsert();
+                      }}
+                      className="p-1.5 hover:bg-[#e9e7ee] rounded text-[#1a1b20] transition-colors cursor-pointer"
+                    >
+                      <Link2 className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* WYSIWYG ContentEditable */}
+                  <div
+                    ref={editorRef}
+                    contentEditable
+                    suppressContentEditableWarning
+                    onKeyUp={checkActiveStyles}
+                    onMouseUp={checkActiveStyles}
+                    onInput={(e) => {
+                      setKeteranganHtml(e.currentTarget.innerHTML);
+                      checkActiveStyles();
+                    }}
+                    data-placeholder="Tuliskan keterangan dokumen..."
+                    className="wysiwyg-editor w-full p-4 text-sm sm:text-base bg-white text-[#1a1b20] focus:outline-none min-h-[150px] max-h-[400px] overflow-y-auto leading-relaxed"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Field 5: Lampiran (File Upload) */}
+            <div className="flex flex-col md:flex-row md:items-center">
+              <label className="w-full md:w-56 font-bold text-sm text-[#1a1b20] mb-2 md:mb-0 flex items-center justify-between pr-4">
+                <span>Lampiran</span>
+                <span className="hidden md:inline text-[#1a1b20]">:</span>
+              </label>
+              <div className="flex-1 flex items-center">
+                <input
+                  type="text"
+                  placeholder="Nama file .pdf/ .docx"
+                  value={lampiranName}
+                  onChange={(e) => setLampiranName(e.target.value)}
+                  className="w-full border border-[#c5c6d2] rounded-l px-3.5 py-2.5 text-sm text-[#1a1b20] bg-white focus:outline-none focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] transition-colors"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-6 py-2.5 bg-[#f4f3f9] border border-l-0 border-[#c5c6d2] rounded-r text-sm font-bold text-[#1a1b20] hover:bg-[#e9e7ee] transition-colors shrink-0"
+                >
+                  Upload
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf,.docx,.doc"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col md:flex-row md:items-center mt-6">
+              <div className="w-full md:w-56 hidden md:block"></div>
+              <div className="flex-1 flex flex-col sm:flex-row gap-3">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full sm:w-auto px-8 py-2.5 bg-[#00113a] text-white font-bold rounded hover:bg-[#2a4386] transition-colors disabled:opacity-50 text-sm"
+                >
+                  {isSubmitting ? 'Menyimpan...' : 'Simpan'}
+                </button>
+                <Link
+                  href="/kabar-kedinasan/dokumen-intern"
+                  className="w-full sm:w-auto px-8 py-2.5 bg-transparent border border-[#c5c6d2] text-[#1a1b20] font-bold rounded hover:bg-[#f4f3f9] transition-colors text-center text-sm"
+                >
+                  Keluar
+                </Link>
+              </div>
+            </div>
+          </form>
+        </section>
+      </div>
+    </div>
   );
 }
