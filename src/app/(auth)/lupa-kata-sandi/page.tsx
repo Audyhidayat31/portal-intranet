@@ -3,11 +3,11 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { CheckCircle2, AlertCircle, ArrowLeft, ExternalLink } from 'lucide-react';
-import RecaptchaMock from '@/components/auth/RecaptchaMock';
+import ReCAPTCHA from 'react-google-recaptcha';
 
 export default function LupaKataSandiPage() {
   const [email, setEmail] = useState('');
-  const [isCaptchaVerified, setIsCaptchaVerified] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSent, setIsSent] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -30,7 +30,7 @@ export default function LupaKataSandiPage() {
       return;
     }
 
-    if (!isCaptchaVerified) {
+    if (!recaptchaToken) {
       setErrorMessage('Silakan selesaikan verifikasi reCAPTCHA ("I\'m not a robot") terlebih dahulu.');
       return;
     }
@@ -142,7 +142,7 @@ export default function LupaKataSandiPage() {
                     onClick={() => {
                       setIsSent(false);
                       setEmail('');
-                      setIsCaptchaVerified(false);
+                      setRecaptchaToken(null);
                       setErrorMessage('');
                     }}
                     className="text-xs text-slate-500 hover:text-slate-800 underline font-normal"
@@ -183,17 +183,15 @@ export default function LupaKataSandiPage() {
                 </div>
 
                 {/* reCAPTCHA Widget */}
-                <div className="pt-0.5 flex justify-center">
-                  <RecaptchaMock
-                    verified={isCaptchaVerified}
-                    onVerifyChange={(v) => {
-                      setIsCaptchaVerified(v);
-                      if (v && errorMessage.includes('reCAPTCHA')) {
+                <div className="pt-0.5">
+                  <ReCAPTCHA
+                    sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ''}
+                    onChange={(token) => {
+                      setRecaptchaToken(token);
+                      if (token && errorMessage.includes('reCAPTCHA')) {
                         setErrorMessage('');
                       }
                     }}
-                    hasError={Boolean(errorMessage && !isCaptchaVerified)}
-                    className="w-full"
                   />
                 </div>
 
