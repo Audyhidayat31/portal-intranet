@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   Search,
@@ -97,7 +97,38 @@ export default function PengumumanPage() {
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
   const [editAttachmentName, setEditAttachmentName] = useState('');
+  
+  const [editAttachments, setEditAttachments] = useState<{file: File | null, name: string, preview: string | null}[]>([]);
+  const editAttachmentInputRef = useRef<HTMLInputElement>(null);
+  
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleEditAttachmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      if (editAttachments.length + files.length > 10) {
+        alert('Maksimal 10 lampiran diperbolehkan');
+        return;
+      }
+      const newAttachments = files.map(file => {
+        let preview = null;
+        if (file.type.startsWith('image/')) {
+          preview = URL.createObjectURL(file);
+        }
+        return { file, name: file.name, preview };
+      });
+      const updated = [...editAttachments, ...newAttachments];
+      setEditAttachments(updated);
+      setEditAttachmentName(updated.map(a => a.name).join(', '));
+    }
+    if (e.target) e.target.value = '';
+  };
+  
+  const removeEditAttachment = (index: number) => {
+    const updated = editAttachments.filter((_, i) => i !== index);
+    setEditAttachments(updated);
+    setEditAttachmentName(updated.map(a => a.name).join(', '));
+  };
 
   // Delete Announcement State
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -149,6 +180,18 @@ export default function PengumumanPage() {
     fetchAnnouncements();
   }, []);
 
+  // Prevent background scrolling when any modal is open
+  useEffect(() => {
+    if (isEditModalOpen || isAddModalOpen || isDeleteModalOpen || previewAttachment || selectedAnnouncement) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isEditModalOpen, isAddModalOpen, isDeleteModalOpen, previewAttachment, selectedAnnouncement]);
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     fetchAnnouncements(searchQuery);
@@ -197,6 +240,11 @@ export default function PengumumanPage() {
     setEditTitle(item.title || '');
     setEditContent(item.content || item.body || item.excerpt || '');
     setEditAttachmentName(item.attachmentName || '');
+    if (item.attachmentName) {
+      setEditAttachments([{ file: null, name: item.attachmentName, preview: null }]);
+    } else {
+      setEditAttachments([]);
+    }
     setIsEditModalOpen(true);
   };
 
@@ -391,11 +439,10 @@ export default function PengumumanPage() {
 
                   <div className="shrink-0 mt-4 sm:mt-auto self-end flex items-center gap-3">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-tight ${
-                        (item.status === 'MENUNGGU' || item.status === 'Menunggu' || item.status === 'DRAFT')
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-tight ${(item.status === 'MENUNGGU' || item.status === 'Menunggu' || item.status === 'DRAFT')
                           ? 'bg-amber-50 text-amber-700 border border-amber-200'
                           : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                      }`}
+                        }`}
                     >
                       Status: {(item.status === 'MENUNGGU' || item.status === 'Menunggu' || item.status === 'DRAFT') ? 'Menunggu' : 'Terbit'}
                     </span>
@@ -431,11 +478,10 @@ export default function PengumumanPage() {
             key={page}
             type="button"
             onClick={() => setCurrentPage(page)}
-            className={`w-8 h-8 rounded text-xs font-bold transition-colors flex items-center justify-center cursor-pointer ${
-              currentPage === page
+            className={`w-8 h-8 rounded text-xs font-bold transition-colors flex items-center justify-center cursor-pointer ${currentPage === page
                 ? 'bg-[#00113a] text-white'
                 : 'text-[#444650] hover:bg-[#f4f3f9] hover:text-[#00113a]'
-            }`}
+              }`}
           >
             {page}
           </button>
@@ -576,7 +622,7 @@ export default function PengumumanPage() {
       {/* Edit Pengumuman Modal */}
       {isEditModalOpen && (
         <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-[#c5c6d2] max-h-[90vh] overflow-y-auto animate-fadeIn">
+          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-[#c5c6d2] max-h-[90vh] overflow-y-auto overscroll-contain animate-fadeIn">
             <div className="flex justify-between items-center pb-4 border-b border-slate-200">
               <h2 className="text-xl font-bold text-[#00113a]">Edit Pengumuman</h2>
               <button
@@ -604,18 +650,6 @@ export default function PengumumanPage() {
 
               <div>
                 <label className="block text-xs font-bold text-[#1a1b20] mb-1.5">
-                  Nama Dokumen Lampiran
-                </label>
-                <input
-                  type="text"
-                  value={editAttachmentName}
-                  onChange={(e) => setEditAttachmentName(e.target.value)}
-                  className="w-full border border-[#c5c6d2] rounded-md p-2.5 text-sm focus:outline-none focus:border-[#00113a]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#1a1b20] mb-1.5">
                   Uraian / Isi Pengumuman
                 </label>
                 <textarea
@@ -625,6 +659,69 @@ export default function PengumumanPage() {
                   onChange={(e) => setEditContent(e.target.value)}
                   className="w-full border border-[#c5c6d2] rounded-md p-2.5 text-sm focus:outline-none focus:border-[#00113a] leading-relaxed"
                 />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-[#1a1b20] mb-1.5 flex items-center justify-between">
+                  <span>Lampiran (Maks. 10 File)</span>
+                  <span className="text-[#757682] font-normal">{editAttachments.length}/10</span>
+                </label>
+                <div className="space-y-4">
+                  <div className="flex">
+                    <input
+                      type="text"
+                      readOnly
+                      value={editAttachments.length > 0 ? `${editAttachments.length} file dipilih` : ''}
+                      placeholder="Upload maksimal 10 file..."
+                      className="flex-grow border border-r-0 border-[#c5c6d2] rounded-l-md p-2.5 text-sm bg-white text-[#444650] cursor-default focus:outline-none"
+                    />
+                    <input
+                      ref={editAttachmentInputRef}
+                      type="file"
+                      multiple
+                      onChange={handleEditAttachmentChange}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => editAttachmentInputRef.current?.click()}
+                      disabled={editAttachments.length >= 10}
+                      className="px-6 bg-[#e9e7ee] border border-[#c5c6d2] rounded-r-md text-[#1a1b20] font-bold text-xs sm:text-sm hover:bg-[#e1e3e4] transition-colors disabled:opacity-50"
+                    >
+                      Upload
+                    </button>
+                  </div>
+                  
+                  {/* Previews */}
+                  {editAttachments.length > 0 && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                      {editAttachments.map((att, idx) => (
+                        <div key={idx} className="relative group bg-[#e9e7ee] border border-[#c5c6d2] rounded-md overflow-hidden aspect-square flex flex-col items-center justify-center">
+                          {att.preview ? (
+                            <img src={att.preview} alt={att.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                          ) : (
+                            <div className="flex flex-col items-center gap-2 p-2">
+                              <FileText className="w-8 h-8 text-[#00113a]" />
+                              <span className="text-[10px] font-bold text-center break-all line-clamp-2 text-[#00113a]">{att.name}</span>
+                            </div>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => removeEditAttachment(idx)}
+                            className="absolute top-1 right-1 bg-black/60 hover:bg-black text-white p-1 rounded-full transition-colors opacity-0 group-hover:opacity-100"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                          {att.preview && (
+                            <span className="absolute bottom-0 w-full bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center">
+                              {att.name}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="pt-4 flex justify-end gap-3 border-t border-slate-200">

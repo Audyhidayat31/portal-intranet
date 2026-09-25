@@ -26,7 +26,6 @@ export async function POST(request: NextRequest) {
       where: {
         email: {
           equals: cleanEmail,
-          mode: 'insensitive',
         },
       },
       select: {
