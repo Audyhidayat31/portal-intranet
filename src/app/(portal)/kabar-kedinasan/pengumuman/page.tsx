@@ -16,6 +16,7 @@ import {
   ImageIcon,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
+import { Pagination } from '@/components/ui/Pagination';
 
 // Mock 5 Attachments for the Detail Modal
 const MOCK_ATTACHMENT_IMAGES = [
@@ -141,37 +142,13 @@ export default function PengumumanPage() {
       .then((data) => {
         const apiItems = data.success && Array.isArray(data.data) ? data.data : [];
 
-        if (q.trim()) {
-          const allPool = [...apiItems, ...STITCH_MOCK_ANNOUNCEMENTS_5];
-          const filtered = allPool.filter(
-            (item) =>
-              item.title?.toLowerCase().includes(q.toLowerCase()) ||
-              item.excerpt?.toLowerCase().includes(q.toLowerCase()) ||
-              item.body?.toLowerCase().includes(q.toLowerCase()) ||
-              item.content?.toLowerCase().includes(q.toLowerCase())
-          );
-          setAnnouncements(filtered);
-        } else {
-          // Combine API items with mock items ensuring 5 items for the design
-          const combined = [...apiItems];
-          for (const item of STITCH_MOCK_ANNOUNCEMENTS_5) {
-            if (combined.length >= 5) break;
-            if (!combined.some((c) => c.title === item.title && c.id === item.id)) {
-              combined.push(item);
-            }
-          }
-          let idx = 1;
-          while (combined.length < 5) {
-            const base = STITCH_MOCK_ANNOUNCEMENTS_5[(combined.length) % STITCH_MOCK_ANNOUNCEMENTS_5.length];
-            combined.push({ ...base, id: `fill-pengumuman-${idx++}` });
-          }
-          setAnnouncements(combined.slice(0, 5));
-        }
-        setIsLoading(false);
+        setAnnouncements(apiItems);
       })
       .catch((e) => {
         console.error(e);
-        setAnnouncements(STITCH_MOCK_ANNOUNCEMENTS_5);
+        setAnnouncements([]);
+      })
+      .finally(() => {
         setIsLoading(false);
       });
   };
@@ -410,7 +387,7 @@ export default function PengumumanPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-4 mb-8">
-            {announcements.map((item) => {
+            {announcements.slice((currentPage - 1) * 5, currentPage * 5).map((item) => {
               const displayDate = item.publishedAt
                 ? formatDate(item.publishedAt)
                 : '20 AGUSTUS 2026';
@@ -462,43 +439,12 @@ export default function PengumumanPage() {
       </div>
 
       {/* Pagination Controls */}
-      <div className="flex justify-center items-center gap-2 pt-4 pb-8">
-        <button
-          type="button"
-          aria-label="Previous page"
-          disabled={currentPage <= 1}
-          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-          className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
-        >
-          &lt;
-        </button>
-
-        {[1, 2, 3, 4, 5].map((page) => (
-          <button
-            key={page}
-            type="button"
-            onClick={() => setCurrentPage(page)}
-            className={`w-8 h-8 rounded text-xs font-bold transition-colors flex items-center justify-center cursor-pointer ${currentPage === page
-                ? 'bg-[#00113a] text-white'
-                : 'text-[#444650] hover:bg-[#f4f3f9] hover:text-[#00113a]'
-              }`}
-          >
-            {page}
-          </button>
-        ))}
-
-        <span className="text-[#757682] text-xs font-bold px-1">...</span>
-
-        <button
-          type="button"
-          aria-label="Next page"
-          disabled={currentPage >= 5}
-          onClick={() => setCurrentPage((p) => Math.min(5, p + 1))}
-          className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
-        >
-          &gt;
-        </button>
-      </div>
+      <Pagination 
+          currentPage={currentPage}
+          totalItems={announcements.length}
+          itemsPerPage={5}
+          onPageChange={setCurrentPage}
+        />
 
       {/* Detail Pengumuman Modal on List View (EXACT Stitch Screen Spec) */}
       {selectedAnnouncement && (

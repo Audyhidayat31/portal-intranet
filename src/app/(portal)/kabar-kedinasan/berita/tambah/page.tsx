@@ -270,7 +270,7 @@ export default function TambahBeritaPage() {
               Judul <span className="float-right hidden md:inline">:</span>
             </label>
             <div>
-              <input suppressHydrationWarning 
+              <input suppressHydrationWarning
                 id="judul"
                 type="text"
                 required
@@ -286,7 +286,7 @@ export default function TambahBeritaPage() {
               Tanggal <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="relative w-full md:w-1/3" ref={datePickerRef}>
-              <input suppressHydrationWarning 
+              <input suppressHydrationWarning
                 id="tanggal"
                 type="text"
                 readOnly
@@ -337,13 +337,12 @@ export default function TambahBeritaPage() {
                           type="button"
                           disabled={!item.isCurrentMonth}
                           onClick={() => selectCalendarDay(item.day)}
-                          className={`h-8 w-8 mx-auto rounded-full flex items-center justify-center font-medium transition-colors ${
-                            !item.isCurrentMonth
+                          className={`h-8 w-8 mx-auto rounded-full flex items-center justify-center font-medium transition-colors ${!item.isCurrentMonth
                               ? 'text-slate-300 cursor-not-allowed'
                               : isSelected
-                              ? 'bg-[#00113a] text-white font-bold shadow-xs'
-                              : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                          }`}
+                                ? 'bg-[#00113a] text-white font-bold shadow-xs'
+                                : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                            }`}
                         >
                           {item.day}
                         </button>
@@ -362,9 +361,8 @@ export default function TambahBeritaPage() {
               <button
                 type="button"
                 onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
-                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${
-                  isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
-                }`}
+                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
+                  }`}
               >
                 <span className="truncate">{status || 'Jenis Status'}</span>
                 <ChevronDown className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''}`} />
@@ -378,11 +376,10 @@ export default function TambahBeritaPage() {
                       setStatus('Terbit');
                       setIsStatusMenuOpen(false);
                     }}
-                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                      status === 'Terbit'
+                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Terbit'
                         ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
                         : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                    }`}
+                      }`}
                   >
                     Terbit
                   </button>
@@ -392,11 +389,10 @@ export default function TambahBeritaPage() {
                       setStatus('Menunggu');
                       setIsStatusMenuOpen(false);
                     }}
-                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                      status === 'Menunggu'
+                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Menunggu'
                         ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
                         : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                    }`}
+                      }`}
                   >
                     Menunggu
                   </button>
@@ -419,9 +415,8 @@ export default function TambahBeritaPage() {
                     e.preventDefault();
                     execFormat('bold');
                   }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${
-                    activeStyles.bold ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                  }`}
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${activeStyles.bold ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                    }`}
                 >
                   <Bold className="w-4 h-4" />
                 </button>
@@ -434,9 +429,8 @@ export default function TambahBeritaPage() {
                     e.preventDefault();
                     execFormat('italic');
                   }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${
-                    activeStyles.italic ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                  }`}
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${activeStyles.italic ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                    }`}
                 >
                   <Italic className="w-4 h-4" />
                 </button>
@@ -449,9 +443,8 @@ export default function TambahBeritaPage() {
                     e.preventDefault();
                     execFormat('underline');
                   }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${
-                    activeStyles.underline ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                  }`}
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${activeStyles.underline ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                    }`}
                 >
                   <Underline className="w-4 h-4" />
                 </button>
@@ -466,9 +459,8 @@ export default function TambahBeritaPage() {
                     e.preventDefault();
                     execFormat('insertUnorderedList');
                   }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${
-                    activeStyles.unorderedList ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                  }`}
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${activeStyles.unorderedList ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                    }`}
                 >
                   <List className="w-4 h-4" />
                 </button>
@@ -511,7 +503,7 @@ export default function TambahBeritaPage() {
             </label>
             <div className="flex flex-col gap-4">
               <div className="flex">
-                <input suppressHydrationWarning 
+                <input suppressHydrationWarning
                   type="text"
                   readOnly
                   value={gambarFileName}
@@ -525,7 +517,7 @@ export default function TambahBeritaPage() {
                 >
                   Upload
                 </button>
-                <input suppressHydrationWarning 
+                <input suppressHydrationWarning
                   ref={gambarInputRef}
                   type="file"
                   accept="image/*"
@@ -562,7 +554,7 @@ export default function TambahBeritaPage() {
             </label>
             <div className="flex flex-col gap-4">
               <div className="flex">
-                <input suppressHydrationWarning 
+                <input suppressHydrationWarning
                   type="text"
                   readOnly
                   value={lampiranFileName}
@@ -576,7 +568,7 @@ export default function TambahBeritaPage() {
                 >
                   Upload
                 </button>
-                <input suppressHydrationWarning 
+                <input suppressHydrationWarning
                   ref={lampiranInputRef}
                   type="file"
                   accept=".pdf,.doc,.docx,.jpg,.png"

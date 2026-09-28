@@ -9,6 +9,7 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
+import { Pagination } from '@/components/ui/Pagination';
 
 export interface NewsItem {
   id: string;
@@ -115,34 +116,11 @@ export default function BeritaPage() {
           authorName: item.author?.name || 'Humas Perpusnas',
         }));
 
-        if (q.trim()) {
-          const allPool = [...formattedApiItems, ...MOCK_BERITA_6];
-          const filtered = allPool.filter(
-            (item) =>
-              item.title.toLowerCase().includes(q.toLowerCase()) ||
-              item.excerpt.toLowerCase().includes(q.toLowerCase()) ||
-              item.content.toLowerCase().includes(q.toLowerCase()) ||
-              (item.authorName && item.authorName.toLowerCase().includes(q.toLowerCase()))
-          );
-          setNewsList(filtered);
-        } else {
-          // Combine API items with mock items ensuring all 6 cards are populated
-          const combined = [...formattedApiItems];
-          for (const mockItem of MOCK_BERITA_6) {
-            if (combined.length >= 6) break;
-            const alreadyExists = combined.some((c) => c.id === mockItem.id);
-            if (!alreadyExists) {
-              combined.push(mockItem);
-            }
-          }
-          setNewsList(combined.slice(0, 6));
-        }
+        setNewsList(formattedApiItems);
       })
       .catch((e) => {
         console.error(e);
-        if (!newsList || newsList.length === 0) {
-          setNewsList(MOCK_BERITA_6);
-        }
+        setNewsList([]);
       })
       .finally(() => {
         setIsLoading(false);
@@ -240,7 +218,7 @@ export default function BeritaPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {newsList.map((item) => {
+            {newsList.slice((currentPage - 1) * 6, currentPage * 6).map((item) => {
               const displayDate = item.publishedAt ? formatDate(item.publishedAt) : '19 Agustus 2026';
               const isPublished = item.status === 'Terbit' || (item.status as any) === 'TERBIT' || !item.status;
 
@@ -304,44 +282,12 @@ export default function BeritaPage() {
       </div>
 
       {/* Pagination Controls matching Opini */}
-      <div className="flex justify-center items-center gap-2 pt-4 pb-8">
-        <button
-          type="button"
-          aria-label="Previous page"
-          disabled={currentPage <= 1}
-          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-          className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
-        >
-          &lt;
-        </button>
-
-        {[1, 2, 3, 4, 5].map((page) => (
-          <button
-            key={page}
-            type="button"
-            onClick={() => setCurrentPage(page)}
-            className={`w-8 h-8 rounded text-xs font-bold transition-colors flex items-center justify-center cursor-pointer ${
-              currentPage === page
-                ? 'bg-[#00113a] text-white'
-                : 'text-[#444650] hover:bg-[#f4f3f9] hover:text-[#00113a]'
-            }`}
-          >
-            {page}
-          </button>
-        ))}
-
-        <span className="text-[#757682] text-xs font-bold px-1">...</span>
-
-        <button
-          type="button"
-          aria-label="Next page"
-          disabled={currentPage >= 5}
-          onClick={() => setCurrentPage((p) => Math.min(5, p + 1))}
-          className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
-        >
-          &gt;
-        </button>
-      </div>
+      <Pagination 
+          currentPage={currentPage}
+          totalItems={newsList.length}
+          itemsPerPage={6}
+          onPageChange={setCurrentPage}
+        />
     </div>
   );
 }

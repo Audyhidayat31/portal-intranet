@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { STITCH_MOCK_BUSINESS_TRIPS_5 } from '@/lib/mock-business-trips';
+import { Pagination } from '@/components/ui/Pagination';
 
 export default function LaporanPerjalananPage() {
   const [reports, setReports] = useState<any[]>(STITCH_MOCK_BUSINESS_TRIPS_5);
@@ -41,40 +42,11 @@ export default function LaporanPerjalananPage() {
       .then((data) => {
         const apiItems = data.success && Array.isArray(data.data) ? data.data : [];
 
-        if (q.trim()) {
-          const allPool = [...apiItems, ...STITCH_MOCK_BUSINESS_TRIPS_5];
-          const filtered = allPool.filter(
-            (item) =>
-              item.title?.toLowerCase().includes(q.toLowerCase()) ||
-              item.excerpt?.toLowerCase().includes(q.toLowerCase()) ||
-              item.body?.toLowerCase().includes(q.toLowerCase()) ||
-              item.content?.toLowerCase().includes(q.toLowerCase()) ||
-              item.destinationCity?.toLowerCase().includes(q.toLowerCase()) ||
-              item.author?.name?.toLowerCase().includes(q.toLowerCase())
-          );
-          setReports(filtered);
-        } else {
-          // Keep exactly 5 distinct items by combining DB items + unique mock items
-          const combined = [...apiItems];
-          for (const mockItem of STITCH_MOCK_BUSINESS_TRIPS_5) {
-            if (combined.length >= 5) break;
-            const alreadyExists = combined.some(
-              (c) =>
-                c.id === mockItem.id ||
-                c.title?.toLowerCase().trim() === mockItem.title?.toLowerCase().trim()
-            );
-            if (!alreadyExists) {
-              combined.push(mockItem);
-            }
-          }
-          setReports(combined.slice(0, 5));
-        }
+        setReports(apiItems);
       })
       .catch((e) => {
         console.error(e);
-        if (!reports || reports.length === 0) {
-          setReports(STITCH_MOCK_BUSINESS_TRIPS_5);
-        }
+        setReports([]);
       })
       .finally(() => {
         setIsLoading(false);
@@ -212,7 +184,7 @@ export default function LaporanPerjalananPage() {
           </div>
         ) : (
           <div className="space-y-4 mb-12">
-            {reports.map((item) => {
+            {reports.slice((currentPage - 1) * 5, currentPage * 5).map((item) => {
               const displayDate = item.publishedAt
                 ? formatDate(item.publishedAt)
                 : '19 Agustus 2026';
@@ -273,44 +245,12 @@ export default function LaporanPerjalananPage() {
       </div>
 
       {/* Pagination Controls */}
-      <div className="flex justify-center items-center gap-2 pt-4 pb-8">
-        <button
-          type="button"
-          aria-label="Previous page"
-          disabled={currentPage <= 1}
-          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-          className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
-        >
-          &lt;
-        </button>
-
-        {[1, 2, 3, 4, 5].map((page) => (
-          <button
-            key={page}
-            type="button"
-            onClick={() => setCurrentPage(page)}
-            className={`w-8 h-8 rounded text-xs font-bold transition-colors flex items-center justify-center cursor-pointer ${
-              currentPage === page
-                ? 'bg-[#00113a] text-white'
-                : 'text-[#444650] hover:bg-[#f4f3f9] hover:text-[#00113a]'
-            }`}
-          >
-            {page}
-          </button>
-        ))}
-
-        <span className="text-[#757682] text-xs font-bold px-1">...</span>
-
-        <button
-          type="button"
-          aria-label="Next page"
-          disabled={currentPage >= 5}
-          onClick={() => setCurrentPage((p) => Math.min(5, p + 1))}
-          className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
-        >
-          &gt;
-        </button>
-      </div>
+      <Pagination 
+          currentPage={currentPage}
+          totalItems={reports.length}
+          itemsPerPage={5}
+          onPageChange={setCurrentPage}
+        />
 
       {/* Tambah Laporan Modal */}
       {isAddModalOpen && (

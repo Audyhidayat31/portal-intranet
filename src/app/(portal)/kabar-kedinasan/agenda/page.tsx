@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { STITCH_MOCK_AGENDAS_6, AgendaItem } from '@/lib/mock-agendas';
+import { Pagination } from '@/components/ui/Pagination';
 
 export default function AgendaKegiatanPage() {
   const [agendas, setAgendas] = useState<AgendaItem[]>(STITCH_MOCK_AGENDAS_6);
@@ -45,31 +46,11 @@ export default function AgendaKegiatanPage() {
           authorName: item.author?.name || 'Biro Umum Perpusnas',
         }));
 
-        if (q.trim()) {
-          const pool = [...formattedApiItems, ...STITCH_MOCK_AGENDAS_6];
-          const filtered = pool.filter(
-            (item) =>
-              item.title.toLowerCase().includes(q.toLowerCase()) ||
-              item.excerpt.toLowerCase().includes(q.toLowerCase()) ||
-              item.content.toLowerCase().includes(q.toLowerCase()) ||
-              (item.eventLocation && item.eventLocation.toLowerCase().includes(q.toLowerCase()))
-          );
-          setAgendas(filtered);
-        } else {
-          // Merge API items with mock items
-          const combined = [...formattedApiItems];
-          for (const item of STITCH_MOCK_AGENDAS_6) {
-            if (combined.length >= 6) break;
-            if (!combined.some((c) => c.title === item.title || c.id === item.id)) {
-              combined.push(item);
-            }
-          }
-          setAgendas(combined.slice(0, 6));
-        }
+        setAgendas(formattedApiItems);
       })
       .catch((e) => {
         console.error(e);
-        setAgendas(STITCH_MOCK_AGENDAS_6);
+        setAgendas([]);
       })
       .finally(() => {
         setIsLoading(false);
@@ -167,7 +148,7 @@ export default function AgendaKegiatanPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {agendas.map((item) => {
+            {agendas.slice((currentPage - 1) * 6, currentPage * 6).map((item) => {
               const displayDate = item.publishedAt ? item.publishedAt : '19 Agustus 2026';
 
               return (
@@ -230,44 +211,12 @@ export default function AgendaKegiatanPage() {
       </div>
 
       {/* Pagination Controls matching Coretan Opini */}
-      <div className="flex justify-center items-center gap-2 pt-4 pb-8">
-        <button
-          type="button"
-          aria-label="Previous page"
-          disabled={currentPage <= 1}
-          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-          className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
-        >
-          &lt;
-        </button>
-
-        {[1, 2, 3, 4, 5].map((page) => (
-          <button
-            key={page}
-            type="button"
-            onClick={() => setCurrentPage(page)}
-            className={`w-8 h-8 rounded text-xs font-bold transition-colors flex items-center justify-center cursor-pointer ${
-              currentPage === page
-                ? 'bg-[#00113a] text-white'
-                : 'text-[#444650] hover:bg-[#f4f3f9] hover:text-[#00113a]'
-            }`}
-          >
-            {page}
-          </button>
-        ))}
-
-        <span className="text-[#757682] text-xs font-bold px-1">...</span>
-
-        <button
-          type="button"
-          aria-label="Next page"
-          disabled={currentPage >= 5}
-          onClick={() => setCurrentPage((p) => Math.min(5, p + 1))}
-          className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
-        >
-          &gt;
-        </button>
-      </div>
+      <Pagination 
+          currentPage={currentPage}
+          totalItems={agendas.length}
+          itemsPerPage={6}
+          onPageChange={setCurrentPage}
+        />
     </div>
   );
 }
