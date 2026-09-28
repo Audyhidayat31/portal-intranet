@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   Search,
@@ -11,6 +11,7 @@ import {
   MapPin,
   CheckCircle,
   X,
+  ChevronDown,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { STITCH_MOCK_BUSINESS_TRIPS_5 } from '@/lib/mock-business-trips';
@@ -30,7 +31,26 @@ export default function LaporanPerjalananPage() {
   const [newContent, setNewContent] = useState('');
   const [newAttachmentName, setNewAttachmentName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [successMessage, setSuccessMessage] = useState('');
+  
+  // Dropdown Pagination state
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [isPerPageOpen, setIsPerPageOpen] = useState(false);
+  const perPageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (perPageRef.current && !perPageRef.current.contains(event.target as Node)) {
+        setIsPerPageOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
 
   const fetchReports = (q: string = '') => {
     // If searching and no local reports match, show subtle loading
@@ -135,6 +155,40 @@ export default function LaporanPerjalananPage() {
             </h1>
             <p className="text-sm sm:text-base text-[#444650]">
               Laporan monitoring & supervisi wilayah</p>
+            {/* Tampilkan [ 5 v ] data */}
+            <div className="flex items-center gap-2 text-sm text-[#1a1b20] shrink-0 mt-4" ref={perPageRef}>
+              <span className="font-normal text-[#1a1b20]">Tampilkan</span>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsPerPageOpen(!isPerPageOpen)}
+                  className="w-14 bg-[#6c757d] hover:bg-[#5a6268] text-white px-2.5 py-1 rounded-md text-xs font-semibold flex items-center justify-between shadow-sm transition-colors cursor-pointer"
+                >
+                  <span>{itemsPerPage}</span>
+                  <ChevronDown className="w-3 h-3 text-white" />
+                </button>
+
+                {isPerPageOpen && (
+                  <div className="absolute left-0 top-full mt-1 w-14 bg-white border border-[#c5c6d2] rounded-md shadow-lg z-30 py-1 text-center overflow-hidden">
+                    {[5, 10, 15].filter((n) => n !== itemsPerPage).map((num) => (
+                      <button
+                        key={num}
+                        type="button"
+                        onClick={() => {
+                          setItemsPerPage(num);
+                          setCurrentPage(1); // Reset page when changing items per page
+                          setIsPerPageOpen(false);
+                        }}
+                        className="w-full text-xs py-1 hover:bg-[#efedf3] text-[#1a1b20] transition-colors cursor-pointer"
+                      >
+                        {num}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <span className="font-normal text-[#1a1b20]">data</span>
+            </div>
           </div>
 
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
@@ -184,7 +238,7 @@ export default function LaporanPerjalananPage() {
           </div>
         ) : (
           <div className="space-y-4 mb-12">
-            {reports.slice((currentPage - 1) * 5, currentPage * 5).map((item) => {
+            {reports.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
               const displayDate = item.publishedAt
                 ? formatDate(item.publishedAt)
                 : '19 Agustus 2026';
@@ -248,7 +302,7 @@ export default function LaporanPerjalananPage() {
       <Pagination 
           currentPage={currentPage}
           totalItems={reports.length}
-          itemsPerPage={5}
+          itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
         />
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { Pagination } from '@/components/ui/Pagination';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   Search,
@@ -14,6 +14,7 @@ import {
   Calendar,
   Eye,
   FileCode,
+  ChevronDown,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import {
@@ -38,7 +39,26 @@ export default function DokumenInternPage() {
   const [newKeterangan, setNewKeterangan] = useState('');
   const [newAttachmentName, setNewAttachmentName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [successMessage, setSuccessMessage] = useState('');
+  
+  // Dropdown Pagination state
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [isPerPageOpen, setIsPerPageOpen] = useState(false);
+  const perPageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (perPageRef.current && !perPageRef.current.contains(event.target as Node)) {
+        setIsPerPageOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
 
   const fetchDocuments = (q: string = '') => {
     if (q.trim()) {
@@ -164,6 +184,40 @@ export default function DokumenInternPage() {
             </h1>
             <p className="text-sm sm:text-base text-[#444650]">
               SOP, pedoman kerja, dan regulasi internal</p>
+            {/* Tampilkan [ 5 v ] data */}
+            <div className="flex items-center gap-2 text-sm text-[#1a1b20] shrink-0 mt-4" ref={perPageRef}>
+              <span className="font-normal text-[#1a1b20]">Tampilkan</span>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsPerPageOpen(!isPerPageOpen)}
+                  className="w-14 bg-[#00113a] hover:bg-[#2a4386] text-white px-2.5 py-1 rounded-md text-xs font-semibold flex items-center justify-between shadow-sm transition-colors cursor-pointer"
+                >
+                  <span>{itemsPerPage}</span>
+                  <ChevronDown className="w-3 h-3 text-white" />
+                </button>
+
+                {isPerPageOpen && (
+                  <div className="absolute left-0 top-full mt-1 w-14 bg-white border border-[#c5c6d2] rounded-md shadow-lg z-30 py-1 text-center overflow-hidden">
+                    {[5, 10, 15].filter((n) => n !== itemsPerPage).map((num) => (
+                      <button
+                        key={num}
+                        type="button"
+                        onClick={() => {
+                          setItemsPerPage(num);
+                          setCurrentPage(1); // Reset page when changing items per page
+                          setIsPerPageOpen(false);
+                        }}
+                        className="w-full text-xs py-1 hover:bg-[#efedf3] text-[#1a1b20] transition-colors cursor-pointer"
+                      >
+                        {num}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <span className="font-normal text-[#1a1b20]">data</span>
+            </div>
           </div>
 
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
@@ -213,7 +267,7 @@ export default function DokumenInternPage() {
           </div>
         ) : (
           <div className="space-y-4 mb-12">
-            {documents.slice((currentPage - 1) * 5, currentPage * 5).map((doc) => {
+            {documents.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((doc) => {
               const displayDate = doc.publishedAt
                 ? formatDate(doc.publishedAt)
                 : '20 Agustus 2026';
@@ -287,7 +341,7 @@ export default function DokumenInternPage() {
       <Pagination 
           currentPage={currentPage}
           totalItems={documents.length}
-          itemsPerPage={5}
+          itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
         />
 
