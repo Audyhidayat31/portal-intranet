@@ -58,7 +58,7 @@ export function PortalFooter() {
           }));
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const getSocialPlatformStyle = (platform: string) => {
