@@ -8,6 +8,7 @@ import {
   ArrowRight,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   X,
   FileText,
   Download,
@@ -91,7 +92,26 @@ export default function PengumumanPage() {
   const [newContent, setNewContent] = useState('');
   const [newAttachmentName, setNewAttachmentName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [successMessage, setSuccessMessage] = useState('');
+  
+  // Dropdown Pagination state
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [isPerPageOpen, setIsPerPageOpen] = useState(false);
+  const perPageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (perPageRef.current && !perPageRef.current.contains(event.target as Node)) {
+        setIsPerPageOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
 
   // Edit Announcement State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -338,6 +358,43 @@ export default function PengumumanPage() {
             </h1>
             <p className="text-sm sm:text-base text-[#444650]">
               Surat edaran, cuti, dan arahan pimpinan</p>
+            
+            <div className="mt-4">
+            {/* Tampilkan [ 5 v ] data */}
+            <div className="flex items-center gap-2 text-sm text-[#1a1b20] shrink-0" ref={perPageRef}>
+              <span className="font-normal text-[#1a1b20]">Tampilkan</span>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsPerPageOpen(!isPerPageOpen)}
+                  className="w-14 bg-[#6c757d] hover:bg-[#5a6268] text-white px-2.5 py-1 rounded-md text-xs font-semibold flex items-center justify-between shadow-sm transition-colors cursor-pointer"
+                >
+                  <span>{itemsPerPage}</span>
+                  <ChevronDown className="w-3 h-3 text-white" />
+                </button>
+
+                {isPerPageOpen && (
+                  <div className="absolute left-0 top-full mt-1 w-14 bg-white border border-[#c5c6d2] rounded-md shadow-lg z-30 py-1 text-center overflow-hidden">
+                    {[5, 10, 15].filter((n) => n !== itemsPerPage).map((num) => (
+                      <button
+                        key={num}
+                        type="button"
+                        onClick={() => {
+                          setItemsPerPage(num);
+                          setCurrentPage(1); // Reset page when changing items per page
+                          setIsPerPageOpen(false);
+                        }}
+                        className="w-full text-xs py-1 hover:bg-[#efedf3] text-[#1a1b20] transition-colors cursor-pointer"
+                      >
+                        {num}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <span className="font-normal text-[#1a1b20]">data</span>
+            </div>
+            </div>
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full md:w-auto">
@@ -387,7 +444,7 @@ export default function PengumumanPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-4 mb-8">
-            {announcements.slice((currentPage - 1) * 5, currentPage * 5).map((item) => {
+            {announcements.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
               const displayDate = item.publishedAt
                 ? formatDate(item.publishedAt)
                 : '20 AGUSTUS 2026';
@@ -442,7 +499,7 @@ export default function PengumumanPage() {
       <Pagination 
           currentPage={currentPage}
           totalItems={announcements.length}
-          itemsPerPage={5}
+          itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
         />
 

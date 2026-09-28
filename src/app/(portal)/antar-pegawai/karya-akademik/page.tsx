@@ -1,12 +1,13 @@
 'use client';
 
 import { Pagination } from '@/components/ui/Pagination';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   Search,
   Plus,
   ChevronRight,
+  ChevronDown,
   ChevronLeft,
   Calendar,
   BookOpen,
@@ -18,7 +19,7 @@ import {
   KaryaAkademikItem,
 } from '@/lib/mock-karya-akademik';
 
-const ITEMS_PER_PAGE = 5;
+const itemsPerPage = 5;
 
 export default function KaryaAkademikPage() {
   const [allItems, setAllItems] = useState<KaryaAkademikItem[]>(STITCH_MOCK_KARYA_AKADEMIK);
@@ -26,6 +27,24 @@ export default function KaryaAkademikPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Dropdown Pagination state
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [isPerPageOpen, setIsPerPageOpen] = useState(false);
+  const perPageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (perPageRef.current && !perPageRef.current.contains(event.target as Node)) {
+        setIsPerPageOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
 
   const fetchKaryaAkademik = (q: string = '') => {
     if (q.trim()) {
@@ -126,9 +145,9 @@ export default function KaryaAkademikPage() {
     fetchKaryaAkademik(searchQuery);
   };
 
-  const totalPages = Math.max(1, Math.ceil(filteredItems.length / ITEMS_PER_PAGE));
-  const startIndex = ((currentPage - 1) % totalPages) * ITEMS_PER_PAGE;
-  const currentCards = filteredItems.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / itemsPerPage));
+  const startIndex = ((currentPage - 1) % totalPages) * itemsPerPage;
+  const currentCards = filteredItems.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 bg-white text-[#191c1d] min-h-[calc(100vh-80px)] flex flex-col justify-between">
@@ -159,8 +178,59 @@ export default function KaryaAkademikPage() {
 
           {/* Right Actions: Search Box + Tambah Button */}
           <div className="flex items-center gap-3 w-full md:w-auto">
-            {/* Search Input matching Wireframe */}
-            <form onSubmit={handleSearchSubmit} className="relative flex-1 md:w-72">
+            
+
+            {/* + Tambah Button as per Coretan Opini Style */}
+            <Link
+              href="/antar-pegawai/karya-akademik/tambah"
+              className="bg-[#002366] hover:bg-[#00113a] text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-lg inline-flex items-center gap-2 shadow-sm transition-all duration-200 cursor-pointer shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Tambah</span>
+            </Link>
+          </div>
+        </div>
+
+                {/* Controls Row */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          {/* Left: Tampilkan [ 5 v ] data */}
+          <div className="flex items-center gap-2 text-sm text-[#1a1b20] shrink-0" ref={perPageRef}>
+            <span className="font-normal text-[#1a1b20]">Tampilkan</span>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsPerPageOpen(!isPerPageOpen)}
+                className="w-14 bg-[#6c757d] hover:bg-[#5a6268] text-white px-2.5 py-1 rounded-md text-xs font-semibold flex items-center justify-between shadow-sm transition-colors cursor-pointer"
+              >
+                <span>{itemsPerPage}</span>
+                <ChevronDown className="w-3 h-3 text-white" />
+              </button>
+
+              {isPerPageOpen && (
+                <div className="absolute left-0 top-full mt-1 w-14 bg-white border border-[#c5c6d2] rounded-md shadow-lg z-30 py-1 text-center overflow-hidden">
+                  {[5, 10, 15].filter((n) => n !== itemsPerPage).map((num) => (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => {
+                        setItemsPerPage(num);
+                        setCurrentPage(1);
+                        setIsPerPageOpen(false);
+                      }}
+                      className="w-full text-xs py-1 hover:bg-[#efedf3] text-[#1a1b20] transition-colors cursor-pointer"
+                    >
+                      {num}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <span className="font-normal text-[#1a1b20]">data</span>
+          </div>
+
+          {/* Right: Search Bar */}
+          <div className="flex justify-end w-full md:w-auto">
+            <form onSubmit={handleSearchSubmit} className="relative w-full md:w-72">
               <input
                 type="text"
                 value={searchQuery}
@@ -176,15 +246,6 @@ export default function KaryaAkademikPage() {
                 <Search className="w-4 h-4" />
               </button>
             </form>
-
-            {/* + Tambah Button as per Coretan Opini Style */}
-            <Link
-              href="/antar-pegawai/karya-akademik/tambah"
-              className="bg-[#002366] hover:bg-[#00113a] text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-lg inline-flex items-center gap-2 shadow-sm transition-all duration-200 cursor-pointer shrink-0"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Tambah</span>
-            </Link>
           </div>
         </div>
 
@@ -276,7 +337,7 @@ export default function KaryaAkademikPage() {
       <Pagination 
           currentPage={currentPage}
           totalItems={filteredItems.length}
-          itemsPerPage={6}
+          itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
         />
     </div>

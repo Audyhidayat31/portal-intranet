@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   Search,
   Plus,
   ChevronRight,
   CheckCircle,
+  ChevronDown,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { Pagination } from '@/components/ui/Pagination';
@@ -91,13 +92,30 @@ export default function BeritaPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+
   const [successMessage, setSuccessMessage] = useState('');
+  const [itemsPerPage, setItemsPerPage] = useState(9);
+  const [isPerPageOpen, setIsPerPageOpen] = useState(false);
+  const perPageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (perPageRef.current && !perPageRef.current.contains(event.target as Node)) {
+        setIsPerPageOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
 
   const fetchNews = (q: string = '') => {
     if (q.trim()) {
       setIsLoading(true);
     }
-    fetch(`/api/news?q=${encodeURIComponent(q)}&limit=12`)
+    fetch(`/api/news?q=${encodeURIComponent(q)}&limit=100`)
       .then((res) => res.json())
       .then((data) => {
         const apiItems = data.success && Array.isArray(data.data) ? data.data : [];
@@ -180,16 +198,52 @@ export default function BeritaPage() {
           </Link>
         </div>
 
-        {/* Search Bar matching Opini */}
-        <div className="mb-12 max-w-2xl mx-auto flex gap-2">
-          <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full">
+        {/* Controls Row */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          {/* Left: Tampilkan [ 9 v ] data */}
+          <div className="flex items-center gap-2 text-sm text-[#1a1b20] shrink-0" ref={perPageRef}>
+            <span className="font-normal text-[#1a1b20]">Tampilkan</span>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsPerPageOpen(!isPerPageOpen)}
+                className="w-14 bg-[#6c757d] hover:bg-[#5a6268] text-white px-2.5 py-1 rounded-md text-xs font-semibold flex items-center justify-between shadow-sm transition-colors cursor-pointer"
+              >
+                <span>{itemsPerPage}</span>
+                <ChevronDown className="w-3 h-3 text-white" />
+              </button>
+
+              {isPerPageOpen && (
+                <div className="absolute left-0 top-full mt-1 w-14 bg-white border border-[#c5c6d2] rounded-md shadow-lg z-30 py-1 text-center overflow-hidden">
+                  {[9, 18, 27].filter((n) => n !== itemsPerPage).map((num) => (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => {
+                        setItemsPerPage(num);
+                        setCurrentPage(1); // Reset page when changing items per page
+                        setIsPerPageOpen(false);
+                      }}
+                      className="w-full text-xs py-1 hover:bg-[#efedf3] text-[#1a1b20] transition-colors cursor-pointer"
+                    >
+                      {num}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <span className="font-normal text-[#1a1b20]">data</span>
+          </div>
+
+          {/* Right: Search Bar */}
+          <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full md:w-auto md:min-w-[400px]">
             <div className="relative flex-grow">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cari Berita terkini..."
-                className="w-full border border-[#c5c6d2] rounded-lg py-3 px-4 text-base bg-white text-[#1a1b20] placeholder-[#757682] focus:outline-none focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] transition-all"
+                className="w-full border border-[#c5c6d2] rounded-lg py-2 px-4 text-base bg-white text-[#1a1b20] placeholder-[#757682] focus:outline-none focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] transition-all"
               />
             </div>
             <button
@@ -218,7 +272,7 @@ export default function BeritaPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {newsList.slice((currentPage - 1) * 6, currentPage * 6).map((item) => {
+            {newsList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
               const displayDate = item.publishedAt ? formatDate(item.publishedAt) : '19 Agustus 2026';
               const isPublished = item.status === 'Terbit' || (item.status as any) === 'TERBIT' || !item.status;
 
@@ -285,7 +339,7 @@ export default function BeritaPage() {
       <Pagination 
           currentPage={currentPage}
           totalItems={newsList.length}
-          itemsPerPage={6}
+          itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
         />
     </div>

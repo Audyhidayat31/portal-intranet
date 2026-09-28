@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   Search,
@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Calendar,
   CheckCircle,
+  ChevronDown,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { STITCH_MOCK_AGENDAS_6, AgendaItem } from '@/lib/mock-agendas';
@@ -19,12 +20,28 @@ export default function AgendaKegiatanPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [successMessage, setSuccessMessage] = useState('');
+  const [itemsPerPage, setItemsPerPage] = useState(9);
+  const [isPerPageOpen, setIsPerPageOpen] = useState(false);
+  const perPageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (perPageRef.current && !perPageRef.current.contains(event.target as Node)) {
+        setIsPerPageOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
 
   const fetchAgendas = (q: string = '') => {
     if (q.trim()) {
       setIsLoading(true);
     }
-    fetch(`/api/agendas?q=${encodeURIComponent(q)}`)
+    fetch(`/api/agendas?q=${encodeURIComponent(q)}&limit=100`)
       .then((res) => res.json())
       .then((data) => {
         const apiItems = data.success && Array.isArray(data.data) ? data.data : [];
@@ -38,8 +55,8 @@ export default function AgendaKegiatanPage() {
           publishedAt: item.eventStartDate
             ? formatDate(item.eventStartDate)
             : item.createdAt
-            ? formatDate(item.createdAt)
-            : '19 Agustus 2026',
+              ? formatDate(item.createdAt)
+              : '19 Agustus 2026',
           eventStartDate: item.eventStartDate,
           eventLocation: item.eventLocation,
           status: item.status === 'MENUNGGU' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit',
@@ -109,26 +126,66 @@ export default function AgendaKegiatanPage() {
           </Link>
         </div>
 
-        {/* Search Bar matching Coretan Opini (Input + Separate [Search] Button) */}
-        <div className="mb-12 max-w-2xl mx-auto flex gap-2">
-          <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full">
-            <div className="relative flex-grow">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari Agenda Kegiatan..."
-                className="w-full border border-[#c5c6d2] rounded-lg py-3 px-4 text-base bg-white text-[#1a1b20] placeholder-[#757682] focus:outline-none focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] transition-all"
-              />
+        {/* Controls Row */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          {/* Left: Tampilkan [ 9 v ] data */}
+          <div className="flex items-center gap-2 text-sm text-[#1a1b20] shrink-0" ref={perPageRef}>
+            <span className="font-normal text-[#1a1b20]">Tampilkan</span>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsPerPageOpen(!isPerPageOpen)}
+                className="w-14 bg-[#6c757d] hover:bg-[#5a6268] text-white px-2.5 py-1 rounded-md text-xs font-semibold flex items-center justify-between shadow-sm transition-colors cursor-pointer"
+              >
+                <span>{itemsPerPage}</span>
+                <ChevronDown className="w-3 h-3 text-white" />
+              </button>
+
+              {isPerPageOpen && (
+                <div className="absolute left-0 top-full mt-1 w-14 bg-white border border-[#c5c6d2] rounded-md shadow-lg z-30 py-1 text-center overflow-hidden">
+                  {[9, 18, 27].filter((n) => n !== itemsPerPage).map((num) => (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => {
+                        setItemsPerPage(num);
+                        setCurrentPage(1); // Reset page when changing items per page
+                        setIsPerPageOpen(false);
+                      }}
+                      className="w-full text-xs py-1 hover:bg-[#efedf3] text-[#1a1b20] transition-colors cursor-pointer"
+                    >
+                      {num}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-            <button
-              type="submit"
-              aria-label="Cari"
-              className="bg-[#e9e7ee] border border-[#c5c6d2] rounded-lg px-4 flex items-center justify-center hover:bg-[#dad9e0] transition-colors cursor-pointer shrink-0"
-            >
-              <Search className="w-5 h-5 text-[#444650]" />
-            </button>
-          </form>
+            <span className="font-normal text-[#1a1b20]">data</span>
+          </div>
+
+          {/* Right: Search Bar */}
+          <div className="flex-1 flex justify-center w-full">
+            <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full md:max-w-2xl">
+              <div className="relative flex-grow">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Cari Agenda Kegiatan..."
+                  className="w-full border border-[#c5c6d2] rounded-lg py-2 px-4 text-base bg-white text-[#1a1b20] placeholder-[#757682] focus:outline-none focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] transition-all"
+                />
+              </div>
+              <button
+                type="submit"
+                aria-label="Cari"
+                className="bg-[#e9e7ee] border border-[#c5c6d2] rounded-lg px-4 flex items-center justify-center hover:bg-[#dad9e0] transition-colors cursor-pointer shrink-0"
+              >
+                <Search className="w-5 h-5 text-[#444650]" />
+              </button>
+            </form>
+          </div>
+          {/* Right: Dummy spacing to balance center */}
+          <div className="hidden md:block w-32 shrink-0"></div>
         </div>
 
         {/* Cards Grid: 3 Columns matching Coretan Opini */}
@@ -148,7 +205,7 @@ export default function AgendaKegiatanPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {agendas.slice((currentPage - 1) * 6, currentPage * 6).map((item) => {
+            {agendas.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
               const displayDate = item.publishedAt ? item.publishedAt : '19 Agustus 2026';
 
               return (
@@ -211,12 +268,12 @@ export default function AgendaKegiatanPage() {
       </div>
 
       {/* Pagination Controls matching Coretan Opini */}
-      <Pagination 
-          currentPage={currentPage}
-          totalItems={agendas.length}
-          itemsPerPage={6}
-          onPageChange={setCurrentPage}
-        />
+      <Pagination
+        currentPage={currentPage}
+        totalItems={agendas.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
     </div>
   );
 }
