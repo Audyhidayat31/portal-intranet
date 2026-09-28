@@ -20,6 +20,7 @@ import {
   ImageIcon,
   Upload,
   CheckCircle,
+  X,
 } from 'lucide-react';
 
 export default function TambahBeritaPage() {
@@ -33,6 +34,7 @@ export default function TambahBeritaPage() {
   const [gambarFileName, setGambarFileName] = useState('');
   const [gambarPreview, setGambarPreview] = useState<string | null>(null);
   const [lampiranFileName, setLampiranFileName] = useState('');
+  const [lampiranPreview, setLampiranPreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -179,8 +181,27 @@ export default function TambahBeritaPage() {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setLampiranFileName(file.name);
+      if (file.type.startsWith('image/')) {
+        setLampiranPreview(URL.createObjectURL(file));
+      } else {
+        setLampiranPreview(null);
+      }
     }
   };
+  const handleRemoveGambar = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setGambarFileName('');
+    setGambarPreview(null);
+    if (gambarInputRef.current) gambarInputRef.current.value = '';
+  };
+
+  const handleRemoveLampiran = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setLampiranFileName('');
+    setLampiranPreview(null);
+    if (lampiranInputRef.current) lampiranInputRef.current.value = '';
+  };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -583,11 +604,28 @@ export default function TambahBeritaPage() {
                 className="w-full md:w-2/3 h-64 bg-[#efedf3] border-2 border-dashed border-[#c5c6d2] rounded flex items-center justify-center text-[#757682] text-sm relative group cursor-pointer hover:bg-[#e9e7ee] transition-colors overflow-hidden"
               >
                 {lampiranFileName ? (
-                  <div className="p-4 text-center">
-                    <Upload className="w-8 h-8 text-[#00113a] mx-auto mb-2" />
-                    <span className="font-semibold text-[#00113a] block break-all">{lampiranFileName}</span>
-                    <span className="text-xs text-emerald-600 font-medium mt-1 inline-block">Berkas Terlampir</span>
-                  </div>
+                  <>
+                    {lampiranPreview || lampiranFileName.match(/\.(jpeg|jpg|gif|png)$/i) ? (
+                      <img
+                        src={lampiranPreview || ''}
+                        alt="Pratinjau Lampiran"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="p-4 text-center">
+                        <Upload className="w-8 h-8 text-[#00113a] mx-auto mb-2" />
+                        <span className="font-semibold text-[#00113a] block break-all">{lampiranFileName}</span>
+                        <span className="text-xs text-emerald-600 font-medium mt-1 inline-block">Berkas Terlampir</span>
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleRemoveLampiran}
+                      className="absolute top-2 right-2 w-8 h-8 bg-white text-red-500 rounded-full flex items-center justify-center hover:bg-gray-100 shadow-md z-10"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </>
                 ) : (
                   <>
                     <span>File Preview</span>
