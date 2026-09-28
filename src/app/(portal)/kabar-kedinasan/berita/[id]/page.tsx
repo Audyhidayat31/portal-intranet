@@ -294,7 +294,7 @@ export default function DetailBeritaPage() {
             {/* Galeri Foto Section */}
             <section className="mb-16">
               <h2 className="text-2xl sm:text-3xl font-bold text-[#1a1b20] mb-6">
-                Galeri Foto
+                Lampiran
               </h2>
 
               {/* 3 Photos Grid */}

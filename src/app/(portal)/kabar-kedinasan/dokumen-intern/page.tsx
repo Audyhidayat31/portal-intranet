@@ -1,5 +1,6 @@
 'use client';
 
+import { Pagination } from '@/components/ui/Pagination';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
@@ -70,39 +71,11 @@ export default function DokumenInternPage() {
           };
         });
 
-        if (q.trim()) {
-          const allPool = [...formattedApiItems, ...STITCH_MOCK_INTERNAL_DOCS_5];
-          const filtered = allPool.filter(
-            (doc) =>
-              doc.title.toLowerCase().includes(q.toLowerCase()) ||
-              doc.documentNumber.toLowerCase().includes(q.toLowerCase()) ||
-              doc.category.toLowerCase().includes(q.toLowerCase()) ||
-              doc.keterangan.toLowerCase().includes(q.toLowerCase()) ||
-              doc.attachmentName.toLowerCase().includes(q.toLowerCase())
-          );
-          setDocuments(filtered);
-        } else {
-          // Keep exactly 5 distinct items by combining DB items + unique mock items
-          const combined = [...formattedApiItems];
-          for (const mockItem of STITCH_MOCK_INTERNAL_DOCS_5) {
-            if (combined.length >= 5) break;
-            const alreadyExists = combined.some(
-              (c) =>
-                c.id === mockItem.id ||
-                c.title?.toLowerCase().trim() === mockItem.title?.toLowerCase().trim()
-            );
-            if (!alreadyExists) {
-              combined.push(mockItem);
-            }
-          }
-          setDocuments(combined.slice(0, 5));
-        }
+        setDocuments(formattedApiItems);
       })
       .catch((e) => {
         console.error(e);
-        if (!documents || documents.length === 0) {
-          setDocuments(STITCH_MOCK_INTERNAL_DOCS_5);
-        }
+        setDocuments([]);
       })
       .finally(() => {
         setIsLoading(false);
@@ -240,7 +213,7 @@ export default function DokumenInternPage() {
           </div>
         ) : (
           <div className="space-y-4 mb-12">
-            {documents.map((doc) => {
+            {documents.slice((currentPage - 1) * 5, currentPage * 5).map((doc) => {
               const displayDate = doc.publishedAt
                 ? formatDate(doc.publishedAt)
                 : '20 Agustus 2026';
@@ -311,44 +284,12 @@ export default function DokumenInternPage() {
       </div>
 
       {/* Pagination Controls */}
-      <div className="flex justify-center items-center gap-2 pt-4 pb-8">
-        <button
-          type="button"
-          aria-label="Previous page"
-          disabled={currentPage <= 1}
-          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-          className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
-        >
-          &lt;
-        </button>
-
-        {[1, 2, 3, 4, 5].map((page) => (
-          <button
-            key={page}
-            type="button"
-            onClick={() => setCurrentPage(page)}
-            className={`w-8 h-8 rounded text-xs font-bold transition-colors flex items-center justify-center cursor-pointer ${
-              currentPage === page
-                ? 'bg-[#00113a] text-white'
-                : 'text-[#444650] hover:bg-[#f4f3f9] hover:text-[#00113a]'
-            }`}
-          >
-            {page}
-          </button>
-        ))}
-
-        <span className="text-[#757682] text-xs font-bold px-1">...</span>
-
-        <button
-          type="button"
-          aria-label="Next page"
-          disabled={currentPage >= 5}
-          onClick={() => setCurrentPage((p) => Math.min(5, p + 1))}
-          className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
-        >
-          &gt;
-        </button>
-      </div>
+      <Pagination 
+          currentPage={currentPage}
+          totalItems={documents.length}
+          itemsPerPage={5}
+          onPageChange={setCurrentPage}
+        />
 
       {/* Modal: Lihat / Detail Dokumen */}
       {selectedDoc && (

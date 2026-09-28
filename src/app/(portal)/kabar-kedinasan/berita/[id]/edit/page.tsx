@@ -385,13 +385,12 @@ export default function EditBeritaPage() {
                           type="button"
                           disabled={!item.isCurrentMonth}
                           onClick={() => selectCalendarDay(item.day)}
-                          className={`h-8 w-8 mx-auto rounded-full flex items-center justify-center font-medium transition-colors cursor-pointer ${
-                            !item.isCurrentMonth
+                          className={`h-8 w-8 mx-auto rounded-full flex items-center justify-center font-medium transition-colors cursor-pointer ${!item.isCurrentMonth
                               ? 'text-slate-300 cursor-not-allowed'
                               : isSelected
-                              ? 'bg-[#00113a] text-white font-bold shadow-xs'
-                              : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                          }`}
+                                ? 'bg-[#00113a] text-white font-bold shadow-xs'
+                                : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                            }`}
                         >
                           {item.day}
                         </button>
@@ -410,9 +409,8 @@ export default function EditBeritaPage() {
               <button
                 type="button"
                 onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
-                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${
-                  isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
-                }`}
+                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
+                  }`}
               >
                 <span className="truncate">{status || 'Jenis Status'}</span>
                 <ChevronDown className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''}`} />
@@ -426,11 +424,10 @@ export default function EditBeritaPage() {
                       setStatus('Terbit');
                       setIsStatusMenuOpen(false);
                     }}
-                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                      status === 'Terbit'
+                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Terbit'
                         ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
                         : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                    }`}
+                      }`}
                   >
                     Terbit
                   </button>
@@ -440,11 +437,10 @@ export default function EditBeritaPage() {
                       setStatus('Menunggu');
                       setIsStatusMenuOpen(false);
                     }}
-                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                      status === 'Menunggu'
+                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Menunggu'
                         ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
                         : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                    }`}
+                      }`}
                   >
                     Menunggu
                   </button>
@@ -466,9 +462,8 @@ export default function EditBeritaPage() {
                     e.preventDefault();
                     execFormat('bold');
                   }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${
-                    activeStyles.bold ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                  }`}
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${activeStyles.bold ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                    }`}
                 >
                   <Bold className="w-4 h-4" />
                 </button>
@@ -480,9 +475,8 @@ export default function EditBeritaPage() {
                     e.preventDefault();
                     execFormat('italic');
                   }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${
-                    activeStyles.italic ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                  }`}
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${activeStyles.italic ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                    }`}
                 >
                   <Italic className="w-4 h-4" />
                 </button>
@@ -494,9 +488,8 @@ export default function EditBeritaPage() {
                     e.preventDefault();
                     execFormat('underline');
                   }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${
-                    activeStyles.underline ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                  }`}
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${activeStyles.underline ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                    }`}
                 >
                   <Underline className="w-4 h-4" />
                 </button>
@@ -510,9 +503,8 @@ export default function EditBeritaPage() {
                     e.preventDefault();
                     execFormat('insertUnorderedList');
                   }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${
-                    activeStyles.unorderedList ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                  }`}
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${activeStyles.unorderedList ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                    }`}
                 >
                   <List className="w-4 h-4" />
                 </button>
@@ -554,7 +546,7 @@ export default function EditBeritaPage() {
             </label>
             <div className="flex flex-col gap-4">
               <div className="flex">
-                <input
+                <input suppressHydrationWarning
                   type="text"
                   readOnly
                   value={gambarFileName}
@@ -568,7 +560,7 @@ export default function EditBeritaPage() {
                 >
                   Upload
                 </button>
-                <input
+                <input suppressHydrationWarning
                   ref={gambarInputRef}
                   type="file"
                   accept="image/*"
@@ -605,7 +597,7 @@ export default function EditBeritaPage() {
             </label>
             <div className="flex flex-col gap-4">
               <div className="flex">
-                <input
+                <input suppressHydrationWarning
                   type="text"
                   readOnly
                   value={lampiranFileName}
@@ -619,7 +611,7 @@ export default function EditBeritaPage() {
                 >
                   Upload
                 </button>
-                <input
+                <input suppressHydrationWarning
                   ref={lampiranInputRef}
                   type="file"
                   accept=".pdf,.doc,.docx,.jpg,.png"

@@ -36,21 +36,6 @@ export default function BerandaPage() {
       });
   }, []);
 
-  if (isLoading) {
-    return (
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 space-y-12 animate-pulse">
-        <div className="h-40 rounded-xl bg-slate-200" />
-        <div className="h-28 rounded-xl bg-slate-200" />
-        <div className="h-64 rounded-xl bg-slate-200" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="h-80 rounded-xl bg-slate-200" />
-          <div className="h-80 rounded-xl bg-slate-200" />
-          <div className="h-80 rounded-xl bg-slate-200" />
-        </div>
-      </div>
-    );
-  }
-
   const { setting, latestNews, latestPosts, spotlightFigure, birthdaysThisMonth } = data || {};
 
   // Default banners matching the admin page
@@ -97,6 +82,31 @@ export default function BerandaPage() {
   }
   
   const activeBanners = parsedBanners.filter((b: any) => b.status === 'TERBIT' || b.status === 'Terbit' || b.status === 'Aktif');
+
+  // Auto slide banner every 10 seconds
+  useEffect(() => {
+    if (activeBanners.length <= 1) return;
+    const intervalId = setInterval(() => {
+      setCurrentBannerIndex((prev) => (prev + 1) % activeBanners.length);
+    }, 10000);
+    
+    return () => clearInterval(intervalId);
+  }, [activeBanners.length]);
+
+  if (isLoading) {
+    return (
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 space-y-12 animate-pulse">
+        <div className="h-40 rounded-xl bg-slate-200" />
+        <div className="h-28 rounded-xl bg-slate-200" />
+        <div className="h-64 rounded-xl bg-slate-200" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="h-80 rounded-xl bg-slate-200" />
+          <div className="h-80 rounded-xl bg-slate-200" />
+          <div className="h-80 rounded-xl bg-slate-200" />
+        </div>
+      </div>
+    );
+  }
 
   const nextBanner = () => {
     setCurrentBannerIndex((prev) => (prev + 1) % activeBanners.length);

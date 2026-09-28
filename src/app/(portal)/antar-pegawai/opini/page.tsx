@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { STITCH_MOCK_OPINI_6, OpiniItem } from '@/lib/mock-opini';
+import { Pagination } from '@/components/ui/Pagination';
 
 export default function CoretanOpiniPage() {
   const [opiniList, setOpiniList] = useState<OpiniItem[]>(STITCH_MOCK_OPINI_6);
@@ -308,44 +309,12 @@ export default function CoretanOpiniPage() {
       </div>
 
       {/* Pagination Controls */}
-      <div className="flex justify-center items-center gap-2 pt-4 pb-8">
-        <button
-          type="button"
-          aria-label="Previous page"
-          disabled={currentPage <= 1}
-          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-          className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
-        >
-          &lt;
-        </button>
-
-        {[1, 2, 3, 4, 5].map((page) => (
-          <button
-            key={page}
-            type="button"
-            onClick={() => setCurrentPage(page)}
-            className={`w-8 h-8 rounded text-xs font-bold transition-colors flex items-center justify-center cursor-pointer ${
-              currentPage === page
-                ? 'bg-[#00113a] text-white'
-                : 'text-[#444650] hover:bg-[#f4f3f9] hover:text-[#00113a]'
-            }`}
-          >
-            {page}
-          </button>
-        ))}
-
-        <span className="text-[#757682] text-xs font-bold px-1">...</span>
-
-        <button
-          type="button"
-          aria-label="Next page"
-          disabled={currentPage >= 5}
-          onClick={() => setCurrentPage((p) => Math.min(5, p + 1))}
-          className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
-        >
-          &gt;
-        </button>
-      </div>
+      <Pagination 
+          currentPage={currentPage}
+          totalItems={opiniList.length}
+          itemsPerPage={6}
+          onPageChange={setCurrentPage}
+        />
 
       {/* Modal: Lihat / Baca Opini Lengkap */}
       {selectedOpini && (
