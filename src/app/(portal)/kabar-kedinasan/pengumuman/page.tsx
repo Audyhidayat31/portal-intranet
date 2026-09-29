@@ -571,10 +571,13 @@ export default function PengumumanPage() {
               <div className="text-sm text-[#1a1b20]">
                 <p className="font-bold">Dibuat oleh</p>
                 <p className="text-[#1a1b20]">{selectedAnnouncement.author?.name || 'Budi Sujatmiko'}</p>
-                <p className="text-[#444650]">
+                <p className="text-[#444650] mb-1">
                   {selectedAnnouncement.publishedAt
                     ? formatDate(selectedAnnouncement.publishedAt)
                     : '20 Agustus 2026'}
+                </p>
+                <p className="text-[#444650] font-medium">
+                  Status: {(selectedAnnouncement.status === 'MENUNGGU' || selectedAnnouncement.status === 'Menunggu' || selectedAnnouncement.status === 'DRAFT') ? 'Menunggu' : 'Terbit'}
                 </p>
               </div>
 

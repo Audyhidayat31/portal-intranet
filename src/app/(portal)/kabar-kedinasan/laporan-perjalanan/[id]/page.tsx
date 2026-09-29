@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -256,6 +256,9 @@ Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedan
               </div>
               <div className="text-xs text-[#757682] mt-0.5">
                 {report?.publishedAt ? formatDate(report.publishedAt) : '19 Agustus 2026'}
+              </div>
+              <div className="text-xs text-[#757682] mt-0.5">
+                Status: {(report?.status === 'MENUNGGU' || report?.status === 'Menunggu' || report?.status === 'DRAFT') ? 'Menunggu' : 'Terbit'}
               </div>
             </div>
 
