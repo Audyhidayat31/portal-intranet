@@ -23,8 +23,22 @@ model User {
   consultations       ConsultationTopic[] @relation("UserConsultations")
   consultationReplies ConsultationReply[]
   activityLogs        ActivityLog[]
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
+  beritaList          Berita[]                 @relation("BeritaAuthor")
+  pengumumanList      Pengumuman[]             @relation("PengumumanAuthor")
+  agendaList          AgendaKegiatan[]         @relation("AgendaAuthor")
+  laporanList         LaporanPerjalananDinas[] @relation("LaporanAuthor")
+  dokumenList         DokumenIntern[]          @relation("DokumenAuthor")
+  opiniList           CoretanOpini[]           @relation("OpiniAuthor")
+  humorList           HumorPegawai[]           @relation("HumorAuthor")
+  jelajahList         JelajahBumi[]            @relation("JelajahAuthor")
+  keluargaList        KabarKeluarga[]          @relation("KeluargaAuthor")
+  bijakList           KalimatBijak[]           @relation("BijakAuthor")
+  karyaList           KaryaAkademik[]          @relation("KaryaAuthor")
+  tipsList            TipsGayaHidup[]          @relation("TipsAuthor")
+  olahragaList        Olahraga[]               @relation("OlahragaAuthor")
+  tahukahList         TahukahAnda[]            @relation("TahukahAuthor")
+  createdAt           DateTime                 @default(now())
+  updatedAt           DateTime                 @updatedAt
 
   @@map("pengguna")
 }
@@ -235,3 +249,292 @@ model ActivityLog {
 
   @@map("log_aktivitas")
 }
+
+// ==========================================
+// MODEL TABEL KHUSUS SESUAI SUB MENU WEB
+// ==========================================
+
+// Sub Menu: Kabar Kedinasan -> Berita
+model Berita {
+  id            String   @id @default(cuid())
+  judul         String   @db.VarChar(255)
+  slug          String   @unique @db.VarChar(255)
+  ringkasan     String?  @db.Text
+  isi           String   @db.LongText
+  gambarSampul  String?  @map("gambar_sampul") @db.Text
+  penulisId     String   @map("penulis_id")
+  penulis       User     @relation("BeritaAuthor", fields: [penulisId], references: [id], onDelete: Cascade)
+  namaPenulis   String?  @default("Humas Perpusnas") @map("nama_penulis") @db.VarChar(191)
+  status        String   @default("TERBIT") @db.VarChar(50) // TERBIT, MENUNGGU, DRAFT, ARSIP
+  tanggalTerbit DateTime @default(now()) @map("tanggal_terbit")
+  jumlahBaca    Int      @default(0) @map("jumlah_baca")
+  disematkan    Boolean  @default(false)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("berita")
+}
+
+// Sub Menu: Kabar Kedinasan -> Pengumuman
+model Pengumuman {
+  id            String   @id @default(cuid())
+  judul         String   @db.VarChar(255)
+  slug          String   @unique @db.VarChar(255)
+  ringkasan     String?  @db.Text
+  isi           String   @db.LongText
+  fileLampiran  String?  @map("file_lampiran") @db.Text
+  namaLampiran  String?  @map("nama_lampiran") @db.VarChar(255)
+  ukuranFile    String?  @map("ukuran_file") @db.VarChar(50)
+  penulisId     String   @map("penulis_id")
+  penulis       User     @relation("PengumumanAuthor", fields: [penulisId], references: [id], onDelete: Cascade)
+  namaPenulis   String?  @default("Biro SDM Perpusnas") @map("nama_penulis") @db.VarChar(191)
+  status        String   @default("TERBIT") @db.VarChar(50)
+  tanggalTerbit DateTime @default(now()) @map("tanggal_terbit")
+  disematkan    Boolean  @default(false)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("pengumuman")
+}
+
+// Sub Menu: Kabar Kedinasan -> Agenda Kegiatan
+model AgendaKegiatan {
+  id             String    @id @default(cuid())
+  namaKegiatan   String    @map("nama_kegiatan") @db.VarChar(255)
+  slug           String    @unique @db.VarChar(255)
+  deskripsi      String    @db.LongText
+  tanggalMulai   DateTime  @map("tanggal_mulai")
+  tanggalSelesai DateTime? @map("tanggal_selesai")
+  lokasi         String?   @db.VarChar(255)
+  gambarSampul   String?   @map("gambar_sampul") @db.Text
+  penulisId      String    @map("penulis_id")
+  penulis        User      @relation("AgendaAuthor", fields: [penulisId], references: [id], onDelete: Cascade)
+  status         String    @default("TERBIT") @db.VarChar(50)
+  tanggalTerbit  DateTime  @default(now()) @map("tanggal_terbit")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@map("agenda_kegiatan")
+}
+
+// Sub Menu: Kabar Kedinasan -> Laporan Perjalanan Dinas
+model LaporanPerjalananDinas {
+  id             String   @id @default(cuid())
+  judulLaporan   String   @map("judul_laporan") @db.VarChar(255)
+  slug           String   @unique @db.VarChar(255)
+  kotaTujuan     String   @map("kota_tujuan") @db.VarChar(255)
+  ringkasan      String?  @db.Text
+  laporanLengkap String   @map("laporan_lengkap") @db.LongText
+  fileLaporan    String?  @map("file_laporan") @db.Text
+  namaFile       String?  @map("nama_file") @db.VarChar(255)
+  penulisId      String   @map("penulis_id")
+  penulis        User     @relation("LaporanAuthor", fields: [penulisId], references: [id], onDelete: Cascade)
+  status         String   @default("TERBIT") @db.VarChar(50)
+  tanggalTerbit  DateTime @default(now()) @map("tanggal_terbit")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("laporan_perjalanan_dinas")
+}
+
+// Sub Menu: Kabar Kedinasan -> Dokumen Intern
+model DokumenIntern {
+  id              String   @id @default(cuid())
+  namaDokumen     String   @map("nama_dokumen") @db.VarChar(255)
+  slug            String   @unique @db.VarChar(255)
+  deskripsi       String?  @db.Text
+  kategoriDokumen String?  @default("Pedoman & SOP") @map("kategori_dokumen") @db.VarChar(100)
+  fileUrl         String?  @map("file_url") @db.Text
+  namaFile        String?  @map("nama_file") @db.VarChar(255)
+  ukuranFile      String?  @map("ukuran_file") @db.VarChar(50)
+  penulisId       String   @map("penulis_id")
+  penulis         User     @relation("DokumenAuthor", fields: [penulisId], references: [id], onDelete: Cascade)
+  status          String   @default("TERBIT") @db.VarChar(50)
+  tanggalTerbit   DateTime @default(now()) @map("tanggal_terbit")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("dokumen_intern")
+}
+
+// Sub Menu: Kupas Sosok
+model KupasSosok {
+  id                String   @id @default(cuid())
+  namaTokoh         String   @map("nama_tokoh") @db.VarChar(255)
+  slug              String   @unique @db.VarChar(255)
+  jabatan           String   @db.VarChar(255)
+  unitKerja         String   @map("unit_kerja") @db.VarChar(255)
+  kutipanInspiratif String   @map("kutipan_inspiratif") @db.Text
+  ceritaLengkap     String   @map("cerita_lengkap") @db.LongText
+  fotoUrl           String?  @map("foto_url") @db.Text
+  prestasi          String?  @db.Text
+  riwayatKarier     String?  @map("riwayat_karier") @db.Text
+  isSpotlight       Boolean  @default(false) @map("is_spotlight")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@map("kupas_sosok")
+}
+
+// Sub Menu: Antar Pegawai -> Coretan Opini Pegawai
+model CoretanOpini {
+  id           String   @id @default(cuid())
+  judul        String   @db.VarChar(255)
+  slug         String   @unique @db.VarChar(255)
+  isi          String   @db.LongText
+  gambarSampul String?  @map("gambar_sampul") @db.Text
+  penulisId    String   @map("penulis_id")
+  penulis      User     @relation("OpiniAuthor", fields: [penulisId], references: [id], onDelete: Cascade)
+  status       String   @default("TERBIT") @db.VarChar(50)
+  jumlahSuka   Int      @default(0) @map("jumlah_suka")
+  jumlahBaca   Int      @default(0) @map("jumlah_baca")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("coretan_opini")
+}
+
+// Sub Menu: Antar Pegawai -> Humor Pegawai
+model HumorPegawai {
+  id           String   @id @default(cuid())
+  judul        String   @db.VarChar(255)
+  slug         String   @unique @db.VarChar(255)
+  isi          String   @db.LongText
+  gambarSampul String?  @map("gambar_sampul") @db.Text
+  penulisId    String   @map("penulis_id")
+  penulis      User     @relation("HumorAuthor", fields: [penulisId], references: [id], onDelete: Cascade)
+  status       String   @default("TERBIT") @db.VarChar(50)
+  jumlahSuka   Int      @default(0) @map("jumlah_suka")
+  jumlahBaca   Int      @default(0) @map("jumlah_baca")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("humor_pegawai")
+}
+
+// Sub Menu: Antar Pegawai -> Jelajah Bumi
+model JelajahBumi {
+  id           String   @id @default(cuid())
+  judul        String   @db.VarChar(255)
+  slug         String   @unique @db.VarChar(255)
+  isi          String   @db.LongText
+  gambarSampul String?  @map("gambar_sampul") @db.Text
+  penulisId    String   @map("penulis_id")
+  penulis      User     @relation("JelajahAuthor", fields: [penulisId], references: [id], onDelete: Cascade)
+  status       String   @default("TERBIT") @db.VarChar(50)
+  jumlahSuka   Int      @default(0) @map("jumlah_suka")
+  jumlahBaca   Int      @default(0) @map("jumlah_baca")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("jelajah_bumi")
+}
+
+// Sub Menu: Antar Pegawai -> Kabar Keluarga
+model KabarKeluarga {
+  id           String   @id @default(cuid())
+  judul        String   @db.VarChar(255)
+  slug         String   @unique @db.VarChar(255)
+  isi          String   @db.LongText
+  gambarSampul String?  @map("gambar_sampul") @db.Text
+  penulisId    String   @map("penulis_id")
+  penulis      User     @relation("KeluargaAuthor", fields: [penulisId], references: [id], onDelete: Cascade)
+  status       String   @default("TERBIT") @db.VarChar(50)
+  jumlahSuka   Int      @default(0) @map("jumlah_suka")
+  jumlahBaca   Int      @default(0) @map("jumlah_baca")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("kabar_keluarga")
+}
+
+// Sub Menu: Antar Pegawai -> Kalimat Bijak
+model KalimatBijak {
+  id           String   @id @default(cuid())
+  judul        String   @db.VarChar(255)
+  slug         String   @unique @db.VarChar(255)
+  isi          String   @db.LongText
+  gambarSampul String?  @map("gambar_sampul") @db.Text
+  penulisId    String   @map("penulis_id")
+  penulis      User     @relation("BijakAuthor", fields: [penulisId], references: [id], onDelete: Cascade)
+  status       String   @default("TERBIT") @db.VarChar(50)
+  jumlahSuka   Int      @default(0) @map("jumlah_suka")
+  jumlahBaca   Int      @default(0) @map("jumlah_baca")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("kalimat_bijak")
+}
+
+// Sub Menu: Antar Pegawai -> Karya Akademik Pegawai
+model KaryaAkademik {
+  id           String   @id @default(cuid())
+  judul        String   @db.VarChar(255)
+  slug         String   @unique @db.VarChar(255)
+  isi          String   @db.LongText
+  gambarSampul String?  @map("gambar_sampul") @db.Text
+  penulisId    String   @map("penulis_id")
+  penulis      User     @relation("KaryaAuthor", fields: [penulisId], references: [id], onDelete: Cascade)
+  status       String   @default("TERBIT") @db.VarChar(50)
+  jumlahSuka   Int      @default(0) @map("jumlah_suka")
+  jumlahBaca   Int      @default(0) @map("jumlah_baca")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("karya_akademik")
+}
+
+// Sub Menu: Antar Pegawai -> Tips dan Gaya Hidup
+model TipsGayaHidup {
+  id           String   @id @default(cuid())
+  judul        String   @db.VarChar(255)
+  slug         String   @unique @db.VarChar(255)
+  isi          String   @db.LongText
+  gambarSampul String?  @map("gambar_sampul") @db.Text
+  penulisId    String   @map("penulis_id")
+  penulis      User     @relation("TipsAuthor", fields: [penulisId], references: [id], onDelete: Cascade)
+  status       String   @default("TERBIT") @db.VarChar(50)
+  jumlahSuka   Int      @default(0) @map("jumlah_suka")
+  jumlahBaca   Int      @default(0) @map("jumlah_baca")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("tips_gaya_hidup")
+}
+
+// Sub Menu: Antar Pegawai -> Olahraga
+model Olahraga {
+  id           String   @id @default(cuid())
+  judul        String   @db.VarChar(255)
+  slug         String   @unique @db.VarChar(255)
+  isi          String   @db.LongText
+  gambarSampul String?  @map("gambar_sampul") @db.Text
+  penulisId    String   @map("penulis_id")
+  penulis      User     @relation("OlahragaAuthor", fields: [penulisId], references: [id], onDelete: Cascade)
+  status       String   @default("TERBIT") @db.VarChar(50)
+  jumlahSuka   Int      @default(0) @map("jumlah_suka")
+  jumlahBaca   Int      @default(0) @map("jumlah_baca")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("olahraga")
+}
+
+// Sub Menu: Antar Pegawai -> Tahukah Anda
+model TahukahAnda {
+  id           String   @id @default(cuid())
+  judul        String   @db.VarChar(255)
+  slug         String   @unique @db.VarChar(255)
+  isi          String   @db.LongText
+  gambarSampul String?  @map("gambar_sampul") @db.Text
+  penulisId    String   @map("penulis_id")
+  penulis      User     @relation("TahukahAuthor", fields: [penulisId], references: [id], onDelete: Cascade)
+  status       String   @default("TERBIT") @db.VarChar(50)
+  jumlahSuka   Int      @default(0) @map("jumlah_suka")
+  jumlahBaca   Int      @default(0) @map("jumlah_baca")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("tahukah_anda")
+}
+
