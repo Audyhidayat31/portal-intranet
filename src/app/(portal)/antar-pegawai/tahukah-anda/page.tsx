@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { Pagination } from '@/components/ui/Pagination';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   Search,
   Plus,
   ChevronRight,
+  ChevronDown,
   X,
   Heart,
   MessageSquare,
@@ -28,6 +30,24 @@ export default function DaftarTahukahAndaPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Dropdown Pagination state
+  const [itemsPerPage, setItemsPerPage] = useState(9);
+  const [isPerPageOpen, setIsPerPageOpen] = useState(false);
+  const perPageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (perPageRef.current && !perPageRef.current.contains(event.target as Node)) {
+        setIsPerPageOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
 
   // Detail Modal State
   const [selectedItem, setSelectedItem] = useState<TahukahAndaItem | null>(null);
@@ -169,8 +189,7 @@ export default function DaftarTahukahAndaPage() {
               Tahukah Anda
             </h1>
             <p className="text-base text-[#444650]">
-              Deskripsi mengenai halaman Tahukah Anda
-            </p>
+              Trivia & fakta unik perpustakaan</p>
           </div>
 
           <Link
@@ -182,26 +201,67 @@ export default function DaftarTahukahAndaPage() {
           </Link>
         </div>
 
-        {/* Search Bar matching Wireframe 1 (Cari Artikel...) */}
-        <div className="mb-12 max-w-2xl mx-auto flex gap-2">
-          <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full">
-            <div className="relative flex-grow">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari Artikel..."
-                className="w-full border border-[#c5c6d2] rounded-lg py-3 px-4 text-base bg-white text-[#1a1b20] placeholder-[#757682] focus:outline-none focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] transition-all"
-              />
+                {/* Controls Row */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-12">
+          {/* Left: Tampilkan [ 9 v ] data */}
+          <div className="flex items-center gap-2 text-sm text-[#1a1b20] shrink-0" ref={perPageRef}>
+            <span className="font-normal text-[#1a1b20]">Tampilkan</span>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsPerPageOpen(!isPerPageOpen)}
+                className="w-14 bg-[#6c757d] hover:bg-[#5a6268] text-white px-2.5 py-1 rounded-md text-xs font-semibold flex items-center justify-between shadow-sm transition-colors cursor-pointer"
+              >
+                <span>{itemsPerPage}</span>
+                <ChevronDown className="w-3 h-3 text-white" />
+              </button>
+
+              {isPerPageOpen && (
+                <div className="absolute left-0 top-full mt-1 w-14 bg-white border border-[#c5c6d2] rounded-md shadow-lg z-30 py-1 text-center overflow-hidden">
+                  {[9, 18, 27].filter((n) => n !== itemsPerPage).map((num) => (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => {
+                        setItemsPerPage(num);
+                        setCurrentPage(1);
+                        setIsPerPageOpen(false);
+                      }}
+                      className="w-full text-xs py-1 hover:bg-[#efedf3] text-[#1a1b20] transition-colors cursor-pointer"
+                    >
+                      {num}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-            <button
-              type="submit"
-              aria-label="Cari Artikel"
-              className="bg-[#e9e7ee] border border-[#c5c6d2] rounded-lg px-4 flex items-center justify-center hover:bg-[#dad9e0] transition-colors cursor-pointer shrink-0"
-            >
-              <Search className="w-5 h-5 text-[#444650]" />
-            </button>
-          </form>
+            <span className="font-normal text-[#1a1b20]">data</span>
+          </div>
+
+          {/* Center: Search Bar */}
+          <div className="flex-1 flex justify-center w-full">
+            <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full md:max-w-2xl">
+              <div className="relative flex-grow">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Cari Tahukah Anda..."
+                  className="w-full border border-[#c5c6d2] rounded-lg py-2 px-4 text-base bg-white text-[#1a1b20] placeholder-[#757682] focus:outline-none focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] transition-all"
+                />
+              </div>
+              <button
+                type="submit"
+                aria-label="Cari"
+                className="bg-[#e9e7ee] border border-[#c5c6d2] rounded-lg px-4 flex items-center justify-center hover:bg-[#dad9e0] transition-colors cursor-pointer shrink-0"
+              >
+                <Search className="w-5 h-5 text-[#444650]" />
+              </button>
+            </form>
+          </div>
+
+          {/* Right: Dummy spacing to balance center */}
+          <div className="hidden md:block w-32 shrink-0"></div>
         </div>
 
         {/* Cards Grid: 3 Columns, 9 Cards matching Wireframe 1 */}
@@ -220,7 +280,7 @@ export default function DaftarTahukahAndaPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {itemList.map((item) => {
+            {itemList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
               const displayDate = item.publishedAt ? formatDate(item.publishedAt) : '19 Agustus 2026';
 
               return (
@@ -283,44 +343,12 @@ export default function DaftarTahukahAndaPage() {
       </div>
 
       {/* Pagination Controls matching Wireframe 1 & Stitch */}
-      <div className="flex justify-center items-center gap-2 pt-4 pb-8">
-        <button
-          type="button"
-          aria-label="Previous page"
-          disabled={currentPage <= 1}
-          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-          className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
-        >
-          &lt;
-        </button>
-
-        {[1, 2, 3, 4, 5].map((page) => (
-          <button
-            key={page}
-            type="button"
-            onClick={() => setCurrentPage(page)}
-            className={`w-8 h-8 rounded text-xs font-bold transition-colors flex items-center justify-center cursor-pointer ${
-              currentPage === page
-                ? 'bg-[#00113a] text-white'
-                : 'text-[#444650] hover:bg-[#f4f3f9] hover:text-[#00113a]'
-            }`}
-          >
-            {page}
-          </button>
-        ))}
-
-        <span className="text-[#757682] text-xs font-bold px-1">...</span>
-
-        <button
-          type="button"
-          aria-label="Next page"
-          disabled={currentPage >= 5}
-          onClick={() => setCurrentPage((p) => Math.min(5, p + 1))}
-          className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
-        >
-          &gt;
-        </button>
-      </div>
+      <Pagination 
+          currentPage={currentPage}
+          totalItems={itemList.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+        />
 
       {/* Detail Modal / Quick View (if triggered) */}
       {selectedItem && (

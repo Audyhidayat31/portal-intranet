@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -230,7 +230,7 @@ export default function DetailOlahragaPage() {
                 {displayAuthor}, {displayDate}
               </p>
               <p className="font-medium text-[#757682]">
-                © Hak Cipta 2026, Perpustakaan Nasional Republik Indonesia.
+                Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.
               </p>
             </div>
 

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -249,7 +249,7 @@ Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedan
             <div className="text-xs text-[#757682] space-y-0.5">
               <p className="font-semibold text-[#757682]">Dibuat oleh</p>
               <p className="font-semibold text-[#1a1b20]">
-                © Hak Cipta 2026, Perpustakaan Nasional Republik Indonesia.
+                Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.
               </p>
               <p className="font-medium text-[#757682]">
                 {documentItem?.publishedAt

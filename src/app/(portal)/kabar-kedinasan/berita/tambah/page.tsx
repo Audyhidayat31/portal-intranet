@@ -20,6 +20,7 @@ import {
   ImageIcon,
   Upload,
   CheckCircle,
+  X,
 } from 'lucide-react';
 
 export default function TambahBeritaPage() {
@@ -33,6 +34,7 @@ export default function TambahBeritaPage() {
   const [gambarFileName, setGambarFileName] = useState('');
   const [gambarPreview, setGambarPreview] = useState<string | null>(null);
   const [lampiranFileName, setLampiranFileName] = useState('');
+  const [lampiranPreview, setLampiranPreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -179,8 +181,27 @@ export default function TambahBeritaPage() {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setLampiranFileName(file.name);
+      if (file.type.startsWith('image/')) {
+        setLampiranPreview(URL.createObjectURL(file));
+      } else {
+        setLampiranPreview(null);
+      }
     }
   };
+  const handleRemoveGambar = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setGambarFileName('');
+    setGambarPreview(null);
+    if (gambarInputRef.current) gambarInputRef.current.value = '';
+  };
+
+  const handleRemoveLampiran = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setLampiranFileName('');
+    setLampiranPreview(null);
+    if (lampiranInputRef.current) lampiranInputRef.current.value = '';
+  };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -270,7 +291,7 @@ export default function TambahBeritaPage() {
               Judul <span className="float-right hidden md:inline">:</span>
             </label>
             <div>
-              <input suppressHydrationWarning 
+              <input suppressHydrationWarning
                 id="judul"
                 type="text"
                 required
@@ -286,7 +307,7 @@ export default function TambahBeritaPage() {
               Tanggal <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="relative w-full md:w-1/3" ref={datePickerRef}>
-              <input suppressHydrationWarning 
+              <input suppressHydrationWarning
                 id="tanggal"
                 type="text"
                 readOnly
@@ -337,13 +358,12 @@ export default function TambahBeritaPage() {
                           type="button"
                           disabled={!item.isCurrentMonth}
                           onClick={() => selectCalendarDay(item.day)}
-                          className={`h-8 w-8 mx-auto rounded-full flex items-center justify-center font-medium transition-colors ${
-                            !item.isCurrentMonth
+                          className={`h-8 w-8 mx-auto rounded-full flex items-center justify-center font-medium transition-colors ${!item.isCurrentMonth
                               ? 'text-slate-300 cursor-not-allowed'
                               : isSelected
-                              ? 'bg-[#00113a] text-white font-bold shadow-xs'
-                              : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                          }`}
+                                ? 'bg-[#00113a] text-white font-bold shadow-xs'
+                                : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                            }`}
                         >
                           {item.day}
                         </button>
@@ -362,9 +382,8 @@ export default function TambahBeritaPage() {
               <button
                 type="button"
                 onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
-                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${
-                  isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
-                }`}
+                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
+                  }`}
               >
                 <span className="truncate">{status || 'Jenis Status'}</span>
                 <ChevronDown className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''}`} />
@@ -378,11 +397,10 @@ export default function TambahBeritaPage() {
                       setStatus('Terbit');
                       setIsStatusMenuOpen(false);
                     }}
-                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                      status === 'Terbit'
+                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Terbit'
                         ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
                         : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                    }`}
+                      }`}
                   >
                     Terbit
                   </button>
@@ -392,11 +410,10 @@ export default function TambahBeritaPage() {
                       setStatus('Menunggu');
                       setIsStatusMenuOpen(false);
                     }}
-                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                      status === 'Menunggu'
+                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Menunggu'
                         ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
                         : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                    }`}
+                      }`}
                   >
                     Menunggu
                   </button>
@@ -419,9 +436,8 @@ export default function TambahBeritaPage() {
                     e.preventDefault();
                     execFormat('bold');
                   }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${
-                    activeStyles.bold ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                  }`}
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${activeStyles.bold ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                    }`}
                 >
                   <Bold className="w-4 h-4" />
                 </button>
@@ -434,9 +450,8 @@ export default function TambahBeritaPage() {
                     e.preventDefault();
                     execFormat('italic');
                   }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${
-                    activeStyles.italic ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                  }`}
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${activeStyles.italic ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                    }`}
                 >
                   <Italic className="w-4 h-4" />
                 </button>
@@ -449,9 +464,8 @@ export default function TambahBeritaPage() {
                     e.preventDefault();
                     execFormat('underline');
                   }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${
-                    activeStyles.underline ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                  }`}
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${activeStyles.underline ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                    }`}
                 >
                   <Underline className="w-4 h-4" />
                 </button>
@@ -466,9 +480,8 @@ export default function TambahBeritaPage() {
                     e.preventDefault();
                     execFormat('insertUnorderedList');
                   }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${
-                    activeStyles.unorderedList ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                  }`}
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${activeStyles.unorderedList ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                    }`}
                 >
                   <List className="w-4 h-4" />
                 </button>
@@ -511,7 +524,7 @@ export default function TambahBeritaPage() {
             </label>
             <div className="flex flex-col gap-4">
               <div className="flex">
-                <input suppressHydrationWarning 
+                <input suppressHydrationWarning
                   type="text"
                   readOnly
                   value={gambarFileName}
@@ -525,7 +538,7 @@ export default function TambahBeritaPage() {
                 >
                   Upload
                 </button>
-                <input suppressHydrationWarning 
+                <input suppressHydrationWarning
                   ref={gambarInputRef}
                   type="file"
                   accept="image/*"
@@ -562,7 +575,7 @@ export default function TambahBeritaPage() {
             </label>
             <div className="flex flex-col gap-4">
               <div className="flex">
-                <input suppressHydrationWarning 
+                <input suppressHydrationWarning
                   type="text"
                   readOnly
                   value={lampiranFileName}
@@ -576,7 +589,7 @@ export default function TambahBeritaPage() {
                 >
                   Upload
                 </button>
-                <input suppressHydrationWarning 
+                <input suppressHydrationWarning
                   ref={lampiranInputRef}
                   type="file"
                   accept=".pdf,.doc,.docx,.jpg,.png"
@@ -591,11 +604,28 @@ export default function TambahBeritaPage() {
                 className="w-full md:w-2/3 h-64 bg-[#efedf3] border-2 border-dashed border-[#c5c6d2] rounded flex items-center justify-center text-[#757682] text-sm relative group cursor-pointer hover:bg-[#e9e7ee] transition-colors overflow-hidden"
               >
                 {lampiranFileName ? (
-                  <div className="p-4 text-center">
-                    <Upload className="w-8 h-8 text-[#00113a] mx-auto mb-2" />
-                    <span className="font-semibold text-[#00113a] block break-all">{lampiranFileName}</span>
-                    <span className="text-xs text-emerald-600 font-medium mt-1 inline-block">Berkas Terlampir</span>
-                  </div>
+                  <>
+                    {lampiranPreview || lampiranFileName.match(/\.(jpeg|jpg|gif|png)$/i) ? (
+                      <img
+                        src={lampiranPreview || ''}
+                        alt="Pratinjau Lampiran"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="p-4 text-center">
+                        <Upload className="w-8 h-8 text-[#00113a] mx-auto mb-2" />
+                        <span className="font-semibold text-[#00113a] block break-all">{lampiranFileName}</span>
+                        <span className="text-xs text-emerald-600 font-medium mt-1 inline-block">Berkas Terlampir</span>
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleRemoveLampiran}
+                      className="absolute top-2 right-2 w-8 h-8 bg-white text-red-500 rounded-full flex items-center justify-center hover:bg-gray-100 shadow-md z-10"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </>
                 ) : (
                   <>
                     <span>File Preview</span>

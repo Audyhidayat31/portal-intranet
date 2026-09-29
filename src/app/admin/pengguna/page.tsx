@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { 
@@ -761,10 +761,7 @@ export default function AdminPenggunaPage() {
         )}
       </div>
 
-      {/* Footer */}
-      <footer className="pt-8 border-t border-[#c5c6d2] mt-8 text-center text-[11px] text-slate-500">
-        © Hak Cipta 2026, Perpustakaan Nasional Republik Indonesia.
-      </footer>
+      
 
       {/* Create User Modal - Full Wireframe Implementation */}
       {isCreateModalOpen && (
@@ -1302,4 +1299,6 @@ function ToggleSwitch({
     </button>
   );
 }
+
+
 

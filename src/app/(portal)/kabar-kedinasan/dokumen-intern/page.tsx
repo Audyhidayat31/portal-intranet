@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { Pagination } from '@/components/ui/Pagination';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   Search,
@@ -13,6 +14,7 @@ import {
   Calendar,
   Eye,
   FileCode,
+  ChevronDown,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import {
@@ -37,7 +39,26 @@ export default function DokumenInternPage() {
   const [newKeterangan, setNewKeterangan] = useState('');
   const [newAttachmentName, setNewAttachmentName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [successMessage, setSuccessMessage] = useState('');
+  
+  // Dropdown Pagination state
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [isPerPageOpen, setIsPerPageOpen] = useState(false);
+  const perPageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (perPageRef.current && !perPageRef.current.contains(event.target as Node)) {
+        setIsPerPageOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
 
   const fetchDocuments = (q: string = '') => {
     if (q.trim()) {
@@ -70,39 +91,11 @@ export default function DokumenInternPage() {
           };
         });
 
-        if (q.trim()) {
-          const allPool = [...formattedApiItems, ...STITCH_MOCK_INTERNAL_DOCS_5];
-          const filtered = allPool.filter(
-            (doc) =>
-              doc.title.toLowerCase().includes(q.toLowerCase()) ||
-              doc.documentNumber.toLowerCase().includes(q.toLowerCase()) ||
-              doc.category.toLowerCase().includes(q.toLowerCase()) ||
-              doc.keterangan.toLowerCase().includes(q.toLowerCase()) ||
-              doc.attachmentName.toLowerCase().includes(q.toLowerCase())
-          );
-          setDocuments(filtered);
-        } else {
-          // Keep exactly 5 distinct items by combining DB items + unique mock items
-          const combined = [...formattedApiItems];
-          for (const mockItem of STITCH_MOCK_INTERNAL_DOCS_5) {
-            if (combined.length >= 5) break;
-            const alreadyExists = combined.some(
-              (c) =>
-                c.id === mockItem.id ||
-                c.title?.toLowerCase().trim() === mockItem.title?.toLowerCase().trim()
-            );
-            if (!alreadyExists) {
-              combined.push(mockItem);
-            }
-          }
-          setDocuments(combined.slice(0, 5));
-        }
+        setDocuments(formattedApiItems);
       })
       .catch((e) => {
         console.error(e);
-        if (!documents || documents.length === 0) {
-          setDocuments(STITCH_MOCK_INTERNAL_DOCS_5);
-        }
+        setDocuments([]);
       })
       .finally(() => {
         setIsLoading(false);
@@ -190,8 +183,41 @@ export default function DokumenInternPage() {
               Dokumen Internal
             </h1>
             <p className="text-sm sm:text-base text-[#444650]">
-              Deskripsi Dokumen Intern
-            </p>
+              SOP, pedoman kerja, dan regulasi internal</p>
+            {/* Tampilkan [ 5 v ] data */}
+            <div className="flex items-center gap-2 text-sm text-[#1a1b20] shrink-0 mt-4" ref={perPageRef}>
+              <span className="font-normal text-[#1a1b20]">Tampilkan</span>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsPerPageOpen(!isPerPageOpen)}
+                  className="w-14 bg-[#00113a] hover:bg-[#2a4386] text-white px-2.5 py-1 rounded-md text-xs font-semibold flex items-center justify-between shadow-sm transition-colors cursor-pointer"
+                >
+                  <span>{itemsPerPage}</span>
+                  <ChevronDown className="w-3 h-3 text-white" />
+                </button>
+
+                {isPerPageOpen && (
+                  <div className="absolute left-0 top-full mt-1 w-14 bg-white border border-[#c5c6d2] rounded-md shadow-lg z-30 py-1 text-center overflow-hidden">
+                    {[5, 10, 15].filter((n) => n !== itemsPerPage).map((num) => (
+                      <button
+                        key={num}
+                        type="button"
+                        onClick={() => {
+                          setItemsPerPage(num);
+                          setCurrentPage(1); // Reset page when changing items per page
+                          setIsPerPageOpen(false);
+                        }}
+                        className="w-full text-xs py-1 hover:bg-[#efedf3] text-[#1a1b20] transition-colors cursor-pointer"
+                      >
+                        {num}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <span className="font-normal text-[#1a1b20]">data</span>
+            </div>
           </div>
 
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
@@ -241,7 +267,7 @@ export default function DokumenInternPage() {
           </div>
         ) : (
           <div className="space-y-4 mb-12">
-            {documents.map((doc) => {
+            {documents.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((doc) => {
               const displayDate = doc.publishedAt
                 ? formatDate(doc.publishedAt)
                 : '20 Agustus 2026';
@@ -312,44 +338,12 @@ export default function DokumenInternPage() {
       </div>
 
       {/* Pagination Controls */}
-      <div className="flex justify-center items-center gap-2 pt-4 pb-8">
-        <button
-          type="button"
-          aria-label="Previous page"
-          disabled={currentPage <= 1}
-          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-          className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
-        >
-          &lt;
-        </button>
-
-        {[1, 2, 3, 4, 5].map((page) => (
-          <button
-            key={page}
-            type="button"
-            onClick={() => setCurrentPage(page)}
-            className={`w-8 h-8 rounded text-xs font-bold transition-colors flex items-center justify-center cursor-pointer ${
-              currentPage === page
-                ? 'bg-[#00113a] text-white'
-                : 'text-[#444650] hover:bg-[#f4f3f9] hover:text-[#00113a]'
-            }`}
-          >
-            {page}
-          </button>
-        ))}
-
-        <span className="text-[#757682] text-xs font-bold px-1">...</span>
-
-        <button
-          type="button"
-          aria-label="Next page"
-          disabled={currentPage >= 5}
-          onClick={() => setCurrentPage((p) => Math.min(5, p + 1))}
-          className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
-        >
-          &gt;
-        </button>
-      </div>
+      <Pagination 
+          currentPage={currentPage}
+          totalItems={documents.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+        />
 
       {/* Modal: Lihat / Detail Dokumen */}
       {selectedDoc && (

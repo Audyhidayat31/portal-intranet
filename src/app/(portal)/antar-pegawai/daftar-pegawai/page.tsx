@@ -122,8 +122,7 @@ export default function DaftarPegawaiPage() {
             Daftar Pegawai
           </h1>
           <p className="text-sm sm:text-base text-[#444650] mt-1 font-normal">
-            Deskripsi Daftar Pegawai
-          </p>
+            Direktori data & kontak pegawai</p>
         </div>
 
         {/* Controls Row with Centered Search Feature */}

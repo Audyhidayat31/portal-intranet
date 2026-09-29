@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { logActivity } from '@/lib/audit';
@@ -202,7 +202,7 @@ function getFooterConfig() {
       alamat1: 'Jl. Salemba Raya No. 28A, Jakarta 10430',
       alamat2: 'Jl. Medan Merdeka Selatan No. 11, Jakarta 10110',
     },
-    copyright: '© Hak Cipta 2026, Perpustakaan Nasional Republik Indonesia.',
+    copyright: 'Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.',
   };
 }
 
@@ -408,3 +408,4 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ success: false, message: 'Gagal memperbarui konfigurasi halaman utama' }, { status: 500 });
   }
 }
+

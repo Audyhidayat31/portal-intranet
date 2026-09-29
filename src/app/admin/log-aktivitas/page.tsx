@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { 
@@ -576,9 +576,10 @@ export default function AdminLogAktivitasPage() {
 
       {/* Footer matching wireframe */}
       <footer className="pt-8 border-t border-[#c5c6d2] mt-8 text-center text-[11px] text-slate-500">
-        © Hak Cipta 2026, Perpustakaan Nasional Republik Indonesia.
+        Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.
       </footer>
     </div>
   );
 }
+
 

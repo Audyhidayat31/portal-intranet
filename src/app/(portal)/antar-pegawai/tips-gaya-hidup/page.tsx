@@ -1,5 +1,6 @@
 'use client';
 
+import { Pagination } from '@/components/ui/Pagination';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
@@ -115,8 +116,7 @@ export default function TipsGayaHidupPage() {
               Tips dan Gaya Hidup
             </h1>
             <p className="text-base text-[#444650]">
-              Deskripsi mengenai halaman Tips dan Gaya Hidup
-            </p>
+              Kesehatan, ergonomis & hobi</p>
           </div>
 
           <Link
@@ -170,7 +170,7 @@ export default function TipsGayaHidupPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {itemsList.map((item) => {
+            {itemsList.slice((currentPage - 1) * 6, currentPage * 6).map((item) => {
               const displayDate = item.publishedAt ? formatDate(item.publishedAt) : '19 Agustus 2026';
 
               return (
@@ -232,44 +232,12 @@ export default function TipsGayaHidupPage() {
         )}
 
         {/* Pagination Controls matching Standard Website Pagination */}
-        <div className="flex justify-center items-center gap-2 pt-4 pb-8">
-          <button
-            type="button"
-            aria-label="Previous page"
-            disabled={currentPage <= 1}
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
-          >
-            &lt;
-          </button>
-
-          {[1, 2, 3, 4, 5].map((page) => (
-            <button
-              key={page}
-              type="button"
-              onClick={() => setCurrentPage(page)}
-              className={`w-8 h-8 rounded text-xs font-bold transition-colors flex items-center justify-center cursor-pointer ${
-                currentPage === page
-                  ? 'bg-[#00113a] text-white'
-                  : 'text-[#444650] hover:bg-[#f4f3f9] hover:text-[#00113a]'
-              }`}
-            >
-              {page}
-            </button>
-          ))}
-
-          <span className="text-[#757682] text-xs font-bold px-1">...</span>
-
-          <button
-            type="button"
-            aria-label="Next page"
-            disabled={currentPage >= 5}
-            onClick={() => setCurrentPage((p) => Math.min(5, p + 1))}
-            className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
-          >
-            &gt;
-          </button>
-        </div>
+        <Pagination 
+          currentPage={currentPage}
+          totalItems={itemsList.length}
+          itemsPerPage={6}
+          onPageChange={setCurrentPage}
+        />
       </div>
     </div>
   );

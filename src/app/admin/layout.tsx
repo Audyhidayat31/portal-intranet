@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -106,9 +106,10 @@ export default function AdminLayout({
 
       {/* Wireframe Footer */}
       <footer className="w-full bg-[#f8f9fa] border-t border-[#e3e2e8] py-6 text-center text-xs text-slate-600 mt-auto">
-        <p>© Hak Cipta 2026, Perpustakaan Nasional Republik Indonesia.</p>
+        <p>Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.</p>
       </footer>
     </div>
   );
 }
+
 

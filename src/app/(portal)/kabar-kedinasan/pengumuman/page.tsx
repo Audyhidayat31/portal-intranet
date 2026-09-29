@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   Search,
@@ -8,6 +8,7 @@ import {
   ArrowRight,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   X,
   FileText,
   Download,
@@ -16,6 +17,7 @@ import {
   ImageIcon,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
+import { Pagination } from '@/components/ui/Pagination';
 
 // Mock 5 Attachments for the Detail Modal
 const MOCK_ATTACHMENT_IMAGES = [
@@ -90,14 +92,64 @@ export default function PengumumanPage() {
   const [newContent, setNewContent] = useState('');
   const [newAttachmentName, setNewAttachmentName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [successMessage, setSuccessMessage] = useState('');
+  
+  // Dropdown Pagination state
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [isPerPageOpen, setIsPerPageOpen] = useState(false);
+  const perPageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (perPageRef.current && !perPageRef.current.contains(event.target as Node)) {
+        setIsPerPageOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
 
   // Edit Announcement State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
   const [editAttachmentName, setEditAttachmentName] = useState('');
+  
+  const [editAttachments, setEditAttachments] = useState<{file: File | null, name: string, preview: string | null}[]>([]);
+  const editAttachmentInputRef = useRef<HTMLInputElement>(null);
+  
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleEditAttachmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      if (editAttachments.length + files.length > 10) {
+        alert('Maksimal 10 lampiran diperbolehkan');
+        return;
+      }
+      const newAttachments = files.map(file => {
+        let preview = null;
+        if (file.type.startsWith('image/')) {
+          preview = URL.createObjectURL(file);
+        }
+        return { file, name: file.name, preview };
+      });
+      const updated = [...editAttachments, ...newAttachments];
+      setEditAttachments(updated);
+      setEditAttachmentName(updated.map(a => a.name).join(', '));
+    }
+    if (e.target) e.target.value = '';
+  };
+  
+  const removeEditAttachment = (index: number) => {
+    const updated = editAttachments.filter((_, i) => i !== index);
+    setEditAttachments(updated);
+    setEditAttachmentName(updated.map(a => a.name).join(', '));
+  };
 
   // Delete Announcement State
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -110,37 +162,13 @@ export default function PengumumanPage() {
       .then((data) => {
         const apiItems = data.success && Array.isArray(data.data) ? data.data : [];
 
-        if (q.trim()) {
-          const allPool = [...apiItems, ...STITCH_MOCK_ANNOUNCEMENTS_5];
-          const filtered = allPool.filter(
-            (item) =>
-              item.title?.toLowerCase().includes(q.toLowerCase()) ||
-              item.excerpt?.toLowerCase().includes(q.toLowerCase()) ||
-              item.body?.toLowerCase().includes(q.toLowerCase()) ||
-              item.content?.toLowerCase().includes(q.toLowerCase())
-          );
-          setAnnouncements(filtered);
-        } else {
-          // Combine API items with mock items ensuring 5 items for the design
-          const combined = [...apiItems];
-          for (const item of STITCH_MOCK_ANNOUNCEMENTS_5) {
-            if (combined.length >= 5) break;
-            if (!combined.some((c) => c.title === item.title && c.id === item.id)) {
-              combined.push(item);
-            }
-          }
-          let idx = 1;
-          while (combined.length < 5) {
-            const base = STITCH_MOCK_ANNOUNCEMENTS_5[(combined.length) % STITCH_MOCK_ANNOUNCEMENTS_5.length];
-            combined.push({ ...base, id: `fill-pengumuman-${idx++}` });
-          }
-          setAnnouncements(combined.slice(0, 5));
-        }
-        setIsLoading(false);
+        setAnnouncements(apiItems);
       })
       .catch((e) => {
         console.error(e);
-        setAnnouncements(STITCH_MOCK_ANNOUNCEMENTS_5);
+        setAnnouncements([]);
+      })
+      .finally(() => {
         setIsLoading(false);
       });
   };
@@ -148,6 +176,18 @@ export default function PengumumanPage() {
   useEffect(() => {
     fetchAnnouncements();
   }, []);
+
+  // Prevent background scrolling when any modal is open
+  useEffect(() => {
+    if (isEditModalOpen || isAddModalOpen || isDeleteModalOpen || previewAttachment || selectedAnnouncement) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isEditModalOpen, isAddModalOpen, isDeleteModalOpen, previewAttachment, selectedAnnouncement]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -197,6 +237,11 @@ export default function PengumumanPage() {
     setEditTitle(item.title || '');
     setEditContent(item.content || item.body || item.excerpt || '');
     setEditAttachmentName(item.attachmentName || '');
+    if (item.attachmentName) {
+      setEditAttachments([{ file: null, name: item.attachmentName, preview: null }]);
+    } else {
+      setEditAttachments([]);
+    }
     setIsEditModalOpen(true);
   };
 
@@ -312,8 +357,44 @@ export default function PengumumanPage() {
               Pengumuman
             </h1>
             <p className="text-sm sm:text-base text-[#444650]">
-              Deskripsi Pengumuman
-            </p>
+              Surat edaran, cuti, dan arahan pimpinan</p>
+            
+            <div className="mt-4">
+            {/* Tampilkan [ 5 v ] data */}
+            <div className="flex items-center gap-2 text-sm text-[#1a1b20] shrink-0" ref={perPageRef}>
+              <span className="font-normal text-[#1a1b20]">Tampilkan</span>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsPerPageOpen(!isPerPageOpen)}
+                  className="w-14 bg-[#6c757d] hover:bg-[#5a6268] text-white px-2.5 py-1 rounded-md text-xs font-semibold flex items-center justify-between shadow-sm transition-colors cursor-pointer"
+                >
+                  <span>{itemsPerPage}</span>
+                  <ChevronDown className="w-3 h-3 text-white" />
+                </button>
+
+                {isPerPageOpen && (
+                  <div className="absolute left-0 top-full mt-1 w-14 bg-white border border-[#c5c6d2] rounded-md shadow-lg z-30 py-1 text-center overflow-hidden">
+                    {[5, 10, 15].filter((n) => n !== itemsPerPage).map((num) => (
+                      <button
+                        key={num}
+                        type="button"
+                        onClick={() => {
+                          setItemsPerPage(num);
+                          setCurrentPage(1); // Reset page when changing items per page
+                          setIsPerPageOpen(false);
+                        }}
+                        className="w-full text-xs py-1 hover:bg-[#efedf3] text-[#1a1b20] transition-colors cursor-pointer"
+                      >
+                        {num}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <span className="font-normal text-[#1a1b20]">data</span>
+            </div>
+            </div>
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full md:w-auto">
@@ -363,7 +444,7 @@ export default function PengumumanPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-4 mb-8">
-            {announcements.map((item) => {
+            {announcements.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
               const displayDate = item.publishedAt
                 ? formatDate(item.publishedAt)
                 : '20 AGUSTUS 2026';
@@ -392,11 +473,10 @@ export default function PengumumanPage() {
 
                   <div className="shrink-0 mt-4 sm:mt-auto self-end flex items-center gap-3">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-tight ${
-                        (item.status === 'MENUNGGU' || item.status === 'Menunggu' || item.status === 'DRAFT')
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-tight ${(item.status === 'MENUNGGU' || item.status === 'Menunggu' || item.status === 'DRAFT')
                           ? 'bg-amber-50 text-amber-700 border border-amber-200'
                           : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                      }`}
+                        }`}
                     >
                       Status: {(item.status === 'MENUNGGU' || item.status === 'Menunggu' || item.status === 'DRAFT') ? 'Menunggu' : 'Terbit'}
                     </span>
@@ -416,44 +496,12 @@ export default function PengumumanPage() {
       </div>
 
       {/* Pagination Controls */}
-      <div className="flex justify-center items-center gap-2 pt-4 pb-8">
-        <button
-          type="button"
-          aria-label="Previous page"
-          disabled={currentPage <= 1}
-          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-          className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
-        >
-          &lt;
-        </button>
-
-        {[1, 2, 3, 4, 5].map((page) => (
-          <button
-            key={page}
-            type="button"
-            onClick={() => setCurrentPage(page)}
-            className={`w-8 h-8 rounded text-xs font-bold transition-colors flex items-center justify-center cursor-pointer ${
-              currentPage === page
-                ? 'bg-[#00113a] text-white'
-                : 'text-[#444650] hover:bg-[#f4f3f9] hover:text-[#00113a]'
-            }`}
-          >
-            {page}
-          </button>
-        ))}
-
-        <span className="text-[#757682] text-xs font-bold px-1">...</span>
-
-        <button
-          type="button"
-          aria-label="Next page"
-          disabled={currentPage >= 5}
-          onClick={() => setCurrentPage((p) => Math.min(5, p + 1))}
-          className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
-        >
-          &gt;
-        </button>
-      </div>
+      <Pagination 
+          currentPage={currentPage}
+          totalItems={announcements.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+        />
 
       {/* Detail Pengumuman Modal on List View (EXACT Stitch Screen Spec) */}
       {selectedAnnouncement && (
@@ -577,7 +625,7 @@ export default function PengumumanPage() {
       {/* Edit Pengumuman Modal */}
       {isEditModalOpen && (
         <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-[#c5c6d2] max-h-[90vh] overflow-y-auto animate-fadeIn">
+          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-[#c5c6d2] max-h-[90vh] overflow-y-auto overscroll-contain animate-fadeIn">
             <div className="flex justify-between items-center pb-4 border-b border-slate-200">
               <h2 className="text-xl font-bold text-[#00113a]">Edit Pengumuman</h2>
               <button
@@ -605,18 +653,6 @@ export default function PengumumanPage() {
 
               <div>
                 <label className="block text-xs font-bold text-[#1a1b20] mb-1.5">
-                  Nama Dokumen Lampiran
-                </label>
-                <input
-                  type="text"
-                  value={editAttachmentName}
-                  onChange={(e) => setEditAttachmentName(e.target.value)}
-                  className="w-full border border-[#c5c6d2] rounded-md p-2.5 text-sm focus:outline-none focus:border-[#00113a]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#1a1b20] mb-1.5">
                   Uraian / Isi Pengumuman
                 </label>
                 <textarea
@@ -626,6 +662,69 @@ export default function PengumumanPage() {
                   onChange={(e) => setEditContent(e.target.value)}
                   className="w-full border border-[#c5c6d2] rounded-md p-2.5 text-sm focus:outline-none focus:border-[#00113a] leading-relaxed"
                 />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-[#1a1b20] mb-1.5 flex items-center justify-between">
+                  <span>Lampiran (Maks. 10 File)</span>
+                  <span className="text-[#757682] font-normal">{editAttachments.length}/10</span>
+                </label>
+                <div className="space-y-4">
+                  <div className="flex">
+                    <input
+                      type="text"
+                      readOnly
+                      value={editAttachments.length > 0 ? `${editAttachments.length} file dipilih` : ''}
+                      placeholder="Upload maksimal 10 file..."
+                      className="flex-grow border border-r-0 border-[#c5c6d2] rounded-l-md p-2.5 text-sm bg-white text-[#444650] cursor-default focus:outline-none"
+                    />
+                    <input
+                      ref={editAttachmentInputRef}
+                      type="file"
+                      multiple
+                      onChange={handleEditAttachmentChange}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => editAttachmentInputRef.current?.click()}
+                      disabled={editAttachments.length >= 10}
+                      className="px-6 bg-[#e9e7ee] border border-[#c5c6d2] rounded-r-md text-[#1a1b20] font-bold text-xs sm:text-sm hover:bg-[#e1e3e4] transition-colors disabled:opacity-50"
+                    >
+                      Upload
+                    </button>
+                  </div>
+                  
+                  {/* Previews */}
+                  {editAttachments.length > 0 && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                      {editAttachments.map((att, idx) => (
+                        <div key={idx} className="relative group bg-[#e9e7ee] border border-[#c5c6d2] rounded-md overflow-hidden aspect-square flex flex-col items-center justify-center">
+                          {att.preview ? (
+                            <img src={att.preview} alt={att.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                          ) : (
+                            <div className="flex flex-col items-center gap-2 p-2">
+                              <FileText className="w-8 h-8 text-[#00113a]" />
+                              <span className="text-[10px] font-bold text-center break-all line-clamp-2 text-[#00113a]">{att.name}</span>
+                            </div>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => removeEditAttachment(idx)}
+                            className="absolute top-1 right-1 bg-black/60 hover:bg-black text-white p-1 rounded-full transition-colors opacity-0 group-hover:opacity-100"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                          {att.preview && (
+                            <span className="absolute bottom-0 w-full bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center">
+                              {att.name}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="pt-4 flex justify-end gap-3 border-t border-slate-200">

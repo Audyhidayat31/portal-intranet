@@ -13,10 +13,10 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       where.OR = [
-        { title: { contains: search, mode: 'insensitive' } },
-        { excerpt: { contains: search, mode: 'insensitive' } },
-        { body: { contains: search, mode: 'insensitive' } },
-        { attachmentName: { contains: search, mode: 'insensitive' } },
+        { title: { contains: search } },
+        { excerpt: { contains: search } },
+        { body: { contains: search } },
+        { attachmentName: { contains: search } },
       ];
     }
 

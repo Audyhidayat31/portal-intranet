@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import { Pagination } from '@/components/ui/Pagination';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import {
   Search,
@@ -24,7 +25,23 @@ export default function KonsultasiPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  // Dropdown Pagination state
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [isPerPageOpen, setIsPerPageOpen] = useState(false);
+  const perPageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (perPageRef.current && !perPageRef.current.contains(event.target as Node)) {
+        setIsPerPageOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
 
   // Load consultations from localStorage / API
   useEffect(() => {
@@ -158,8 +175,7 @@ export default function KonsultasiPage() {
                 Konsultasi
               </h1>
               <p className="text-base text-[#444650]">
-                Deskripsi mengenai Halaman Konsultasi
-              </p>
+                Tanya jawab Kepegawaian, IT, Kesehatan</p>
             </div>
 
             {/* + Tambah Button */}
@@ -172,101 +188,139 @@ export default function KonsultasiPage() {
             </Link>
           </div>
 
-          {/* Filter Bar matching Wireframe 1 */}
-          <div className="mb-8 flex flex-col md:flex-row items-stretch md:items-center gap-3">
-            {/* Search Input */}
-            <form
-              onSubmit={handleSearchSubmit}
-              className="flex items-center flex-grow bg-white border border-[#c5c6d2] rounded-lg overflow-hidden focus-within:border-[#00113a] transition-colors shadow-2xs"
-            >
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari konsultasi..."
-                className="w-full py-2.5 px-4 text-sm text-[#1a1b20] placeholder-[#757682] outline-none bg-transparent"
-              />
-              <button
-                type="submit"
-                aria-label="Cari"
-                className="px-3.5 py-2.5 text-[#444650] hover:text-[#00113a] hover:bg-[#f4f3f9] transition-colors border-l border-[#c5c6d2]"
-              >
-                <Search className="w-4 h-4" />
-              </button>
-            </form>
+          {/* Controls Row */}
+          <div className="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            {/* Left: Tampilkan [ 5 v ] data */}
+            <div className="flex items-center gap-2 text-sm text-[#1a1b20] shrink-0" ref={perPageRef}>
+              <span className="font-normal text-[#1a1b20]">Tampilkan</span>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsPerPageOpen(!isPerPageOpen)}
+                  className="w-14 bg-[#6c757d] hover:bg-[#5a6268] text-white px-2.5 py-1 rounded-md text-xs font-semibold flex items-center justify-between shadow-sm transition-colors cursor-pointer"
+                >
+                  <span>{itemsPerPage}</span>
+                  <ChevronDown className="w-3 h-3 text-white" />
+                </button>
 
-            {/* Dropdown: Jenis Pilih */}
-            <div className="relative shrink-0">
-              <button
-                type="button"
-                onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-                className="w-full md:w-44 bg-[#666a73] hover:bg-[#52565e] text-white text-sm font-medium py-2.5 px-4 rounded-lg flex items-center justify-between gap-2 transition-colors cursor-pointer"
-              >
-                <span>
-                  {selectedCategory === 'Semua' ? 'Jenis Pilih' : selectedCategory}
-                </span>
-                <ChevronDown className="w-4 h-4 text-white" />
-              </button>
-
-              {isCategoryDropdownOpen && (
-                <div className="absolute right-0 top-12 z-20 w-44 bg-white border border-[#c5c6d2] rounded-lg shadow-lg py-1 text-sm animate-fadeIn">
-                  <button
-                    type="button"
-                    onClick={() => handleCategorySelect('Semua')}
-                    className={`w-full text-left px-4 py-2 hover:bg-[#f4f3f9] transition-colors ${
-                      selectedCategory === 'Semua'
-                        ? 'font-bold text-[#00113a] bg-[#f4f3f9]'
-                        : 'text-[#1a1b20]'
-                    }`}
-                  >
-                    Semua Jenis
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleCategorySelect('IT')}
-                    className={`w-full text-left px-4 py-2 hover:bg-[#f4f3f9] transition-colors ${
-                      selectedCategory === 'IT'
-                        ? 'font-bold text-[#00113a] bg-[#f4f3f9]'
-                        : 'text-[#1a1b20]'
-                    }`}
-                  >
-                    IT
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleCategorySelect('Kesehatan')}
-                    className={`w-full text-left px-4 py-2 hover:bg-[#f4f3f9] transition-colors ${
-                      selectedCategory === 'Kesehatan'
-                        ? 'font-bold text-[#00113a] bg-[#f4f3f9]'
-                        : 'text-[#1a1b20]'
-                    }`}
-                  >
-                    Kesehatan
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleCategorySelect('Pegawai')}
-                    className={`w-full text-left px-4 py-2 hover:bg-[#f4f3f9] transition-colors ${
-                      selectedCategory === 'Pegawai'
-                        ? 'font-bold text-[#00113a] bg-[#f4f3f9]'
-                        : 'text-[#1a1b20]'
-                    }`}
-                  >
-                    Pegawai
-                  </button>
-                </div>
-              )}
+                {isPerPageOpen && (
+                  <div className="absolute left-0 top-full mt-1 w-14 bg-white border border-[#c5c6d2] rounded-md shadow-lg z-30 py-1 text-center overflow-hidden">
+                    {[5, 10, 15].filter((n) => n !== itemsPerPage).map((num) => (
+                      <button
+                        key={num}
+                        type="button"
+                        onClick={() => {
+                          setItemsPerPage(num);
+                          setCurrentPage(1);
+                          setIsPerPageOpen(false);
+                        }}
+                        className="w-full text-xs py-1 hover:bg-[#efedf3] text-[#1a1b20] transition-colors cursor-pointer"
+                      >
+                        {num}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <span className="font-normal text-[#1a1b20]">data</span>
             </div>
 
-            {/* Atur Ulang Button */}
-            <button
-              type="button"
-              onClick={handleReset}
-              className="bg-[#002366] hover:bg-[#00113a] text-white text-sm font-bold py-2.5 px-5 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer shrink-0 shadow-sm"
-            >
-              <RotateCcw className="w-4 h-4" />
-              <span>Atur Ulang</span>
-            </button>
+            {/* Right: Filter Bar (Smaller Search + Filter + Reset) */}
+            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full md:w-auto justify-end">
+              {/* Search Input */}
+              <form
+                onSubmit={handleSearchSubmit}
+                className="flex items-center w-full md:w-64 bg-white border border-[#c5c6d2] rounded-lg overflow-hidden focus-within:border-[#00113a] transition-colors shadow-2xs"
+              >
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Cari konsultasi..."
+                  className="w-full py-2.5 px-4 text-sm text-[#1a1b20] placeholder-[#757682] outline-none bg-transparent"
+                />
+                <button
+                  type="submit"
+                  aria-label="Cari"
+                  className="px-3.5 py-2.5 text-[#444650] hover:text-[#00113a] hover:bg-[#f4f3f9] transition-colors border-l border-[#c5c6d2]"
+                >
+                  <Search className="w-4 h-4" />
+                </button>
+              </form>
+
+              {/* Dropdown: Jenis Pilih */}
+              <div className="relative shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                  className="w-full md:w-44 bg-[#666a73] hover:bg-[#52565e] text-white text-sm font-medium py-2.5 px-4 rounded-lg flex items-center justify-between gap-2 transition-colors cursor-pointer"
+                >
+                  <span>
+                    {selectedCategory === 'Semua' ? 'Jenis Pilih' : selectedCategory}
+                  </span>
+                  <ChevronDown className="w-4 h-4 text-white" />
+                </button>
+
+                {isCategoryDropdownOpen && (
+                  <div className="absolute right-0 top-12 z-20 w-44 bg-white border border-[#c5c6d2] rounded-lg shadow-lg py-1 text-sm animate-fadeIn">
+                    <button
+                      type="button"
+                      onClick={() => handleCategorySelect('Semua')}
+                      className={`w-full text-left px-4 py-2 hover:bg-[#f4f3f9] transition-colors ${
+                        selectedCategory === 'Semua'
+                          ? 'font-bold text-[#00113a] bg-[#f4f3f9]'
+                          : 'text-[#1a1b20]'
+                      }`}
+                    >
+                      Semua Jenis
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleCategorySelect('IT')}
+                      className={`w-full text-left px-4 py-2 hover:bg-[#f4f3f9] transition-colors ${
+                        selectedCategory === 'IT'
+                          ? 'font-bold text-[#00113a] bg-[#f4f3f9]'
+                          : 'text-[#1a1b20]'
+                      }`}
+                    >
+                      IT
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleCategorySelect('Kesehatan')}
+                      className={`w-full text-left px-4 py-2 hover:bg-[#f4f3f9] transition-colors ${
+                        selectedCategory === 'Kesehatan'
+                          ? 'font-bold text-[#00113a] bg-[#f4f3f9]'
+                          : 'text-[#1a1b20]'
+                      }`}
+                    >
+                      Kesehatan
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleCategorySelect('Pegawai')}
+                      className={`w-full text-left px-4 py-2 hover:bg-[#f4f3f9] transition-colors ${
+                        selectedCategory === 'Pegawai'
+                          ? 'font-bold text-[#00113a] bg-[#f4f3f9]'
+                          : 'text-[#1a1b20]'
+                      }`}
+                    >
+                      Pegawai
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Atur Ulang Button */}
+              <button
+                type="button"
+                onClick={handleReset}
+                className="bg-[#002366] hover:bg-[#00113a] text-white text-sm font-bold py-2.5 px-5 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer shrink-0 shadow-sm"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>Atur Ulang</span>
+              </button>
+            </div>
           </div>
 
           {/* Cards List matching Wireframe 1 */}
@@ -360,44 +414,12 @@ export default function KonsultasiPage() {
           </div>
 
           {/* Pagination Controls matching Coretan Opini */}
-          <div className="flex justify-center items-center gap-2 pt-4 pb-8">
-            <button
-              type="button"
-              aria-label="Previous page"
-              disabled={currentPage <= 1}
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
-            >
-              &lt;
-            </button>
-
-            {[1, 2, 3, 4, 5].map((page) => (
-              <button
-                key={page}
-                type="button"
-                onClick={() => setCurrentPage(page)}
-                className={`w-8 h-8 rounded text-xs font-bold transition-colors flex items-center justify-center cursor-pointer ${
-                  currentPage === page
-                    ? 'bg-[#00113a] text-white'
-                    : 'text-[#444650] hover:bg-[#f4f3f9] hover:text-[#00113a]'
-                }`}
-              >
-                {page}
-              </button>
-            ))}
-
-            <span className="text-[#757682] text-xs font-bold px-1">...</span>
-
-            <button
-              type="button"
-              aria-label="Next page"
-              disabled={currentPage >= 5}
-              onClick={() => setCurrentPage((p) => Math.min(5, p + 1))}
-              className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
-            >
-              &gt;
-            </button>
-          </div>
+          <Pagination 
+          currentPage={currentPage}
+          totalItems={filteredList.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+        />
         </div>
       </div>
     </div>

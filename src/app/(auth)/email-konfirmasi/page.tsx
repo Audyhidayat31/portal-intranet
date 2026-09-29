@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { Suspense } from 'react';
 import Link from 'next/link';
@@ -21,13 +21,7 @@ function EmailKonfirmasiContent() {
       {/* Top Header Banner Matching Wireframe */}
       <header className="w-full bg-[#3898ec] py-6 sm:py-8 px-4 flex items-center justify-center shadow-xs">
         <div className="flex items-center justify-center gap-3">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 relative shrink-0 flex items-center justify-center">
-            <img
-              src="/images/logo-perpusnas.png"
-              alt="Logo Perpustakaan Nasional RI"
-              className="w-full h-full object-contain drop-shadow-xs"
-            />
-          </div>
+          <img src="/images/logo-perpusnas.png" alt="Logo Perpustakaan Nasional RI" className="h-11 sm:h-12 w-auto object-contain shrink-0" />
           <span className="font-bold text-2xl sm:text-3xl text-black tracking-tight leading-none">
             Cakrawala
           </span>
@@ -70,7 +64,7 @@ function EmailKonfirmasiContent() {
 
       {/* Bottom Footer Bar Matching Wireframe */}
       <footer className="w-full bg-[#f4f5f7] border-t border-slate-200/80 py-3.5 px-4 text-center text-xs sm:text-sm text-[#444] font-normal">
-        © Hak Cipta 2026, Perpustakaan Nasional Republik Indonesia.
+        Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.
       </footer>
     </div>
   );
@@ -89,4 +83,5 @@ export default function EmailKonfirmasiPage() {
     </Suspense>
   );
 }
+
 

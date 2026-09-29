@@ -3,11 +3,11 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { CheckCircle2, AlertCircle, ArrowLeft, ExternalLink } from 'lucide-react';
-import RecaptchaMock from '@/components/auth/RecaptchaMock';
+import ReCAPTCHA from 'react-google-recaptcha';
 
 export default function LupaKataSandiPage() {
   const [email, setEmail] = useState('');
-  const [isCaptchaVerified, setIsCaptchaVerified] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSent, setIsSent] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -30,7 +30,7 @@ export default function LupaKataSandiPage() {
       return;
     }
 
-    if (!isCaptchaVerified) {
+    if (!recaptchaToken) {
       setErrorMessage('Silakan selesaikan verifikasi reCAPTCHA ("I\'m not a robot") terlebih dahulu.');
       return;
     }
@@ -87,13 +87,11 @@ export default function LupaKataSandiPage() {
           
           <div className="w-full max-w-[340px] sm:max-w-[350px] flex flex-col items-center text-center">
             {/* Centered Perpusnas Star Logo */}
-            <div className="w-14 h-14 sm:w-16 sm:h-16 relative mb-3.5 shrink-0 flex items-center justify-center">
               <img
                 src="/images/logo-perpusnas.png"
                 alt="Logo Perpustakaan Nasional RI"
-                className="w-full h-full object-contain"
+                className="h-14 sm:h-16 w-auto object-contain shrink-0 mb-3.5"
               />
-            </div>
 
             {/* Title & Subtitle as per Wireframe */}
             <h1 className="text-2xl sm:text-[28px] font-bold text-black tracking-tight mb-1">
@@ -144,7 +142,7 @@ export default function LupaKataSandiPage() {
                     onClick={() => {
                       setIsSent(false);
                       setEmail('');
-                      setIsCaptchaVerified(false);
+                      setRecaptchaToken(null);
                       setErrorMessage('');
                     }}
                     className="text-xs text-slate-500 hover:text-slate-800 underline font-normal"
@@ -185,17 +183,15 @@ export default function LupaKataSandiPage() {
                 </div>
 
                 {/* reCAPTCHA Widget */}
-                <div className="pt-0.5 flex justify-center">
-                  <RecaptchaMock
-                    verified={isCaptchaVerified}
-                    onVerifyChange={(v) => {
-                      setIsCaptchaVerified(v);
-                      if (v && errorMessage.includes('reCAPTCHA')) {
+                <div className="pt-0.5">
+                  <ReCAPTCHA
+                    sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ''}
+                    onChange={(token) => {
+                      setRecaptchaToken(token);
+                      if (token && errorMessage.includes('reCAPTCHA')) {
                         setErrorMessage('');
                       }
                     }}
-                    hasError={Boolean(errorMessage && !isCaptchaVerified)}
-                    className="w-full"
                   />
                 </div>
 
@@ -234,9 +230,10 @@ export default function LupaKataSandiPage() {
 
       {/* Footer Matching Wireframe */}
       <footer className="pt-2 pb-1 text-center text-xs sm:text-sm text-black font-normal">
-        © Hak Cipta 2026, Perpustakaan Nasional Republik Indonesia.
+        Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.
       </footer>
     </div>
   );
 }
+
 
