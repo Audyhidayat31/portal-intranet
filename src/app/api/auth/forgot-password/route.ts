@@ -24,10 +24,7 @@ export async function POST(request: NextRequest) {
     // Check if user exists in database
     const user = await prisma.user.findFirst({
       where: {
-        email: {
-          equals: cleanEmail,
-          mode: 'insensitive',
-        },
+        email: cleanEmail,
       },
       select: {
         id: true,
