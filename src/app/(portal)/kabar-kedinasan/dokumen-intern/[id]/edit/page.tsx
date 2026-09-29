@@ -529,32 +529,6 @@ export default function EditDokumenInternalPage() {
               </div>
             </div>
 
-            {/* Field 3: Jenis Dokumen */}
-            <div className="flex flex-col md:flex-row md:items-center">
-              <label
-                htmlFor="jenisDokumen"
-                className="w-full md:w-56 font-bold text-sm text-[#1a1b20] mb-2 md:mb-0 flex items-center justify-between pr-4"
-              >
-                <span>Jenis Dokumen</span>
-                <span className="hidden md:inline text-[#1a1b20]">:</span>
-              </label>
-              <div className="flex-1">
-                <select
-                  id="jenisDokumen"
-                  value={jenisDokumen}
-                  onChange={(e) => setJenisDokumen(e.target.value)}
-                  className="w-full border border-[#c5c6d2] rounded px-3.5 py-2.5 text-sm text-[#1a1b20] bg-white focus:outline-none focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] transition-colors"
-                >
-                  <option value="">Pilih Jenis Dokumen</option>
-                  <option value="Surat Edaran">Surat Edaran</option>
-                  <option value="Surat Keputusan">Surat Keputusan</option>
-                  <option value="Formulir">Formulir</option>
-                  <option value="SOP & Regulasi">SOP &amp; Regulasi</option>
-                  <option value="Lainnya">Lainnya</option>
-                </select>
-              </div>
-            </div>
-
             {/* Field 4: Keterangan (WYSIWYG) */}
             <div className="flex flex-col md:flex-row md:items-start">
               <label className="w-full md:w-56 font-bold text-sm text-[#1a1b20] mb-2 md:mb-0 pt-2 flex items-center justify-between pr-4">
@@ -705,6 +679,55 @@ export default function EditDokumenInternalPage() {
                   onChange={handleFileChange}
                   className="hidden"
                 />
+              </div>
+            </div>
+
+            {/* Field 3: Jenis Dokumen */}
+            <div className="flex flex-col md:flex-row md:items-center">
+              <label
+                htmlFor="jenisDokumen"
+                className="w-full md:w-56 font-bold text-sm text-[#1a1b20] mb-2 md:mb-0 flex items-center justify-between pr-4"
+              >
+                <span>Jenis Dokumen</span>
+                <span className="hidden md:inline text-[#1a1b20]">:</span>
+              </label>
+              <div className="flex-1 relative">
+                <select
+                  id="jenisDokumen"
+                  value={jenisDokumen}
+                  onChange={(e) => setJenisDokumen(e.target.value)}
+                  className="w-full h-10 border border-[#c5c6d2] rounded appearance-none bg-[#f4f3f9] text-[#1a1b20] px-3 text-sm focus:outline-none focus:border-[#00113a] cursor-pointer"
+                >
+                  <option value="">Pilih Jenis Dokumen</option>
+                  <option value="Surat Edaran">Surat Edaran</option>
+                  <option value="Surat Keputusan">Surat Keputusan</option>
+                  <option value="Formulir">Formulir</option>
+                </select>
+                <ChevronDown className="w-4 h-4 text-[#757682] absolute right-3 top-3 pointer-events-none" />
+              </div>
+            </div>
+
+            {/* Field 6: Status */}
+            <div className="flex flex-col md:flex-row md:items-center mt-6">
+              <label
+                htmlFor="status"
+                className="w-full md:w-56 font-bold text-sm text-[#1a1b20] mb-2 md:mb-0 flex items-center justify-between pr-4"
+              >
+                <span>Status</span>
+                <span className="hidden md:inline text-[#1a1b20]">:</span>
+              </label>
+              <div className="flex-1 relative">
+                <select
+                  id="status"
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="w-full h-10 border border-[#c5c6d2] rounded appearance-none bg-[#f4f3f9] text-[#1a1b20] px-3 text-sm focus:outline-none focus:border-[#00113a] cursor-pointer"
+                >
+                  <option value="">Pilih Jenis Status</option>
+                  <option value="Terbit">Terbit</option>
+                  <option value="Menunggu">Menunggu</option>
+                </select>
+                <ChevronDown className="w-4 h-4 text-[#757682] absolute right-3 top-3 pointer-events-none" />
               </div>
             </div>
 

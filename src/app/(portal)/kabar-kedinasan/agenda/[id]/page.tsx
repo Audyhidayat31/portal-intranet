@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -102,7 +102,7 @@ export default function DetailAgendaKegiatanPage() {
     'Membangun Ekosistem Perpustakaan Digital Nasional Masa Depan';
 
   const displayDate = agendaItem?.publishedAt
-    ? agendaItem.publishedAt
+    ? formatDate(agendaItem.publishedAt)
     : '19 Agustus 2026';
 
   const displayContent =
@@ -222,6 +222,9 @@ export default function DetailAgendaKegiatanPage() {
               </p>
               <p className="font-medium text-[#757682]">
                 {displayDate}
+              </p>
+              <p className="font-medium text-[#757682]">
+                Status: {(agendaItem?.status === 'MENUNGGU' || agendaItem?.status === 'Menunggu' || agendaItem?.status === 'DRAFT') ? 'Menunggu' : 'Terbit'}
               </p>
             </div>
 
