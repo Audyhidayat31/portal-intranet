@@ -21,6 +21,7 @@ export default function KalimatBijakPage() {
   const [filteredItems, setFilteredItems] = useState<KalimatBijakItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterAuthor, setFilterAuthor] = useState('all');
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [isPerPageDropdownOpen, setIsPerPageDropdownOpen] = useState(false);

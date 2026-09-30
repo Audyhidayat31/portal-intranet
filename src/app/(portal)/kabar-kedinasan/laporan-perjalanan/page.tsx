@@ -21,6 +21,7 @@ export default function LaporanPerjalananPage() {
   const [reports, setReports] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterAuthor, setFilterAuthor] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
@@ -239,7 +240,7 @@ export default function LaporanPerjalananPage() {
           </div>
         ) : (
           <div className="space-y-4 mb-12">
-            {reports.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
+            {reports.filter(item => filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id))).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
               const displayDate = item.publishedAt
                 ? formatDate(item.publishedAt)
                 : '19 Agustus 2026';

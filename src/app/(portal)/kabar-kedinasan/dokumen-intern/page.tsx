@@ -26,6 +26,7 @@ export default function DokumenInternPage() {
   const [documents, setDocuments] = useState<InternalDocument[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterAuthor, setFilterAuthor] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
@@ -288,7 +289,7 @@ export default function DokumenInternPage() {
               if (!currentUser) return false;
               if (currentUser.role === 'admin') return true;
               return currentUser.name === (doc.authorName || doc.author?.name);
-            }).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((doc: any) => {
+            }).filter(item => filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id))).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((doc: any) => {
               const displayDate = doc.publishedAt
                 ? formatDate(doc.publishedAt)
                 : '20 Agustus 2026';

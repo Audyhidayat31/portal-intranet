@@ -26,6 +26,7 @@ export default function KaryaAkademikPage() {
   const [filteredItems, setFilteredItems] = useState<KaryaAkademikItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterAuthor, setFilterAuthor] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
@@ -227,6 +228,19 @@ export default function KaryaAkademikPage() {
               )}
             </div>
             <span className="font-normal text-[#1a1b20]">data</span>
+          </div>
+
+          {/* Middle: Filter Penulis */}
+          <div className="hidden md:flex items-center gap-2">
+            <span className="font-normal text-sm text-[#1a1b20]">Dibuat Oleh:</span>
+            <select
+              value={filterAuthor}
+              onChange={(e) => setFilterAuthor(e.target.value)}
+              className="bg-white border border-[#c5c6d2] rounded-lg px-3 py-2 text-sm text-[#1a1b20] focus:outline-none focus:border-[#00113a] cursor-pointer"
+            >
+              <option value="all">Semua Orang</option>
+              <option value="me">Hanya Saya</option>
+            </select>
           </div>
 
           {/* Right: Search Bar */}

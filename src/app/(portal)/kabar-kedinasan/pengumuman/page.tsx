@@ -81,6 +81,7 @@ export default function PengumumanPage() {
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterAuthor, setFilterAuthor] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<any | null>(null);
   const [previewAttachment, setPreviewAttachment] = useState<string | null>(null);
@@ -407,6 +408,18 @@ export default function PengumumanPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full md:w-auto">
+            {/* Filter Penulis */}
+            <div className="hidden md:flex items-center gap-2">
+              <span className="font-normal text-sm text-[#1a1b20]">Dibuat Oleh:</span>
+              <select
+                value={filterAuthor}
+                onChange={(e) => setFilterAuthor(e.target.value)}
+                className="bg-white border border-[#c5c6d2] rounded-lg px-3 py-2 text-sm text-[#1a1b20] focus:outline-none focus:border-[#00113a] cursor-pointer"
+              >
+                <option value="all">Semua Orang</option>
+                <option value="me">Hanya Saya</option>
+              </select>
+            </div>
             {/* Tambah Button */}
             <Link
               href="/kabar-kedinasan/pengumuman/tambah"
@@ -465,7 +478,7 @@ export default function PengumumanPage() {
               if (!currentUser) return false;
               if (currentUser.role === 'admin') return true;
               return currentUser.name === (item.authorName || item.author?.name);
-            }).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
+            }).filter(item => filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id))).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
               const displayDate = item.publishedAt
                 ? formatDate(item.publishedAt)
                 : '20 AGUSTUS 2026';
