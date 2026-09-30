@@ -18,10 +18,11 @@ import { STITCH_MOCK_BUSINESS_TRIPS_5 } from '@/lib/mock-business-trips';
 import { Pagination } from '@/components/ui/Pagination';
 
 export default function LaporanPerjalananPage() {
-  const [reports, setReports] = useState<any[]>(STITCH_MOCK_BUSINESS_TRIPS_5);
-  const [isLoading, setIsLoading] = useState(false);
+  const [reports, setReports] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Add Report State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -62,11 +63,11 @@ export default function LaporanPerjalananPage() {
       .then((data) => {
         const apiItems = data.success && Array.isArray(data.data) ? data.data : [];
 
-        setReports(apiItems);
+        setReports(apiItems.length > 0 ? apiItems : STITCH_MOCK_BUSINESS_TRIPS_5);
       })
       .catch((e) => {
         console.error(e);
-        setReports([]);
+        setReports(STITCH_MOCK_BUSINESS_TRIPS_5);
       })
       .finally(() => {
         setIsLoading(false);
@@ -229,7 +230,7 @@ export default function LaporanPerjalananPage() {
             ))}
           </div>
         ) : reports.length === 0 ? (
-          <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-[#faf8ff] my-8">
+          <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
             <Plane className="w-12 h-12 text-[#757682] mx-auto mb-3 opacity-60" />
             <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Laporan Ditemukan</h2>
             <p className="text-sm text-[#444650]">

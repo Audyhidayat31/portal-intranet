@@ -14,10 +14,11 @@ import { STITCH_MOCK_JELAJAH_BUMI_9, JelajahBumiItem } from '@/lib/mock-jelajah-
 import { Pagination } from '@/components/ui/Pagination';
 
 export default function JelajahBumiPage() {
-  const [itemsList, setItemsList] = useState<JelajahBumiItem[]>(STITCH_MOCK_JELAJAH_BUMI_9);
-  const [isLoading, setIsLoading] = useState(false);
+  const [itemsList, setItemsList] = useState<JelajahBumiItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Dropdown Pagination state
   const [itemsPerPage, setItemsPerPage] = useState(9);
@@ -102,7 +103,7 @@ export default function JelajahBumiPage() {
   };
 
   return (
-    <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 bg-[#faf8ff] text-[#1a1b20] min-h-[calc(100vh-80px)] flex flex-col justify-between">
+    <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 bg-white text-[#1a1b20] min-h-[calc(100vh-80px)] flex flex-col justify-between">
       <div>
         {/* Breadcrumb matching Stitch */}
         <nav aria-label="Breadcrumb" className="mb-8 text-sm text-[#444650] flex items-center gap-2">

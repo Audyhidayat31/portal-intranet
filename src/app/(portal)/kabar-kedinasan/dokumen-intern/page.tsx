@@ -23,10 +23,11 @@ import {
 } from '@/lib/mock-internal-documents';
 
 export default function DokumenInternPage() {
-  const [documents, setDocuments] = useState<InternalDocument[]>(STITCH_MOCK_INTERNAL_DOCS_5);
-  const [isLoading, setIsLoading] = useState(false);
+  const [documents, setDocuments] = useState<InternalDocument[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Detail Modal State
   const [selectedDoc, setSelectedDoc] = useState<InternalDocument | null>(null);
@@ -91,11 +92,11 @@ export default function DokumenInternPage() {
           };
         });
 
-        setDocuments(formattedApiItems);
+        setDocuments(formattedApiItems.length > 0 ? formattedApiItems : STITCH_MOCK_INTERNAL_DOCS_5);
       })
       .catch((e) => {
         console.error(e);
-        setDocuments([]);
+        setDocuments(STITCH_MOCK_INTERNAL_DOCS_5);
       })
       .finally(() => {
         setIsLoading(false);
@@ -104,6 +105,14 @@ export default function DokumenInternPage() {
 
   useEffect(() => {
     fetchDocuments();
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setCurrentUser(data.data);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -257,8 +266,14 @@ export default function DokumenInternPage() {
               <div key={n} className="border border-[#c5c6d2] rounded-lg p-6 bg-slate-50 animate-pulse h-36" />
             ))}
           </div>
-        ) : documents.length === 0 ? (
-          <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-[#faf8ff] my-8">
+        ) : documents.filter((doc: any) => {
+            const isPublished = doc.status === 'Terbit' || doc.status === 'TERBIT' || (!doc.status);
+            if (isPublished) return true;
+            if (!currentUser) return false;
+            if (currentUser.role === 'admin') return true;
+            return currentUser.name === (doc.authorName || doc.author?.name);
+          }).length === 0 ? (
+          <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
             <FileText className="w-12 h-12 text-[#757682] mx-auto mb-3 opacity-60" />
             <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Dokumen Ditemukan</h2>
             <p className="text-sm text-[#444650]">
@@ -267,7 +282,13 @@ export default function DokumenInternPage() {
           </div>
         ) : (
           <div className="space-y-4 mb-12">
-            {documents.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((doc) => {
+            {documents.filter((doc: any) => {
+              const isPublished = doc.status === 'Terbit' || doc.status === 'TERBIT' || (!doc.status);
+              if (isPublished) return true;
+              if (!currentUser) return false;
+              if (currentUser.role === 'admin') return true;
+              return currentUser.name === (doc.authorName || doc.author?.name);
+            }).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((doc: any) => {
               const displayDate = doc.publishedAt
                 ? formatDate(doc.publishedAt)
                 : '20 Agustus 2026';
@@ -340,7 +361,13 @@ export default function DokumenInternPage() {
       {/* Pagination Controls */}
       <Pagination 
           currentPage={currentPage}
-          totalItems={documents.length}
+          totalItems={documents.filter((doc: any) => {
+            const isPublished = doc.status === 'Terbit' || doc.status === 'TERBIT' || (!doc.status);
+            if (isPublished) return true;
+            if (!currentUser) return false;
+            if (currentUser.role === 'admin') return true;
+            return currentUser.name === (doc.authorName || doc.author?.name);
+          }).length}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
         />

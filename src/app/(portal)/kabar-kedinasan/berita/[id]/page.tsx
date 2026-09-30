@@ -91,6 +91,19 @@ export default function DetailBeritaPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setCurrentUser(data.data);
+        }
+      })
+      .catch((err) => console.warn('Failed to fetch profile', err));
+  }, []);
+
   useEffect(() => {
     if (!rawId) return;
 
@@ -171,7 +184,7 @@ export default function DetailBeritaPage() {
     .filter((p: string) => p.trim().length > 0);
 
   return (
-    <div className="bg-[#faf8ff] min-h-[calc(100vh-80px)] text-[#1a1b20]">
+    <div className="bg-white min-h-[calc(100vh-80px)] text-[#1a1b20]">
       {/* Main Content Area matching Stitch screen spec */}
       <main className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 md:px-16 py-8 md:py-12">
         {/* Breadcrumbs matching Stitch */}
@@ -421,22 +434,24 @@ export default function DetailBeritaPage() {
             </div>
 
             {/* Action Buttons: Edit Berita & Hapus Berita matching Stitch */}
-            <div className="flex flex-wrap gap-4 pt-2">
-              <button
-                onClick={() => router.push(`/kabar-kedinasan/berita/${rawId}/edit`)}
-                className="px-8 py-3 bg-transparent border border-[#c5c6d2] text-[#1a1b20] font-bold text-sm rounded-md hover:bg-[#efedf3] hover:border-[#00113a] transition-all min-w-[140px] text-center shadow-xs inline-block"
-              >
-                Edit Berita
-              </button>
+            {currentUser && (currentUser.role === 'admin' || currentUser.name === news?.author?.name) && (
+              <div className="flex flex-wrap gap-4 pt-2">
+                <button
+                  onClick={() => router.push(`/kabar-kedinasan/berita/${rawId}/edit`)}
+                  className="px-8 py-3 bg-transparent border border-[#c5c6d2] text-[#1a1b20] font-bold text-sm rounded-md hover:bg-[#efedf3] hover:border-[#00113a] transition-all min-w-[140px] text-center shadow-xs inline-block"
+                >
+                  Edit Berita
+                </button>
 
-              <button
-                type="button"
-                onClick={() => setIsDeleteModalOpen(true)}
-                className="px-8 py-3 bg-transparent border border-[#c5c6d2] text-[#1a1b20] hover:text-red-700 hover:border-red-400 font-bold text-sm rounded-md hover:bg-red-50 transition-all min-w-[140px] text-center shadow-xs cursor-pointer"
-              >
-                Hapus Berita
-              </button>
-            </div>
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="px-8 py-3 bg-transparent border border-[#c5c6d2] text-[#1a1b20] hover:text-red-700 hover:border-red-400 font-bold text-sm rounded-md hover:bg-red-50 transition-all min-w-[140px] text-center shadow-xs cursor-pointer"
+                >
+                  Hapus Berita
+                </button>
+              </div>
+            )}
           </article>
         )}
       </main>

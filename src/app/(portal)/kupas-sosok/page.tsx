@@ -12,16 +12,15 @@ import { formatDate } from '@/lib/utils';
 import { STITCH_MOCK_FIGURES_6, FigureItem } from '@/lib/mock-kupas-sosok';
 
 export default function KupasSosokPage() {
-  const [figureList, setFigureList] = useState<FigureItem[]>(STITCH_MOCK_FIGURES_6);
-  const [isLoading, setIsLoading] = useState(false);
+  const [figureList, setFigureList] = useState<FigureItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [successMessage, setSuccessMessage] = useState('');
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   const fetchFigures = (q: string = '') => {
-    if (q.trim()) {
-      setIsLoading(true);
-    }
+    setIsLoading(true);
     fetch(`/api/figure-profiles?q=${encodeURIComponent(q)}`)
       .then((res) => res.json())
       .then((data) => {
@@ -37,7 +36,8 @@ export default function KupasSosokPage() {
           fullStory: item.fullStory || '',
           photoUrl: item.photoUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&auto=format&fit=crop',
           publishedAt: item.createdAt || new Date().toISOString(),
-          status: 'Terbit',
+          status: item.status || 'Terbit',
+          authorName: item.authorName || item.author?.name,
           isSpotlight: item.isSpotlight,
         }));
 
@@ -53,10 +53,9 @@ export default function KupasSosokPage() {
           );
           setFigureList(filtered);
         } else {
-          // Merge API items with mock items ensuring all 6 cards are shown
+          // Merge API items with mock items
           const combined = [...formattedApiItems];
           for (const mockItem of STITCH_MOCK_FIGURES_6) {
-            if (combined.length >= 6) break;
             const alreadyExists = combined.some(
               (c) => c.slug === mockItem.slug || c.name.toLowerCase() === mockItem.name.toLowerCase()
             );
@@ -64,7 +63,7 @@ export default function KupasSosokPage() {
               combined.push(mockItem);
             }
           }
-          setFigureList(combined.slice(0, 6));
+          setFigureList(combined);
         }
       })
       .catch((e) => {
@@ -80,12 +79,31 @@ export default function KupasSosokPage() {
 
   useEffect(() => {
     fetchFigures();
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setCurrentUser(data.data);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     fetchFigures(searchQuery);
   };
+
+  const ITEMS_PER_PAGE = 6;
+  const visibleFigures = figureList.filter((item: any) => {
+    const isPublished = item.status === 'Terbit' || item.status === 'TERBIT' || (!item.status);
+    if (isPublished) return true;
+    if (!currentUser) return false;
+    if (currentUser.role === 'admin') return true;
+    return currentUser.name === (item.authorName || item.author?.name);
+  });
+  const totalPages = Math.ceil(visibleFigures.length / ITEMS_PER_PAGE) || 1;
+  const paginatedList = visibleFigures.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   return (
     <div className="w-full bg-[#fcfcff] min-h-screen">
@@ -114,7 +132,7 @@ export default function KupasSosokPage() {
               Kupas Sosok
             </h1>
             <p className="text-base text-[#444650]">
-              Deskripsi mengenai halaman Kupas Sosok
+              Kenali lebih dekat profil, rekam jejak, dan dedikasi sosok-sosok inspiratif di lingkungan Perpustakaan Nasional RI.
             </p>
           </div>
 
@@ -156,7 +174,7 @@ export default function KupasSosokPage() {
               <div key={n} className="border border-[#c5c6d2] rounded-xl overflow-hidden bg-white animate-pulse h-96" />
             ))}
           </div>
-        ) : figureList.length === 0 ? (
+        ) : paginatedList.length === 0 ? (
           <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
             <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Sosok Ditemukan</h2>
             <p className="text-sm text-[#444650]">
@@ -165,7 +183,7 @@ export default function KupasSosokPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {figureList.map((item) => {
+            {paginatedList.map((item) => {
               const displayDate = item.publishedAt ? formatDate(item.publishedAt) : '19 Agustus 2026';
 
               return (
@@ -226,44 +244,45 @@ export default function KupasSosokPage() {
           </div>
         )}
 
-        {/* Pagination Controls matching Stitch */}
-        <div className="flex justify-center items-center gap-2 pt-4 pb-8">
-          <button
-            type="button"
-            aria-label="Previous page"
-            disabled={currentPage <= 1}
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
-          >
-            &lt;
-          </button>
-
-          {[1, 2, 3, 4, 5].map((page) => (
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2 pt-4 pb-8">
             <button
-              key={page}
               type="button"
-              onClick={() => setCurrentPage(page)}
-              className={`w-8 h-8 rounded text-xs font-bold transition-colors flex items-center justify-center cursor-pointer ${
-                currentPage === page
-                  ? 'bg-[#00113a] text-white'
-                  : 'text-[#444650] hover:bg-[#f4f3f9] hover:text-[#00113a]'
-              }`}
+              aria-label="Previous page"
+              disabled={currentPage <= 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
             >
-              {page}
+              &lt;
             </button>
-          ))}
 
-          <span className="text-[#757682] text-xs font-bold px-1">...</span>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                type="button"
+                onClick={() => setCurrentPage(page)}
+                className={`w-8 h-8 rounded text-xs font-bold transition-colors flex items-center justify-center cursor-pointer ${
+                  currentPage === page
+                    ? 'bg-[#00113a] text-white'
+                    : 'text-[#444650] hover:bg-[#f4f3f9] hover:text-[#00113a]'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
 
-          <button
-            type="button"
-            aria-label="Next page"
-            onClick={() => setCurrentPage((p) => p + 1)}
-            className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors cursor-pointer"
-          >
-            &gt;
-          </button>
-        </div>
+            <button
+              type="button"
+              aria-label="Next page"
+              disabled={currentPage >= totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
+            >
+              &gt;
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -22,8 +22,8 @@ import { STITCH_MOCK_HUMOR_9, HumorItem } from '@/lib/mock-humor';
 import { Pagination } from '@/components/ui/Pagination';
 
 export default function HumorPage() {
-  const [humorList, setHumorList] = useState<HumorItem[]>(STITCH_MOCK_HUMOR_9);
-  const [isLoading, setIsLoading] = useState(false);
+  const [humorList, setHumorList] = useState<HumorItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -51,6 +51,7 @@ export default function HumorPage() {
   const [newComment, setNewComment] = useState('');
   const [likes, setLikes] = useState<{ [key: string]: number }>({});
   const [isLiked, setIsLiked] = useState<{ [key: string]: boolean }>({});
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   const fetchHumor = (q: string = '') => {
     if (q.trim()) {
@@ -139,7 +140,7 @@ export default function HumorPage() {
   };
 
   return (
-    <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 bg-[#faf8ff] text-[#1a1b20] min-h-[calc(100vh-80px)] flex flex-col justify-between">
+    <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 bg-white text-[#1a1b20] min-h-[calc(100vh-80px)] flex flex-col justify-between">
       <div>
         {/* Breadcrumb matching Stitch */}
         <nav aria-label="Breadcrumb" className="mb-8 text-sm text-[#444650] flex items-center gap-2">

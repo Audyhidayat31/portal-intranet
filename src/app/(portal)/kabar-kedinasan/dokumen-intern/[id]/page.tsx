@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -45,6 +45,19 @@ export default function DetailDokumenInternalPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState('');
+
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setCurrentUser(data.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!rawId) return;
@@ -249,7 +262,7 @@ Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedan
             <div className="text-xs text-[#757682] space-y-0.5">
               <p className="font-semibold text-[#757682]">Dibuat oleh</p>
               <p className="font-semibold text-[#1a1b20]">
-                Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.
+                {documentItem?.author?.name || documentItem?.authorName || 'Administrator Perpusnas'}
               </p>
               <p className="font-medium text-[#757682]">
                 {documentItem?.publishedAt
@@ -259,21 +272,23 @@ Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedan
             </div>
 
             {/* Right: Edit & Hapus Buttons matching Stitch */}
-            <div className="flex items-center gap-3 self-end sm:self-auto">
-              <Link
-                href={`/kabar-kedinasan/dokumen-intern/${rawId}/edit`}
-                className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs inline-block text-center"
-              >
-                Edit
-              </Link>
-              <button
-                type="button"
-                onClick={() => setIsDeleteModalOpen(true)}
-                className="px-7 py-1.5 bg-white border border-[#dc2626] hover:bg-red-50 text-[#dc2626] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer"
-              >
-                Hapus
-              </button>
-            </div>
+            {currentUser && (currentUser.role === 'admin' || currentUser.name === (documentItem?.author?.name || documentItem?.authorName || 'Administrator Perpusnas')) && (
+              <div className="flex items-center gap-3 self-end sm:self-auto">
+                <Link
+                  href={`/kabar-kedinasan/dokumen-intern/${rawId}/edit`}
+                  className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs inline-block text-center"
+                >
+                  Edit
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="px-7 py-1.5 bg-white border border-[#dc2626] hover:bg-red-50 text-[#dc2626] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer"
+                >
+                  Hapus
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

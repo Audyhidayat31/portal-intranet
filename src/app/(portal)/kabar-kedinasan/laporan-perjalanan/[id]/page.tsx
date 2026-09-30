@@ -44,6 +44,19 @@ export default function DetailLaporanPerjalananPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState('');
 
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setCurrentUser(data.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     if (!rawId) return;
 
@@ -252,7 +265,7 @@ Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedan
                 Dibuat oleh
               </span>
               <div className="text-sm sm:text-base font-medium text-[#1a1b20]">
-                {report?.author?.name || 'Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.'}
+                {report?.author?.name || report?.authorName || 'Administrator Perpusnas'}
               </div>
               <div className="text-xs text-[#757682] mt-0.5">
                 {report?.publishedAt ? formatDate(report.publishedAt) : '19 Agustus 2026'}
@@ -262,21 +275,23 @@ Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedan
               </div>
             </div>
 
-            <div className="flex gap-4 w-full md:w-auto">
-              <Link
-                href={`/kabar-kedinasan/laporan-perjalanan/${rawId}/edit`}
-                className="flex-1 md:flex-none px-6 py-2 border border-[#757682] text-[#1a1b20] rounded font-bold text-xs sm:text-sm hover:bg-[#efedf3] transition-colors inline-block text-center"
-              >
-                Edit
-              </Link>
-              <button
-                type="button"
-                onClick={() => setIsDeleteModalOpen(true)}
-                className="flex-1 md:flex-none px-6 py-2 border border-[#ba1a1a] text-[#ba1a1a] rounded font-bold text-xs sm:text-sm hover:bg-[#ffdad6] hover:border-[#ba1a1a] transition-colors"
-              >
-                Hapus
-              </button>
-            </div>
+            {currentUser && (currentUser.role === 'admin' || currentUser.name === (report?.author?.name || report?.authorName || 'Administrator Perpusnas')) && (
+              <div className="flex gap-4 w-full md:w-auto">
+                <Link
+                  href={`/kabar-kedinasan/laporan-perjalanan/${rawId}/edit`}
+                  className="flex-1 md:flex-none px-6 py-2 border border-[#757682] text-[#1a1b20] rounded font-bold text-xs sm:text-sm hover:bg-[#efedf3] transition-colors inline-block text-center"
+                >
+                  Edit
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="flex-1 md:flex-none px-6 py-2 border border-[#ba1a1a] text-[#ba1a1a] rounded font-bold text-xs sm:text-sm hover:bg-[#ffdad6] hover:border-[#ba1a1a] transition-colors"
+                >
+                  Hapus
+                </button>
+              </div>
+            )}
           </footer>
         </article>
       </div>

@@ -26,8 +26,8 @@ import {
 } from '@/lib/mock-olahraga';
 
 export default function DaftarOlahragaPage() {
-  const [olahragaList, setOlahragaList] = useState<OlahragaItem[]>(STITCH_MOCK_OLAHRAGA_9);
-  const [isLoading, setIsLoading] = useState(false);
+  const [olahragaList, setOlahragaList] = useState<OlahragaItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -159,7 +159,7 @@ export default function DaftarOlahragaPage() {
   };
 
   return (
-    <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 bg-[#faf8ff] text-[#1a1b20] min-h-[calc(100vh-80px)] flex flex-col justify-between">
+    <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 bg-white text-[#1a1b20] min-h-[calc(100vh-80px)] flex flex-col justify-between">
       <div>
         {/* Breadcrumb matching Stitch */}
         <nav aria-label="Breadcrumb" className="mb-8 text-sm text-[#444650] flex items-center gap-2">

@@ -22,10 +22,11 @@ import { STITCH_MOCK_OPINI_6, OpiniItem } from '@/lib/mock-opini';
 import { Pagination } from '@/components/ui/Pagination';
 
 export default function CoretanOpiniPage() {
-  const [opiniList, setOpiniList] = useState<OpiniItem[]>(STITCH_MOCK_OPINI_6);
-  const [isLoading, setIsLoading] = useState(false);
+  const [opiniList, setOpiniList] = useState<OpiniItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Detail Modal State
   const [selectedOpini, setSelectedOpini] = useState<OpiniItem | null>(null);
@@ -186,7 +187,7 @@ export default function CoretanOpiniPage() {
   };
 
   return (
-    <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 bg-[#faf8ff] text-[#1a1b20] min-h-[calc(100vh-80px)] flex flex-col justify-between">
+    <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 bg-white text-[#1a1b20] min-h-[calc(100vh-80px)] flex flex-col justify-between">
       <div>
         {/* Breadcrumb matching Stitch */}
         <nav aria-label="Breadcrumb" className="mb-8 text-sm text-[#444650] flex items-center gap-2">

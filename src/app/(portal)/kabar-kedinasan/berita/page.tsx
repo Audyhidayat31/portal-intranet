@@ -88,10 +88,22 @@ const MOCK_BERITA_6: NewsItem[] = [
 ];
 
 export default function BeritaPage() {
-  const [newsList, setNewsList] = useState<NewsItem[]>(MOCK_BERITA_6);
-  const [isLoading, setIsLoading] = useState(false);
+  const [newsList, setNewsList] = useState<NewsItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setCurrentUser(data.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const [successMessage, setSuccessMessage] = useState('');
   const [itemsPerPage, setItemsPerPage] = useState(9);
@@ -112,9 +124,7 @@ export default function BeritaPage() {
 
 
   const fetchNews = (q: string = '') => {
-    if (q.trim()) {
-      setIsLoading(true);
-    }
+    setIsLoading(true);
     fetch(`/api/news?q=${encodeURIComponent(q)}&limit=100`)
       .then((res) => res.json())
       .then((data) => {
@@ -134,11 +144,11 @@ export default function BeritaPage() {
           authorName: item.author?.name || 'Humas Perpusnas',
         }));
 
-        setNewsList(formattedApiItems);
+        setNewsList(formattedApiItems.length > 0 ? formattedApiItems : MOCK_BERITA_6);
       })
       .catch((e) => {
         console.error(e);
-        setNewsList([]);
+        setNewsList(MOCK_BERITA_6);
       })
       .finally(() => {
         setIsLoading(false);
@@ -155,7 +165,7 @@ export default function BeritaPage() {
   };
 
   return (
-    <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 bg-[#faf8ff] text-[#1a1b20] min-h-[calc(100vh-80px)] flex flex-col justify-between">
+    <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 bg-white text-[#1a1b20] min-h-[calc(100vh-80px)] flex flex-col justify-between">
       <div>
         {/* Breadcrumb matching Opini */}
         <nav aria-label="Breadcrumb" className="mb-8 text-sm text-[#444650] flex items-center gap-2">
@@ -263,18 +273,31 @@ export default function BeritaPage() {
               <div key={n} className="border border-[#c5c6d2] rounded-xl overflow-hidden bg-white animate-pulse h-96" />
             ))}
           </div>
-        ) : newsList.length === 0 ? (
-          <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
-            <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Berita Ditemukan</h2>
-            <p className="text-sm text-[#444650]">
-              Silakan coba kata kunci pencarian lain atau tambahkan berita baru.
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {newsList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
-              const displayDate = item.publishedAt ? formatDate(item.publishedAt) : '19 Agustus 2026';
-              const isPublished = item.status === 'Terbit' || (item.status as any) === 'TERBIT' || !item.status;
+        ) : (() => {
+          const visibleNews = newsList.filter((item) => {
+            const isPublished = item.status === 'Terbit' || (item.status as any) === 'TERBIT';
+            if (isPublished) return true;
+            if (!currentUser) return false;
+            if (currentUser.role === 'admin') return true;
+            return currentUser.name === item.authorName;
+          });
+
+          if (visibleNews.length === 0) {
+            return (
+              <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
+                <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Berita Ditemukan</h2>
+                <p className="text-sm text-[#444650]">
+                  Silakan coba kata kunci pencarian lain atau tambahkan berita baru.
+                </p>
+              </div>
+            );
+          }
+
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+              {visibleNews.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
+                const displayDate = item.publishedAt ? formatDate(item.publishedAt) : '19 Agustus 2026';
+                const isPublished = item.status === 'Terbit' || (item.status as any) === 'TERBIT' || !item.status;
 
               return (
                 <article
@@ -332,7 +355,8 @@ export default function BeritaPage() {
               );
             })}
           </div>
-        )}
+          );
+        })()}
       </div>
 
       {/* Pagination Controls matching Opini */}

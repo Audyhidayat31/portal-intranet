@@ -78,12 +78,13 @@ const STITCH_MOCK_ANNOUNCEMENTS_5 = [
 ];
 
 export default function PengumumanPage() {
-  const [announcements, setAnnouncements] = useState<any[]>(STITCH_MOCK_ANNOUNCEMENTS_5);
+  const [announcements, setAnnouncements] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<any | null>(null);
   const [previewAttachment, setPreviewAttachment] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Add Announcement State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -162,11 +163,11 @@ export default function PengumumanPage() {
       .then((data) => {
         const apiItems = data.success && Array.isArray(data.data) ? data.data : [];
 
-        setAnnouncements(apiItems);
+        setAnnouncements(apiItems.length > 0 ? apiItems : STITCH_MOCK_ANNOUNCEMENTS_5);
       })
       .catch((e) => {
         console.error(e);
-        setAnnouncements([]);
+        setAnnouncements(STITCH_MOCK_ANNOUNCEMENTS_5);
       })
       .finally(() => {
         setIsLoading(false);
@@ -175,6 +176,14 @@ export default function PengumumanPage() {
 
   useEffect(() => {
     fetchAnnouncements();
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setCurrentUser(data.data);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   // Prevent background scrolling when any modal is open
@@ -434,8 +443,14 @@ export default function PengumumanPage() {
               <div key={n} className="border border-[#c5c6d2] rounded-xl p-6 bg-slate-50 animate-pulse h-32" />
             ))}
           </div>
-        ) : announcements.length === 0 ? (
-          <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-[#faf8ff] my-8">
+        ) : announcements.filter((item) => {
+            const isPublished = item.status === 'Terbit' || item.status === 'TERBIT' || (!item.status);
+            if (isPublished) return true;
+            if (!currentUser) return false;
+            if (currentUser.role === 'admin') return true;
+            return currentUser.name === (item.authorName || item.author?.name);
+          }).length === 0 ? (
+          <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
             <Megaphone className="w-12 h-12 text-[#757682] mx-auto mb-3 opacity-60" />
             <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Pengumuman Ditemukan</h2>
             <p className="text-sm text-[#444650]">
@@ -444,7 +459,13 @@ export default function PengumumanPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-4 mb-8">
-            {announcements.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
+            {announcements.filter((item) => {
+              const isPublished = item.status === 'Terbit' || item.status === 'TERBIT' || (!item.status);
+              if (isPublished) return true;
+              if (!currentUser) return false;
+              if (currentUser.role === 'admin') return true;
+              return currentUser.name === (item.authorName || item.author?.name);
+            }).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
               const displayDate = item.publishedAt
                 ? formatDate(item.publishedAt)
                 : '20 AGUSTUS 2026';
@@ -498,7 +519,13 @@ export default function PengumumanPage() {
       {/* Pagination Controls */}
       <Pagination 
           currentPage={currentPage}
-          totalItems={announcements.length}
+          totalItems={announcements.filter((item) => {
+            const isPublished = item.status === 'Terbit' || item.status === 'TERBIT' || (!item.status);
+            if (isPublished) return true;
+            if (!currentUser) return false;
+            if (currentUser.role === 'admin') return true;
+            return currentUser.name === (item.authorName || item.author?.name);
+          }).length}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
         />
@@ -581,22 +608,24 @@ export default function PengumumanPage() {
                 </p>
               </div>
 
-              <div className="flex gap-4">
-                <button
-                  type="button"
-                  onClick={() => handleOpenEdit(selectedAnnouncement)}
-                  className="px-6 py-2 border border-[#757682] rounded text-[#1a1b20] hover:bg-[#efedf3] hover:border-[#00113a] transition-colors font-bold text-sm min-w-[90px] text-center"
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsDeleteModalOpen(true)}
-                  className="px-6 py-2 border border-[#757682] rounded text-[#1a1b20] hover:bg-red-50 hover:border-red-400 hover:text-red-700 transition-colors font-bold text-sm min-w-[90px] text-center"
-                >
-                  Hapus
-                </button>
-              </div>
+              {currentUser && (currentUser.role === 'admin' || currentUser.name === (selectedAnnouncement.author?.name || selectedAnnouncement.authorName || 'Budi Sujatmiko')) && (
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => handleOpenEdit(selectedAnnouncement)}
+                    className="px-6 py-2 border border-[#757682] rounded text-[#1a1b20] hover:bg-[#efedf3] hover:border-[#00113a] transition-colors font-bold text-sm min-w-[90px] text-center"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsDeleteModalOpen(true)}
+                    className="px-6 py-2 border border-[#757682] rounded text-[#1a1b20] hover:bg-red-50 hover:border-red-400 hover:text-red-700 transition-colors font-bold text-sm min-w-[90px] text-center"
+                  >
+                    Hapus
+                  </button>
+                </div>
+              )}
             </footer>
           </article>
         </div>

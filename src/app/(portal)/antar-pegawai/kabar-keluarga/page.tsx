@@ -19,11 +19,12 @@ import {
 const ITEMS_PER_PAGE = 9;
 
 export default function KabarKeluargaPage() {
-  const [allItems, setAllItems] = useState<KabarKeluargaItem[]>(STITCH_MOCK_KABAR_KELUARGA_9);
-  const [filteredItems, setFilteredItems] = useState<KabarKeluargaItem[]>(STITCH_MOCK_KABAR_KELUARGA_9);
-  const [isLoading, setIsLoading] = useState(false);
+  const [allItems, setAllItems] = useState<KabarKeluargaItem[]>([]);
+  const [filteredItems, setFilteredItems] = useState<KabarKeluargaItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Dropdown Pagination state
   const [itemsPerPage, setItemsPerPage] = useState(9);
@@ -117,7 +118,7 @@ export default function KabarKeluargaPage() {
   const currentCards = filteredItems.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   return (
-    <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 bg-[#faf8ff] text-[#1a1b20] min-h-[calc(100vh-80px)] flex flex-col justify-between">
+    <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 bg-white text-[#1a1b20] min-h-[calc(100vh-80px)] flex flex-col justify-between">
       <div>
         {/* Breadcrumb matching Google Stitch */}
         <nav aria-label="Breadcrumb" className="mb-8 text-sm text-[#444650] flex items-center gap-2">

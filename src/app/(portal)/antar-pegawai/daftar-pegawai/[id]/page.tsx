@@ -376,11 +376,19 @@ export default function LihatPegawaiPage() {
                   Foto Profil
                 </label>
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                  <div 
+                    className={`w-16 h-16 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center ${editForm.avatarUrl ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
+                    onClick={() => {
+                      if (editForm.avatarUrl) {
+                        window.open(editForm.avatarUrl, '_blank');
+                      }
+                    }}
+                    title={editForm.avatarUrl ? "Klik untuk melihat foto penuh" : ""}
+                  >
                     {editForm.avatarUrl ? (
                       <img src={editForm.avatarUrl} alt="Preview" className="w-full h-full object-cover" />
                     ) : (
-                      <User className="w-8 h-8 text-slate-400 m-auto" />
+                      <User className="w-8 h-8 text-slate-400" />
                     )}
                   </div>
                   <div className="flex-grow space-y-2">
@@ -389,13 +397,6 @@ export default function LihatPegawaiPage() {
                       <span>Unggah Foto Baru</span>
                       <input type="file" accept="image/*" onChange={handleAvatarFile} className="hidden" />
                     </label>
-                    <input
-                      type="url"
-                      value={editForm.avatarUrl || ''}
-                      onChange={(e) => setEditForm({ ...editForm, avatarUrl: e.target.value })}
-                      placeholder="Atau masukkan URL foto"
-                      className="w-full rounded border border-[#c5c6d2] px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-[#00113a]"
-                    />
                   </div>
                 </div>
               </div>

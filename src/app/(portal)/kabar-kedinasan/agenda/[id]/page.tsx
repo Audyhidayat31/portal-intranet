@@ -38,6 +38,19 @@ export default function DetailAgendaKegiatanPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState('');
 
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setCurrentUser(data.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     if (!rawId) return;
 
@@ -218,7 +231,7 @@ export default function DetailAgendaKegiatanPage() {
             <div className="text-xs text-[#757682] space-y-0.5">
               <p className="font-semibold text-[#757682]">Dibuat oleh</p>
               <p className="font-semibold text-[#1a1b20]">
-                Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.
+                {agendaItem?.author?.name || agendaItem?.authorName || 'Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.'}
               </p>
               <p className="font-medium text-[#757682]">
                 {displayDate}
@@ -229,21 +242,23 @@ export default function DetailAgendaKegiatanPage() {
             </div>
 
             {/* Right: Edit & Hapus Buttons matching Coretan Opini Detail */}
-            <div className="flex items-center gap-3 self-end sm:self-auto">
-              <Link
-                href={`/kabar-kedinasan/agenda/${rawId}/edit`}
-                className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs inline-block text-center cursor-pointer"
-              >
-                Edit
-              </Link>
-              <button
-                type="button"
-                onClick={() => setIsDeleteModalOpen(true)}
-                className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-red-50 text-[#dc2626] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer"
-              >
-                Hapus
-              </button>
-            </div>
+            {currentUser && (currentUser.role === 'admin' || currentUser.name === (agendaItem?.author?.name || agendaItem?.authorName || 'Biro Hukum & Humas Perpusnas')) && (
+              <div className="flex items-center gap-3 self-end sm:self-auto">
+                <Link
+                  href={`/kabar-kedinasan/agenda/${rawId}/edit`}
+                  className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs inline-block text-center cursor-pointer"
+                >
+                  Edit
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-red-50 text-[#dc2626] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer"
+                >
+                  Hapus
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
