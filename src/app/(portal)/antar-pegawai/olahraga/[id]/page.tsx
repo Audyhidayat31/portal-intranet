@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -44,6 +44,19 @@ export default function DetailOlahragaPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState('');
+
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setCurrentUser(data.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!rawId) return;
@@ -235,21 +248,23 @@ export default function DetailOlahragaPage() {
             </div>
 
             {/* Right: Edit & Hapus Buttons matching Wireframe 2 */}
-            <div className="flex items-center gap-3 self-end sm:self-auto">
-              <Link
-                href={`/antar-pegawai/olahraga/${olahragaItem?.id || rawId}/edit`}
-                className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer inline-flex items-center justify-center"
-              >
-                Edit
-              </Link>
-              <button
-                type="button"
-                onClick={() => setIsDeleteModalOpen(true)}
-                className="px-7 py-1.5 bg-white border border-[#dc2626] hover:bg-red-50 text-[#dc2626] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer"
-              >
-                Hapus
-              </button>
-            </div>
+            {currentUser && (currentUser.role === 'admin' || currentUser.name === (olahragaItem?.author?.name || olahragaItem?.authorName || 'Budi Sujatmiko')) && (
+              <div className="flex items-center gap-3 self-end sm:self-auto">
+                <Link
+                  href={`/antar-pegawai/olahraga/${olahragaItem?.id || rawId}/edit`}
+                  className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer inline-flex items-center justify-center"
+                >
+                  Edit
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="px-7 py-1.5 bg-white border border-[#dc2626] hover:bg-red-50 text-[#dc2626] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer"
+                >
+                  Hapus
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

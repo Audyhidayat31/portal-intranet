@@ -13,6 +13,11 @@ export async function GET(request: NextRequest) {
     try {
       const where: any = {
         status: 'ACTIVE',
+        role: {
+          name: {
+            not: 'ADMINISTRATOR'
+          }
+        }
       };
 
       if (search) {
@@ -39,7 +44,7 @@ export async function GET(request: NextRequest) {
         },
       });
     } catch (e) {
-      console.warn('Prisma fetch failed, using fallback:', e);
+      console.warn('Prisma fetch failed:', e);
     }
 
     // 2. Format DB employees
@@ -61,31 +66,7 @@ export async function GET(request: NextRequest) {
       bio: u.profile?.bio || '-',
     }));
 
-    // 3. Filter mock employees
-    let filteredMock = MOCK_EMPLOYEES;
-    if (search) {
-      const q = search.toLowerCase();
-      filteredMock = filteredMock.filter(
-        (m) =>
-          m.name.toLowerCase().includes(q) ||
-          m.nip.toLowerCase().includes(q) ||
-          m.position.toLowerCase().includes(q) ||
-          m.unitKerja.toLowerCase().includes(q)
-      );
-    }
-
-    if (unit && unit !== 'Semua Unit Kerja') {
-      filteredMock = filteredMock.filter((m) =>
-        m.unitKerja.toLowerCase().includes(unit.toLowerCase())
-      );
-    }
-
-    // Merge DB & Mock without duplicating NIPs
-    const dbNips = new Set(formattedDb.map((e) => e.nip));
-    const combined = [
-      ...formattedDb,
-      ...filteredMock.filter((m) => !dbNips.has(m.nip)),
-    ];
+    const combined = formattedDb;
 
     return NextResponse.json({
       success: true,

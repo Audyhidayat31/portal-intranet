@@ -15,14 +15,26 @@ import { STITCH_MOCK_AGENDAS_6, AgendaItem } from '@/lib/mock-agendas';
 import { Pagination } from '@/components/ui/Pagination';
 
 export default function AgendaKegiatanPage() {
-  const [agendas, setAgendas] = useState<AgendaItem[]>(STITCH_MOCK_AGENDAS_6);
-  const [isLoading, setIsLoading] = useState(false);
+  const [agendas, setAgendas] = useState<AgendaItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [successMessage, setSuccessMessage] = useState('');
   const [itemsPerPage, setItemsPerPage] = useState(9);
   const [isPerPageOpen, setIsPerPageOpen] = useState(false);
   const perPageRef = useRef<HTMLDivElement>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setCurrentUser(data.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -38,9 +50,7 @@ export default function AgendaKegiatanPage() {
 
 
   const fetchAgendas = (q: string = '') => {
-    if (q.trim()) {
-      setIsLoading(true);
-    }
+    setIsLoading(true);
     fetch(`/api/agendas?q=${encodeURIComponent(q)}&limit=100`)
       .then((res) => res.json())
       .then((data) => {
@@ -63,11 +73,11 @@ export default function AgendaKegiatanPage() {
           authorName: item.author?.name || 'Biro Umum Perpusnas',
         }));
 
-        setAgendas(formattedApiItems);
+        setAgendas(formattedApiItems.length > 0 ? formattedApiItems : STITCH_MOCK_AGENDAS_6);
       })
       .catch((e) => {
         console.error(e);
-        setAgendas([]);
+        setAgendas(STITCH_MOCK_AGENDAS_6);
       })
       .finally(() => {
         setIsLoading(false);
@@ -84,7 +94,7 @@ export default function AgendaKegiatanPage() {
   };
 
   return (
-    <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 bg-[#faf8ff] text-[#1a1b20] min-h-[calc(100vh-80px)] flex flex-col justify-between">
+    <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 bg-white text-[#1a1b20] min-h-[calc(100vh-80px)] flex flex-col justify-between">
       <div>
         {/* Breadcrumb matching Coretan Opini */}
         <nav aria-label="Breadcrumb" className="mb-8 text-sm text-[#444650] flex items-center gap-2">
@@ -195,17 +205,30 @@ export default function AgendaKegiatanPage() {
               <div key={n} className="border border-[#c5c6d2] rounded-xl overflow-hidden bg-white animate-pulse h-96" />
             ))}
           </div>
-        ) : agendas.length === 0 ? (
-          <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
-            <Calendar className="w-12 h-12 text-[#757682] mx-auto mb-3 opacity-60" />
-            <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Agenda Ditemukan</h2>
-            <p className="text-sm text-[#444650]">
-              Silakan coba kata kunci pencarian lain atau buat agenda kegiatan baru.
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {agendas.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
+        ) : (() => {
+          const visibleAgendas = agendas.filter((item) => {
+            const isPublished = item.status === 'Terbit' || (item.status as any) === 'TERBIT';
+            if (isPublished) return true;
+            if (!currentUser) return false;
+            if (currentUser.role === 'admin') return true;
+            return currentUser.name === item.authorName;
+          });
+
+          if (visibleAgendas.length === 0) {
+            return (
+              <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
+                <Calendar className="w-12 h-12 text-[#757682] mx-auto mb-3 opacity-60" />
+                <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Agenda Ditemukan</h2>
+                <p className="text-sm text-[#444650]">
+                  Silakan coba kata kunci pencarian lain atau buat agenda kegiatan baru.
+                </p>
+              </div>
+            );
+          }
+
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+              {visibleAgendas.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
               const displayDate = item.publishedAt ? item.publishedAt : '19 Agustus 2026';
 
               return (
@@ -264,7 +287,8 @@ export default function AgendaKegiatanPage() {
               );
             })}
           </div>
-        )}
+          );
+        })()}
       </div>
 
       {/* Pagination Controls matching Coretan Opini */}

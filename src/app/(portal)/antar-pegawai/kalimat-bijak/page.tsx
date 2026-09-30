@@ -17,9 +17,9 @@ import {
 } from '@/lib/mock-kalimat-bijak';
 
 export default function KalimatBijakPage() {
-  const [allItems, setAllItems] = useState<KalimatBijakItem[]>(STITCH_MOCK_KALIMAT_BIJAK);
-  const [filteredItems, setFilteredItems] = useState<KalimatBijakItem[]>(STITCH_MOCK_KALIMAT_BIJAK);
-  const [isLoading, setIsLoading] = useState(false);
+  const [allItems, setAllItems] = useState<KalimatBijakItem[]>([]);
+  const [filteredItems, setFilteredItems] = useState<KalimatBijakItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);

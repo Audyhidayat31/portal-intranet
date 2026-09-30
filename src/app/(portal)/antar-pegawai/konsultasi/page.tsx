@@ -25,6 +25,7 @@ export default function KonsultasiPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   // Dropdown Pagination state
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [isPerPageOpen, setIsPerPageOpen] = useState(false);
@@ -146,7 +147,7 @@ export default function KonsultasiPage() {
   };
 
   return (
-    <div className="w-full bg-[#faf8ff] min-h-[calc(100vh-80px)] text-[#1a1b20]">
+    <div className="w-full bg-white min-h-[calc(100vh-80px)] text-[#1a1b20]">
       <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 flex flex-col justify-between">
         <div>
           {/* Breadcrumb matching Stitch */}

@@ -412,7 +412,7 @@ export default function KelolaHakAksesPage() {
           <table className="w-full text-left border-collapse">
             {/* Table Header */}
             <thead>
-              <tr className="border-b border-[#c5c6d2] bg-[#faf8ff]">
+              <tr className="border-b border-[#c5c6d2] bg-white">
                 <th className="py-3.5 px-6 text-xs font-bold text-[#00113a] w-[36%] border-r border-[#c5c6d2]">
                   Modul
                 </th>

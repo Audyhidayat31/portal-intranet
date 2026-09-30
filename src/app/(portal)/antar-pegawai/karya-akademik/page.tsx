@@ -22,11 +22,12 @@ import {
 const itemsPerPage = 5;
 
 export default function KaryaAkademikPage() {
-  const [allItems, setAllItems] = useState<KaryaAkademikItem[]>(STITCH_MOCK_KARYA_AKADEMIK);
-  const [filteredItems, setFilteredItems] = useState<KaryaAkademikItem[]>(STITCH_MOCK_KARYA_AKADEMIK);
-  const [isLoading, setIsLoading] = useState(false);
+  const [allItems, setAllItems] = useState<KaryaAkademikItem[]>([]);
+  const [filteredItems, setFilteredItems] = useState<KaryaAkademikItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Dropdown Pagination state
   const [itemsPerPage, setItemsPerPage] = useState(5);

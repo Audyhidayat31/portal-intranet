@@ -289,7 +289,7 @@ export default function DaftarPegawaiPage() {
         )}
 
         {/* Pagination Section matching wireframe (< 1 2 3 4 5 ... >) */}
-        {totalPages > 1 && (
+        {paginatedEmployees.length > 0 && (
           <div className="flex items-center justify-center gap-1.5 sm:gap-2 mb-8 select-none">
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
