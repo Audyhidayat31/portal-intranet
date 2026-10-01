@@ -267,23 +267,23 @@ export default function BerandaPage() {
       <section className="border border-[#c5c6d2] rounded-xl p-4 sm:p-6 bg-white shadow-sm flex flex-wrap md:flex-nowrap divide-y md:divide-y-0 md:divide-x divide-[#c5c6d2]">
         <div className="w-full sm:w-1/2 md:w-1/4 p-4 flex flex-col items-center justify-center text-center gap-2">
           <Users className="w-8 h-8 text-[#00113a]" />
-          <h3 className="text-2xl font-bold text-[#00113a]">120.000+</h3>
+          <h3 className="text-2xl font-bold text-[#00113a]">{data?.stats?.totalEmployees !== undefined ? data.stats.totalEmployees.toLocaleString('id-ID') : '0'}</h3>
           <p className="text-xs text-[#444650]">Jumlah Pegawai Tergabung</p>
         </div>
         <div className="w-full sm:w-1/2 md:w-1/4 p-4 flex flex-col items-center justify-center text-center gap-2">
           <Newspaper className="w-8 h-8 text-[#00113a]" />
-          <h3 className="text-2xl font-bold text-[#00113a]">25.000+</h3>
+          <h3 className="text-2xl font-bold text-[#00113a]">{data?.stats?.totalNews !== undefined ? data.stats.totalNews.toLocaleString('id-ID') : '0'}</h3>
           <p className="text-xs text-[#444650]">Info Berita</p>
         </div>
         <div className="w-full sm:w-1/2 md:w-1/4 p-4 flex flex-col items-center justify-center text-center gap-2">
           <MessageSquare className="w-8 h-8 text-[#00113a]" />
-          <h3 className="text-2xl font-bold text-[#00113a]">3.500+</h3>
+          <h3 className="text-2xl font-bold text-[#00113a]">{data?.stats?.totalOpini !== undefined ? data.stats.totalOpini.toLocaleString('id-ID') : '0'}</h3>
           <p className="text-xs text-[#444650]">Coretan Opini</p>
         </div>
         <div className="w-full sm:w-1/2 md:w-1/4 p-4 flex flex-col items-center justify-center text-center gap-2">
           <Lightbulb className="w-8 h-8 text-[#00113a]" />
-          <h3 className="text-2xl font-bold text-[#00113a]">1.200+</h3>
-          <p className="text-xs text-[#444650]">Tips dan Trik</p>
+          <h3 className="text-2xl font-bold text-[#00113a]">{data?.stats?.totalTips !== undefined ? data.stats.totalTips.toLocaleString('id-ID') : '0'}</h3>
+          <p className="text-xs text-[#444650]">Tips dan Gaya Hidup</p>
         </div>
       </section>
 

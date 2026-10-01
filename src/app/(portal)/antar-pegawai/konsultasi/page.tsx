@@ -21,6 +21,7 @@ import {
 export default function KonsultasiPage() {
   const [consultations, setConsultations] = useState<ConsultationItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterAuthor, setFilterAuthor] = useState('all');
   const [activeSearch, setActiveSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);

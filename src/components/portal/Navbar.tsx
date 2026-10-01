@@ -169,7 +169,7 @@ export function PortalNavbar() {
                     onClick={() => setActiveDropdown(null)}
                     className="block p-2.5 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-[#00113a] transition-colors"
                   >
-                    <p className="text-xs font-bold">Dokumen Intern</p>
+                    <p className="text-xs font-bold">Dokumen Internal</p>
                   </Link>
                 </div>
               )}

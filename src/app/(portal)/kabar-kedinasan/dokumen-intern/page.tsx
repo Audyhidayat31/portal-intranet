@@ -26,6 +26,7 @@ export default function DokumenInternPage() {
   const [documents, setDocuments] = useState<InternalDocument[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterAuthor, setFilterAuthor] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
@@ -185,73 +186,89 @@ export default function DokumenInternPage() {
           </div>
         )}
 
-        {/* Page Header & Actions matching Stitch */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
             <h1 className="text-3xl sm:text-4xl font-bold text-[#00113a] mb-2 tracking-tight">
               Dokumen Internal
             </h1>
             <p className="text-sm sm:text-base text-[#444650]">
-              SOP, pedoman kerja, dan regulasi internal</p>
-            {/* Tampilkan [ 5 v ] data */}
-            <div className="flex items-center gap-2 text-sm text-[#1a1b20] shrink-0 mt-4" ref={perPageRef}>
-              <span className="font-normal text-[#1a1b20]">Tampilkan</span>
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setIsPerPageOpen(!isPerPageOpen)}
-                  className="w-14 bg-[#00113a] hover:bg-[#2a4386] text-white px-2.5 py-1 rounded-md text-xs font-semibold flex items-center justify-between shadow-sm transition-colors cursor-pointer"
-                >
-                  <span>{itemsPerPage}</span>
-                  <ChevronDown className="w-3 h-3 text-white" />
-                </button>
+              SOP, pedoman kerja, dan regulasi internal
+            </p>
+          </div>
+          <Link
+            href="/kabar-kedinasan/dokumen-intern/tambah"
+            className="bg-[#00113a] hover:bg-[#2a4386] text-white font-bold py-2.5 px-6 rounded-lg transition-colors flex items-center gap-2 shadow-sm shrink-0"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Tambah</span>
+          </Link>
+        </div>
 
-                {isPerPageOpen && (
-                  <div className="absolute left-0 top-full mt-1 w-14 bg-white border border-[#c5c6d2] rounded-md shadow-lg z-30 py-1 text-center overflow-hidden">
-                    {[5, 10, 15].filter((n) => n !== itemsPerPage).map((num) => (
-                      <button
-                        key={num}
-                        type="button"
-                        onClick={() => {
-                          setItemsPerPage(num);
-                          setCurrentPage(1); // Reset page when changing items per page
-                          setIsPerPageOpen(false);
-                        }}
-                        className="w-full text-xs py-1 hover:bg-[#efedf3] text-[#1a1b20] transition-colors cursor-pointer"
-                      >
-                        {num}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <span className="font-normal text-[#1a1b20]">data</span>
+        {/* Controls Row */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          {/* Left: Tampilkan [ 5 v ] data */}
+          <div className="flex items-center gap-2 text-sm text-[#1a1b20] shrink-0" ref={perPageRef}>
+            <span className="font-normal text-[#1a1b20]">Tampilkan</span>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsPerPageOpen(!isPerPageOpen)}
+                className="w-14 bg-[#6c757d] hover:bg-[#5a6268] text-white px-2.5 py-1 rounded-md text-xs font-semibold flex items-center justify-between shadow-sm transition-colors cursor-pointer"
+              >
+                <span>{itemsPerPage}</span>
+                <ChevronDown className="w-3 h-3 text-white" />
+              </button>
+
+              {isPerPageOpen && (
+                <div className="absolute left-0 top-full mt-1 w-14 bg-white border border-[#c5c6d2] rounded-md shadow-lg z-30 py-1 text-center overflow-hidden">
+                  {[5, 10, 15].filter((n) => n !== itemsPerPage).map((num) => (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => {
+                        setItemsPerPage(num);
+                        setCurrentPage(1); // Reset page when changing items per page
+                        setIsPerPageOpen(false);
+                      }}
+                      className="w-full text-xs py-1 hover:bg-[#efedf3] text-[#1a1b20] transition-colors cursor-pointer"
+                    >
+                      {num}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
+            <span className="font-normal text-[#1a1b20]">data</span>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
-            {/* Tambah Button matching Stitch */}
-            <Link
-              href="/kabar-kedinasan/dokumen-intern/tambah"
-              className="bg-[#00113a] hover:bg-[#2a4386] text-white font-bold text-xs sm:text-sm py-2 px-4 rounded-md transition-colors flex items-center justify-center gap-1.5 shadow-sm w-full sm:w-auto shrink-0 cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Tambah</span>
-            </Link>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full md:w-auto">
+            {/* Left: Filter Penulis */}
+            <div className="hidden md:flex items-center gap-2 shrink-0">
+              <span className="font-normal text-sm text-[#1a1b20]">Dibuat Oleh:</span>
+              <select
+                value={filterAuthor}
+                onChange={(e) => setFilterAuthor(e.target.value)}
+                className="bg-white border border-[#c5c6d2] rounded-lg px-3 py-2 text-sm text-[#1a1b20] focus:outline-none focus:border-[#00113a] cursor-pointer"
+              >
+                <option value="all">Semua Orang</option>
+                <option value="me">Hanya Saya</option>
+              </select>
+            </div>
 
-            {/* Search Input Bar with embedded search icon matching Stitch */}
-            <form onSubmit={handleSearchSubmit} className="flex items-center w-full sm:w-72">
+            {/* Right: Search Input Bar with embedded search icon */}
+            <form onSubmit={handleSearchSubmit} className="relative w-full sm:w-64 flex items-center">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cari Dokumen ..."
-                className="w-full border border-[#757682] rounded-l-md px-3 py-2 text-sm focus:outline-none focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] bg-white text-[#1a1b20] placeholder-[#757682] shadow-xs transition-colors"
+                className="w-full pl-3 pr-10 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:outline-none focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] bg-white text-[#1a1b20] placeholder-[#757682] shadow-xs transition-colors"
               />
               <button
                 type="submit"
                 aria-label="Cari Dokumen"
-                className="bg-[#00113a] hover:bg-[#2a4386] text-white px-3.5 py-2.5 rounded-r-md flex items-center justify-center transition-colors shrink-0 shadow-xs cursor-pointer"
+                className="absolute right-3 text-[#757682] hover:text-[#00113a] transition-colors"
               >
                 <Search className="w-4 h-4" />
               </button>
@@ -288,7 +305,7 @@ export default function DokumenInternPage() {
               if (!currentUser) return false;
               if (currentUser.role === 'admin') return true;
               return currentUser.name === (doc.authorName || doc.author?.name);
-            }).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((doc: any) => {
+            }).filter(item => filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id))).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((doc: any) => {
               const displayDate = doc.publishedAt
                 ? formatDate(doc.publishedAt)
                 : '20 Agustus 2026';

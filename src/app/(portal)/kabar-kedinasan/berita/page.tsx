@@ -91,6 +91,7 @@ export default function BeritaPage() {
   const [newsList, setNewsList] = useState<NewsItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterAuthor, setFilterAuthor] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
@@ -245,25 +246,40 @@ export default function BeritaPage() {
             <span className="font-normal text-[#1a1b20]">data</span>
           </div>
 
-          {/* Right: Search Bar */}
-          <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full md:w-auto md:min-w-[400px]">
-            <div className="relative flex-grow">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari Berita terkini..."
-                className="w-full border border-[#c5c6d2] rounded-lg py-2 px-4 text-base bg-white text-[#1a1b20] placeholder-[#757682] focus:outline-none focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] transition-all"
-              />
+          <div className="flex flex-col md:flex-row items-end md:items-center gap-4 flex-grow justify-end w-full md:w-auto">
+            {/* Middle: Search Bar */}
+            <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full md:max-w-2xl flex-grow">
+              <div className="relative flex-grow">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Cari Berita terkini..."
+                  className="w-full border border-[#c5c6d2] rounded-lg py-2 px-4 text-base bg-white text-[#1a1b20] placeholder-[#757682] focus:outline-none focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] transition-all"
+                />
+              </div>
+              <button
+                type="submit"
+                aria-label="Cari"
+                className="bg-[#e9e7ee] border border-[#c5c6d2] rounded-lg px-4 flex items-center justify-center hover:bg-[#dad9e0] transition-colors cursor-pointer shrink-0"
+              >
+                <Search className="w-5 h-5 text-[#444650]" />
+              </button>
+            </form>
+
+            {/* Right: Filter Penulis */}
+            <div className="hidden md:flex items-center gap-2 shrink-0">
+              <span className="font-normal text-sm text-[#1a1b20]">Dibuat Oleh:</span>
+              <select
+                value={filterAuthor}
+                onChange={(e) => setFilterAuthor(e.target.value)}
+                className="bg-white border border-[#c5c6d2] rounded-lg px-3 py-2 text-sm text-[#1a1b20] focus:outline-none focus:border-[#00113a] cursor-pointer"
+              >
+                <option value="all">Semua Orang</option>
+                <option value="me">Hanya Saya</option>
+              </select>
             </div>
-            <button
-              type="submit"
-              aria-label="Cari"
-              className="bg-[#e9e7ee] border border-[#c5c6d2] rounded-lg px-4 flex items-center justify-center hover:bg-[#dad9e0] transition-colors cursor-pointer shrink-0"
-            >
-              <Search className="w-5 h-5 text-[#444650]" />
-            </button>
-          </form>
+          </div>
         </div>
 
         {/* Cards Grid: 3 Columns matching Opini */}
@@ -295,7 +311,7 @@ export default function BeritaPage() {
 
           return (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-              {visibleNews.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
+              {visibleNews.filter(item => filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id))).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
                 const displayDate = item.publishedAt ? formatDate(item.publishedAt) : '19 Agustus 2026';
                 const isPublished = item.status === 'Terbit' || (item.status as any) === 'TERBIT' || !item.status;
 
