@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   Search,
   Plus,
   ChevronRight,
+  ChevronDown,
   CheckCircle,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
@@ -59,8 +60,7 @@ export default function KupasSosokPage() {
         }));
 
         if (q.trim()) {
-          const allPool = [...formattedApiItems, ...STITCH_MOCK_FIGURES_6];
-          const filtered = allPool.filter(
+          const filtered = formattedApiItems.filter(
             (item) =>
               item.name.toLowerCase().includes(q.toLowerCase()) ||
               item.position.toLowerCase().includes(q.toLowerCase()) ||
@@ -70,24 +70,12 @@ export default function KupasSosokPage() {
           );
           setFigureList(filtered);
         } else {
-          // Merge API items with mock items
-          const combined = [...formattedApiItems];
-          for (const mockItem of STITCH_MOCK_FIGURES_6) {
-            const alreadyExists = combined.some(
-              (c) => c.slug === mockItem.slug || c.name.toLowerCase() === mockItem.name.toLowerCase()
-            );
-            if (!alreadyExists) {
-              combined.push(mockItem);
-            }
-          }
-          setFigureList(combined);
+          setFigureList(formattedApiItems);
         }
       })
       .catch((e) => {
         console.error(e);
-        if (!figureList || figureList.length === 0) {
-          setFigureList(STITCH_MOCK_FIGURES_6);
-        }
+        setFigureList([]);
       })
       .finally(() => {
         setIsLoading(false);

@@ -85,8 +85,7 @@ export default function CoretanOpiniPage() {
         }));
 
         if (q.trim()) {
-          const allPool = [...formattedApiItems, ...STITCH_MOCK_OPINI_6];
-          const filtered = allPool.filter(
+          const filtered = formattedApiItems.filter(
             (item) =>
               item.title.toLowerCase().includes(q.toLowerCase()) ||
               item.excerpt.toLowerCase().includes(q.toLowerCase()) ||
@@ -95,23 +94,12 @@ export default function CoretanOpiniPage() {
           );
           setOpiniList(filtered);
         } else {
-          // Merge API items with mock items ensuring all 6 cards are shown
-          const combined = [...formattedApiItems];
-          for (const mockItem of STITCH_MOCK_OPINI_6) {
-            if (combined.length >= 6) break;
-            const alreadyExists = combined.some((c) => c.id === mockItem.id);
-            if (!alreadyExists) {
-              combined.push(mockItem);
-            }
-          }
-          setOpiniList(combined.slice(0, 6));
+          setOpiniList(formattedApiItems);
         }
       })
       .catch((e) => {
         console.error(e);
-        if (!opiniList || opiniList.length === 0) {
-          setOpiniList(STITCH_MOCK_OPINI_6);
-        }
+        setOpiniList([]);
       })
       .finally(() => {
         setIsLoading(false);

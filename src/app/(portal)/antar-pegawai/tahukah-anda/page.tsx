@@ -30,6 +30,20 @@ export default function DaftarTahukahAndaPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterAuthor, setFilterAuthor] = useState('all');
+
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setCurrentUser(data.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const [currentPage, setCurrentPage] = useState(1);
 
   // Dropdown Pagination state

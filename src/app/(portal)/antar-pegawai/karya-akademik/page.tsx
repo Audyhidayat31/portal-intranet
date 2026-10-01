@@ -149,7 +149,7 @@ export default function KaryaAkademikPage() {
 
   const totalPages = Math.max(1, Math.ceil(filteredItems.length / itemsPerPage));
   const startIndex = ((currentPage - 1) % totalPages) * itemsPerPage;
-  const currentCards = filteredItems.slice(startIndex, startIndex + itemsPerPage);
+  const currentCards = filteredItems.filter(item => filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id))).slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 bg-white text-[#191c1d] min-h-[calc(100vh-80px)] flex flex-col justify-between">
@@ -167,30 +167,23 @@ export default function KaryaAkademikPage() {
           <span className="font-semibold text-[#00113a]">Karya Akademik</span>
         </nav>
 
-        {/* Top Header Section as per Wireframe */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-4 border-b border-slate-100">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#00113a] tracking-tight">
+            <h1 className="text-3xl sm:text-4xl font-bold text-[#00113a] mb-2 tracking-tight">
               Karya Akademik
             </h1>
-            <p className="text-xs sm:text-sm text-slate-600 mt-1 font-normal">
+            <p className="text-sm sm:text-base text-[#444650]">
               Jurnal, riset, dan karya ilmiah
             </p>
           </div>
-
-          {/* Right Actions: Search Box + Tambah Button */}
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            
-
-            {/* + Tambah Button as per Coretan Opini Style */}
-            <Link
-              href="/antar-pegawai/karya-akademik/tambah"
-              className="bg-[#002366] hover:bg-[#00113a] text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-lg inline-flex items-center gap-2 shadow-sm transition-all duration-200 cursor-pointer shrink-0"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Tambah</span>
-            </Link>
-          </div>
+          <Link
+            href="/antar-pegawai/karya-akademik/tambah"
+            className="bg-[#00113a] hover:bg-[#2a4386] text-white font-bold py-2.5 px-6 rounded-lg transition-colors flex items-center gap-2 shadow-sm shrink-0"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Tambah</span>
+          </Link>
         </div>
 
                 {/* Controls Row */}
@@ -230,33 +223,33 @@ export default function KaryaAkademikPage() {
             <span className="font-normal text-[#1a1b20]">data</span>
           </div>
 
-          {/* Middle: Filter Penulis */}
-          <div className="hidden md:flex items-center gap-2">
-            <span className="font-normal text-sm text-[#1a1b20]">Dibuat Oleh:</span>
-            <select
-              value={filterAuthor}
-              onChange={(e) => setFilterAuthor(e.target.value)}
-              className="bg-white border border-[#c5c6d2] rounded-lg px-3 py-2 text-sm text-[#1a1b20] focus:outline-none focus:border-[#00113a] cursor-pointer"
-            >
-              <option value="all">Semua Orang</option>
-              <option value="me">Hanya Saya</option>
-            </select>
-          </div>
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full md:w-auto">
+            {/* Left: Filter Penulis */}
+            <div className="hidden md:flex items-center gap-2 shrink-0">
+              <span className="font-normal text-sm text-[#1a1b20]">Dibuat Oleh:</span>
+              <select
+                value={filterAuthor}
+                onChange={(e) => setFilterAuthor(e.target.value)}
+                className="bg-white border border-[#c5c6d2] rounded-lg px-3 py-2 text-sm text-[#1a1b20] focus:outline-none focus:border-[#00113a] cursor-pointer"
+              >
+                <option value="all">Semua Orang</option>
+                <option value="me">Hanya Saya</option>
+              </select>
+            </div>
 
-          {/* Right: Search Bar */}
-          <div className="flex justify-end w-full md:w-auto">
-            <form onSubmit={handleSearchSubmit} className="relative w-full md:w-72">
+            {/* Right: Search Input Bar with embedded search icon */}
+            <form onSubmit={handleSearchSubmit} className="relative w-full sm:w-64 flex items-center">
               <input
                 type="text"
                 value={searchQuery}
-                onChange={handleSearchChange}
-                placeholder="Cari Karya Akademik..."
-                className="w-full pl-4 pr-10 py-2 border border-slate-300 rounded-lg text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 bg-white focus:outline-none focus:ring-2 focus:ring-[#007BFF]/30 focus:border-[#007BFF] transition-all shadow-2xs"
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Cari Karya Akademik ..."
+                className="w-full pl-3 pr-10 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:outline-none focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] bg-white text-[#1a1b20] placeholder-[#757682] shadow-xs transition-colors"
               />
               <button
                 type="submit"
-                aria-label="Cari"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-[#007BFF] transition-colors"
+                aria-label="Cari Karya Akademik"
+                className="absolute right-3 text-[#757682] hover:text-[#00113a] transition-colors"
               >
                 <Search className="w-4 h-4" />
               </button>

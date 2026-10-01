@@ -360,56 +360,65 @@ export default function PengumumanPage() {
           </div>
         )}
 
-        {/* Header Section matching Stitch */}
+        {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
             <h1 className="text-3xl sm:text-4xl font-bold text-[#00113a] mb-2 tracking-tight">
               Pengumuman
             </h1>
             <p className="text-sm sm:text-base text-[#444650]">
-              Surat edaran, cuti, dan arahan pimpinan</p>
-            
-            <div className="mt-4">
-            {/* Tampilkan [ 5 v ] data */}
-            <div className="flex items-center gap-2 text-sm text-[#1a1b20] shrink-0" ref={perPageRef}>
-              <span className="font-normal text-[#1a1b20]">Tampilkan</span>
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setIsPerPageOpen(!isPerPageOpen)}
-                  className="w-14 bg-[#6c757d] hover:bg-[#5a6268] text-white px-2.5 py-1 rounded-md text-xs font-semibold flex items-center justify-between shadow-sm transition-colors cursor-pointer"
-                >
-                  <span>{itemsPerPage}</span>
-                  <ChevronDown className="w-3 h-3 text-white" />
-                </button>
+              Surat edaran, cuti, dan arahan pimpinan
+            </p>
+          </div>
+          <Link
+            href="/kabar-kedinasan/pengumuman/tambah"
+            className="bg-[#00113a] hover:bg-[#2a4386] text-white font-bold py-2.5 px-6 rounded-lg transition-colors flex items-center gap-2 shadow-sm shrink-0"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Tambah</span>
+          </Link>
+        </div>
 
-                {isPerPageOpen && (
-                  <div className="absolute left-0 top-full mt-1 w-14 bg-white border border-[#c5c6d2] rounded-md shadow-lg z-30 py-1 text-center overflow-hidden">
-                    {[5, 10, 15].filter((n) => n !== itemsPerPage).map((num) => (
-                      <button
-                        key={num}
-                        type="button"
-                        onClick={() => {
-                          setItemsPerPage(num);
-                          setCurrentPage(1); // Reset page when changing items per page
-                          setIsPerPageOpen(false);
-                        }}
-                        className="w-full text-xs py-1 hover:bg-[#efedf3] text-[#1a1b20] transition-colors cursor-pointer"
-                      >
-                        {num}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <span className="font-normal text-[#1a1b20]">data</span>
+        {/* Controls Row */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          {/* Left: Tampilkan [ 5 v ] data */}
+          <div className="flex items-center gap-2 text-sm text-[#1a1b20] shrink-0" ref={perPageRef}>
+            <span className="font-normal text-[#1a1b20]">Tampilkan</span>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsPerPageOpen(!isPerPageOpen)}
+                className="w-14 bg-[#6c757d] hover:bg-[#5a6268] text-white px-2.5 py-1 rounded-md text-xs font-semibold flex items-center justify-between shadow-sm transition-colors cursor-pointer"
+              >
+                <span>{itemsPerPage}</span>
+                <ChevronDown className="w-3 h-3 text-white" />
+              </button>
+
+              {isPerPageOpen && (
+                <div className="absolute left-0 top-full mt-1 w-14 bg-white border border-[#c5c6d2] rounded-md shadow-lg z-30 py-1 text-center overflow-hidden">
+                  {[5, 10, 15].filter((n) => n !== itemsPerPage).map((num) => (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => {
+                        setItemsPerPage(num);
+                        setCurrentPage(1); // Reset page when changing items per page
+                        setIsPerPageOpen(false);
+                      }}
+                      className="w-full text-xs py-1 hover:bg-[#efedf3] text-[#1a1b20] transition-colors cursor-pointer"
+                    >
+                      {num}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-            </div>
+            <span className="font-normal text-[#1a1b20]">data</span>
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full md:w-auto">
-            {/* Filter Penulis */}
-            <div className="hidden md:flex items-center gap-2">
+            {/* Left: Filter Penulis */}
+            <div className="hidden md:flex items-center gap-2 shrink-0">
               <span className="font-normal text-sm text-[#1a1b20]">Dibuat Oleh:</span>
               <select
                 value={filterAuthor}
@@ -420,16 +429,8 @@ export default function PengumumanPage() {
                 <option value="me">Hanya Saya</option>
               </select>
             </div>
-            {/* Tambah Button */}
-            <Link
-              href="/kabar-kedinasan/pengumuman/tambah"
-              className="bg-[#00113a] hover:bg-[#2a4386] text-white font-bold text-xs sm:text-sm py-2 px-4 rounded transition-colors flex items-center justify-center gap-1.5 shadow-sm shrink-0"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Tambah</span>
-            </Link>
 
-            {/* Search Input Bar with embedded search icon matching Stitch */}
+            {/* Right: Search Input Bar with embedded search icon */}
             <form onSubmit={handleSearchSubmit} className="relative w-full sm:w-64 flex items-center">
               <input
                 type="text"

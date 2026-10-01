@@ -1,13 +1,14 @@
 'use client';
 
 import { Pagination } from '@/components/ui/Pagination';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   Search,
   Plus,
   ChevronRight,
   ChevronLeft,
+  ChevronDown,
   Sparkles,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
@@ -21,9 +22,21 @@ export default function TipsGayaHidupPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterAuthor, setFilterAuthor] = useState('all');
-  const [itemsPerPage, setItemsPerPage] = useState(9);
+    const [itemsPerPage, setItemsPerPage] = useState(9);
   const [isPerPageOpen, setIsPerPageOpen] = useState(false);
   const perPageRef = useRef<HTMLDivElement>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setCurrentUser(data.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -60,17 +73,7 @@ export default function TipsGayaHidupPage() {
           categoryType: item.tags?.[0] || 'Kesehatan',
         }));
 
-        let pool = [...formattedApiItems, ...STITCH_MOCK_TIPS_GAYA_HIDUP_9];
-
-        // Deduplicate
-        const uniqueItems: TipsGayaHidupItem[] = [];
-        for (const itm of pool) {
-          if (!uniqueItems.some((u) => u.id === itm.id)) {
-            uniqueItems.push(itm);
-          }
-        }
-
-        let filtered = uniqueItems;
+        let filtered = formattedApiItems;
 
         // Filter by search query
         if (q.trim()) {
@@ -86,15 +89,7 @@ export default function TipsGayaHidupPage() {
         setItemsList(filtered.slice(0, 9));
       })
       .catch(() => {
-        let filtered = STITCH_MOCK_TIPS_GAYA_HIDUP_9;
-        if (q.trim()) {
-          filtered = filtered.filter(
-            (item) =>
-              item.title.toLowerCase().includes(q.toLowerCase()) ||
-              item.excerpt.toLowerCase().includes(q.toLowerCase())
-          );
-        }
-        setItemsList(filtered);
+        setItemsList([]);
       })
       .finally(() => {
         setIsLoading(false);
