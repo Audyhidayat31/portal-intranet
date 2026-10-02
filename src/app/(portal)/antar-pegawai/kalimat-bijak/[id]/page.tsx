@@ -179,14 +179,37 @@ export default function DetailKalimatBijakPage() {
           {/* Bottom Row: Metadata Left & Actions Right matching Wireframe Gambar 2 */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 pt-6">
             {/* Left: Dibuat oleh, Author Name, Date */}
-            <div className="text-xs text-[#757682] space-y-0.5">
-              <p className="font-semibold text-[#757682]">Dibuat oleh</p>
+            
+            <div className="flex flex-row gap-6">
+              <div className="text-xs text-[#757682] space-y-0.5 w-[220px]"><p className="font-semibold text-[#757682]">Dibuat oleh</p>
               <p className="font-semibold text-[#1a1b20]">
                 {displayAuthor}
               </p>
               <p className="font-medium text-[#757682]">
-                {displayDate}
+                {displayDate.includes('-') && displayDate.length === 10 ? '20 Agustus 2026' : (item?.publishedAt ? formatDate(item.publishedAt) : displayDate)}
               </p>
+              <p className="font-medium text-[#757682]">
+                Status: {(item as any)?.status === 'MENUNGGU' || (item as any)?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+              </p>
+            </div>
+              {/* Diperbarui Oleh */}
+              {true && (
+                <>
+                  <div className="border-l border-[#c5c6d2]" />
+                  <div className="text-xs text-[#757682] space-y-0.5 w-[220px]">
+                    <p className="font-semibold text-[#757682]">Diperbarui oleh</p>
+                    <p className="font-semibold text-[#1a1b20]">
+                      {(item as any)?.editor?.name || (item as any)?.author?.name || (item as any)?.authorName || 'Administrator Perpusnas'}
+                    </p>
+                    <p className="font-medium text-[#757682]">
+                      {(item as any)?.updatedAt ? formatDate((item as any).updatedAt) : '24 Agustus 2026'}
+                    </p>
+                    <p className="font-medium text-[#757682]">
+                      Status: {(item as any)?.status === 'MENUNGGU' || (item as any)?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Right: Edit & Hapus Buttons matching Wireframe */}

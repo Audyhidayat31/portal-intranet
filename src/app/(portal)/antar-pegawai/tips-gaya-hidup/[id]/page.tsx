@@ -232,14 +232,37 @@ Mari jadikan gaya hidup sehat sebagai bagian tak terpisahkan dari dedikasi kita 
           {/* Section: Footer Metadata & Action Buttons matching Stitch */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
             {/* Left: Dibuat oleh & copyright */}
-            <div className="text-xs text-[#757682] space-y-0.5">
-              <p className="font-semibold text-[#757682]">Dibuat oleh</p>
+            
+            <div className="flex flex-row gap-6">
+              <div className="text-xs text-[#757682] space-y-0.5 w-[220px]"><p className="font-semibold text-[#757682]">Dibuat oleh</p>
               <p className="font-semibold text-[#1a1b20]">
                 {item?.author?.name || item?.authorName || 'Budi Sujatmiko'}
               </p>
               <p className="font-medium text-[#757682]">
                 {displayDate}
               </p>
+              <p className="font-medium text-[#757682]">
+                Status: {item?.status === 'MENUNGGU' || item?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+              </p>
+            </div>
+              {/* Diperbarui Oleh */}
+              {(item?.updatedAt && item?.createdAt && new Date(item.updatedAt).getTime() - new Date(item.createdAt).getTime() > 1000) && (
+                <>
+                  <div className="border-l border-[#c5c6d2]" />
+                  <div className="text-xs text-[#757682] space-y-0.5 w-[220px]">
+                    <p className="font-semibold text-[#757682]">Diperbarui oleh</p>
+                    <p className="font-semibold text-[#1a1b20]">
+                      {item?.editor?.name || item?.author?.name || item?.authorName || 'Administrator Perpusnas'}
+                    </p>
+                    <p className="font-medium text-[#757682]">
+                      {formatDate(item.updatedAt)}
+                    </p>
+                    <p className="font-medium text-[#757682]">
+                      Status: {item?.status === 'MENUNGGU' || item?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Right: Edit & Hapus Buttons matching Stitch */}

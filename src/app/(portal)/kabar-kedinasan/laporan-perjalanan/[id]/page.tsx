@@ -260,19 +260,41 @@ Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedan
 
           {/* Footer Meta & Actions matching Stitch */}
           <footer className="flex flex-col md:flex-row justify-between items-start md:items-end border-t border-[#c5c6d2] pt-6 gap-6">
-            <div>
-              <span className="font-bold text-xs text-[#444650] block mb-1">
-                Dibuat oleh
-              </span>
-              <div className="text-sm sm:text-base font-medium text-[#1a1b20]">
-                {report?.author?.name || report?.authorName || 'Administrator Perpusnas'}
+            <div className="flex flex-row gap-6">
+              <div className="w-[220px]">
+                <span className="font-bold text-xs text-[#444650] block mb-1">
+                  Dibuat oleh
+                </span>
+                <div className="text-sm sm:text-base font-medium text-[#1a1b20]">
+                  {report?.author?.name || report?.authorName || 'Administrator Perpusnas'}
+                </div>
+                <div className="text-xs text-[#757682] mt-0.5">
+                  {report?.publishedAt ? formatDate(report.publishedAt) : '19 Agustus 2026'}
+                </div>
+                <div className="text-xs text-[#757682] mt-0.5">
+                  Status: {(report?.status === 'MENUNGGU' || report?.status === 'Menunggu' || report?.status === 'DRAFT') ? 'Menunggu' : 'Terbit'}
+                </div>
               </div>
-              <div className="text-xs text-[#757682] mt-0.5">
-                {report?.publishedAt ? formatDate(report.publishedAt) : '19 Agustus 2026'}
-              </div>
-              <div className="text-xs text-[#757682] mt-0.5">
-                Status: {(report?.status === 'MENUNGGU' || report?.status === 'Menunggu' || report?.status === 'DRAFT') ? 'Menunggu' : 'Terbit'}
-              </div>
+              
+              {(report?.updatedAt && report?.createdAt && new Date(report.updatedAt).getTime() - new Date(report.createdAt).getTime() > 1000) && (
+                <>
+                  <div className="border-l border-[#c5c6d2]" />
+                  <div className="w-[220px]">
+                    <span className="font-bold text-xs text-[#444650] block mb-1">
+                      Diperbarui oleh
+                    </span>
+                    <div className="text-sm sm:text-base font-medium text-[#1a1b20]">
+                      {report?.editor?.name || report?.author?.name || report?.authorName || 'Administrator Perpusnas'}
+                    </div>
+                    <div className="text-xs text-[#757682] mt-0.5">
+                      {formatDate(report.updatedAt)}
+                    </div>
+                    <div className="text-xs text-[#757682] mt-0.5">
+                      Status: {(report?.status === 'MENUNGGU' || report?.status === 'Menunggu' || report?.status === 'DRAFT') ? 'Menunggu' : 'Terbit'}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             {currentUser && (currentUser.role === 'admin' || currentUser.name === (report?.author?.name || report?.authorName || 'Administrator Perpusnas')) && (
