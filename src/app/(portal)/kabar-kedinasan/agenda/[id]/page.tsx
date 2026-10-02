@@ -228,8 +228,9 @@ export default function DetailAgendaKegiatanPage() {
           {/* Section: Footer Metadata & Action Buttons matching Coretan Opini Detail */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
             {/* Left: Dibuat oleh & copyright */}
-            <div className="text-xs text-[#757682] space-y-0.5">
-              <p className="font-semibold text-[#757682]">Dibuat oleh</p>
+            
+            <div className="flex flex-row gap-6">
+              <div className="text-xs text-[#757682] space-y-0.5 w-[220px]"><p className="font-semibold text-[#757682]">Dibuat oleh</p>
               <p className="font-semibold text-[#1a1b20]">
                 {agendaItem?.author?.name || agendaItem?.authorName || 'Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.'}
               </p>
@@ -239,6 +240,25 @@ export default function DetailAgendaKegiatanPage() {
               <p className="font-medium text-[#757682]">
                 Status: {(agendaItem?.status === 'MENUNGGU' || agendaItem?.status === 'Menunggu' || agendaItem?.status === 'DRAFT') ? 'Menunggu' : 'Terbit'}
               </p>
+            </div>
+              {/* Diperbarui Oleh */}
+              {(agendaItem?.updatedAt && agendaItem?.createdAt && new Date(agendaItem.updatedAt).getTime() - new Date(agendaItem.createdAt).getTime() > 1000) && (
+                <>
+                  <div className="border-l border-[#c5c6d2]" />
+                  <div className="text-xs text-[#757682] space-y-0.5 w-[220px]">
+                    <p className="font-semibold text-[#757682]">Diperbarui oleh</p>
+                    <p className="font-semibold text-[#1a1b20]">
+                      {agendaItem?.editor?.name || agendaItem?.author?.name || agendaItem?.authorName || 'Administrator Perpusnas'}
+                    </p>
+                    <p className="font-medium text-[#757682]">
+                      {formatDate(agendaItem.updatedAt)}
+                    </p>
+                    <p className="font-medium text-[#757682]">
+                      Status: {agendaItem?.status === 'MENUNGGU' || agendaItem?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Right: Edit & Hapus Buttons matching Coretan Opini Detail */}

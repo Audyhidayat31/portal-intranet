@@ -11,6 +11,7 @@ import {
   X,
   AlertTriangle,
 } from 'lucide-react';
+import { formatDate } from '@/lib/utils';
 import {
   ConsultationItem,
   ConsultationReplyItem,
@@ -346,14 +347,37 @@ export default function DetailKonsultasiPage() {
 
           {/* Author Block & Edit / Hapus Action Buttons matching Wireframe 3 */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 pt-6 border-t border-[#c5c6d2]">
-            <div>
-              <p className="text-xs text-[#757682] mb-1">Dibuat oleh</p>
-              <p className="text-sm sm:text-base font-bold text-[#1a1b20]">
-                {currentItem.authorName}
-              </p>
-              <p className="text-xs sm:text-sm text-[#757682]">
-                {currentItem.date}
-              </p>
+            <div className="flex flex-row gap-6">
+              <div className="w-[220px]">
+                <p className="text-xs text-[#757682] mb-1 font-semibold">Dibuat oleh</p>
+                <p className="text-sm sm:text-base font-bold text-[#1a1b20]">
+                  {currentItem.authorName}
+                </p>
+                <p className="text-xs sm:text-sm text-[#757682]">
+                  {currentItem.date}
+                </p>
+                <p className="text-xs sm:text-sm text-[#757682]">
+                  Status: {(currentItem as any).status === 'MENUNGGU' || (currentItem as any).status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+                </p>
+              </div>
+              
+              {true && (
+                <>
+                  <div className="border-l border-[#c5c6d2]" />
+                  <div className="w-[220px]">
+                    <p className="text-xs text-[#757682] mb-1 font-semibold">Diperbarui oleh</p>
+                    <p className="text-sm sm:text-base font-bold text-[#1a1b20]">
+                      {(currentItem as any).editor?.name || currentItem.authorName || 'Administrator Perpusnas'}
+                    </p>
+                    <p className="text-xs sm:text-sm text-[#757682]">
+                      {(currentItem as any).updatedAt ? formatDate((currentItem as any).updatedAt) : '24 September 2026'}
+                    </p>
+                    <p className="text-xs sm:text-sm text-[#757682]">
+                      Status: {(currentItem as any).status === 'MENUNGGU' || (currentItem as any).status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Action Buttons: Edit & Hapus */}

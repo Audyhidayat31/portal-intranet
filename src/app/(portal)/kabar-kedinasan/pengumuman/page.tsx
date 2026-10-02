@@ -564,6 +564,7 @@ export default function PengumumanPage() {
               <h1 className="text-2xl sm:text-3xl font-bold text-[#1a1b20] mb-4 leading-snug">
                 {selectedAnnouncement.title}
               </h1>
+              
               <div className="text-sm text-[#1a1b20]">
                 <p className="font-bold">Tanggal Pengumuman</p>
                 <p className="text-[#1a1b20] mt-0.5">
@@ -609,17 +610,35 @@ export default function PengumumanPage() {
 
             {/* Footer / Meta Section matching Stitch */}
             <footer className="flex flex-col sm:flex-row justify-between items-start sm:items-end border-t border-[#c5c6d2] pt-6 gap-4">
-              <div className="text-sm text-[#1a1b20]">
-                <p className="font-bold">Dibuat oleh</p>
-                <p className="text-[#1a1b20]">{selectedAnnouncement.author?.name || 'Budi Sujatmiko'}</p>
-                <p className="text-[#444650] mb-1">
-                  {selectedAnnouncement.publishedAt
-                    ? formatDate(selectedAnnouncement.publishedAt)
-                    : '20 Agustus 2026'}
-                </p>
-                <p className="text-[#444650] font-medium">
-                  Status: {(selectedAnnouncement.status === 'MENUNGGU' || selectedAnnouncement.status === 'Menunggu' || selectedAnnouncement.status === 'DRAFT') ? 'Menunggu' : 'Terbit'}
-                </p>
+              <div className="flex flex-row gap-6">
+                <div className="text-sm text-[#1a1b20] w-[220px]">
+                  <p className="font-bold">Dibuat oleh</p>
+                  <p className="text-[#1a1b20]">{selectedAnnouncement.author?.name || 'Budi Sujatmiko'}</p>
+                  <p className="text-[#444650] mb-1">
+                    {selectedAnnouncement.publishedAt
+                      ? formatDate(selectedAnnouncement.publishedAt)
+                      : '20 Agustus 2026'}
+                  </p>
+                  <p className="text-[#444650] font-medium">
+                    Status: {(selectedAnnouncement.status === 'MENUNGGU' || selectedAnnouncement.status === 'Menunggu' || selectedAnnouncement.status === 'DRAFT') ? 'Menunggu' : 'Terbit'}
+                  </p>
+                </div>
+
+                {selectedAnnouncement.updatedAt && selectedAnnouncement.createdAt && new Date(selectedAnnouncement.updatedAt).getTime() - new Date(selectedAnnouncement.createdAt).getTime() > 1000 && (
+                  <>
+                    <div className="border-l border-[#c5c6d2]" />
+                    <div className="text-sm text-[#1a1b20] w-[220px]">
+                      <p className="font-bold">Diperbarui oleh</p>
+                      <p className="text-[#1a1b20]">{selectedAnnouncement.editor?.name || selectedAnnouncement.author?.name || selectedAnnouncement.authorName || 'Budi Sujatmiko'}</p>
+                      <p className="text-[#444650] mb-1">
+                        {formatDate(selectedAnnouncement.updatedAt)}
+                      </p>
+                      <p className="text-[#444650] font-medium">
+                        Status: {(selectedAnnouncement.status === 'MENUNGGU' || selectedAnnouncement.status === 'Menunggu' || selectedAnnouncement.status === 'DRAFT') ? 'Menunggu' : 'Terbit'}
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
 
               {currentUser && (currentUser.role === 'admin' || currentUser.name === (selectedAnnouncement.author?.name || selectedAnnouncement.authorName || 'Budi Sujatmiko')) && (

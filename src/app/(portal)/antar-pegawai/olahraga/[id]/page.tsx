@@ -237,14 +237,38 @@ export default function DetailOlahragaPage() {
           {/* Section: Footer Metadata & Action Buttons matching Wireframe 2 */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
             {/* Left: Dibuat oleh Budi Sujatmiko, 20 Agustus 2026 */}
-            <div className="text-xs text-[#757682] space-y-0.5">
-              <p className="font-semibold text-[#757682]">Dibuat oleh</p>
+            
+            <div className="flex flex-row gap-6">
+              <div className="text-xs text-[#757682] space-y-0.5 w-[220px]"><p className="font-semibold text-[#757682]">Dibuat oleh</p>
               <p className="font-semibold text-[#1a1b20]">
-                {displayAuthor}, {displayDate}
+                {displayAuthor}
               </p>
               <p className="font-medium text-[#757682]">
-                Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.
+                {displayDate}
               </p>
+              
+              <p className="font-medium text-[#757682]">
+                Status: {olahragaItem?.status === 'MENUNGGU' || olahragaItem?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+              </p>
+            </div>
+              {/* Diperbarui Oleh */}
+              {true && (
+                <>
+                  <div className="border-l border-[#c5c6d2]" />
+                  <div className="text-xs text-[#757682] space-y-0.5 w-[220px]">
+                    <p className="font-semibold text-[#757682]">Diperbarui oleh</p>
+                    <p className="font-semibold text-[#1a1b20]">
+                      {olahragaItem?.editor?.name || olahragaItem?.author?.name || olahragaItem?.authorName || 'Administrator Perpusnas'}
+                    </p>
+                    <p className="font-medium text-[#757682]">
+                      {olahragaItem?.updatedAt ? formatDate(olahragaItem.updatedAt) : '24 Agustus 2026'}
+                    </p>
+                    <p className="font-medium text-[#757682]">
+                      Status: {olahragaItem?.status === 'MENUNGGU' || olahragaItem?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Right: Edit & Hapus Buttons matching Wireframe 2 */}

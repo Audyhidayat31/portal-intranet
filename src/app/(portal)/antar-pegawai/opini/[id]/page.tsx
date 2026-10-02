@@ -234,14 +234,37 @@ export default function DetailCoretanOpiniPage() {
           {/* Section: Footer Metadata & Action Buttons matching Stitch */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
             {/* Left: Dibuat oleh & copyright */}
-            <div className="text-xs text-[#757682] space-y-0.5">
-              <p className="font-semibold text-[#757682]">Dibuat oleh</p>
+            
+            <div className="flex flex-row gap-6">
+              <div className="text-xs text-[#757682] space-y-0.5 w-[220px]"><p className="font-semibold text-[#757682]">Dibuat oleh</p>
               <p className="font-semibold text-[#1a1b20]">
                 {opiniItem?.author?.name || opiniItem?.authorName || 'Budi Sujatmiko'}
               </p>
               <p className="font-medium text-[#757682]">
                 {displayDate}
               </p>
+              <p className="font-medium text-[#757682]">
+                Status: {opiniItem?.status === 'MENUNGGU' || opiniItem?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+              </p>
+            </div>
+              {/* Diperbarui Oleh */}
+              {(opiniItem?.updatedAt && opiniItem?.createdAt && new Date(opiniItem.updatedAt).getTime() - new Date(opiniItem.createdAt).getTime() > 1000) && (
+                <>
+                  <div className="border-l border-[#c5c6d2]" />
+                  <div className="text-xs text-[#757682] space-y-0.5 w-[220px]">
+                    <p className="font-semibold text-[#757682]">Diperbarui oleh</p>
+                    <p className="font-semibold text-[#1a1b20]">
+                      {opiniItem?.editor?.name || opiniItem?.author?.name || opiniItem?.authorName || 'Administrator Perpusnas'}
+                    </p>
+                    <p className="font-medium text-[#757682]">
+                      {formatDate(opiniItem.updatedAt)}
+                    </p>
+                    <p className="font-medium text-[#757682]">
+                      Status: {opiniItem?.status === 'MENUNGGU' || opiniItem?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Right: Edit & Hapus Buttons matching Stitch */}
