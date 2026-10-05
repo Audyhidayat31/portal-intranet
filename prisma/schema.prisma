@@ -8,19 +8,19 @@ datasource db {
 }
 
 model User {
-  id                  String              @id @default(cuid())
-  nip                 String              @unique
+  id                  String                   @id @default(cuid())
+  nip                 String                   @unique
   name                String
-  email               String              @unique
+  email               String                   @unique
   password            String
   roleId              String
-  role                Role                @relation(fields: [roleId], references: [id])
-  status              String              @default("ACTIVE") // ACTIVE, INACTIVE, SUSPENDED
+  role                Role                     @relation(fields: [roleId], references: [id])
+  status              String                   @default("ACTIVE") // ACTIVE, INACTIVE, SUSPENDED
   profile             EmployeeProfile?
-  contents            Content[]           @relation("AuthorContents")
-  employeePosts       EmployeePost[]      @relation("AuthorPosts")
+  contents            Content[]                @relation("AuthorContents")
+  employeePosts       EmployeePost[]           @relation("AuthorPosts")
   postComments        PostComment[]
-  consultations       ConsultationTopic[] @relation("UserConsultations")
+  consultations       ConsultationTopic[]      @relation("UserConsultations")
   consultationReplies ConsultationReply[]
   activityLogs        ActivityLog[]
   beritaList          Berita[]                 @relation("BeritaAuthor")
@@ -49,9 +49,9 @@ model EmployeeProfile {
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   nip           String    @unique
   fullName      String
-  position      String    // Jabatan
-  unitKerja     String    // Unit Kerja / Direktorat
-  golRuang      String?   // e.g. IV/a - Pembina
+  position      String // Jabatan
+  unitKerja     String // Unit Kerja / Direktorat
+  golRuang      String? // e.g. IV/a - Pembina
   phone         String?
   avatarUrl     String?   @db.Text
   birthDate     DateTime?
@@ -80,7 +80,7 @@ model Role {
 model Permission {
   id          String           @id @default(cuid())
   code        String           @unique // e.g. USERS_READ, USERS_WRITE, CONTENTS_WRITE
-  module      String           // e.g. USERS, ROLES, CONTENTS, LOGS
+  module      String // e.g. USERS, ROLES, CONTENTS, LOGS
   description String?          @db.Text
   roles       RolePermission[]
 
@@ -102,7 +102,7 @@ model Category {
   id          String    @id @default(cuid())
   name        String
   slug        String    @unique
-  group       String    // KABAR_KEDINASAN, ANTAR_PEGAWAI
+  group       String // KABAR_KEDINASAN, ANTAR_PEGAWAI
   description String?   @db.Text
   contents    Content[]
   createdAt   DateTime  @default(now())
@@ -111,33 +111,33 @@ model Category {
 }
 
 model Content {
-  id              String    @id @default(cuid())
-  title           String
-  slug            String    @unique
-  excerpt         String?   @db.Text
-  body            String    @db.LongText
-  coverImage      String?   @db.Text
-  type            String    // NEWS, ANNOUNCEMENT, AGENDA, BUSINESS_TRIP, INTERNAL_DOCUMENT
-  status          String    @default("TERBIT") // DRAFT, PUBLISHED, ARCHIVED
-  categoryId      String?
-  category        Category? @relation(fields: [categoryId], references: [id])
-  authorId        String
-  author          User      @relation("AuthorContents", fields: [authorId], references: [id])
-  publishedAt     DateTime  @default(now())
-  
+  id          String    @id @default(cuid())
+  title       String
+  slug        String    @unique
+  excerpt     String?   @db.Text
+  body        String    @db.LongText
+  coverImage  String?   @db.Text
+  type        String // NEWS, ANNOUNCEMENT, AGENDA, BUSINESS_TRIP, INTERNAL_DOCUMENT
+  status      String    @default("TERBIT") // DRAFT, PUBLISHED, ARCHIVED
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id])
+  authorId    String
+  author      User      @relation("AuthorContents", fields: [authorId], references: [id])
+  publishedAt DateTime  @default(now())
+
   // Specific metadata fields
   eventStartDate  DateTime? // For AGENDA
   eventEndDate    DateTime? // For AGENDA
-  eventLocation   String?   // For AGENDA
-  destinationCity String?   // For BUSINESS_TRIP
+  eventLocation   String? // For AGENDA
+  destinationCity String? // For BUSINESS_TRIP
   attachmentUrl   String?   @db.Text // For INTERNAL_DOCUMENT or ANNOUNCEMENT
   attachmentName  String?
   fileSize        String?
   isPinned        Boolean   @default(false)
   viewCount       Int       @default(0)
-  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("konten")
 }
@@ -147,7 +147,7 @@ model EmployeePost {
   title        String
   slug         String        @unique
   body         String        @db.LongText
-  categorySlug String        // opini, humor, jelajah-bumi, kabar-keluarga, kalimat-bijak, karya-akademik, tips-gaya-hidup, olahraga, tahukah-anda
+  categorySlug String // opini, humor, jelajah-bumi, kabar-keluarga, kalimat-bijak, karya-akademik, tips-gaya-hidup, olahraga, tahukah-anda
   authorId     String
   author       User          @relation("AuthorPosts", fields: [authorId], references: [id])
   coverImage   String?       @db.Text
@@ -174,17 +174,17 @@ model PostComment {
 }
 
 model ConsultationTopic {
-  id          String              @id @default(cuid())
-  title       String
-  category    String              // KEPEGAWAIAN, IT, KESEHATAN
-  question    String              @db.Text
-  authorId    String
-  author      User                @relation("UserConsultations", fields: [authorId], references: [id], onDelete: Cascade)
-  status      String              @default("OPEN") // OPEN, ANSWERED, CLOSED
-  isPrivate   Boolean             @default(false)
-  replies     ConsultationReply[]
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
+  id        String              @id @default(cuid())
+  title     String
+  category  String // KEPEGAWAIAN, IT, KESEHATAN
+  question  String              @db.Text
+  authorId  String
+  author    User                @relation("UserConsultations", fields: [authorId], references: [id], onDelete: Cascade)
+  status    String              @default("OPEN") // OPEN, ANSWERED, CLOSED
+  isPrivate Boolean             @default(false)
+  replies   ConsultationReply[]
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
 
   @@map("topik_konsultasi")
 }
@@ -206,8 +206,8 @@ model FigureProfile {
   id            String   @id @default(cuid())
   name          String
   slug          String   @unique
-  position      String   // e.g. Pustakawan Ahli Utama
-  unitKerja     String   // e.g. Deputi Bidang Pengembangan Bahan Pustaka
+  position      String // e.g. Pustakawan Ahli Utama
+  unitKerja     String // e.g. Deputi Bidang Pengembangan Bahan Pustaka
   quote         String   @db.Text // Kutipan inspiratif
   fullStory     String   @db.LongText // Cerita perjalanan dan kontribusi
   photoUrl      String?  @db.Text
@@ -239,8 +239,8 @@ model ActivityLog {
   id          String   @id @default(cuid())
   userId      String?
   user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  action      String   // LOGIN, LOGOUT, CREATE, UPDATE, DELETE, CHANGE_ROLE, CHANGE_STATUS
-  module      String   // AUTH, USERS, ROLES, HOMEPAGE, NEWS, ANNOUNCEMENTS, AGENDAS, DOCUMENTS, POSTS, FIGURE, PERMISSIONS
+  action      String // LOGIN, LOGOUT, CREATE, UPDATE, DELETE, CHANGE_ROLE, CHANGE_STATUS
+  module      String // AUTH, USERS, ROLES, HOMEPAGE, NEWS, ANNOUNCEMENTS, AGENDAS, DOCUMENTS, POSTS, FIGURE, PERMISSIONS
   targetId    String?
   description String   @db.Text
   ipAddress   String?  @default("127.0.0.1")
@@ -537,4 +537,3 @@ model TahukahAnda {
 
   @@map("tahukah_anda")
 }
-

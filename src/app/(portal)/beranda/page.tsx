@@ -169,98 +169,93 @@ export default function BerandaPage() {
   return (
     <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 flex flex-col gap-12 md:gap-16 bg-white">
       {/* Hero Section */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch mt-4 sm:mt-6 min-h-[400px]">
-        {/* Left Column: Greeting */}
-        <div className="flex flex-col justify-center py-6 lg:py-12 pr-0 lg:pr-8 space-y-6">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#1a1b20] tracking-tight">
-            Halo, {userSession?.name || 'Budi Santoso'}!
-          </h1>
-          <p className="text-sm md:text-base text-[#1a1b20] leading-relaxed">
-            Selamat datang di Portal Intranet Perpustakaan Nasional Republik Indonesia. Akses informasi terkini, kelola data kepegawaian, dan terhubung dengan rekan kerja Anda dalam satu platform terintegrasi.
-          </p>
-          <div className="pt-2">
-            <Link
-              href="/kabar-kedinasan/pengumuman"
-              className="inline-flex items-center bg-[#00113a] text-white font-medium py-3 px-8 rounded-md hover:bg-[#001d5c] transition-colors shadow-sm text-sm"
-            >
-              Lihat Pengumuman
-            </Link>
-          </div>
-        </div>
+      <section className="relative w-full rounded-2xl overflow-hidden border border-[#c5c6d2] bg-white shadow-sm mt-4 sm:mt-6 min-h-[400px] flex flex-col lg:flex-row items-stretch group">
+        {activeBanners.length > 0 ? (
+          <>
+            {/* Banner Image Background */}
+            <div className="absolute inset-0 w-full h-full">
+               <img
+                  src={activeBanners[currentBannerIndex].imageUrl || '/images/hero-illustration.webp'}
+                  alt={activeBanners[currentBannerIndex].headline || 'Banner'}
+                  className="w-full h-full object-cover transition-opacity duration-500"
+                />
+            </div>
+            
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-white via-white/80 to-transparent pointer-events-none" />
 
-        {/* Right Column: Banner Carousel */}
-        <div className="relative w-full rounded-2xl overflow-hidden border border-[#c5c6d2] bg-white shadow-sm group">
-          {activeBanners.length > 0 ? (
-            <>
-              {/* Banner Image Background */}
-              <div className="absolute inset-0 w-full h-full">
-                 <img
-                    src={activeBanners[currentBannerIndex].imageUrl || '/images/hero-illustration.webp'}
-                    alt={activeBanners[currentBannerIndex].headline}
-                    className="w-full h-full object-cover transition-opacity duration-500"
-                  />
-              </div>
+            {/* Text Content Overlay */}
+            <div className="relative z-10 w-full lg:w-1/2 grid">
               
-              {/* Gradient Overlay for Text (bottom white) */}
-              <div className="absolute inset-0 bg-gradient-to-t from-white via-white/70 to-transparent h-full w-full" />
-              
-              {/* Content Container */}
-              <div className="relative z-10 p-6 sm:p-8 h-full flex flex-col justify-end">
-                <div className="max-w-lg mt-auto">
-                  <h3 className="text-[#1a1b20] font-extrabold text-xl sm:text-2xl md:text-3xl leading-tight mb-2">
-                    {activeBanners[currentBannerIndex].headline}
-                  </h3>
-                  <p className="text-[#1a1b20] text-sm sm:text-base line-clamp-2">
-                    {activeBanners[currentBannerIndex].subheadline}
-                  </p>
-                </div>
-              </div>
-
-              {/* Nav Arrows */}
-              {activeBanners.length > 1 && (
-                <>
-                  <button
-                    onClick={prevBanner}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/10 hover:bg-black/20 flex items-center justify-center text-[#1a1b20] backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-20"
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={nextBanner}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/10 hover:bg-black/20 flex items-center justify-center text-[#1a1b20] backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-20"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-                  
-                  {/* Dot Indicators */}
-                  <div className="absolute bottom-4 sm:bottom-6 right-8 flex items-center gap-2 z-20">
-                    {activeBanners.map((_, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setCurrentBannerIndex(idx)}
-                        className={`w-2 h-2 rounded-full transition-all ${
-                          currentBannerIndex === idx ? 'bg-[#00113a] w-4' : 'bg-[#00113a]/30 hover:bg-[#00113a]/50'
-                        }`}
-                        aria-label={`Go to slide ${idx + 1}`}
-                      />
-                    ))}
-                  </div>
-                </>
-              )}
-            </>
-          ) : (
-            <div className="p-6 sm:p-8 h-full flex flex-col justify-end">
-              <div className="max-w-lg mt-auto">
-                <h3 className="text-[#1a1b20] font-extrabold text-xl sm:text-2xl md:text-3xl leading-tight mb-2">
-                  Tidak ada banner
-                </h3>
-                <p className="text-[#1a1b20] text-sm sm:text-base line-clamp-2">
-                  Saat ini belum ada banner yang aktif.
+              {/* Greeting (Banner 1) */}
+              <div className={`col-start-1 row-start-1 p-6 sm:p-8 lg:p-12 flex flex-col justify-center space-y-6 transition-opacity duration-500 ${currentBannerIndex === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}>
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#1a1b20] tracking-tight drop-shadow-sm">
+                  Halo, {userSession?.name || 'Budi Santoso'}!
+                </h1>
+                <p className="text-sm md:text-base text-[#1a1b20] leading-relaxed max-w-lg font-medium">
+                  Selamat datang di Portal Intranet Perpustakaan Nasional Republik Indonesia. Akses informasi terkini, kelola data kepegawaian, dan terhubung dengan rekan kerja Anda dalam satu platform terintegrasi.
                 </p>
               </div>
+
+              {/* Banner Text (Banner 2+) */}
+              <div className={`col-start-1 row-start-1 p-6 sm:p-8 lg:p-12 flex flex-col justify-center space-y-6 transition-opacity duration-500 ${currentBannerIndex > 0 ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}>
+                {currentBannerIndex > 0 && (
+                  <>
+                    <h3 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#1a1b20] tracking-tight drop-shadow-sm">
+                      {activeBanners[currentBannerIndex].headline}
+                    </h3>
+                    <p className="text-sm md:text-base text-[#1a1b20] leading-relaxed max-w-lg font-medium line-clamp-3">
+                      {activeBanners[currentBannerIndex].subheadline}
+                    </p>
+                  </>
+                )}
+              </div>
             </div>
-          )}
-        </div>
+
+            {/* Nav Arrows */}
+            {activeBanners.length > 1 && (
+              <>
+                <button
+                  onClick={prevBanner}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/50 hover:bg-white/80 border border-slate-200 shadow-sm flex items-center justify-center text-[#1a1b20] backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-20"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={nextBanner}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/50 hover:bg-white/80 border border-slate-200 shadow-sm flex items-center justify-center text-[#1a1b20] backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-20"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+                
+                {/* Dot Indicators */}
+                <div className="absolute bottom-4 sm:bottom-6 right-6 sm:right-10 flex items-center gap-2 z-20">
+                  {activeBanners.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentBannerIndex(idx)}
+                      className={`w-2 h-2 rounded-full transition-all ${
+                        currentBannerIndex === idx ? 'bg-[#00113a] w-4' : 'bg-[#00113a]/30 hover:bg-[#00113a]/50'
+                      }`}
+                      aria-label={`Go to slide ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </>
+        ) : (
+          <div className="w-full flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <h3 className="text-[#1a1b20] font-extrabold text-xl sm:text-2xl md:text-3xl leading-tight mb-2">
+                Tidak ada banner
+              </h3>
+              <p className="text-[#1a1b20] text-sm sm:text-base">
+                Saat ini belum ada banner yang aktif.
+              </p>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Stats Bar */}
@@ -388,8 +383,9 @@ export default function BerandaPage() {
         <div className="flex justify-between items-end border-b border-[#c5c6d2] pb-2">
           <h2 className="text-2xl sm:text-3xl font-bold text-[#00113a]">Antar Pegawai</h2>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {currentPosts.map((post: any, idx: number) => (
+        <div className="relative group">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {currentPosts.map((post: any, idx: number) => (
             <div
               key={post.id || idx}
               className="border border-[#c5c6d2] rounded-xl overflow-hidden bg-white shadow-sm flex flex-col group cursor-pointer hover:shadow-md transition-shadow"
@@ -437,39 +433,40 @@ export default function BerandaPage() {
             </div>
           ))}
         </div>
-        
-        {/* Pagination Controls */}
-        <div className="flex justify-center items-center gap-4 pt-4">
+          
+          {/* Left Arrow */}
           <button 
             onClick={() => setCurrentPostPage(prev => Math.max(0, prev - 1))}
             disabled={currentPostPage === 0}
-            className="w-8 h-8 rounded-full bg-[#00113a] text-white flex items-center justify-center disabled:opacity-50 hover:bg-[#2a4386] transition-colors"
+            className="absolute -left-4 sm:-left-8 md:-left-12 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border border-[#c5c6d2] shadow-md flex items-center justify-center text-[#00113a] disabled:opacity-0 transition-all opacity-0 group-hover:opacity-100 hover:bg-slate-50 z-10"
             aria-label="Previous page"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-6 h-6" />
           </button>
           
-          <div className="flex gap-2">
-            {Array.from({ length: 5 }).map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrentPostPage(idx)}
-                className={`w-3 h-3 rounded-full transition-colors ${
-                  currentPostPage === idx ? 'bg-[#00113a]' : 'bg-[#c5c6d2] hover:bg-[#a0a2af]'
-                }`}
-                aria-label={`Go to page ${idx + 1}`}
-              />
-            ))}
-          </div>
-
+          {/* Right Arrow */}
           <button 
             onClick={() => setCurrentPostPage(prev => Math.min(4, prev + 1))}
             disabled={currentPostPage === 4}
-            className="w-8 h-8 rounded-full bg-[#00113a] text-white flex items-center justify-center disabled:opacity-50 hover:bg-[#2a4386] transition-colors"
+            className="absolute -right-4 sm:-right-8 md:-right-12 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border border-[#c5c6d2] shadow-md flex items-center justify-center text-[#00113a] disabled:opacity-0 transition-all opacity-0 group-hover:opacity-100 hover:bg-slate-50 z-10"
             aria-label="Next page"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-6 h-6" />
           </button>
+        </div>
+        
+        {/* Pagination Controls */}
+        <div className="flex justify-center items-center gap-2 pt-4">
+          {Array.from({ length: 5 }).map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentPostPage(idx)}
+              className={`w-2 h-2 rounded-full transition-all ${
+                currentPostPage === idx ? 'bg-[#00113a] w-4' : 'bg-[#c5c6d2] hover:bg-[#a0a2af]'
+              }`}
+              aria-label={`Go to page ${idx + 1}`}
+            />
+          ))}
         </div>
       </section>
 

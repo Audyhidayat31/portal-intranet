@@ -765,8 +765,8 @@ export default function AdminHomepageKelolaPage() {
       {statusMsg && (
         <div
           className={`p-4 rounded-xl flex items-center gap-3 text-xs font-medium shadow-xs transition-all animate-fadeIn ${statusMsg.type === 'success'
-              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-              : 'bg-red-50 text-red-800 border border-red-200'
+            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+            : 'bg-red-50 text-red-800 border border-red-200'
             }`}
         >
           {statusMsg.type === 'success' ? (
@@ -785,8 +785,8 @@ export default function AdminHomepageKelolaPage() {
             type="button"
             onClick={() => setActiveTab('utama')}
             className={`px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${activeTab === 'utama'
-                ? 'bg-white text-[#00113a] shadow-xs ring-1 ring-slate-200/80 font-extrabold'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/40'
+              ? 'bg-white text-[#00113a] shadow-xs ring-1 ring-slate-200/80 font-extrabold'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/40'
               }`}
           >
             <Sliders className="w-3.5 h-3.5" />
@@ -796,8 +796,8 @@ export default function AdminHomepageKelolaPage() {
             type="button"
             onClick={() => setActiveTab('beranda')}
             className={`px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${activeTab === 'beranda'
-                ? 'bg-white text-[#00113a] shadow-xs ring-1 ring-slate-200/80 font-extrabold'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/40'
+              ? 'bg-white text-[#00113a] shadow-xs ring-1 ring-slate-200/80 font-extrabold'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/40'
               }`}
           >
             <Layout className="w-3.5 h-3.5" />
@@ -807,8 +807,8 @@ export default function AdminHomepageKelolaPage() {
             type="button"
             onClick={() => setActiveTab('tentang')}
             className={`px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${activeTab === 'tentang'
-                ? 'bg-white text-[#00113a] shadow-xs ring-1 ring-slate-200/80 font-extrabold'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/40'
+              ? 'bg-white text-[#00113a] shadow-xs ring-1 ring-slate-200/80 font-extrabold'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/40'
               }`}
           >
             <Info className="w-3.5 h-3.5" />
@@ -818,8 +818,8 @@ export default function AdminHomepageKelolaPage() {
             type="button"
             onClick={() => setActiveTab('footer')}
             className={`px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${activeTab === 'footer'
-                ? 'bg-white text-[#00113a] shadow-xs ring-1 ring-slate-200/80 font-extrabold'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/40'
+              ? 'bg-white text-[#00113a] shadow-xs ring-1 ring-slate-200/80 font-extrabold'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/40'
               }`}
           >
             <Layers className="w-3.5 h-3.5" />
