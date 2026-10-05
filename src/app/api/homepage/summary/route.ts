@@ -38,7 +38,7 @@ export async function GET() {
       prisma.employeePost.findMany({
         where: { status: 'TERBIT' },
         orderBy: { createdAt: 'desc' },
-        take: 4,
+        take: 15,
         include: { author: { select: { name: true, profile: { select: { avatarUrl: true, unitKerja: true } } } } },
       }),
       prisma.figureProfile.findFirst({

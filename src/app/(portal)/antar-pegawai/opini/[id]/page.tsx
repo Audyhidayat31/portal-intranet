@@ -134,6 +134,14 @@ export default function DetailCoretanOpiniPage() {
     opiniItem?.body ||
     opiniItem?.content ||
     `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.`;
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 flex flex-col gap-8 bg-white min-h-[60vh] justify-center items-center">
+        <div className="w-12 h-12 border-4 border-slate-200 border-t-[#00113a] rounded-full animate-spin"></div>
+        <p className="text-[#00113a] font-bold mt-4">Memuat artikel...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 bg-white min-h-[calc(100vh-80px)] flex flex-col justify-between">

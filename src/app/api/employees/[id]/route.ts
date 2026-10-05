@@ -53,8 +53,8 @@ export async function GET(
               year: 'numeric',
             })
           : '27 November 1986',
-        satuanKerja: p?.position || 'Sistem Informasi',
-        eselon2: p?.unitKerja || 'Pusat Sistem Informasi',
+        satuanKerja: p?.unitKerja || 'Pusat Data dan Informasi',
+        eselon2: 'Pusat Pengembangan Perpustakaan Sekolah/Madrasah dan Perguruan Tinggi',
         eselon3: 'Bidang Layanan Sistem Informasi',
         lokasiKerja: 'Jl. Medan Merdeka Selatan No. 11, Jakarta 10110',
       };
@@ -76,9 +76,9 @@ export async function GET(
           foundMock.alamatDomisili ||
           'Jalan Imam Bonjol Nomor 1, RT 5/RW 4, Menteng, Kecamatan Menteng, Kota Jakarta Pusat',
         tanggalLahir: foundMock.tanggalLahir || '27 November 1986',
-        satuanKerja: foundMock.satuanKerja || foundMock.position,
-        eselon2: foundMock.eselon2 || foundMock.unitKerja,
-        eselon3: foundMock.eselon3 || 'Bidang Layanan ' + foundMock.unitKerja,
+        satuanKerja: foundMock.unitKerja || 'Pusat Data dan Informasi',
+        eselon2: 'Pusat Pengembangan Perpustakaan Sekolah/Madrasah dan Perguruan Tinggi',
+        eselon3: foundMock.eselon3 || 'Bidang Layanan Informasi & Automasi Perpustakaan',
         lokasiKerja:
           foundMock.lokasiKerja ||
           'Jl. Medan Merdeka Selatan No. 11, Jakarta 10110',

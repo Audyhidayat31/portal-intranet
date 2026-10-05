@@ -239,7 +239,7 @@ export default function LoginPage() {
                 {showDemoAcc ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
               </button>
               {showDemoAcc && (
-                <div className="mt-2 grid grid-cols-2 gap-2 text-left">
+                <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2 text-left">
                   <button
                     type="button"
                     onClick={() => fillQuickCredential('ADMIN001', 'admin123')}
@@ -255,6 +255,14 @@ export default function LoginPage() {
                   >
                     <div className="font-semibold text-slate-800">Pegawai (Bambang)</div>
                     <div className="text-[10px] text-slate-500 font-mono">198501152010011001</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => fillQuickCredential('199208142018011005', 'pegawai123')}
+                    className="p-2 text-xs bg-slate-50 hover:bg-blue-50 border border-slate-200 rounded transition-colors"
+                  >
+                    <div className="font-semibold text-slate-800">Pegawai (Ahmad)</div>
+                    <div className="text-[10px] text-slate-500 font-mono">199208142018011005</div>
                   </button>
                 </div>
               )}

@@ -131,6 +131,14 @@ export default function DetailKabarKeluargaPage() {
     `Menurut penelitian pada tanggal 19 Agustus 2026 terlihat bahwa jumlah peminat buku terus mengalami peningkatan yang signifikan di berbagai kalangan usia. Budaya membaca yang tumbuh subur berawal dari kehangatan keluarga di rumah. 
 
 Keluarga besar Perpustakaan Nasional senantiasa mendukung para pegawai dalam menumbuhkan minat baca anak sejak dini melalui pojok baca keluarga dan kebersamaan membaca buku di akhir pekan. Semoga semangat literasi ini terus mengakar kuat dalam setiap rumah tangga keluarga besar Perpusnas RI.`;
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 flex flex-col gap-8 bg-white min-h-[60vh] justify-center items-center">
+        <div className="w-12 h-12 border-4 border-slate-200 border-t-[#00113a] rounded-full animate-spin"></div>
+        <p className="text-[#00113a] font-bold mt-4">Memuat artikel...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 bg-white min-h-[calc(100vh-80px)] flex flex-col justify-between">

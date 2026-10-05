@@ -342,6 +342,14 @@ export default function EditTipsGayaHidupPage() {
     }, 1200);
     setIsSubmitting(false);
   };
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 flex flex-col gap-8 bg-white min-h-[60vh] justify-center items-center">
+        <div className="w-12 h-12 border-4 border-slate-200 border-t-[#00113a] rounded-full animate-spin"></div>
+        <p className="text-[#00113a] font-bold mt-4">Memuat artikel...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 text-[#1a1b20]">

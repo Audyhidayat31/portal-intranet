@@ -132,6 +132,14 @@ export default function DetailTipsGayaHidupPage() {
     `Pola hidup sehat di lingkungan kerja sangat penting untuk menjaga kebugaran jasmani dan ketajaman berpikir para pegawai. Melalui kebiasaan sederhana seperti peregangan berkala, hidrasi yang cukup, serta menjaga pola istirahat, produktivitas kerja dapat terjaga secara optimal.
 
 Mari jadikan gaya hidup sehat sebagai bagian tak terpisahkan dari dedikasi kita dalam melayani masyarakat di Perpustakaan Nasional RI.`;
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 flex flex-col gap-8 bg-white min-h-[60vh] justify-center items-center">
+        <div className="w-12 h-12 border-4 border-slate-200 border-t-[#00113a] rounded-full animate-spin"></div>
+        <p className="text-[#00113a] font-bold mt-4">Memuat artikel...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 bg-white min-h-[calc(100vh-80px)] flex flex-col justify-between">
