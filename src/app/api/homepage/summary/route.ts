@@ -56,9 +56,9 @@ export async function GET() {
       }),
       prisma.user.count({ where: { role: { name: 'PEGAWAI' }, status: 'ACTIVE' } }),
       prisma.employeePost.count({ where: { status: 'TERBIT' } }),
-      prisma.content.count({ where: { type: 'NEWS', status: 'TERBIT' } }),
-      prisma.employeePost.count({ where: { categorySlug: 'opini', status: 'TERBIT' } }),
-      prisma.employeePost.count({ where: { categorySlug: 'tips-gaya-hidup', status: 'TERBIT' } }),
+      prisma.content.count({ where: { type: 'NEWS', status: 'TERBIT' } }).catch(() => 0),
+      prisma.employeePost.count({ where: { categorySlug: 'opini', status: 'TERBIT' } }).catch(() => 0),
+      prisma.employeePost.count({ where: { categorySlug: 'tips-gaya-hidup', status: 'TERBIT' } }).catch(() => 0),
     ]);
 
     // Calculate birthdays this month
