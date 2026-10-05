@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -25,7 +26,10 @@ import {
   AlertCircle,
   X,
   Camera,
-  Shield
+  Shield,
+  Upload,
+  ChevronDown,
+  Check
 } from 'lucide-react';
 import { CardSkeleton } from '@/components/ui/Skeleton';
 import { Button } from '@/components/ui/Button';
@@ -35,15 +39,16 @@ import { formatBirthDate, getInitials } from '@/lib/utils';
 
 export default function ProfilPegawaiPage() {
   const [profile, setProfile] = useState<any | null>(null);
+  const [isSatuanKerjaDropdownOpen, setIsSatuanKerjaDropdownOpen] = useState(false);
+  const satuanKerjaDropdownRef = useRef<HTMLDivElement>(null);
+  const SATUAN_KERJA_OPTIONS = ['Sistem Informasi', 'Pusat Data dan Informasi'];
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'info-akun' | 'kepegawaian' | 'riwayat-pekerjaan' | 'pengaturan-privasi'>('info-akun');
+  const [activeTab, setActiveTab] = useState<'info-akun' | 'ubah-kata-sandi'>('info-akun');
   
   // Edit State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [phone, setPhone] = useState('');
-  const [bio, setBio] = useState('');
-  const [education, setEducation] = useState('');
-  const [birthDateInput, setBirthDateInput] = useState('');
+  const [editForm, setEditForm] = useState<any>({});
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -59,23 +64,29 @@ export default function ProfilPegawaiPage() {
         if (data.success && data.data) {
           const u = data.data;
           setProfile(u);
-          setPhone(u.profile?.phone || '');
-          setBio(u.profile?.bio || '');
-          setEducation(u.profile?.education || '');
-
+          let bd = '';
           if (u.profile?.birthDate) {
             const raw = new Date(u.profile.birthDate);
             if (!isNaN(raw.getTime())) {
-              setBirthDateInput(raw.toISOString().split('T')[0]);
-            }
-          } else if (u.nip && u.nip.length >= 8) {
-            const y = u.nip.substring(0, 4);
-            const m = u.nip.substring(4, 6);
-            const d = u.nip.substring(6, 8);
-            if (parseInt(y) > 1900 && parseInt(m) <= 12 && parseInt(d) <= 31) {
-              setBirthDateInput(`${y}-${m}-${d}`);
+              bd = raw.toISOString().split('T')[0];
             }
           }
+
+          setEditForm({
+            name: u.name,
+            fullName: u.profile?.fullName || u.name,
+            nip: u.nip,
+            email: u.email,
+            phone: u.profile?.phone || '',
+            alamatDomisili: u.profile?.bio || '',
+            tanggalLahir: bd,
+            position: u.profile?.position || 'Pustakawan Ahli Madya',
+            satuanKerja: u.profile?.unitKerja || 'Pusat Data dan Informasi',
+            eselon2: 'Pusat Pengembangan Perpustakaan Sekolah/Madrasah dan Perguruan Tinggi',
+            eselon3: 'Bidang Layanan Informasi & Automasi Perpustakaan',
+            lokasiKerja: 'Gedung Fasilitas Layanan Perpusnas, Jl. Medan Merdeka Selatan No. 11',
+            avatarUrl: u.profile?.avatarUrl || ''
+          });
         }
         setIsLoading(false);
       })
@@ -85,6 +96,30 @@ export default function ProfilPegawaiPage() {
   useEffect(() => {
     fetchProfile();
   }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (satuanKerjaDropdownRef.current && !satuanKerjaDropdownRef.current.contains(event.target as Node)) {
+        setIsSatuanKerjaDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+
+  const handleAvatarFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setAvatarFile(file);
+      // Create local preview URL
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setEditForm({ ...editForm, avatarUrl: event.target?.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,10 +137,11 @@ export default function ProfilPegawaiPage() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          phone,
-          bio,
-          education,
-          birthDate: birthDateInput || undefined,
+          ...editForm,
+          phone: editForm.phone,
+          bio: editForm.alamatDomisili,
+          birthDate: editForm.tanggalLahir || undefined,
+          avatarUrl: editForm.avatarUrl,
           currentPassword: currentPassword || undefined,
           newPassword: newPassword || undefined,
         }),
@@ -173,7 +209,9 @@ export default function ProfilPegawaiPage() {
           </li>
           <li className="flex items-center">
             <ChevronRight className="w-4 h-4 text-slate-400 mx-1" />
-            <span className="text-institutional-navy font-bold">Info Akun</span>
+            <span className="text-institutional-navy font-bold">
+              {activeTab === 'info-akun' ? 'Info Akun' : 'Ubah Kata Sandi'}
+            </span>
           </li>
         </ol>
       </nav>
@@ -232,51 +270,25 @@ export default function ProfilPegawaiPage() {
                   onClick={() => setActiveTab('info-akun')}
                   className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-all text-left ${
                     activeTab === 'info-akun'
-                      ? 'bg-blue-50/80 border-l-4 border-institutional-navy text-institutional-navy font-bold'
+                      ? 'bg-blue-50/80 text-institutional-navy font-bold'
                       : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                   }`}
                 >
-                  <User className="w-4 h-4 text-institutional-navy" />
-                  <span>Info Akun</span>
+                  <User className={`w-4 h-4 ${activeTab === 'info-akun' ? 'text-institutional-navy' : 'text-slate-500'}`} />
+                  <span className={activeTab === 'info-akun' ? 'border-b-2 border-institutional-navy pb-0.5 inline-block' : ''}>Info Akun</span>
                 </button>
               </li>
               <li>
                 <button
-                  onClick={() => setActiveTab('kepegawaian')}
+                  onClick={() => setActiveTab('ubah-kata-sandi')}
                   className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-all text-left ${
-                    activeTab === 'kepegawaian'
-                      ? 'bg-blue-50/80 border-l-4 border-institutional-navy text-institutional-navy font-bold'
+                    activeTab === 'ubah-kata-sandi'
+                      ? 'bg-blue-50/80 text-institutional-navy font-bold'
                       : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                   }`}
                 >
-                  <Briefcase className="w-4 h-4 text-slate-500" />
-                  <span>Kepegawaian</span>
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => setActiveTab('riwayat-pekerjaan')}
-                  className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-all text-left ${
-                    activeTab === 'riwayat-pekerjaan'
-                      ? 'bg-blue-50/80 border-l-4 border-institutional-navy text-institutional-navy font-bold'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                  }`}
-                >
-                  <History className="w-4 h-4 text-slate-500" />
-                  <span>Riwayat Pekerjaan</span>
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => setActiveTab('pengaturan-privasi')}
-                  className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-all text-left ${
-                    activeTab === 'pengaturan-privasi'
-                      ? 'bg-blue-50/80 border-l-4 border-institutional-navy text-institutional-navy font-bold'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                  }`}
-                >
-                  <Settings className="w-4 h-4 text-slate-500" />
-                  <span>Pengaturan Privasi</span>
+                  <Settings className={`w-4 h-4 ${activeTab === 'ubah-kata-sandi' ? 'text-institutional-navy' : 'text-slate-500'}`} />
+                  <span className={activeTab === 'ubah-kata-sandi' ? 'border-b-2 border-institutional-navy pb-0.5 inline-block' : ''}>Ubah Kata Sandi</span>
                 </button>
               </li>
             </ul>
@@ -343,18 +355,22 @@ export default function ProfilPegawaiPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
                   <div className="space-y-1">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Jabatan Saat Ini</p>
-                    <p className="text-slate-900 font-bold text-base">{displayPosition}</p>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Satuan Kerja</p>
+                    <p className="text-slate-900 font-bold text-base">{p?.unitKerja || 'Pusat Data dan Informasi'}</p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Unit Eselon II</p>
                     <p className="text-slate-800 leading-snug">{displayUnitKerja}</p>
                   </div>
                   <div className="space-y-1">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Jabatan Saat Ini</p>
+                    <p className="text-slate-800 leading-snug">{displayPosition}</p>
+                  </div>
+                  <div className="space-y-1">
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Unit Eselon III</p>
                     <p className="text-slate-800 leading-snug">Bidang Layanan Informasi & Automasi Perpustakaan</p>
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-1 md:col-span-2">
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Lokasi Kerja</p>
                     <p className="text-slate-800 leading-snug">Gedung Fasilitas Layanan Perpusnas, Jl. Medan Merdeka Selatan No. 11</p>
                   </div>
@@ -363,93 +379,36 @@ export default function ProfilPegawaiPage() {
             </>
           )}
 
-          {activeTab === 'kepegawaian' && (
-            <section className="bg-white rounded-2xl shadow-sm border border-[#E9ECEF] p-6 sm:p-8 space-y-6">
-              <div className="flex justify-between items-center pb-4 border-b border-[#E9ECEF]">
-                <h3 className="text-xl font-extrabold text-institutional-navy flex items-center gap-2.5">
-                  <Briefcase className="w-5 h-5 text-institutional-navy" />
-                  Status Kepegawaian & Pendidikan
-                </h3>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                  <p className="text-xs font-bold text-slate-500 uppercase">Golongan / Ruang</p>
-                  <p className="text-base font-bold text-slate-900 mt-1">{p?.golRuang || 'IV/a - Pembina'}</p>
-                </div>
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                  <p className="text-xs font-bold text-slate-500 uppercase">Status Kepegawaian</p>
-                  <p className="text-base font-bold text-emerald-700 mt-1">PNS Aktif (Perpusnas RI)</p>
-                </div>
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 sm:col-span-2">
-                  <p className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1.5">
-                    <GraduationCap className="w-4 h-4 text-institutional-navy" /> Riwayat Pendidikan Terakhir
-                  </p>
-                  <p className="text-slate-800 font-medium mt-1">
-                    {p?.education || 'S2 Ilmu Perpustakaan dan Informasi — Universitas Indonesia'}
-                  </p>
-                </div>
-              </div>
-            </section>
-          )}
 
-          {activeTab === 'riwayat-pekerjaan' && (
-            <section className="bg-white rounded-2xl shadow-sm border border-[#E9ECEF] p-6 sm:p-8 space-y-6">
-              <div className="flex justify-between items-center pb-4 border-b border-[#E9ECEF]">
-                <h3 className="text-xl font-extrabold text-institutional-navy flex items-center gap-2.5">
-                  <History className="w-5 h-5 text-institutional-navy" />
-                  Riwayat Pekerjaan & Penugasan
-                </h3>
-              </div>
-
-              <div className="space-y-4">
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                  <span className="text-xs font-bold text-institutional-navy">2020 - Sekarang</span>
-                  <h4 className="text-sm font-bold text-slate-900">Pustakawan Ahli Madya</h4>
-                  <p className="text-xs text-slate-600">Pusat Jasa Informasi Perpustakaan dan Pengelolaan Naskah Nusantara</p>
-                </div>
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                  <span className="text-xs font-bold text-institutional-navy">2014 - 2020</span>
-                  <h4 className="text-sm font-bold text-slate-900">Pustakawan Ahli Muda</h4>
-                  <p className="text-xs text-slate-600">Direktorat Deposit dan Pengembangan Koleksi Bahan Pustaka</p>
-                </div>
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                  <span className="text-xs font-bold text-institutional-navy">2005 - 2014</span>
-                  <h4 className="text-sm font-bold text-slate-900">Pranata Komputer Pertama</h4>
-                  <p className="text-xs text-slate-600">Pusat Data dan Informasi (Pusdatin)</p>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {activeTab === 'pengaturan-privasi' && (
+          {activeTab === 'ubah-kata-sandi' && (
             <section className="bg-white rounded-2xl shadow-sm border border-[#E9ECEF] p-6 sm:p-8 space-y-6">
               <div className="flex justify-between items-center pb-4 border-b border-[#E9ECEF]">
                 <h3 className="text-xl font-extrabold text-institutional-navy flex items-center gap-2.5">
                   <Lock className="w-5 h-5 text-institutional-navy" />
-                  Pengaturan Keamanan & Sandi
+                  Ubah Kata Sandi
                 </h3>
               </div>
 
               <form onSubmit={handleSaveProfile} className="space-y-4 max-w-lg">
                 <Input
-                  label="Password Lama"
+                  label="Sandi Lama"
                   type="password"
-                  placeholder="Masukkan password saat ini"
+                  placeholder="Masukkan sandi saat ini"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                 />
                 <Input
-                  label="Password Baru"
+                  label="Sandi Baru"
                   type="password"
                   placeholder="Minimal 6 karakter"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                 />
                 <Input
-                  label="Konfirmasi Password Baru"
+                  label="Konfirmasi Sandi Baru"
                   type="password"
-                  placeholder="Ulangi password baru"
+                  placeholder="Ulangi sandi baru"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
@@ -464,69 +423,241 @@ export default function ProfilPegawaiPage() {
         </div>
       </div>
 
-      {/* Edit Data Pribadi Modal */}
-      {isEditModalOpen && (
-        <Modal
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          title="Ubah Data Pribadi & Biodata"
-          maxWidth="md"
-        >
-          <form onSubmit={handleSaveProfile} className="space-y-4">
-            <Input
-              label="Nomor Telepon / WhatsApp"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="0812..."
-            />
-
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1 flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-institutional-navy" /> Tanggal Lahir Pegawai
-              </label>
-              <input
-                type="date"
-                value={birthDateInput}
-                onChange={(e) => setBirthDateInput(e.target.value)}
-                className="w-full h-10 px-3 rounded-lg border border-slate-300 bg-white text-xs text-slate-900 focus:border-institutional-navy focus:outline-none shadow-sm"
-              />
-              <p className="text-[11px] text-slate-500 mt-1">
-                Format saat ini: {displayBirthDate}
-              </p>
+      {/* ---------------- MODAL EDIT DATA PEGAWAI ---------------- */}
+      {isEditModalOpen && typeof document !== 'undefined' ? createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200 relative animate-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between z-10">
+              <h3 className="text-base font-bold text-[#00113a]">
+                Edit Data Pegawai
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsEditModalOpen(false)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                Alamat Domisili / Bio
-              </label>
-              <textarea
-                rows={3}
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 bg-white p-3 text-xs text-slate-900 focus:border-institutional-navy focus:outline-none shadow-sm"
-                placeholder="Jl. Salemba Raya No. 28A..."
-              />
-            </div>
+            {/* Modal Form */}
+            <form onSubmit={handleSaveProfile} className="p-6 space-y-4 text-left">
+              {/* Foto Profil Preview & URL */}
+              <div>
+                <label className="block text-xs font-bold text-[#00113a] mb-2">
+                  Foto Profil
+                </label>
+                <div className="flex items-center gap-4">
+                  <div 
+                    className={`w-16 h-16 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center ${editForm.avatarUrl ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
+                    onClick={() => {
+                      if (editForm.avatarUrl) {
+                        window.open(editForm.avatarUrl, '_blank');
+                      }
+                    }}
+                    title={editForm.avatarUrl ? "Klik untuk melihat foto penuh" : ""}
+                  >
+                    {editForm.avatarUrl ? (
+                      <img src={editForm.avatarUrl} alt="Preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="w-8 h-8 text-slate-400" />
+                    )}
+                  </div>
+                  <div className="flex-grow space-y-2">
+                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold cursor-pointer transition-colors">
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>Unggah Foto Baru</span>
+                      <input type="file" accept="image/*" onChange={handleAvatarFile} className="hidden" />
+                    </label>
+                  </div>
+                </div>
+              </div>
 
-            <Input
-              label="Riwayat Pendidikan Terakhir"
-              value={education}
-              onChange={(e) => setEducation(e.target.value)}
-              placeholder="S2 Ilmu Perpustakaan..."
-            />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                <div>
+                  <label className="block text-xs font-bold text-[#00113a] mb-1">
+                    Nama Lengkap
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editForm.fullName || editForm.name || ''}
+                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value, fullName: e.target.value })}
+                    className="w-full rounded border border-[#c5c6d2] px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#00113a]"
+                  />
+                </div>
 
-            <div className="pt-3 border-t border-slate-100 flex justify-end gap-3">
-              <Button type="button" variant="secondary" size="sm" onClick={() => setIsEditModalOpen(false)}>
-                Batal
-              </Button>
-              <Button type="submit" variant="primary" size="sm" isLoading={isSaving} className="font-bold">
-                <Save className="w-4 h-4" /> Simpan
-              </Button>
-            </div>
-          </form>
-        </Modal>
-      )}
+                <div>
+                  <label className="block text-xs font-bold text-[#00113a] mb-1">
+                    Nomor Induk Pegawai (NIP)
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editForm.nip || ''}
+                    onChange={(e) => setEditForm({ ...editForm, nip: e.target.value })}
+                    className="w-full rounded border border-[#c5c6d2] px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#00113a]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#00113a] mb-1">
+                    Email Kedinasan
+                  </label>
+                  <input
+                    type="email"
+                    value={editForm.email || ''}
+                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                    className="w-full rounded border border-[#c5c6d2] px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#00113a]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#00113a] mb-1">
+                    Nomor Seluler
+                  </label>
+                  <input
+                    type="tel"
+                    value={editForm.phone || ''}
+                    onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                    className="w-full rounded border border-[#c5c6d2] px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#00113a]"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold text-[#00113a] mb-1">
+                    Alamat Domisili
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.alamatDomisili || ''}
+                    onChange={(e) => setEditForm({ ...editForm, alamatDomisili: e.target.value })}
+                    className="w-full rounded border border-[#c5c6d2] px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#00113a]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#00113a] mb-1">
+                    Tanggal Lahir
+                  </label>
+                  <input
+                    type="date"
+                    value={editForm.tanggalLahir || ''}
+                    onChange={(e) => setEditForm({ ...editForm, tanggalLahir: e.target.value })}
+                    className="w-full rounded border border-[#c5c6d2] px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#00113a]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#00113a] mb-1">
+                    Jabatan Saat Ini
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.position || ''}
+                    onChange={(e) => setEditForm({ ...editForm, position: e.target.value })}
+                    className="w-full rounded border border-[#c5c6d2] px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#00113a]"
+                  />
+                </div>
+
+                <div className="relative" ref={satuanKerjaDropdownRef}><label className="block text-xs font-bold text-[#00113a] mb-1">
+                    Satuan Kerja
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsSatuanKerjaDropdownOpen(!isSatuanKerjaDropdownOpen)}
+                    className="w-full flex items-center justify-between px-3.5 py-2.5 bg-[#5b6b82] text-white text-xs font-bold rounded-xl hover:bg-[#485568] transition-colors cursor-pointer shadow-xs"
+                  >
+                    <span className="truncate pr-2">{editForm.satuanKerja || 'Pilih Satuan Kerja'}</span>
+                    <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${isSatuanKerjaDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {isSatuanKerjaDropdownOpen && (
+                    <div className="absolute left-0 w-full mt-1 bg-white border border-[#c5c6d2] rounded-xl shadow-lg overflow-hidden py-1 z-50 animate-in fade-in zoom-in-95 duration-150">
+                      {SATUAN_KERJA_OPTIONS.map((item) => {
+                        const isSelected = editForm.satuanKerja === item;
+                        return (
+                          <button
+                            key={item}
+                            type="button"
+                            onClick={() => {
+                              setEditForm({ ...editForm, satuanKerja: item });
+                              setIsSatuanKerjaDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-2.5 text-xs font-semibold transition-colors flex items-center justify-between cursor-pointer ${
+                              isSelected
+                                ? 'bg-slate-100 text-[#00113a] font-bold'
+                                : 'text-slate-700 hover:bg-slate-50'
+                            }`}
+                          >
+                            <span>{item}</span>
+                            {isSelected && <Check className="w-3.5 h-3.5 text-[#007BFF]" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#00113a] mb-1">
+                    Unit Eselon II
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.eselon2 || ''}
+                    onChange={(e) => setEditForm({ ...editForm, eselon2: e.target.value })}
+                    className="w-full rounded border border-[#c5c6d2] px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#00113a]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#00113a] mb-1">
+                    Unit Eselon III
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.eselon3 || ''}
+                    onChange={(e) => setEditForm({ ...editForm, eselon3: e.target.value })}
+                    className="w-full rounded border border-[#c5c6d2] px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#00113a]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#00113a] mb-1">
+                    Lokasi Kerja
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.lokasiKerja || ''}
+                    onChange={(e) => setEditForm({ ...editForm, lokasiKerja: e.target.value })}
+                    className="w-full rounded border border-[#c5c6d2] px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#00113a]"
+                  />
+                </div>
+              </div>
+
+              {/* Modal Actions */}
+              <div className="pt-4 border-t border-slate-100 flex justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="px-4 py-2 rounded-lg border border-slate-300 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="px-5 py-2 rounded-lg bg-[#002366] hover:bg-[#00113a] text-white text-xs font-bold transition-colors disabled:opacity-50"
+                >
+                  {isSaving ? 'Menyimpan...' : 'Simpan Perubahan'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      , document.body) : null}
     </div>
   );
 }
-

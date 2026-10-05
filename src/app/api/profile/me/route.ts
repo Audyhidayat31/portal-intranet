@@ -32,7 +32,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { phone, bio, education, birthDate, currentPassword, newPassword } = body;
+    const { name, nip, email, phone, bio, education, birthDate, avatarUrl, position, satuanKerja, currentPassword, newPassword } = body;
 
     // Password change check
     if (newPassword) {

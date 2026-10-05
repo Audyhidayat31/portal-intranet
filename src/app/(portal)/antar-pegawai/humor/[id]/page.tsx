@@ -140,6 +140,14 @@ Ternyata buku itu bukan peninggalan bersejarah, melainkan buku catatan milik Pak
 Penasaran, Budi membuka halaman pertama. Bukannya resep kopi, isinya ternyata berupa tulisan tangan bergelombang yang berbunyi: "Langkah pertama: Pastikan mesin kopi menyala. Langkah kedua: Jangan lupa taruh gelas di bawahnya. Terakhir kali saya lupa, seluruh meja basah."
 
 Ternyata buku itu bukan peninggalan bersejarah, melainkan buku catatan milik Pak Andi, pustakawan senior yang terkenal sering ceroboh. Budi tertawa geli dan mengembalikan buku itu ke raknya. Keesokan harinya, ia melihat Pak Andi panik mencari buku catatannya. "Budi, kamu lihat buku pusaka saya tidak? Yang warnanya coklat kusam?" Budi hanya tersenyum simpul sambil menunjuk ke arah Rak 13.`;
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 flex flex-col gap-8 bg-white min-h-[60vh] justify-center items-center">
+        <div className="w-12 h-12 border-4 border-slate-200 border-t-[#00113a] rounded-full animate-spin"></div>
+        <p className="text-[#00113a] font-bold mt-4">Memuat artikel...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 bg-white min-h-[calc(100vh-80px)] flex flex-col justify-between">

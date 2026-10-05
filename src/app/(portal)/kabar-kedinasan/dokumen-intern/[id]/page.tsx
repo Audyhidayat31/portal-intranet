@@ -297,12 +297,7 @@ Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedan
             {/* Right: Edit & Hapus Buttons matching Stitch */}
             {currentUser && (currentUser.role === 'admin' || currentUser.name === (documentItem?.author?.name || documentItem?.authorName || 'Administrator Perpusnas')) && (
               <div className="flex items-center gap-3 self-end sm:self-auto">
-                <Link
-                  href={`/kabar-kedinasan/dokumen-intern/${rawId}/edit`}
-                  className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs inline-block text-center"
-                >
-                  Edit
-                </Link>
+                
                 <button
                   type="button"
                   onClick={() => setIsDeleteModalOpen(true)}

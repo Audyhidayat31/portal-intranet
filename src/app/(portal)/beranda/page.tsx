@@ -156,7 +156,7 @@ export default function BerandaPage() {
     status: 'Terbit'
   }));
 
-  const postsList = latestPosts && latestPosts.length >= 15 ? latestPosts.slice(0, 15) : generatedPosts;
+  const postsList = latestPosts && latestPosts.length > 0 ? latestPosts : generatedPosts;
   const currentPosts = postsList.slice(currentPostPage * 3, currentPostPage * 3 + 3);
 
   const birthdays = birthdaysThisMonth && birthdaysThisMonth.length > 0 ? birthdaysThisMonth.slice(0, 4) : [
@@ -423,7 +423,7 @@ export default function BerandaPage() {
                 </div>
                 <div className="flex justify-end mt-auto pt-2">
                   <Link
-                    href={`/antar-pegawai/${post.categorySlug || (post.category || 'opini').toLowerCase().replace(/\s+/g, '-')}`}
+                    href={`/antar-pegawai/${post.categorySlug || (post.category || 'opini').toLowerCase().replace(/\s+/g, '-')}/${post.slug || post.id || '1'}`}
                     className="bg-[#00113a] text-white font-bold text-xs px-4 py-1.5 rounded-md hover:bg-[#2a4386] transition-colors shadow-sm"
                   >
                     Lihat
@@ -446,7 +446,7 @@ export default function BerandaPage() {
           
           {/* Right Arrow */}
           <button 
-            onClick={() => setCurrentPostPage(prev => Math.min(4, prev + 1))}
+            onClick={() => setCurrentPostPage(prev => Math.min(Math.max(0, Math.ceil((postsList?.length || 1) / 3) - 1), prev + 1))}
             disabled={currentPostPage === 4}
             className="absolute -right-4 sm:-right-8 md:-right-12 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border border-[#c5c6d2] shadow-md flex items-center justify-center text-[#00113a] disabled:opacity-0 transition-all opacity-0 group-hover:opacity-100 hover:bg-slate-50 z-10"
             aria-label="Next page"
