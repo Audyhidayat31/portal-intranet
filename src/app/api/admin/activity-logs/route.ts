@@ -61,10 +61,10 @@ export async function GET(request: NextRequest) {
         id: 'wf-log-3',
         action: 'DELETE',
         module: 'OPINION',
-        description: 'Menghapus Coretan Opini Budi Sujatmiko',
+        description: 'Menghapus Coretan Opini Ahmad Fauzi',
         createdAt: new Date('2026-09-03T13:00:00+07:00').toISOString(),
         user: {
-          name: 'Budi Sujatmiko',
+          name: 'Ahmad Fauzi',
           nip: '199003202015022003',
           role: { name: 'PEGAWAI' }
         }

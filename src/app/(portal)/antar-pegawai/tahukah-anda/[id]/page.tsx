@@ -129,14 +129,14 @@ export default function DetailTahukahAndaPage() {
     ? formatDate(tahukahItem.publishedAt)
     : '20 Agustus 2026';
 
-  const displayAuthor = tahukahItem?.authorName || tahukahItem?.author?.name || 'Budi Sujatmiko';
+  const displayAuthor = tahukahItem?.authorName || tahukahItem?.author?.name || 'Ahmad Fauzi';
 
   const displayContent =
     tahukahItem?.body ||
     tahukahItem?.content ||
     DEFAULT_STITCH_TAHUKAH_ANDA_DETAIL.content;
 
-  const attachmentList = tahukahItem?.attachments || MOCK_TAHUKAH_ANDA_ATTACHMENTS_5;
+  const attachmentList = tahukahItem?.attachments || [];
   if (isLoading) {
     return (
       <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 flex flex-col gap-8 bg-white min-h-[60vh] justify-center items-center">
@@ -212,39 +212,12 @@ export default function DetailTahukahAndaPage() {
               {displayContent}
             </div>
           </div>
-
-          {/* Divider Line */}
-          <div className="border-t border-[#c5c6d2] my-8" />
-
-          {/* Section: LAMPIRAN matching Wireframe 2 */}
-          <div>
-            <h3 className="text-xs font-bold text-[#1a1b20] uppercase tracking-wider mb-4">
-              LAMPIRAN
-            </h3>
-
-            {/* 5 Attachment Thumbnails matching Wireframe 2 */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
-              {attachmentList.map((att: any) => (
-                <button
-                  key={att.id}
-                  type="button"
-                  onClick={() => setPreviewImage(att.src)}
-                  className="aspect-square bg-[#e2e3ea] hover:bg-[#d8d9e2] border border-[#c5c6d2] rounded-md flex flex-col items-center justify-center text-xs text-[#757682] hover:text-[#00113a] font-medium transition-all group shadow-2xs cursor-pointer"
-                >
-                  <span className="text-xs font-medium text-[#757682] group-hover:text-[#1a1b20] transition-colors">
-                    {att.label}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Divider Line */}
           <div className="border-t border-[#c5c6d2] my-8" />
 
           {/* Section: Footer Metadata & Action Buttons matching Wireframe 2 */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
-            {/* Left: Dibuat oleh Budi Sujatmiko, 20 Agustus 2026 */}
+            {/* Left: Dibuat oleh Ahmad Fauzi, 20 Agustus 2026 */}
             
             <div className="flex flex-row gap-6">
               <div className="text-xs text-[#757682] space-y-0.5 w-[220px]"><p className="font-semibold text-[#757682]">Dibuat oleh</p>
@@ -280,7 +253,7 @@ export default function DetailTahukahAndaPage() {
             </div>
 
             {/* Right: Edit & Hapus Buttons matching Wireframe 2 */}
-            {currentUser && (currentUser.role === 'admin' || currentUser.name === (tahukahItem?.author?.name || tahukahItem?.authorName || 'Budi Sujatmiko')) && (
+            {currentUser && (currentUser.role === 'admin' || currentUser.name === (tahukahItem?.author?.name || tahukahItem?.authorName || 'Ahmad Fauzi')) && (
               <div className="flex items-center gap-3 self-end sm:self-auto">
                 <Link
                   href={`/antar-pegawai/tahukah-anda/${rawId}/edit`}

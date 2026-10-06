@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
 
     // Generate mock reset token
     const token = Buffer.from(`${cleanEmail}:${Date.now()}`).toString('base64');
-    const userName = user ? user.name : 'Budi Sujatmiko';
+    const userName = user ? user.name : 'Ahmad Fauzi';
     const resetUrl = `/ganti-kata-sandi?email=${encodeURIComponent(cleanEmail)}&token=${token}`;
     const confirmationUrl = `/email-konfirmasi?email=${encodeURIComponent(cleanEmail)}&name=${encodeURIComponent(userName)}&token=${token}`;
 

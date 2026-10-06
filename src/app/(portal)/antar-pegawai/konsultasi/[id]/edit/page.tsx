@@ -316,7 +316,7 @@ export default function EditKonsultasiPage() {
       description: rawText || keteranganHtml || judul.trim(),
       attachmentName: finalAttachment,
       attachmentUrl: existing?.attachmentUrl || '#',
-      authorName: existing?.authorName || 'Budi Sujatmiko',
+      authorName: existing?.authorName || 'Ahmad Fauzi',
       replies: existing?.replies || [],
     };
 

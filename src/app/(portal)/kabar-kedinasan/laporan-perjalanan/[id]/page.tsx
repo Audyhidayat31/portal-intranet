@@ -54,7 +54,7 @@ export default function DetailLaporanPerjalananPage() {
           setCurrentUser(data.data);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   useEffect(() => {
@@ -97,7 +97,7 @@ Fokus utama dari pelatihan ini adalah pada implementasi sistem pengarsipan berba
 Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedang berlangsung di Perpusnas RI. Pengetahuan yang didapat akan segera dideseminasikan kepada tim IT dan kearsipan internal dalam sesi knowledge sharing minggu depan. Diharapkan kita dapat mengadopsi beberapa protokol keamanan baru yang diperkenalkan selama pelatihan.`,
               attachmentName: 'Laporan_Dinas_Kearsipan_Digital_Yogyakarta_2026.pdf',
               author: {
-                name: 'Budi Sujatmiko',
+                name: 'Ahmad Fauzi',
                 profile: {
                   position: 'Pustakawan Ahli Muda',
                   unitKerja: 'Pusat Preservasi & Pengolahan Bahan Pustaka',
@@ -275,7 +275,7 @@ Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedan
                   Status: {(report?.status === 'MENUNGGU' || report?.status === 'Menunggu' || report?.status === 'DRAFT') ? 'Menunggu' : 'Terbit'}
                 </div>
               </div>
-              
+
               {(report?.updatedAt && report?.createdAt && new Date(report.updatedAt).getTime() - new Date(report.createdAt).getTime() > 1000) && (
                 <>
                   <div className="border-l border-[#c5c6d2]" />

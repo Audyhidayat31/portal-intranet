@@ -116,7 +116,7 @@ model Content {
   slug        String    @unique
   excerpt     String?   @db.Text
   body        String    @db.LongText
-  coverImage  String?   @db.Text
+  coverImage  String?   @db.LongText
   type        String // NEWS, ANNOUNCEMENT, AGENDA, BUSINESS_TRIP, INTERNAL_DOCUMENT
   status      String    @default("TERBIT") // DRAFT, PUBLISHED, ARCHIVED
   categoryId  String?
@@ -130,7 +130,7 @@ model Content {
   eventEndDate    DateTime? // For AGENDA
   eventLocation   String? // For AGENDA
   destinationCity String? // For BUSINESS_TRIP
-  attachmentUrl   String?   @db.Text // For INTERNAL_DOCUMENT or ANNOUNCEMENT
+  attachmentUrl   String?   @db.LongText // For INTERNAL_DOCUMENT or ANNOUNCEMENT
   attachmentName  String?
   fileSize        String?
   isPinned        Boolean   @default(false)

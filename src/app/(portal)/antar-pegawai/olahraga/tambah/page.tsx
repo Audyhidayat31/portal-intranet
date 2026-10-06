@@ -212,7 +212,7 @@ export default function TambahArtikelOlahragaPage() {
       coverImage: fallbackImage,
       publishedAt: tanggal.toISOString().split('T')[0],
       status: resolvedStatus,
-      authorName: 'Budi Sujatmiko',
+      authorName: 'Ahmad Fauzi',
       attachments: MOCK_OLAHRAGA_ATTACHMENTS_5,
     };
 

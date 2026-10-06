@@ -191,7 +191,7 @@ export default function ProfilPegawaiPage() {
   const displayEmail = profile?.email || 'budi.santoso@perpusnas.go.id';
   const displayPhone = p?.phone || '+62 812 3456 7890';
   const displayAddress = p?.bio || 'Jl. Salemba Raya No.28A, RT.5/RW.6, Kenari, Kec. Senen, Kota Jakarta Pusat, Daerah Khusus Ibukota Jakarta 10430';
-  const displayBirthDate = formatBirthDate(p?.birthDate || birthDateInput, profile?.nip);
+  const displayBirthDate = formatBirthDate(p?.birthDate, profile?.nip);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8 space-y-8">

@@ -310,7 +310,7 @@ export default function EditArtikelTahukahAndaPage() {
       coverImage: fallbackImage,
       publishedAt: tanggal.toISOString().split('T')[0],
       status: resolvedStatus,
-      authorName: existingItem?.authorName || 'Budi Sujatmiko',
+      authorName: existingItem?.authorName || 'Ahmad Fauzi',
       attachments: existingItem?.attachments || MOCK_TAHUKAH_ANDA_ATTACHMENTS_5,
     };
 

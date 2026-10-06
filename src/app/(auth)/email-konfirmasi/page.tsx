@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 
 function EmailKonfirmasiContent() {
   const searchParams = useSearchParams();
-  const nameParam = searchParams.get('name') || 'Budi Sujatmiko';
+  const nameParam = searchParams.get('name') || 'Ahmad Fauzi';
   const emailParam = searchParams.get('email') || '';
   const tokenParam = searchParams.get('token') || '';
 

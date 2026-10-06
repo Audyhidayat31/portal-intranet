@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
@@ -79,13 +80,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Default admin author if not logged in
-    const defaultUser = await prisma.user.findFirst();
-    if (!defaultUser) {
-      return NextResponse.json(
-        { success: false, message: 'User tidak ditemukan' },
-        { status: 400 }
-      );
+    // Try to get current logged in user
+    const currentUser = await getCurrentUser();
+    let authorId;
+
+    if (currentUser) {
+      authorId = currentUser.userId; // handle token payload or user object
+    } else {
+      // Fallback if somehow not authenticated (API direct call), 
+      // though middleware should prevent this.
+      const defaultUser = await prisma.user.findFirst();
+      if (!defaultUser) {
+        return NextResponse.json(
+          { success: false, message: 'User tidak ditemukan' },
+          { status: 400 }
+        );
+      }
+      authorId = defaultUser.id;
     }
 
     const postStatus =
@@ -105,7 +116,7 @@ export async function POST(request: NextRequest) {
         coverImage: coverImage || 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80',
         type: 'NEWS',
         status: postStatus,
-        authorId: defaultUser.id,
+        authorId: authorId,
         publishedAt: publishedAt ? new Date(publishedAt) : new Date(),
         attachmentName: attachmentName || null,
         attachmentUrl: attachmentUrl || null,

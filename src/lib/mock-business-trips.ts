@@ -53,23 +53,6 @@ Rekomendasi tindak lanjut: 38 perpustakaan memenuhi syarat peningkatan akreditas
     author: { name: 'Siti Rahmawati, S.Sos.', profile: { position: 'Pustakawan Ahli Muda', unitKerja: 'Pusat Pengembangan Perpustakaan' } },
   },
   {
-    id: 'trip-3',
-    title: 'Laporan Perjalanan Dinas Pelatihan Kearsipan Digital di Yogyakarta',
-    excerpt: 'Implementasi sistem pengarsipan berbasis cloud untuk institusi pemerintahan dan strategi migrasi arsip fisik ke format digital.',
-    content: `Perjalanan dinas ini dilaksanakan dalam rangka mengikuti Pelatihan Kearsipan Digital Tingkat Lanjut yang diselenggarakan oleh Arsip Nasional Republik Indonesia (ANRI) cabang Yogyakarta. Pelatihan berlangsung selama tiga hari, mulai tanggal 15 hingga 17 Agustus 2026, bertempat di Hotel Tentrem, Yogyakarta.
-
-Fokus utama dari pelatihan ini adalah pada implementasi sistem pengarsipan berbasis cloud untuk institusi pemerintahan dan strategi migrasi dari arsip fisik ke format digital dengan standar keamanan tinggi. Sesi-sesi meliputi:
-• Standarisasi Metadata Arsip Digital (Pembicara: Dr. Hendrawan).
-• Keamanan Data Siber dalam Sistem Pengarsipan Terpusat.
-• Workshop Praktis: Migrasi Data Skala Besar menggunakan Sistem Manajemen Arsip Dinamis (SRIKANDI).
-
-Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedang berlangsung di Perpusnas RI. Pengetahuan yang didapat akan segera dideseminasikan kepada tim IT dan kearsipan internal dalam sesi knowledge sharing minggu depan. Diharapkan kita dapat mengadopsi beberapa protokol keamanan baru yang diperkenalkan selama pelatihan.`,
-    destinationCity: 'Yogyakarta',
-    publishedAt: '2026-08-20',
-    attachmentName: 'Laporan_Dinas_Kearsipan_Digital_Yogyakarta_2026.pdf',
-    author: { name: 'Budi Sujatmiko', profile: { position: 'Pustakawan Ahli Muda', unitKerja: 'Pusat Preservasi & Pengolahan Bahan Pustaka' } },
-  },
-  {
     id: 'trip-4',
     title: 'Laporan Workshop Konservasi & Preservasi Naskah Lontar Kuno di Denpasar Bali',
     excerpt: 'Pelaksanaan bimbingan teknis pembersihan jamur dan alih media digital 120 kropak naskah kuno nusantara.',

@@ -209,33 +209,6 @@ export default function DetailCoretanOpiniPage() {
               {displayContent}
             </div>
           </div>
-
-          {/* Divider Line */}
-          <div className="border-t border-[#c5c6d2] my-8" />
-
-          {/* Section: LAMPIRAN */}
-          <div>
-            <h3 className="text-xs font-bold text-[#1a1b20] uppercase tracking-wider mb-4">
-              LAMPIRAN
-            </h3>
-
-            {/* 5 Attachment Thumbnails matching Stitch */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
-              {MOCK_ATTACHMENT_IMAGES.map((att) => (
-                <button
-                  key={att.id}
-                  type="button"
-                  onClick={() => setPreviewImage(att.src)}
-                  className="aspect-square bg-[#e2e3ea] hover:bg-[#d8d9e2] border border-[#c5c6d2] rounded-md flex flex-col items-center justify-center text-xs text-[#757682] hover:text-[#00113a] font-medium transition-all group shadow-2xs cursor-pointer"
-                >
-                  <span className="text-xs font-medium text-[#757682] group-hover:text-[#1a1b20] transition-colors">
-                    {att.label}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Divider Line */}
           <div className="border-t border-[#c5c6d2] my-8" />
 
@@ -246,7 +219,7 @@ export default function DetailCoretanOpiniPage() {
             <div className="flex flex-row gap-6">
               <div className="text-xs text-[#757682] space-y-0.5 w-[220px]"><p className="font-semibold text-[#757682]">Dibuat oleh</p>
               <p className="font-semibold text-[#1a1b20]">
-                {opiniItem?.author?.name || opiniItem?.authorName || 'Budi Sujatmiko'}
+                {opiniItem?.author?.name || opiniItem?.authorName || 'Ahmad Fauzi'}
               </p>
               <p className="font-medium text-[#757682]">
                 {displayDate}
@@ -276,7 +249,7 @@ export default function DetailCoretanOpiniPage() {
             </div>
 
             {/* Right: Edit & Hapus Buttons matching Stitch */}
-            {currentUser && (currentUser.role === 'admin' || currentUser.name === (opiniItem?.author?.name || opiniItem?.authorName || 'Budi Sujatmiko')) && (
+            {currentUser && (currentUser.role === 'admin' || currentUser.name === (opiniItem?.author?.name || opiniItem?.authorName || 'Ahmad Fauzi')) && (
               <div className="flex items-center gap-3 self-end sm:self-auto">
                 <Link
                   href={`/antar-pegawai/opini/${opiniItem?.id || rawId}/edit`}
