@@ -71,7 +71,7 @@ export default function KaryaAkademikPage() {
               })
             : '20 Agustus 2026',
           status: item.status === 'MENUNGGU' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit',
-          authorName: item.author?.name || 'Budi Sujatmiko',
+          authorName: item.author?.name || 'Ahmad Fauzi',
           authorPosition: item.author?.profile?.position || 'Pustakawan Ahli',
           authorUnit: item.author?.profile?.unitKerja || 'Perpustakaan Nasional RI',
           attachments: item.attachments || [],

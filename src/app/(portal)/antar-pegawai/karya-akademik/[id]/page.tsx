@@ -79,7 +79,7 @@ export default function DetailKaryaAkademikPage() {
                 })
               : '20 Agustus 2026',
             status: apiData.status === 'TERBIT' ? 'Terbit' : 'Menunggu',
-            authorName: apiData.author?.name || 'Budi Sujatmiko',
+            authorName: apiData.author?.name || 'Ahmad Fauzi',
             authorPosition: apiData.author?.profile?.position || 'Peneliti Ahli Madya',
           };
           setItem(formatted);
@@ -141,7 +141,7 @@ export default function DetailKaryaAkademikPage() {
     'Penerbitan Buku Karya Sastra Prof. .... Berlangsung di Perpustakaan Nasional Republik Indonesia';
   const displayDate = item.publishedAt || '20 Agustus 2026';
   const displayContent = item.content || item.excerpt || '';
-  const displayAuthor = item.authorName || 'Budi Sujatmiko';
+  const displayAuthor = item.authorName || 'Ahmad Fauzi';
 
   const attachments =
     item.attachments && item.attachments.length > 0

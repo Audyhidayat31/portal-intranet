@@ -123,8 +123,8 @@ Beliau memimpin proyek integrasi katalog induk nasional dan layanan akses reposi
   const displayDate = figureItem?.publishedAt
     ? formatDate(figureItem.publishedAt)
     : figureItem?.createdAt
-    ? formatDate(figureItem.createdAt)
-    : '19 Agustus 2026';
+      ? formatDate(figureItem.createdAt)
+      : '19 Agustus 2026';
   const displayContent = figureItem?.fullStory || figureItem?.body || figureItem?.quote || '';
 
   // Attachments
@@ -249,7 +249,7 @@ Beliau memimpin proyek integrasi katalog induk nasional dan layanan akses reposi
               <div className="text-xs text-[#757682] space-y-0.5 w-[220px]">
                 <p className="font-semibold text-[#757682]">Dibuat oleh</p>
                 <p className="font-semibold text-[#1a1b20]">
-                  {figureItem?.author?.name || figureItem?.authorName || 'Budi Sujatmiko'}
+                  {figureItem?.author?.name || figureItem?.authorName || 'Humas Perpustakaan Nasional'}
                 </p>
                 <p className="font-medium text-[#757682]">
                   {displayDate}
@@ -266,7 +266,7 @@ Beliau memimpin proyek integrasi katalog induk nasional dan layanan akses reposi
                   <div className="text-xs text-[#757682] space-y-0.5 w-[220px]">
                     <p className="font-semibold text-[#757682]">Diperbarui oleh</p>
                     <p className="font-semibold text-[#1a1b20]">
-                      {figureItem?.editor?.name || figureItem?.author?.name || figureItem?.authorName || 'Budi Sujatmiko'}
+                      {figureItem?.editor?.name || figureItem?.author?.name || figureItem?.authorName || 'Humas Perpustakaan Nasional'}
                     </p>
                     <p className="font-medium text-[#757682]">
                       {figureItem?.updatedAt ? formatDate(figureItem.updatedAt) : '24 Agustus 2026'}

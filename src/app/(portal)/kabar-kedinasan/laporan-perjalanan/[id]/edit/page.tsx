@@ -135,7 +135,7 @@ export default function EditLaporanPerjalananPage() {
               setViewDate(d);
             }
           }
-          setNamaLengkap(item.author?.name || 'Budi Sujatmiko');
+          setNamaLengkap(item.author?.name || 'Ahmad Fauzi');
           const cityMatch = LIST_KOTA.find((k) => (item.destinationCity || '').includes(k));
           if (cityMatch) setKotaTujuan(cityMatch);
           setUraianHtml(item.body || item.content || '');
@@ -161,7 +161,7 @@ export default function EditLaporanPerjalananPage() {
             setViewDate(d);
           }
         }
-        setNamaLengkap('Budi Sujatmiko');
+        setNamaLengkap('Ahmad Fauzi');
         const cityMatch = LIST_KOTA.find((k) => (matchedMock.destinationCity || '').includes(k));
         if (cityMatch) setKotaTujuan(cityMatch);
         setUraianHtml(matchedMock.content || matchedMock.body || '');

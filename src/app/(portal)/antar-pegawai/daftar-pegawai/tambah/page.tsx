@@ -230,7 +230,7 @@ export default function TambahPegawaiPage() {
                   required
                   value={nama}
                   onChange={(e) => setNama(e.target.value)}
-                  placeholder="Contoh: Budi Sujatmiko, S.Kom., M.T.I."
+                  placeholder="Contoh: Ahmad Fauzi, S.Kom., M.T.I."
                   className="w-full border border-[#c5c6d2] rounded-lg py-2.5 px-3.5 text-sm bg-white text-[#1a1b20] focus:outline-none focus:border-[#00113a]"
                 />
               </div>

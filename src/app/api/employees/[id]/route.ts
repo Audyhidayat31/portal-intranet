@@ -86,7 +86,7 @@ export async function GET(
       return NextResponse.json({ success: true, data: fullData });
     }
 
-    // Default fallback to first mock (Budi Sujatmiko) if id is 'emp-1' or not found
+    // Default fallback to first mock (Ahmad Fauzi) if id is 'emp-1' or not found
     const defaultEmployee = MOCK_EMPLOYEES[0];
     return NextResponse.json({ success: true, data: defaultEmployee });
   } catch (error: any) {

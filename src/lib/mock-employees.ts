@@ -24,28 +24,6 @@ export interface MockEmployee {
 
 export const MOCK_EMPLOYEES: MockEmployee[] = [
   {
-    id: 'emp-1',
-    nip: '1986112700140350',
-    name: 'Budi Sujatmiko',
-    fullName: 'Budi Sujatmiko',
-    position: 'Kepala Sistem Informasi',
-    unitKerja: 'Pusat Data dan Informasi',
-    golRuang: 'IV/a - Pembina',
-    email: 'budisujatmiko@perpusnas.go.id',
-    phone: '+62 812 1714 0352',
-    avatarUrl: '',
-    education: 'S2 Magister Teknologi Informasi Universitas Indonesia',
-    careerHistory: 'Staf IT (2015-2019), Kasubbag Infrastruktur Jaringan (2019-2023), Kepala Sistem Informasi (2023-Sekarang)',
-    achievements: 'Inovator Transformasi Cloud Perpusnas 2024',
-    bio: 'Berdedikasi untuk memajukan arsitektur sistem digital dan otomasi layanan perpustakaan berbasis kecerdasan buatan.',
-    alamatDomisili: 'Jalan Imam Bonjol Nomor 1, RT 5/RW 4, Menteng, Kecamatan Menteng, Kota Jakarta Pusat',
-    tanggalLahir: '27 November 1986',
-    satuanKerja: 'Sistem Informasi',
-    eselon2: 'Pusat Sistem Informasi',
-    eselon3: 'Bidang Layanan Sistem Informasi',
-    lokasiKerja: 'Jl. Medan Merdeka Selatan No. 11, Jakarta 10110',
-  },
-  {
     id: 'emp-2',
     nip: '198501152010011001',
     name: 'Drs. Bambang Sudirman, M.Hum.',

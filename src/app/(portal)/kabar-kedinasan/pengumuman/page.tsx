@@ -29,52 +29,7 @@ const MOCK_ATTACHMENT_IMAGES = [
 ];
 
 // 5 Mock Announcements matching Stitch
-const STITCH_MOCK_ANNOUNCEMENTS_5 = [
-  {
-    id: 'stitch-pengumuman-1',
-    title: 'Penerbitan Buku Karya Sastra Prof. .... Berlangsung di Perpustakaan Nasional Republik Indonesia',
-    excerpt: 'Pengumuman publikasi Penerbitan Buku Karya Sastra Profesor ...',
-    content: 'Sehubungan dengan program penerbitan karya sastra dan pengayaan khazanah literasi nasional, Perpustakaan Nasional Republik Indonesia mengumumkan pelaksanaan kurasi naskah dan penerbitan buku karya sastra terpilih.\n\nSeluruh pegawai dan civitas akademika di lingkungan Perpustakaan Nasional RI diundang untuk menghadiri acara bedah buku dan peluncuran resmi yang diselenggarakan di Ruang Serbaguna Lantai 4 Gedung Fasilitas Layanan Perpustakaan Nasional, Jl. Medan Merdeka Selatan No. 11, Jakarta Pusat.',
-    publishedAt: '2026-08-20',
-    attachmentName: 'Surat_Edaran_Penerbitan_Karya_Sastra_2026.pdf',
-    author: { name: 'Budi Sujatmiko' },
-  },
-  {
-    id: 'stitch-pengumuman-2',
-    title: 'Penerbitan Buku Karya Sastra Prof. .... Berlangsung di Perpustakaan Nasional Republik Indonesia',
-    excerpt: 'Pengumuman publikasi Penerbitan Buku Karya Sastra Profesor ...',
-    content: 'Pemberitahuan kepada seluruh unit kerja terkait pedoman pengajuan nomor registrasi ISBN dan standardisasi katalogisasi dalam terbitan (KDT) untuk naskah karya ilmiah dan sastra terbitan tahun anggaran 2026.\n\nBatas akhir penyerahan naskah digital lengkap beserta ringkasan eksekutif dapat dikirimkan melalui surel persuratan resmi atau portal intranet internal sebelum akhir bulan berjalan.',
-    publishedAt: '2026-08-20',
-    attachmentName: 'Pedoman_Standardisasi_KDT_2026.pdf',
-    author: { name: 'Budi Sujatmiko' },
-  },
-  {
-    id: 'stitch-pengumuman-3',
-    title: 'Penerbitan Buku Karya Sastra Prof. .... Berlangsung di Perpustakaan Nasional Republik Indonesia',
-    excerpt: 'Pengumuman publikasi Penerbitan Buku Karya Sastra Profesor ...',
-    content: 'Informasi jadwal pelaksanaan lokakarya penulisan kreatif dan penyusunan antologi sastra daerah bagi para pegawai di lingkungan Perpustakaan Nasional RI.\n\nKegiatan ini dirancang untuk memfasilitasi peningkatan kompetensi literasi menulis serta pelestarian budaya daerah melalui karya literatur terstruktur.',
-    publishedAt: '2026-08-20',
-    attachmentName: 'Jadwal_Lokakarya_Penulisan_Sastra.pdf',
-    author: { name: 'Budi Sujatmiko' },
-  },
-  {
-    id: 'stitch-pengumuman-4',
-    title: 'Penerbitan Buku Karya Sastra Prof. .... Berlangsung di Perpustakaan Nasional Republik Indonesia',
-    excerpt: 'Pengumuman publikasi Penerbitan Buku Karya Sastra Profesor ...',
-    content: 'Diumumkan kepada seluruh jajaran bahwa Perpustakaan Nasional membuka kesempatan publikasi artikel ilmiah dan tinjauan literatur sastra nusantara pada jurnal terindeks edisi volume ke-14.\n\nNaskah yang lolos seleksi awal dari Dewan Redaksi akan mendapatkan bantuan pendampingan penulisan hingga tahap penerbitan akhir.',
-    publishedAt: '2026-08-20',
-    attachmentName: 'Call_For_Papers_Jurnal_Sastra_Vol14.pdf',
-    author: { name: 'Budi Sujatmiko' },
-  },
-  {
-    id: 'stitch-pengumuman-5',
-    title: 'Penerbitan Buku Karya Sastra Prof. .... Berlangsung di Perpustakaan Nasional Republik Indonesia',
-    excerpt: 'Pengumuman publikasi Penerbitan Buku Karya Sastra Profesor ...',
-    content: 'Ketentuan teknis mengenai serah simpan karya cetak dan karya rekam (SSKCKR) atas karya-karya sastra dan hasil penelitian mutakhir yang dihasilkan oleh pustakawan madya dan utama.\n\nDokumen fisik dan salinan digital wajib diserahkan kepada Bagian Akuisisi dan Pengolahan untuk diarsipkan ke dalam basis data repositori nasional.',
-    publishedAt: '2026-08-20',
-    attachmentName: 'Surat_Pemberitahuan_SSKCKR_2026.pdf',
-    author: { name: 'Budi Sujatmiko' },
-  },
+const STITCH_MOCK_ANNOUNCEMENTS_5: any[] = [
 ];
 
 export default function PengumumanPage() {
@@ -96,7 +51,7 @@ export default function PengumumanPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [successMessage, setSuccessMessage] = useState('');
-  
+
   // Dropdown Pagination state
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [isPerPageOpen, setIsPerPageOpen] = useState(false);
@@ -109,6 +64,8 @@ export default function PengumumanPage() {
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
+
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
@@ -120,10 +77,10 @@ export default function PengumumanPage() {
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
   const [editAttachmentName, setEditAttachmentName] = useState('');
-  
-  const [editAttachments, setEditAttachments] = useState<{file: File | null, name: string, preview: string | null}[]>([]);
+
+  const [editAttachments, setEditAttachments] = useState<{ file: File | null, name: string, preview: string | null }[]>([]);
   const editAttachmentInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [isUpdating, setIsUpdating] = useState(false);
 
   const handleEditAttachmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -146,7 +103,7 @@ export default function PengumumanPage() {
     }
     if (e.target) e.target.value = '';
   };
-  
+
   const removeEditAttachment = (index: number) => {
     const updated = editAttachments.filter((_, i) => i !== index);
     setEditAttachments(updated);
@@ -184,7 +141,7 @@ export default function PengumumanPage() {
           setCurrentUser(data.data);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   // Prevent background scrolling when any modal is open
@@ -458,12 +415,12 @@ export default function PengumumanPage() {
             ))}
           </div>
         ) : announcements.filter((item) => {
-            const isPublished = item.status === 'Terbit' || item.status === 'TERBIT' || (!item.status);
-            if (isPublished) return true;
-            if (!currentUser) return false;
-            if (currentUser.role === 'admin') return true;
-            return currentUser.name === (item.authorName || item.author?.name);
-          }).length === 0 ? (
+          const isPublished = item.status === 'Terbit' || item.status === 'TERBIT' || (!item.status);
+          if (isPublished) return true;
+          if (!currentUser) return false;
+          if (currentUser.role === 'admin') return true;
+          return currentUser.name === (item.authorName || item.author?.name);
+        }).length === 0 ? (
           <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
             <Megaphone className="w-12 h-12 text-[#757682] mx-auto mb-3 opacity-60" />
             <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Pengumuman Ditemukan</h2>
@@ -509,8 +466,8 @@ export default function PengumumanPage() {
                   <div className="shrink-0 mt-4 sm:mt-auto self-end flex items-center gap-3">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-tight ${(item.status === 'MENUNGGU' || item.status === 'Menunggu' || item.status === 'DRAFT')
-                          ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                          : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                        : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                         }`}
                     >
                       Status: {(item.status === 'MENUNGGU' || item.status === 'Menunggu' || item.status === 'DRAFT') ? 'Menunggu' : 'Terbit'}
@@ -531,18 +488,18 @@ export default function PengumumanPage() {
       </div>
 
       {/* Pagination Controls */}
-      <Pagination 
-          currentPage={currentPage}
-          totalItems={announcements.filter((item) => {
-            const isPublished = item.status === 'Terbit' || item.status === 'TERBIT' || (!item.status);
-            if (isPublished) return true;
-            if (!currentUser) return false;
-            if (currentUser.role === 'admin') return true;
-            return currentUser.name === (item.authorName || item.author?.name);
-          }).length}
-          itemsPerPage={itemsPerPage}
-          onPageChange={setCurrentPage}
-        />
+      <Pagination
+        currentPage={currentPage}
+        totalItems={announcements.filter((item) => {
+          const isPublished = item.status === 'Terbit' || item.status === 'TERBIT' || (!item.status);
+          if (isPublished) return true;
+          if (!currentUser) return false;
+          if (currentUser.role === 'admin') return true;
+          return currentUser.name === (item.authorName || item.author?.name);
+        }).length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
 
       {/* Detail Pengumuman Modal on List View (EXACT Stitch Screen Spec) */}
       {selectedAnnouncement && (
@@ -564,7 +521,7 @@ export default function PengumumanPage() {
               <h1 className="text-2xl sm:text-3xl font-bold text-[#1a1b20] mb-4 leading-snug">
                 {selectedAnnouncement.title}
               </h1>
-              
+
               <div className="text-sm text-[#1a1b20]">
                 <p className="font-bold">Tanggal Pengumuman</p>
                 <p className="text-[#1a1b20] mt-0.5">
@@ -574,6 +531,9 @@ export default function PengumumanPage() {
                 </p>
               </div>
             </header>
+
+
+
 
             {/* Content Body (Uraian Pengumuman) */}
             <div className="prose max-w-none text-sm sm:text-base text-[#1a1b20] mb-8 flex-grow leading-relaxed">
@@ -613,7 +573,7 @@ export default function PengumumanPage() {
               <div className="flex flex-row gap-6">
                 <div className="text-sm text-[#1a1b20] w-[220px]">
                   <p className="font-bold">Dibuat oleh</p>
-                  <p className="text-[#1a1b20]">{selectedAnnouncement.author?.name || 'Budi Sujatmiko'}</p>
+                  <p className="text-[#1a1b20]">{selectedAnnouncement.author?.name || 'Ahmad Fauzi'}</p>
                   <p className="text-[#444650] mb-1">
                     {selectedAnnouncement.publishedAt
                       ? formatDate(selectedAnnouncement.publishedAt)
@@ -629,7 +589,7 @@ export default function PengumumanPage() {
                     <div className="border-l border-[#c5c6d2]" />
                     <div className="text-sm text-[#1a1b20] w-[220px]">
                       <p className="font-bold">Diperbarui oleh</p>
-                      <p className="text-[#1a1b20]">{selectedAnnouncement.editor?.name || selectedAnnouncement.author?.name || selectedAnnouncement.authorName || 'Budi Sujatmiko'}</p>
+                      <p className="text-[#1a1b20]">{selectedAnnouncement.editor?.name || selectedAnnouncement.author?.name || selectedAnnouncement.authorName || 'Ahmad Fauzi'}</p>
                       <p className="text-[#444650] mb-1">
                         {formatDate(selectedAnnouncement.updatedAt)}
                       </p>
@@ -641,7 +601,7 @@ export default function PengumumanPage() {
                 )}
               </div>
 
-              {currentUser && (currentUser.role === 'admin' || currentUser.name === (selectedAnnouncement.author?.name || selectedAnnouncement.authorName || 'Budi Sujatmiko')) && (
+              {currentUser && (currentUser.role === 'admin' || currentUser.name === (selectedAnnouncement.author?.name || selectedAnnouncement.authorName || 'Ahmad Fauzi')) && (
                 <div className="flex gap-4">
                   <button
                     type="button"
@@ -759,7 +719,7 @@ export default function PengumumanPage() {
                       Upload
                     </button>
                   </div>
-                  
+
                   {/* Previews */}
                   {editAttachments.length > 0 && (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">

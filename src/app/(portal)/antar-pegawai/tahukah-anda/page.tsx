@@ -93,7 +93,7 @@ export default function DaftarTahukahAndaPage() {
             'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=800&q=80',
           publishedAt: item.createdAt || new Date().toISOString(),
           status: item.status === 'MENUNGGU' ? 'Menunggu' : 'Terbit',
-          authorName: item.author?.name || 'Budi Sujatmiko',
+          authorName: item.author?.name || 'Ahmad Fauzi',
         }));
 
         // Pool together local stored items, API items, and base mock 9 items
@@ -386,7 +386,7 @@ export default function DaftarTahukahAndaPage() {
                   </span>
                   <span className="text-[#c5c6d2]">•</span>
                   <span className="text-xs text-[#00113a] font-bold">
-                    {selectedItem.authorName || 'Budi Sujatmiko'}
+                    {selectedItem.authorName || 'Ahmad Fauzi'}
                   </span>
                   <span className="text-[#c5c6d2]">•</span>
                   {selectedItem.status === 'Terbit' ? (

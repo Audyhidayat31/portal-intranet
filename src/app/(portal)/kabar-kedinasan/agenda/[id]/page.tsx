@@ -199,13 +199,12 @@ export default function DetailAgendaKegiatanPage() {
           {/* Divider Line */}
           <div className="border-t border-[#c5c6d2] my-8" />
 
-          {/* Section: LAMPIRAN matching Coretan Opini Detail */}
+          {/* Section: LAMPIRAN */}
           <div>
             <h3 className="text-xs font-bold text-[#1a1b20] uppercase tracking-wider mb-4">
               LAMPIRAN
             </h3>
-
-            {/* 5 Attachment Thumbnails matching Coretan Opini Detail */}
+            {/* 5 Attachment Thumbnails */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
               {MOCK_AGENDA_ATTACHMENTS_5.map((att) => (
                 <button
@@ -219,6 +218,7 @@ export default function DetailAgendaKegiatanPage() {
                   </span>
                 </button>
               ))}
+
             </div>
           </div>
 

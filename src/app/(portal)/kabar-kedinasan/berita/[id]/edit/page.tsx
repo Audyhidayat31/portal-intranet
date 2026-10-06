@@ -23,6 +23,43 @@ import {
   X,
 } from 'lucide-react';
 
+const compressImage = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 1200;
+        const MAX_HEIGHT = 1200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.7));
+      };
+      img.onerror = (error) => reject(error);
+    };
+    reader.onerror = (error) => reject(error);
+  });
+};
+
 export default function EditBeritaPage() {
   const params = useParams();
   const router = useRouter();
@@ -35,8 +72,7 @@ export default function EditBeritaPage() {
   const [deskripsiHtml, setDeskripsiHtml] = useState('');
   const [gambarFileName, setGambarFileName] = useState('');
   const [gambarPreview, setGambarPreview] = useState<string | null>(null);
-  const [lampiranFileName, setLampiranFileName] = useState('');
-  const [lampiranPreview, setLampiranPreview] = useState<string | null>(null);
+  const [lampiranAttachments, setLampiranAttachments] = useState<{file: File | null, name: string, preview: string | null}[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState('');
@@ -61,6 +97,9 @@ export default function EditBeritaPage() {
   // Styling dropdown state
   const [isStylingMenuOpen, setIsStylingMenuOpen] = useState(false);
   const stylingMenuRef = useRef<HTMLDivElement>(null);
+
+  // Modal preview state
+  const [modalImageUrl, setModalImageUrl] = useState<string | null>(null);
 
   // Editor and Input refs
   const editorRef = useRef<HTMLDivElement>(null);
@@ -98,8 +137,22 @@ export default function EditBeritaPage() {
             setGambarFileName(item.coverImage.split('/').pop() || 'sampul.jpg');
           }
           if (item.attachmentUrl) {
-            setLampiranFileName(item.attachmentName || item.attachmentUrl.split('/').pop() || '');
-            setLampiranPreview(item.attachmentUrl);
+            try {
+              const urls = JSON.parse(item.attachmentUrl);
+              const names = item.attachmentName ? item.attachmentName.split('|||') : [];
+              const mapped = urls.map((url: string, i: number) => ({
+                file: null,
+                name: names[i] || `Lampiran ${i + 1}`,
+                preview: url
+              }));
+              setLampiranAttachments(mapped);
+            } catch {
+              setLampiranAttachments([{
+                file: null,
+                name: item.attachmentName || 'Lampiran 1',
+                preview: item.attachmentUrl.startsWith('data:image') ? item.attachmentUrl : null
+              }]);
+            }
           }
         }
         setIsLoading(false);
@@ -226,24 +279,45 @@ export default function EditBeritaPage() {
     }
   };
 
-  const handleGambarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleGambarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setGambarFileName(file.name);
-      const url = URL.createObjectURL(file);
-      setGambarPreview(url);
+      try {
+        const compressed = await compressImage(file);
+        setGambarPreview(compressed);
+      } catch (err) {
+        console.error("Failed to compress image", err);
+      }
     }
   };
 
-  const handleLampiranFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setLampiranFileName(file.name);
-      if (file.type.startsWith('image/')) {
-        setLampiranPreview(URL.createObjectURL(file));
-      } else {
-        setLampiranPreview(null);
-      }
+  const handleLampiranFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    if (lampiranAttachments.length + files.length > 10) {
+      alert('Maksimal 10 lampiran diperbolehkan');
+      return;
+    }
+
+    const newAttachments = await Promise.all(
+      files.map(async (file) => {
+        let preview = null;
+        if (file.type.startsWith('image/')) {
+          try {
+            preview = await compressImage(file);
+          } catch {
+            preview = null;
+          }
+        }
+        return { file, name: file.name, preview };
+      })
+    );
+
+    setLampiranAttachments([...lampiranAttachments, ...newAttachments]);
+    if (lampiranInputRef.current) {
+      lampiranInputRef.current.value = '';
     }
   };
   const handleRemoveGambar = (e: React.MouseEvent) => {
@@ -253,10 +327,8 @@ export default function EditBeritaPage() {
     if (gambarInputRef.current) gambarInputRef.current.value = '';
   };
 
-  const handleRemoveLampiran = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setLampiranFileName('');
-    setLampiranPreview(null);
+  const handleRemoveLampiran = (index: number) => {
+    setLampiranAttachments(prev => prev.filter((_, i) => i !== index));
     if (lampiranInputRef.current) lampiranInputRef.current.value = '';
   };
 
@@ -288,7 +360,8 @@ export default function EditBeritaPage() {
           coverImage: resolvedCoverImage,
           publishedAt: tanggal.toISOString(),
           status: status === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
-          attachmentName: lampiranFileName || null,
+          attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments.map(a => a.name).join('|||') : null,
+          attachmentUrl: lampiranAttachments.length > 0 ? JSON.stringify(lampiranAttachments.map(a => a.preview || '')) : null,
         }),
       });
     } catch {
@@ -411,10 +484,10 @@ export default function EditBeritaPage() {
                           disabled={!item.isCurrentMonth}
                           onClick={() => selectCalendarDay(item.day)}
                           className={`h-8 w-8 mx-auto rounded-full flex items-center justify-center font-medium transition-colors cursor-pointer ${!item.isCurrentMonth
-                              ? 'text-slate-300 cursor-not-allowed'
-                              : isSelected
-                                ? 'bg-[#00113a] text-white font-bold shadow-xs'
-                                : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                            ? 'text-slate-300 cursor-not-allowed'
+                            : isSelected
+                              ? 'bg-[#00113a] text-white font-bold shadow-xs'
+                              : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
                             }`}
                         >
                           {item.day}
@@ -450,8 +523,8 @@ export default function EditBeritaPage() {
                       setIsStatusMenuOpen(false);
                     }}
                     className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Terbit'
-                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
-                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                      ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                      : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
                       }`}
                   >
                     Terbit
@@ -463,8 +536,8 @@ export default function EditBeritaPage() {
                       setIsStatusMenuOpen(false);
                     }}
                     className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Menunggu'
-                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
-                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                      ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                      : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
                       }`}
                   >
                     Menunggu
@@ -596,15 +669,26 @@ export default function EditBeritaPage() {
 
               {/* Dashed preview box */}
               <div
-                onClick={() => gambarInputRef.current?.click()}
+                onClick={() => {
+                  if (gambarPreview) {
+                    setModalImageUrl(gambarPreview);
+                  } else {
+                    gambarInputRef.current?.click();
+                  }
+                }}
                 className="w-full md:w-2/3 h-64 bg-[#efedf3] border-2 border-dashed border-[#c5c6d2] rounded flex items-center justify-center text-[#757682] text-sm relative group cursor-pointer hover:bg-[#e9e7ee] transition-colors overflow-hidden"
               >
                 {gambarPreview ? (
-                  <img
-                    src={gambarPreview}
-                    alt="Pratinjau Gambar Berita"
-                    className="w-full h-full object-cover"
-                  />
+                  <div className="w-full h-full p-2 relative flex items-center justify-center bg-white/50">
+                    <img
+                      src={gambarPreview}
+                      alt="Pratinjau Gambar Berita"
+                      className="max-w-full max-h-full object-contain"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 text-white font-medium backdrop-blur-sm">
+                      Klik untuk memperbesar
+                    </div>
+                  </div>
                 ) : (
                   <>
                     <span>Gambar Preview</span>
@@ -618,70 +702,69 @@ export default function EditBeritaPage() {
 
             {/* 6. Lampiran */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Lampiran <span className="float-right hidden md:inline">:</span>
+              Lampiran (Maks. 10 File) <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="flex flex-col gap-4">
               <div className="flex">
                 <input suppressHydrationWarning
                   type="text"
                   readOnly
-                  value={lampiranFileName}
-                  placeholder="Nama File.pdf/doc"
+                  value={lampiranAttachments.length > 0 ? `${lampiranAttachments.length} file dipilih` : ''}
+                  placeholder="Upload maksimal 10 file..."
                   className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
                 />
                 <button
                   type="button"
                   onClick={() => lampiranInputRef.current?.click()}
-                  className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer"
+                  disabled={lampiranAttachments.length >= 10}
+                  className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer disabled:opacity-50"
                 >
                   Upload
                 </button>
                 <input suppressHydrationWarning
                   ref={lampiranInputRef}
                   type="file"
-                  accept=".pdf,.doc,.docx,.jpg,.png"
+                  multiple
                   onChange={handleLampiranFileChange}
                   className="hidden"
                 />
               </div>
 
-              {/* Dashed preview box */}
-              <div
-                onClick={() => lampiranInputRef.current?.click()}
-                className="w-full md:w-2/3 h-64 bg-[#efedf3] border-2 border-dashed border-[#c5c6d2] rounded flex items-center justify-center text-[#757682] text-sm relative group cursor-pointer hover:bg-[#e9e7ee] transition-colors overflow-hidden"
-              >
-                {lampiranFileName ? (
-                  <>
-                    {lampiranPreview || lampiranFileName.match(/\.(jpeg|jpg|gif|png)$/i) ? (
-                      <img
-                        src={lampiranPreview || ''}
-                        alt="Pratinjau Lampiran"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="p-4 text-center">
-                        <Upload className="w-8 h-8 text-[#00113a] mx-auto mb-2" />
-                        <span className="font-semibold text-[#00113a] block break-all">{lampiranFileName}</span>
-                        <span className="text-xs text-emerald-600 font-medium mt-1 inline-block">Berkas Terlampir</span>
-                      </div>
-                    )}
-                    <button
-                      type="button"
-                      onClick={handleRemoveLampiran}
-                      className="absolute top-2 right-2 w-8 h-8 bg-white text-red-500 rounded-full flex items-center justify-center hover:bg-gray-100 shadow-md z-10"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <span>File Preview</span>
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/5">
-                      <Upload className="w-8 h-8 text-[#757682]" />
+              {/* Previews */}
+              {lampiranAttachments.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 w-full">
+                  {lampiranAttachments.map((att, idx) => (
+                    <div key={idx} className="relative group bg-[#e9e7ee] border border-[#c5c6d2] rounded-md overflow-hidden aspect-square flex flex-col items-center justify-center cursor-pointer" onClick={() => { if (att.preview) setModalImageUrl(att.preview); }}>
+                      {att.preview ? (
+                        <>
+                          <img src={att.preview} alt={att.name} className="w-full h-full object-contain p-1" />
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 text-white font-medium backdrop-blur-sm pointer-events-none">
+                            <span className="text-xs text-center px-2">Klik untuk memperbesar</span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="p-2 text-center flex flex-col items-center gap-1 pointer-events-none">
+                          <Upload className="w-6 h-6 text-[#00113a]" />
+                          <span className="text-xs font-semibold text-[#00113a] line-clamp-2 break-all">{att.name}</span>
+                          <span className="text-[10px] text-emerald-600 font-medium bg-emerald-100 px-2 py-0.5 rounded-full mt-1">File Terlampir</span>
+                        </div>
+                      )}
+                      
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveLampiran(idx);
+                        }}
+                        className="absolute top-1 right-1 w-6 h-6 bg-white text-red-500 rounded-full flex items-center justify-center hover:bg-red-50 shadow-sm z-10 cursor-pointer border border-red-100"
+                        title="Hapus file"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
                     </div>
-                  </>
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -703,6 +786,32 @@ export default function EditBeritaPage() {
           </div>
         </form>
       </div>
+
+      {/* Lightbox Preview Modal */}
+      {modalImageUrl && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fadeIn p-4 sm:p-8"
+          onClick={() => setModalImageUrl(null)}
+        >
+          <button
+            type="button"
+            className="absolute top-4 right-4 sm:top-8 sm:right-8 text-white/70 hover:text-white bg-black/50 hover:bg-black/80 rounded-full p-2 transition-all cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              setModalImageUrl(null);
+            }}
+          >
+            <X className="w-6 h-6 sm:w-8 sm:h-8" />
+          </button>
+
+          <img
+            src={modalImageUrl}
+            alt="Pratinjau Gambar Penuh"
+            className="max-w-full max-h-full object-contain rounded shadow-2xl cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 }

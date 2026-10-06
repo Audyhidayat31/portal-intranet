@@ -39,7 +39,7 @@ export default function DetailKonsultasiPage() {
       .then((data) => {
         if (data.success && data.data) {
           setCurrentUser(data.data);
-          setReplyAuthor(data.data.name || 'Budi Sujatmiko');
+          setReplyAuthor(data.data.name || 'Ahmad Fauzi');
         }
       })
       .catch(() => {});
@@ -47,7 +47,7 @@ export default function DetailKonsultasiPage() {
 
   // Modals for Tanggapan (Replies)
   const [isAddReplyOpen, setIsAddReplyOpen] = useState(false);
-  const [replyAuthor, setReplyAuthor] = useState('Budi Sujatmiko');
+  const [replyAuthor, setReplyAuthor] = useState('Ahmad Fauzi');
   const [replyText, setReplyText] = useState('');
 
   const [editingReply, setEditingReply] = useState<ConsultationReplyItem | null>(null);
@@ -97,7 +97,7 @@ export default function DetailKonsultasiPage() {
                 ? 'Konsultasi Pegawai.pdf'
                 : 'Konsultasi Kesehatan.pdf',
             attachmentUrl: '#',
-            authorName: apiData.author?.name || 'Budi Sujatmiko',
+            authorName: apiData.author?.name || 'Ahmad Fauzi',
             replies: (apiData.replies || []).map((r: any) => ({
               id: r.id,
               authorName: r.author?.name || 'Pegawai',
@@ -171,7 +171,7 @@ export default function DetailKonsultasiPage() {
 
     const newReply: ConsultationReplyItem = {
       id: `rep-${Date.now()}`,
-      authorName: replyAuthor.trim() || 'Budi Sujatmiko',
+      authorName: replyAuthor.trim() || 'Ahmad Fauzi',
       date: '20 Agustus 2026',
       content: replyText.trim(),
     };
@@ -266,7 +266,7 @@ export default function DetailKonsultasiPage() {
         'Musim peralihan cuaca seringkali membawa lonjakan kasus batuk dan flu di lingkungan kerja. Mari tingkatkan daya tahan tubuh dengan menjaga hidrasi, konsumsi vitamin C, istirahat cukup, dan mengenakan masker saat berada di ruang kerja bersama.',
       attachmentName: 'Konsultasi Kesehatan.pdf',
       attachmentUrl: '#',
-      authorName: 'Budi Sujatmiko',
+      authorName: 'Ahmad Fauzi',
       replies: [],
     };
 
@@ -381,7 +381,7 @@ export default function DetailKonsultasiPage() {
             </div>
 
             {/* Action Buttons: Edit & Hapus */}
-            {currentUser && (currentUser.role === 'admin' || currentUser.name === (currentItem.authorName || 'Budi Sujatmiko')) && (
+            {currentUser && (currentUser.role === 'admin' || currentUser.name === (currentItem.authorName || 'Ahmad Fauzi')) && (
               <div className="flex items-center gap-3">
                 <Link
                   href={`/antar-pegawai/konsultasi/${id}/edit`}

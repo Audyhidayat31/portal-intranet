@@ -122,7 +122,7 @@ export default function DetailKalimatBijakPage() {
   }
 
   const displayQuote = item.quote || item.content || item.title || 'Deskripsi Kutipan Kalimat Bijak';
-  const displayAuthor = item.authorName || 'Budi Sujatmiko';
+  const displayAuthor = item.authorName || 'Ahmad Fauzi';
   const displayDate = item.publishedAt || '20 Agustus 2026';
 
   const figureSource = item.figure

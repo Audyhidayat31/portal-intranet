@@ -249,7 +249,7 @@ export default function TambahKonsultasiPage() {
       description: rawText || judul.trim(),
       attachmentName: finalAttachment,
       attachmentUrl: '#',
-      authorName: 'Budi Sujatmiko',
+      authorName: 'Ahmad Fauzi',
       replies: [],
     };
 
