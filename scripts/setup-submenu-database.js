@@ -119,14 +119,7 @@ async function main() {
       \`id\` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
       \`nama_tokoh\` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
       \`slug\` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-      \`jabatan\` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-      \`unit_kerja\` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-      \`kutipan_inspiratif\` text COLLATE utf8mb4_unicode_ci NOT NULL,
-      \`cerita_lengkap\` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
-      \`foto_url\` text COLLATE utf8mb4_unicode_ci,
-      \`prestasi\` text COLLATE utf8mb4_unicode_ci,
-      \`riwayat_karier\` text COLLATE utf8mb4_unicode_ci,
-      \`is_spotlight\` tinyint(1) NOT NULL DEFAULT '0',
+      \`deskripsi\` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
       \`created_at\` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
       \`updated_at\` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
       PRIMARY KEY (\`id\`),
@@ -386,14 +379,12 @@ async function main() {
 
   // KUPAS SOSOK
   await prisma.$executeRawUnsafe(`
-    INSERT INTO \`kupas_sosok\` (\`id\`, \`nama_tokoh\`, \`slug\`, \`jabatan\`, \`unit_kerja\`, \`kutipan_inspiratif\`, \`cerita_lengkap\`, \`foto_url\`, \`prestasi\`, \`riwayat_karier\`, \`is_spotlight\`, \`created_at\`, \`updated_at\`)
-    SELECT p.\`id\`, p.\`name\`, p.\`slug\`, p.\`position\`, p.\`unitKerja\`, p.\`quote\`, p.\`fullStory\`, p.\`photoUrl\`, p.\`achievements\`, p.\`careerHistory\`, p.\`isSpotlight\`, p.\`createdAt\`, p.\`updatedAt\`
+    INSERT INTO \`kupas_sosok\` (\`id\`, \`nama_tokoh\`, \`slug\`, \`deskripsi\`, \`created_at\`, \`updated_at\`)
+    SELECT p.\`id\`, p.\`name\`, p.\`slug\`, COALESCE(p.\`deskripsi\`, p.\`fullStory\`, p.\`quote\`, ''), p.\`createdAt\`, p.\`updatedAt\`
     FROM \`profil_tokoh\` p
     ON DUPLICATE KEY UPDATE 
       \`nama_tokoh\` = VALUES(\`nama_tokoh\`), 
-      \`jabatan\` = VALUES(\`jabatan\`), 
-      \`kutipan_inspiratif\` = VALUES(\`kutipan_inspiratif\`), 
-      \`cerita_lengkap\` = VALUES(\`cerita_lengkap\`);
+      \`deskripsi\` = VALUES(\`deskripsi\`);
   `);
   console.log('  ↳ Table kupas_sosok populated.');
 

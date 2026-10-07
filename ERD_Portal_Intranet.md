@@ -300,14 +300,9 @@ erDiagram
         varchar id PK
         varchar nama_tokoh
         varchar slug UK
-        varchar jabatan
-        varchar unit_kerja
-        text kutipan_inspiratif
-        longtext cerita_lengkap
-        text foto_url
-        text prestasi
-        text riwayat_karier
-        boolean is_spotlight
+        longtext deskripsi
+        datetime created_at
+        datetime updated_at
     }
 
     pengaturan_beranda {
@@ -377,7 +372,7 @@ Setiap rubrik interaksi internal pegawai memiliki tabel independen yang terhubun
 ---
 
 ### D. Sub Menu Kupas Sosok & Pengaturan Beranda
-- **`kupas_sosok`**: Menampilkan tokoh inspiratif, pustakawan teladan, dan pejabat purnatugas.
+- **`kupas_sosok`**: Menampilkan profil tokoh inspiratif dengan nama tokoh dan deskripsinya.
 - **`pengaturan_beranda`**: Tabel konfigurasi dinamis untuk tata letak banner, kutipan pimpinan, dan pengumuman ticker di homepage.
 
 ---
@@ -404,6 +399,6 @@ Setiap rubrik interaksi internal pegawai memiliki tabel independen yang terhubun
 | `tahukah_anda` | `id` | `penulis_id` $\rightarrow$ `pengguna.id` | Menu Antar Pegawai $\rightarrow$ Tahukah Anda |
 | `topik_konsultasi` | `id` | `penulis_id` $\rightarrow$ `pengguna.id` | Menu Antar Pegawai $\rightarrow$ Konsultasi |
 | `balasan_konsultasi` | `id` | `topik_id` $\rightarrow$ `topik_konsultasi.id`, `penulis_id` $\rightarrow$ `pengguna.id` | Balasan konsultasi kepegawaian/IT/kesehatan |
-| `kupas_sosok` | `id` | - | Menu Kupas Sosok (Tokoh Inspiratif) |
+| `kupas_sosok` | `id` | - | Menu Kupas Sosok (Nama Tokoh & Deskripsi) |
 | `pengaturan_beranda` | `id` | - | Menu Admin $\rightarrow$ Kelola Halaman Utama |
 | `log_aktivitas` | `id` | `user_id` $\rightarrow$ `pengguna.id` | Menu Admin $\rightarrow$ Log Aktivitas |
