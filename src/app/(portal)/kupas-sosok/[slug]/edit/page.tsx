@@ -668,8 +668,8 @@ export default function EditKupasSosokPage() {
                   ref={gambarInputRef}
                   onChange={handleGambarFileChange}
                   accept="image/*"
-                  className="hidden"
-                />
+                  className="hidden" suppressHydrationWarning
+                 suppressHydrationWarning />
 
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                   {gambarPreview ? (
@@ -724,8 +724,8 @@ export default function EditKupasSosokPage() {
                   ref={lampiranInputRef}
                   onChange={handleLampiranFileChange}
                   accept=".pdf,.doc,.docx"
-                  className="hidden"
-                />
+                  className="hidden" suppressHydrationWarning
+                 suppressHydrationWarning />
 
                 <div className="flex items-center gap-3">
                   <button

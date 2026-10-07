@@ -246,7 +246,7 @@ export default function EditKalimatBijakPage() {
         body: JSON.stringify({
           title: judul,
           body: htmlContent || rawText || judul,
-          status: status === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
+          status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',
         }),
       });
 

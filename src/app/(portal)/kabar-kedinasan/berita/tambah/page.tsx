@@ -278,7 +278,7 @@ export default function TambahBeritaPage() {
             gambarPreview ||
             'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80',
           publishedAt: tanggal.toISOString(),
-          status: status === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
+          status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',
           attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments.map(a => a.name).join('|||') : null,
           attachmentUrl: lampiranAttachments.length > 0 ? JSON.stringify(lampiranAttachments.map(a => a.preview || '')) : null,
         }),
@@ -581,7 +581,7 @@ export default function TambahBeritaPage() {
                   type="text"
                   readOnly
                   value={gambarFileName}
-                  placeholder="Nama File.jpg/png"
+                  placeholder="Berkas berupa .jpg/ .png"
                   className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
                 />
                 <button
@@ -596,8 +596,7 @@ export default function TambahBeritaPage() {
                   type="file"
                   accept="image/*"
                   onChange={handleGambarFileChange}
-                  className="hidden"
-                />
+                  className="hidden" suppressHydrationWarning />
               </div>
 
               {/* Dashed preview box: Gambar Preview */}
@@ -643,7 +642,7 @@ export default function TambahBeritaPage() {
                   type="text"
                   readOnly
                   value={lampiranAttachments.length > 0 ? `${lampiranAttachments.length} file dipilih` : ''}
-                  placeholder="Upload maksimal 10 file..."
+                  placeholder="Berkas berupa .jpg/ .png"
                   className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
                 />
                 <button
@@ -659,8 +658,7 @@ export default function TambahBeritaPage() {
                   type="file"
                   multiple
                   onChange={handleLampiranFileChange}
-                  className="hidden"
-                />
+                  className="hidden" suppressHydrationWarning />
               </div>
 
               {/* Previews */}

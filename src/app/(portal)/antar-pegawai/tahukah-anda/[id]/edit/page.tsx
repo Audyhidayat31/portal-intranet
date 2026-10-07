@@ -330,7 +330,7 @@ export default function EditArtikelTahukahAndaPage() {
           body: htmlContent || rawText || judul,
           coverImage: fallbackImage,
           publishedAt: tanggal.toISOString(),
-          status: status === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
+          status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',
         }),
       });
     } catch {
@@ -653,8 +653,8 @@ export default function EditArtikelTahukahAndaPage() {
                   type="file"
                   accept="image/*"
                   onChange={handleGambarFileChange}
-                  className="hidden"
-                />
+                  className="hidden" suppressHydrationWarning
+                 suppressHydrationWarning />
               </div>
 
               {/* Dashed preview box: Gambar Preview */}
@@ -704,8 +704,8 @@ export default function EditArtikelTahukahAndaPage() {
                   type="file"
                   accept=".pdf,.doc,.docx,.jpg,.png"
                   onChange={handleLampiranFileChange}
-                  className="hidden"
-                />
+                  className="hidden" suppressHydrationWarning
+                 suppressHydrationWarning />
               </div>
 
               {/* Dashed preview box: File Preview */}

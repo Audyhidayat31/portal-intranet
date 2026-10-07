@@ -194,8 +194,8 @@ export default function TambahPegawaiPage() {
                         type="file"
                         accept="image/*"
                         onChange={handleImageFile}
-                        className="hidden"
-                      />
+                        className="hidden" suppressHydrationWarning
+                       suppressHydrationWarning />
                     </label>
                     <span className="text-xs text-slate-500">atau masukkan URL gambar di bawah</span>
                   </div>

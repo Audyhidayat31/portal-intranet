@@ -1726,8 +1726,7 @@ export default function AdminHomepageKelolaPage() {
                         setTentangData({ ...tentangData, latarBelakang: file.name });
                       }
                     }}
-                    className="hidden"
-                  />
+                    className="hidden" suppressHydrationWarning />
                   <button
                     type="button"
                     onClick={() => backgroundFileInputRef.current?.click()}
@@ -1765,8 +1764,7 @@ export default function AdminHomepageKelolaPage() {
                         setTentangData({ ...tentangData, panduanAplikasi: file.name });
                       }
                     }}
-                    className="hidden"
-                  />
+                    className="hidden" suppressHydrationWarning />
                   <button
                     type="button"
                     onClick={() => panduanFileInputRef.current?.click()}

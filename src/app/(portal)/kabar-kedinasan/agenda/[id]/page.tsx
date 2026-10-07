@@ -200,6 +200,7 @@ export default function DetailAgendaKegiatanPage() {
           <div className="border-t border-[#c5c6d2] my-8" />
 
           {/* Section: LAMPIRAN */}
+          {(agendaItem?.attachmentUrl || agendaItem?.attachmentName) && (
           <div>
             <h3 className="text-xs font-bold text-[#1a1b20] uppercase tracking-wider mb-4">
               LAMPIRAN
@@ -221,6 +222,7 @@ export default function DetailAgendaKegiatanPage() {
 
             </div>
           </div>
+          )}
 
           {/* Divider Line */}
           <div className="border-t border-[#c5c6d2] my-8" />

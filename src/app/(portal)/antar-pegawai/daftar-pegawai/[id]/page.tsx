@@ -409,7 +409,7 @@ export default function LihatPegawaiPage() {
                     <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold cursor-pointer transition-colors">
                       <Upload className="w-3.5 h-3.5" />
                       <span>Unggah Foto Baru</span>
-                      <input type="file" accept="image/*" onChange={handleAvatarFile} className="hidden" />
+                      <input type="file" accept="image/*" onChange={handleAvatarFile} className="hidden" suppressHydrationWarning  suppressHydrationWarning />
                     </label>
                   </div>
                 </div>

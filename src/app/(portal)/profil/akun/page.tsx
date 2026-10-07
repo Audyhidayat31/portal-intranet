@@ -44,6 +44,7 @@ export default function ProfilPegawaiPage() {
   const SATUAN_KERJA_OPTIONS = ['Sistem Informasi', 'Pusat Data dan Informasi'];
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'info-akun' | 'ubah-kata-sandi'>('info-akun');
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   
   // Edit State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -111,6 +112,11 @@ export default function ProfilPegawaiPage() {
   const handleAvatarFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      if (file.type !== 'image/jpeg' && file.type !== 'image/png') {
+        alert('File foto harus berformat .jpg atau .png');
+        e.target.value = '';
+        return;
+      }
       setAvatarFile(file);
       // Create local preview URL
       const reader = new FileReader();
@@ -125,9 +131,16 @@ export default function ProfilPegawaiPage() {
     e.preventDefault();
     setStatusMessage(null);
 
-    if (newPassword && newPassword !== confirmPassword) {
-      setStatusMessage({ type: 'error', text: 'Konfirmasi password baru tidak cocok.' });
-      return;
+    if (newPassword) {
+      if (newPassword !== confirmPassword) {
+        setStatusMessage({ type: 'error', text: 'Konfirmasi password baru tidak cocok.' });
+        return;
+      }
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+      if (!passwordRegex.test(newPassword)) {
+        setStatusMessage({ type: 'error', text: 'Sandi baru minimal 8 karakter, mengandung huruf besar, huruf kecil, dan angka.' });
+        return;
+      }
     }
 
     setIsSaving(true);
@@ -237,12 +250,18 @@ export default function ProfilPegawaiPage() {
           {/* User Quick Info Card */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E9ECEF] flex flex-col items-center text-center relative overflow-hidden">
             <div className="relative mb-4">
-              <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-slate-100 shadow-md bg-slate-100 flex items-center justify-center">
+              <div 
+                className="group relative w-32 h-32 shrink-0 aspect-square rounded-full overflow-hidden border-4 border-slate-100 shadow-md bg-slate-100 flex items-center justify-center cursor-pointer" 
+                onClick={() => setPreviewImage(p?.avatarUrl || '/images/avatar-budi-santoso.jpg')}
+              >
                 <img
                   src={p?.avatarUrl || '/images/avatar-budi-santoso.jpg'}
                   alt={displayName}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-center transition-all duration-300 group-hover:scale-110 group-hover:blur-[1px]"
                 />
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <span className="text-white text-xs font-bold text-center px-4 leading-tight shadow-sm">Lihat Ukuran Penuh</span>
+                </div>
               </div>
               <button
                 onClick={() => setIsEditModalOpen(true)}
@@ -398,13 +417,31 @@ export default function ProfilPegawaiPage() {
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                 />
-                <Input
-                  label="Sandi Baru"
-                  type="password"
-                  placeholder="Minimal 6 karakter"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                />
+                <div className="space-y-1">
+                  <Input
+                    label="Sandi Baru"
+                    type="password"
+                    placeholder="Masukkan Sandi Baru"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                  />
+                  {newPassword.length > 0 && (
+                    <div className="pt-1 pb-2 space-y-1.5 text-[11px] font-medium px-1">
+                      <div className={`flex items-center gap-1.5 ${/^(?=.*[a-z])(?=.*[A-Z]).+$/.test(newPassword) ? 'text-emerald-600' : 'text-slate-400'}`}>
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        <span>Menggunakan Huruf Kecil dan Huruf Besar</span>
+                      </div>
+                      <div className={`flex items-center gap-1.5 ${/^(?=.*\d).+$/.test(newPassword) ? 'text-emerald-600' : 'text-slate-400'}`}>
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        <span>Menggunakan Angka</span>
+                      </div>
+                      <div className={`flex items-center gap-1.5 ${newPassword.length >= 8 ? 'text-emerald-600' : 'text-slate-400'}`}>
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        <span>Minimal 8 karakter</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <Input
                   label="Konfirmasi Sandi Baru"
                   type="password"
@@ -450,16 +487,20 @@ export default function ProfilPegawaiPage() {
                 </label>
                 <div className="flex items-center gap-4">
                   <div 
-                    className={`w-16 h-16 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center ${editForm.avatarUrl ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
+                    className={`group relative w-16 h-16 aspect-square rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center ${editForm.avatarUrl ? 'cursor-pointer' : ''}`}
                     onClick={() => {
                       if (editForm.avatarUrl) {
-                        window.open(editForm.avatarUrl, '_blank');
+                        setPreviewImage(editForm.avatarUrl);
                       }
                     }}
-                    title={editForm.avatarUrl ? "Klik untuk melihat foto penuh" : ""}
                   >
                     {editForm.avatarUrl ? (
-                      <img src={editForm.avatarUrl} alt="Preview" className="w-full h-full object-cover" />
+                      <>
+                        <img src={editForm.avatarUrl} alt="Preview" className="w-full h-full object-cover object-center transition-all duration-300 group-hover:scale-110 group-hover:blur-[1px]" />
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <span className="text-white text-[8px] font-bold text-center px-1 leading-tight">Lihat Ukuran Penuh</span>
+                        </div>
+                      </>
                     ) : (
                       <User className="w-8 h-8 text-slate-400" />
                     )}
@@ -468,7 +509,7 @@ export default function ProfilPegawaiPage() {
                     <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold cursor-pointer transition-colors">
                       <Upload className="w-3.5 h-3.5" />
                       <span>Unggah Foto Baru</span>
-                      <input type="file" accept="image/*" onChange={handleAvatarFile} className="hidden" />
+                      <input type="file" accept=".jpg,.jpeg,.png" onChange={handleAvatarFile} className="hidden" suppressHydrationWarning />
                     </label>
                   </div>
                 </div>
@@ -658,6 +699,29 @@ export default function ProfilPegawaiPage() {
           </div>
         </div>
       , document.body) : null}
+    
+      {/* Lightbox Preview */}
+      {previewImage && typeof window !== 'undefined' && createPortal(
+        <div 
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fadeIn"
+          onClick={() => setPreviewImage(null)}
+        >
+          <div className="relative max-w-4xl max-h-[90vh] flex items-center justify-center" onClick={e => e.stopPropagation()}>
+            <button
+              onClick={() => setPreviewImage(null)}
+              className="absolute -top-12 right-0 sm:-right-12 w-10 h-10 bg-white/20 hover:bg-white/40 text-white rounded-full flex items-center justify-center backdrop-blur-md transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <img 
+              src={previewImage} 
+              alt="Preview" 
+              className="max-w-full max-h-[85vh] rounded-xl shadow-2xl object-contain border border-white/20"
+            />
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

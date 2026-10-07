@@ -587,8 +587,8 @@ export default function TambahDokumenInternalPage() {
                   type="file"
                   accept=".pdf,.docx,.doc"
                   onChange={handleFileChange}
-                  className="hidden"
-                />
+                  className="hidden" suppressHydrationWarning
+                 suppressHydrationWarning />
               </div>
             </div>
 

@@ -742,8 +742,8 @@ export default function EditKonsultasiPage() {
                   type="file"
                   accept=".pdf,.doc,.docx,.jpg,.png"
                   onChange={handleLampiranFileChange}
-                  className="hidden"
-                />
+                  className="hidden" suppressHydrationWarning
+                 suppressHydrationWarning />
               </div>
 
               {/* Dashed preview box */}

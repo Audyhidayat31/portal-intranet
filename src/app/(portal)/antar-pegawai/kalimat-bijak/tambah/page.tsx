@@ -188,7 +188,7 @@ export default function TambahKalimatBijakPage() {
           categorySlug: 'kalimat-bijak',
           body: editorRef.current?.innerHTML || deskripsiHtml || rawContent,
           coverImage: '/images/kabar-keluarga/card-1.jpg',
-          status: status === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
+          status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',
         }),
       });
 

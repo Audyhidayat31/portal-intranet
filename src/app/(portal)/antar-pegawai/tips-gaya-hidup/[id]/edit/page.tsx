@@ -328,7 +328,7 @@ export default function EditTipsGayaHidupPage() {
           body: htmlContent || rawText || judul,
           coverImage: fallbackImage,
           publishedAt: tanggal.toISOString(),
-          status: status === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
+          status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',
           attachmentName: lampiranFileName || null,
         }),
       });
@@ -652,8 +652,8 @@ export default function EditTipsGayaHidupPage() {
                   type="file"
                   accept="image/*"
                   onChange={handleGambarFileChange}
-                  className="hidden"
-                />
+                  className="hidden" suppressHydrationWarning
+                 suppressHydrationWarning />
               </div>
 
               {/* Dashed preview box */}
@@ -703,8 +703,8 @@ export default function EditTipsGayaHidupPage() {
                   type="file"
                   accept=".pdf,.doc,.docx,.jpg,.png"
                   onChange={handleLampiranFileChange}
-                  className="hidden"
-                />
+                  className="hidden" suppressHydrationWarning
+                 suppressHydrationWarning />
               </div>
 
               {/* Dashed preview box */}

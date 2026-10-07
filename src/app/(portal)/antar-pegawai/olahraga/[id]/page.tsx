@@ -202,6 +202,13 @@ export default function DetailOlahragaPage() {
             </p>
           </div>
 
+          {/* Featured Image */}
+          {(item?.coverImage || item?.coverImage) && (
+            <div className="mb-8 w-full aspect-[2/1] bg-slate-100 rounded-lg overflow-hidden border border-[#c5c6d2]">
+              <img src={item?.coverImage || item?.coverImage} alt={displayTitle} className="w-full h-full object-cover" />
+            </div>
+          )}
+
           {/* Section: Uraian Artikel Olahraga matching Wireframe 2 */}
           <div>
             <h2 className="text-xs font-bold text-[#757682] mb-2">
