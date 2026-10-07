@@ -52,15 +52,26 @@ export default function PengumumanPage() {
 
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Dropdown Pagination state
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [isPerPageOpen, setIsPerPageOpen] = useState(false);
   const perPageRef = useRef<HTMLDivElement>(null);
+
+  // Edit Announcement State variables moved up
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
+  const [editAttachmentName, setEditAttachmentName] = useState('');
+  const [editStatus, setEditStatus] = useState('Terbit');
+  const [isEditStatusMenuOpen, setIsEditStatusMenuOpen] = useState(false);
+  const editStatusMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (perPageRef.current && !perPageRef.current.contains(event.target as Node)) {
         setIsPerPageOpen(false);
+      }
+      if (editStatusMenuRef.current && !editStatusMenuRef.current.contains(event.target as Node)) {
+        setIsEditStatusMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -72,11 +83,7 @@ export default function PengumumanPage() {
   }, []);
 
 
-  // Edit Announcement State
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editTitle, setEditTitle] = useState('');
-  const [editContent, setEditContent] = useState('');
-  const [editAttachmentName, setEditAttachmentName] = useState('');
+  // Edit Announcement State variables are declared above
 
   const [editAttachments, setEditAttachments] = useState<{ file: File | null, name: string, preview: string | null }[]>([]);
   const editAttachmentInputRef = useRef<HTMLInputElement>(null);
@@ -202,6 +209,7 @@ export default function PengumumanPage() {
 
   const handleOpenEdit = (item: any) => {
     setEditTitle(item.title || '');
+    setEditStatus((item.status === 'MENUNGGU' || item.status === 'Menunggu' || item.status === 'DRAFT') ? 'Menunggu' : 'Terbit');
     setEditContent(item.content || item.body || item.excerpt || '');
     setEditAttachmentName(item.attachmentName || '');
     if (item.attachmentName) {
@@ -225,6 +233,7 @@ export default function PengumumanPage() {
           title: editTitle,
           content: editContent,
           attachmentName: editAttachmentName,
+          status: editStatus === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
         }),
       });
       const data = await res.json();
@@ -235,6 +244,9 @@ export default function PengumumanPage() {
           content: editContent,
           body: editContent,
           attachmentName: editAttachmentName,
+          status: editStatus === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
+          updatedAt: data.data?.updatedAt || new Date().toISOString(),
+          editor: currentUser,
         };
         setSelectedAnnouncement(updated);
         setAnnouncements((prev) =>
@@ -249,6 +261,9 @@ export default function PengumumanPage() {
           content: editContent,
           body: editContent,
           attachmentName: editAttachmentName,
+          status: editStatus === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
+          updatedAt: new Date().toISOString(),
+          editor: currentUser,
         };
         setSelectedAnnouncement(updated);
         setAnnouncements((prev) =>
@@ -263,6 +278,8 @@ export default function PengumumanPage() {
         content: editContent,
         body: editContent,
         attachmentName: editAttachmentName,
+        updatedAt: new Date().toISOString(),
+        editor: currentUser,
       };
       setSelectedAnnouncement(updated);
       setAnnouncements((prev) =>
@@ -546,27 +563,29 @@ export default function PengumumanPage() {
             </div>
 
             {/* Attachments Section (5 Image Placeholders matching Stitch) */}
-            <section className="mb-8">
-              <h2 className="text-xs font-bold text-[#1a1b20] mb-3">Lampiran</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
-                {MOCK_ATTACHMENT_IMAGES.map((att) => (
-                  <div
-                    key={att.id}
-                    onClick={() => setPreviewAttachment(att.url)}
-                    className="aspect-square bg-[#efedf3] border border-[#c5c6d2] rounded flex flex-col items-center justify-center hover:bg-[#e9e7ee] transition-colors cursor-pointer group p-2 relative overflow-hidden"
-                  >
-                    <img
-                      src={att.url}
-                      alt={`Lampiran ${att.id}`}
-                      className="w-full h-full object-cover rounded opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all"
-                    />
-                    <span className="absolute bottom-1 bg-black/60 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
-                      {att.label} {att.id}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </section>
+            {(selectedAnnouncement.attachmentName || selectedAnnouncement.attachmentUrl) && (
+              <section className="mb-8">
+                <h2 className="text-xs font-bold text-[#1a1b20] mb-3">Lampiran</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
+                  {MOCK_ATTACHMENT_IMAGES.map((att) => (
+                    <div
+                      key={att.id}
+                      onClick={() => setPreviewAttachment(att.url)}
+                      className="aspect-square bg-[#efedf3] border border-[#c5c6d2] rounded flex flex-col items-center justify-center hover:bg-[#e9e7ee] transition-colors cursor-pointer group p-2 relative overflow-hidden"
+                    >
+                      <img
+                        src={att.url}
+                        alt={`Lampiran ${att.id}`}
+                        className="w-full h-full object-cover rounded opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all"
+                      />
+                      <span className="absolute bottom-1 bg-black/60 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                        {att.label} {att.id}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* Footer / Meta Section matching Stitch */}
             <footer className="flex flex-col sm:flex-row justify-between items-start sm:items-end border-t border-[#c5c6d2] pt-6 gap-4">
@@ -676,6 +695,46 @@ export default function PengumumanPage() {
                 />
               </div>
 
+              {/* Status Edit Dropdown */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4 items-center mb-4">
+                <label className="font-bold text-xs md:text-sm text-[#1a1b20] flex items-center h-10 md:col-span-1">
+                  <span>Status</span>
+                  <span className="ml-auto pr-4 hidden md:inline">:</span>
+                </label>
+                <div className="md:col-span-3 relative w-full md:w-56" ref={editStatusMenuRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditStatusMenuOpen(!isEditStatusMenuOpen)}
+                    className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${isEditStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
+                      }`}
+                  >
+                    <span className="truncate">{editStatus || 'Jenis Status'}</span>
+                    <ChevronDown className={`w-4 h-4 text-white transition-transform ${isEditStatusMenuOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {isEditStatusMenuOpen && (
+                    <div className="absolute top-full left-0 w-full bg-white border border-[#c5c6d2] rounded-b-md shadow-lg z-50 overflow-hidden">
+                      <div className="flex flex-col text-sm text-[#1a1b20]">
+                        <button
+                          type="button"
+                          onClick={() => { setEditStatus('Terbit'); setIsEditStatusMenuOpen(false); }}
+                          className={`text-left px-4 py-2.5 hover:bg-[#efedf3] transition-colors ${editStatus === 'Terbit' ? 'bg-[#efedf3] font-bold' : ''}`}
+                        >
+                          Terbit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setEditStatus('Menunggu'); setIsEditStatusMenuOpen(false); }}
+                          className={`text-left px-4 py-2.5 hover:bg-[#efedf3] transition-colors ${editStatus === 'Menunggu' ? 'bg-[#efedf3] font-bold' : ''}`}
+                        >
+                          Menunggu
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div>
                 <label className="block text-xs font-bold text-[#1a1b20] mb-1.5">
                   Uraian / Isi Pengumuman
@@ -709,7 +768,7 @@ export default function PengumumanPage() {
                       multiple
                       onChange={handleEditAttachmentChange}
                       className="hidden"
-                    />
+                     suppressHydrationWarning />
                     <button
                       type="button"
                       onClick={() => editAttachmentInputRef.current?.click()}

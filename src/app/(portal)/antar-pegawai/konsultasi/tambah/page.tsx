@@ -624,8 +624,8 @@ export default function TambahKonsultasiPage() {
                   type="file"
                   accept=".pdf,.doc,.docx"
                   onChange={handleLampiranFileChange}
-                  className="hidden"
-                />
+                  className="hidden" suppressHydrationWarning
+                 suppressHydrationWarning />
               </div>
 
               {/* Dashed preview box: File Preview */}

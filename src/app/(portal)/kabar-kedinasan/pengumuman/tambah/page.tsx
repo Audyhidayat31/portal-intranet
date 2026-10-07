@@ -15,6 +15,7 @@ import {
   CheckCircle,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Sparkles,
   Heading1,
   Heading2,
@@ -29,7 +30,12 @@ export default function TambahPengumumanPage() {
   const router = useRouter();
   const [judul, setJudul] = useState('');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [status, setStatus] = useState('Terbit');
   const [deskripsiHtml, setDeskripsiHtml] = useState('');
+  
+  // Status Menu Popover state
+  const [isStatusMenuOpen, setIsStatusMenuOpen] = useState(false);
+  const statusMenuRef = useRef<HTMLDivElement>(null);
 
   // Active toolbar formatting states
   const [activeStyles, setActiveStyles] = useState({
@@ -90,6 +96,12 @@ export default function TambahPengumumanPage() {
         !datePickerRef.current.contains(event.target as Node)
       ) {
         setIsDatePickerOpen(false);
+      }
+      if (
+        statusMenuRef.current &&
+        !statusMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsStatusMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -228,12 +240,17 @@ export default function TambahPengumumanPage() {
           content: htmlContent || rawText,
           attachmentName: attachments.length > 0 ? attachments.map(a => a.name).join(', ') : undefined,
           publishedAt: selectedDate.toISOString(),
+          status,
         }),
       });
 
       const data = await res.json();
       if (data.success) {
-        setSuccessMessage('Pengumuman berhasil disimpan dan dipublikasikan!');
+        setSuccessMessage(
+          status === 'Menunggu'
+            ? 'Pengumuman berhasil disimpan dan menunggu persetujuan!'
+            : 'Pengumuman berhasil disimpan dan dipublikasikan!'
+        );
         setTimeout(() => {
           router.push('/kabar-kedinasan/pengumuman');
         }, 1200);
@@ -502,6 +519,59 @@ export default function TambahPengumumanPage() {
               </div>
             </div>
 
+            {/* Field: Status */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4 items-center">
+              <label
+                htmlFor="status"
+                className="font-bold text-sm text-[#1a1b20] flex items-center h-10 md:col-span-1"
+              >
+                <span>Status</span>
+                <span className="ml-auto pr-4 hidden md:inline">:</span>
+              </label>
+              <div className="md:col-span-3 relative w-full md:w-56" ref={statusMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
+                  className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
+                    }`}
+                >
+                  <span className="truncate">{status || 'Jenis Status'}</span>
+                  <ChevronDown className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isStatusMenuOpen && (
+                  <div className="absolute top-full left-0 z-50 w-full bg-white border border-[#c5c6d2] border-t-0 rounded-b-md shadow-lg py-1 animate-fadeIn">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStatus('Terbit');
+                        setIsStatusMenuOpen(false);
+                      }}
+                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Terbit'
+                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                        }`}
+                    >
+                      Terbit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStatus('Menunggu');
+                        setIsStatusMenuOpen(false);
+                      }}
+                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Menunggu'
+                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                        }`}
+                    >
+                      Menunggu
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Field: Deskripsi with Direct WYSIWYG Editing */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4 items-start">
               <label
@@ -657,8 +727,7 @@ export default function TambahPengumumanPage() {
                     multiple
                     suppressHydrationWarning
                     onChange={handleAttachmentChange}
-                    className="hidden"
-                  />
+                    className="hidden" suppressHydrationWarning />
                   <button
                     type="button"
                     onClick={() => attachmentInputRef.current?.click()}

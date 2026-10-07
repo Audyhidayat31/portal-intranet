@@ -34,7 +34,7 @@ export default function DetailKabarKeluargaPage() {
   const matchedInitial =
     STITCH_MOCK_KABAR_KELUARGA_9.find(
       (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
-    ) || STITCH_MOCK_KABAR_KELUARGA_9[0];
+    );
 
   const [item, setItem] = useState<any>(
     matchedInitial ? { ...matchedInitial, body: matchedInitial.content } : null
@@ -195,6 +195,13 @@ Keluarga besar Perpustakaan Nasional senantiasa mendukung para pegawai dalam men
               {displayDate}
             </p>
           </div>
+
+          {/* Featured Image */}
+          {(item?.coverImage || item?.coverImage) && (
+            <div className="mb-8 w-full aspect-[2/1] bg-slate-100 rounded-lg overflow-hidden border border-[#c5c6d2]">
+              <img src={item?.coverImage || item?.coverImage} alt={displayTitle} className="w-full h-full object-cover" />
+            </div>
+          )}
 
           {/* Section: Uraian Kabar Keluarga */}
           <div>

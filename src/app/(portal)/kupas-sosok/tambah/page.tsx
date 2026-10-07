@@ -563,8 +563,8 @@ export default function TambahKupasSosokPage() {
                     type="file"
                     accept="image/*"
                     onChange={handleGambarFileChange}
-                    className="hidden"
-                  />
+                    className="hidden" suppressHydrationWarning
+                   suppressHydrationWarning />
                 </div>
 
                 {/* Dashed preview box: Gambar Preview */}
@@ -614,8 +614,8 @@ export default function TambahKupasSosokPage() {
                     type="file"
                     accept=".pdf,.doc,.docx,.jpg,.png"
                     onChange={handleLampiranFileChange}
-                    className="hidden"
-                  />
+                    className="hidden" suppressHydrationWarning
+                   suppressHydrationWarning />
                 </div>
 
                 {/* Dashed preview box: File Preview */}

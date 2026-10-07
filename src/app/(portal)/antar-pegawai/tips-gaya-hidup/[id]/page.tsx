@@ -33,7 +33,7 @@ export default function DetailTipsGayaHidupPage() {
   const matchedInitial =
     STITCH_MOCK_TIPS_GAYA_HIDUP_9.find(
       (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
-    ) || STITCH_MOCK_TIPS_GAYA_HIDUP_9[0];
+    );
 
   const [item, setItem] = useState<any>(
     matchedInitial ? { ...matchedInitial, body: matchedInitial.content } : null
@@ -196,6 +196,13 @@ Mari jadikan gaya hidup sehat sebagai bagian tak terpisahkan dari dedikasi kita 
               {displayDate}
             </p>
           </div>
+
+          {/* Featured Image */}
+          {item?.coverImage && (
+            <div className="mb-8 w-full aspect-[2/1] bg-slate-100 rounded-lg overflow-hidden border border-[#c5c6d2]">
+              <img src={item.coverImage} alt={displayTitle} className="w-full h-full object-cover" />
+            </div>
+          )}
 
           {/* Section: Uraian Tips dan Gaya Hidup */}
           <div>

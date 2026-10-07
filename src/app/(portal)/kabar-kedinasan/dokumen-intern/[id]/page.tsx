@@ -231,27 +231,29 @@ Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedan
           <div className="border-t border-[#c5c6d2] my-8" />
 
           {/* Section: LAMPIRAN */}
-          <div>
-            <h3 className="text-xs font-bold text-[#1a1b20] uppercase tracking-wider mb-4">
-              LAMPIRAN
-            </h3>
+          {(documentItem?.attachmentUrl || documentItem?.attachmentName) && (
+            <div>
+              <h3 className="text-xs font-bold text-[#1a1b20] uppercase tracking-wider mb-4">
+                LAMPIRAN
+              </h3>
 
-            {/* 5 Attachment Thumbnails matching Stitch */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
-              {MOCK_ATTACHMENT_IMAGES.map((att) => (
-                <button
-                  key={att.id}
-                  type="button"
-                  onClick={() => setPreviewImage(att.src)}
-                  className="aspect-square bg-[#e2e3ea] hover:bg-[#d8d9e2] border border-[#c5c6d2] rounded-md flex flex-col items-center justify-center text-xs text-[#757682] hover:text-[#00113a] font-medium transition-all group shadow-2xs cursor-pointer"
-                >
-                  <span className="text-xs font-medium text-[#757682] group-hover:text-[#1a1b20] transition-colors">
-                    {att.label}
-                  </span>
-                </button>
-              ))}
+              {/* 5 Attachment Thumbnails matching Stitch */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
+                {MOCK_ATTACHMENT_IMAGES.map((att) => (
+                  <button
+                    key={att.id}
+                    type="button"
+                    onClick={() => setPreviewImage(att.src)}
+                    className="aspect-square bg-[#e2e3ea] hover:bg-[#d8d9e2] border border-[#c5c6d2] rounded-md flex flex-col items-center justify-center text-xs text-[#757682] hover:text-[#00113a] font-medium transition-all group shadow-2xs cursor-pointer"
+                  >
+                    <span className="text-xs font-medium text-[#757682] group-hover:text-[#1a1b20] transition-colors">
+                      {att.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Divider Line */}
           <div className="border-t border-[#c5c6d2] my-8" />

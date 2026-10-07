@@ -397,7 +397,7 @@ export default function BerandaPage() {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <span className="absolute top-4 left-4 bg-white border border-[#c5c6d2] text-[#1b6d24] font-bold text-[10px] px-2 py-0.5 uppercase tracking-wider rounded shadow-sm">
-                  {post.category || 'HUMOR'}
+                  {post.categorySlug ? post.categorySlug.replace(/-/g, ' ') : (post.category || 'HUMOR')}
                 </span>
               </div>
               <div className="p-5 flex flex-col flex-grow justify-between">
@@ -418,7 +418,7 @@ export default function BerandaPage() {
                     {post.title}
                   </h3>
                   <p className="text-xs text-[#444650] line-clamp-2 mb-4 leading-relaxed">
-                    {post.content || post.excerpt}
+                    {post.body ? post.body.replace(/<[^>]+>/g, '').slice(0, 100) + '...' : (post.content || post.excerpt)}
                   </p>
                 </div>
                 <div className="flex justify-end mt-auto pt-2">
@@ -447,7 +447,7 @@ export default function BerandaPage() {
           {/* Right Arrow */}
           <button 
             onClick={() => setCurrentPostPage(prev => Math.min(Math.max(0, Math.ceil((postsList?.length || 1) / 3) - 1), prev + 1))}
-            disabled={currentPostPage === 4}
+            disabled={currentPostPage >= Math.min(5, Math.ceil((postsList?.length || 0) / 3) || 1) - 1}
             className="absolute -right-4 sm:-right-8 md:-right-12 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border border-[#c5c6d2] shadow-md flex items-center justify-center text-[#00113a] disabled:opacity-0 transition-all opacity-0 group-hover:opacity-100 hover:bg-slate-50 z-10"
             aria-label="Next page"
           >
@@ -457,7 +457,7 @@ export default function BerandaPage() {
         
         {/* Pagination Controls */}
         <div className="flex justify-center items-center gap-2 pt-4">
-          {Array.from({ length: 5 }).map((_, idx) => (
+          {Array.from({ length: Math.min(5, Math.ceil((postsList?.length || 0) / 3) || 1) }).map((_, idx) => (
             <button
               key={idx}
               onClick={() => setCurrentPostPage(idx)}

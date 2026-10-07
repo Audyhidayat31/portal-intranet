@@ -1,21 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getSessionUserFromRequest } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('q') || '';
 
+    const session = await getSessionUserFromRequest(request);
+
     const where: any = {
       type: 'ANNOUNCEMENT',
-      status: 'TERBIT',
+      AND: [],
     };
 
+    if (session?.role === 'admin' || session?.role === 'administrator') {
+      where.status = { in: ['TERBIT', 'MENUNGGU', 'DRAFT'] };
+    } else if (session?.userId) {
+      where.AND.push({
+        OR: [
+          { status: 'TERBIT' },
+          { authorId: session.userId }
+        ]
+      });
+    } else {
+      where.status = 'TERBIT';
+    }
+
     if (search) {
-      where.OR = [
-        { title: { contains: search } },
-        { body: { contains: search } },
-      ];
+      where.AND.push({
+        OR: [
+          { title: { contains: search } },
+          { body: { contains: search } },
+        ],
+      });
+    }
+
+    if (where.AND.length === 0) {
+      delete where.AND;
     }
 
     const items = await prisma.content.findMany({
@@ -36,7 +58,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, excerpt, content, attachmentName, isPinned, publishedAt } = body;
+    const { title, excerpt, content, attachmentName, isPinned, publishedAt, status } = body;
 
     if (!title || !content) {
       return NextResponse.json(
@@ -45,13 +67,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const defaultUser = await prisma.user.findFirst();
-    if (!defaultUser) {
-      return NextResponse.json(
-        { success: false, message: 'User tidak ditemukan' },
-        { status: 400 }
-      );
+    const session = await getSessionUserFromRequest(request);
+    let authorId;
+    if (session && session.userId) {
+      authorId = session.userId;
+    } else {
+      const defaultUser = await prisma.user.findFirst();
+      if (!defaultUser) {
+        return NextResponse.json(
+          { success: false, message: 'User tidak ditemukan' },
+          { status: 400 }
+        );
+      }
+      authorId = defaultUser.id;
     }
+
+    const postStatus = status === 'Menunggu' || status === 'MENUNGGU' ? 'MENUNGGU' : 'TERBIT';
 
     const slug = `${title
       .toLowerCase()
@@ -65,10 +96,10 @@ export async function POST(request: NextRequest) {
         excerpt: excerpt || content.slice(0, 150),
         body: content,
         type: 'ANNOUNCEMENT',
-        status: 'TERBIT',
+        status: postStatus,
         isPinned: Boolean(isPinned),
         attachmentName: attachmentName || null,
-        authorId: defaultUser.id,
+        authorId,
         publishedAt: publishedAt ? new Date(publishedAt) : new Date(),
       },
     });

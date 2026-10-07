@@ -202,7 +202,7 @@ export default function TambahKabarKeluargaPage() {
           body: htmlContent || rawText || judul,
           coverImage: gambarPreview || '/images/kabar-keluarga/card-1.jpg',
           publishedAt: tanggal.toISOString(),
-          status: status === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
+          status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',
           attachmentName: lampiranFileName || null,
         }),
       });
@@ -579,8 +579,8 @@ export default function TambahKabarKeluargaPage() {
                   type="file"
                   accept="image/*"
                   onChange={handleGambarFileChange}
-                  className="hidden"
-                />
+                  className="hidden" suppressHydrationWarning
+                 suppressHydrationWarning />
               </div>
 
               {/* Dashed preview box: Gambar Preview */}
@@ -630,8 +630,8 @@ export default function TambahKabarKeluargaPage() {
                   type="file"
                   accept=".pdf,.doc,.docx,.jpg,.png"
                   onChange={handleLampiranFileChange}
-                  className="hidden"
-                />
+                  className="hidden" suppressHydrationWarning
+                 suppressHydrationWarning />
               </div>
 
               {/* Dashed preview box: File Preview */}

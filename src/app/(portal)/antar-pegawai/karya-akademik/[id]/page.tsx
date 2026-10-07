@@ -27,7 +27,7 @@ export default function DetailKaryaAkademikPage() {
   const matchedInitial =
     STITCH_MOCK_KARYA_AKADEMIK.find(
       (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
-    ) || STITCH_MOCK_KARYA_AKADEMIK[0];
+    );
 
   const [item, setItem] = useState<KaryaAkademikItem | null>(matchedInitial);
   const [isLoading, setIsLoading] = useState(!matchedInitial);
@@ -201,6 +201,13 @@ export default function DetailKaryaAkademikPage() {
               {displayDate}
             </p>
           </div>
+
+          {/* Featured Image */}
+          {(item?.coverImage || item?.coverImage) && (
+            <div className="mb-8 w-full aspect-[2/1] bg-slate-100 rounded-lg overflow-hidden border border-[#c5c6d2]">
+              <img src={item?.coverImage || item?.coverImage} alt={displayTitle} className="w-full h-full object-cover" />
+            </div>
+          )}
 
           {/* Section: Uraian Karya Akademik matching Wireframe Gambar 3 */}
           <div>
