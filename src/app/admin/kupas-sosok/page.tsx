@@ -18,12 +18,7 @@ export default function AdminKupasSosokPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [name, setName] = useState('');
-  const [position, setPosition] = useState('');
-  const [unitKerja, setUnitKerja] = useState('');
-  const [quote, setQuote] = useState('');
-  const [fullStory, setFullStory] = useState('');
-  const [photoUrl, setPhotoUrl] = useState('');
-  const [isSpotlight, setIsSpotlight] = useState(false);
+  const [deskripsi, setDeskripsi] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [figureToDelete, setFigureToDelete] = useState<any | null>(null);
@@ -54,12 +49,7 @@ export default function AdminKupasSosokPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name,
-          position,
-          unitKerja,
-          quote,
-          fullStory,
-          photoUrl: photoUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&auto=format&fit=crop',
-          isSpotlight,
+          deskripsi,
         }),
       });
 
@@ -67,12 +57,7 @@ export default function AdminKupasSosokPage() {
       if (data.success) {
         setIsModalOpen(false);
         setName('');
-        setPosition('');
-        setUnitKerja('');
-        setQuote('');
-        setFullStory('');
-        setPhotoUrl('');
-        setIsSpotlight(false);
+        setDeskripsi('');
         fetchFigures();
       } else {
         alert(data.message);
@@ -106,10 +91,14 @@ export default function AdminKupasSosokPage() {
     }
   };
 
-  const filtered = figures.filter((f) =>
-    f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    f.position.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filtered = figures.filter((f) => {
+    const figureName = f.nama_tokoh || f.name || '';
+    const figureDesc = f.deskripsi || f.fullStory || f.cerita_lengkap || f.quote || '';
+    return (
+      figureName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      figureDesc.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  });
 
   return (
     <div className="space-y-6">
@@ -120,7 +109,7 @@ export default function AdminKupasSosokPage() {
             Kelola Profil Kupas Sosok
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Tambahkan profil tokoh inspiratif, pustakawan teladan, dan inovator sistem Perpusnas.
+            Daftar figur tokoh inspiratif dan pustakawan teladan Perpustakaan Nasional RI.
           </p>
         </div>
 
@@ -131,11 +120,11 @@ export default function AdminKupasSosokPage() {
 
       <div className="flex justify-end">
         <Input
-          placeholder="Cari nama tokoh..."
+          placeholder="Cari nama tokoh atau deskripsi..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           leftIcon={<Search className="w-4 h-4" />}
-          className="w-full sm:w-64"
+          className="w-full sm:w-72"
         />
       </div>
 
@@ -154,33 +143,26 @@ export default function AdminKupasSosokPage() {
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-50 text-slate-600 uppercase font-bold text-[10px] tracking-wider border-b border-slate-200">
                 <tr>
-                  <th className="py-3.5 px-4">Nama Tokoh</th>
-                  <th className="py-3.5 px-4">Jabatan & Unit Kerja</th>
-                  <th className="py-3.5 px-4">Kutipan Singkat</th>
-                  <th className="py-3.5 px-4">Spotlight</th>
-                  <th className="py-3.5 px-4 text-right">Aksi</th>
+                  <th className="py-3.5 px-4 w-1/4">Nama Tokoh</th>
+                  <th className="py-3.5 px-4">Deskripsi</th>
+                  <th className="py-3.5 px-4 text-right w-24">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filtered.map((f) => (
                   <tr key={f.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3.5 px-4 font-bold text-slate-900">{f.name}</td>
-                    <td className="py-3.5 px-4">
-                      <p className="font-semibold text-slate-800">{f.position}</p>
-                      <p className="text-[10px] text-slate-400">{f.unitKerja}</p>
+                    <td className="py-3.5 px-4 font-bold text-slate-900 align-top">
+                      {f.nama_tokoh || f.name}
                     </td>
-                    <td className="py-3.5 px-4 text-slate-600 italic max-w-xs truncate">"{f.quote}"</td>
-                    <td className="py-3.5 px-4">
-                      {f.isSpotlight ? (
-                        <Badge variant="gold" size="sm"><Star className="w-3 h-3 fill-gold-500" /> Spotlight</Badge>
-                      ) : (
-                        <Badge variant="default" size="sm">Reguler</Badge>
-                      )}
+                    <td className="py-3.5 px-4 text-slate-600 align-top leading-relaxed">
+                      <p className="line-clamp-3">
+                        {f.deskripsi || f.cerita_lengkap || f.fullStory || f.quote || '-'}
+                      </p>
                     </td>
-                    <td className="py-3.5 px-4 text-right">
+                    <td className="py-3.5 px-4 text-right align-top">
                       <div className="flex items-center justify-end gap-1.5">
                         <Link href={`/kupas-sosok/${f.slug}`} target="_blank">
-                          <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-500 hover:text-perpusnas-900">
+                          <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-500 hover:text-perpusnas-900" title="Lihat Halaman">
                             <ExternalLink className="w-4 h-4" />
                           </Button>
                         </Link>
@@ -189,6 +171,7 @@ export default function AdminKupasSosokPage() {
                           variant="ghost"
                           onClick={() => setFigureToDelete(f)}
                           className="h-8 w-8 text-red-500 hover:bg-red-50"
+                          title="Hapus Profil"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -206,81 +189,30 @@ export default function AdminKupasSosokPage() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Tambah Sosok Inspiratif Baru"
-        maxWidth="lg"
+        title="Tambah Sosok Baru"
+        maxWidth="md"
       >
-        <form onSubmit={handleCreate} className="space-y-4 max-h-[75vh] overflow-y-auto pr-1">
+        <form onSubmit={handleCreate} className="space-y-4">
           <Input
-            label="Nama Lengkap Beserta Gelar"
+            label="Nama Tokoh"
             placeholder="Contoh: Dra. Sri Sumekar, M.Si."
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
           />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Input
-              label="Jabatan / Bidang Keahlian"
-              placeholder="Pustakawan Ahli Utama"
-              value={position}
-              onChange={(e) => setPosition(e.target.value)}
-              required
-            />
-            <Input
-              label="Unit Kerja / Deputi"
-              placeholder="Deputi Pengembangan Bahan Pustaka"
-              value={unitKerja}
-              onChange={(e) => setUnitKerja(e.target.value)}
-              required
-            />
-          </div>
-
-          <Input
-            label="URL Foto Tokoh"
-            placeholder="https://images.unsplash.com/..."
-            value={photoUrl}
-            onChange={(e) => setPhotoUrl(e.target.value)}
-          />
-
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-              Kutipan Inspirasi / Quote Utama
+              Deskripsi Tokoh
             </label>
             <textarea
-              rows={2}
-              value={quote}
-              onChange={(e) => setQuote(e.target.value)}
-              placeholder="Tuliskan kutipan mutiara dari sosok ini..."
-              className="w-full rounded-lg border border-slate-300 bg-white p-3 text-xs text-slate-900 focus:border-perpusnas-700 focus:outline-none"
+              rows={6}
+              value={deskripsi}
+              onChange={(e) => setDeskripsi(e.target.value)}
+              placeholder="Tuliskan biografi atau deskripsi tentang sosok ini..."
+              className="w-full rounded-lg border border-slate-300 bg-white p-3 text-xs text-slate-900 focus:border-perpusnas-700 focus:outline-none leading-relaxed"
               required
             />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-              Kisah Perjalanan Karier & Kontribusi Lengkap
-            </label>
-            <textarea
-              rows={5}
-              value={fullStory}
-              onChange={(e) => setFullStory(e.target.value)}
-              placeholder="Tuliskan biografi dan narasi kisah inspiratif sosok..."
-              className="w-full rounded-lg border border-slate-300 bg-white p-3 text-xs text-slate-900 focus:border-perpusnas-700 focus:outline-none"
-              required
-            />
-          </div>
-
-          <div className="flex items-center gap-2 pt-2">
-            <input
-              type="checkbox"
-              id="spotCheck"
-              checked={isSpotlight}
-              onChange={(e) => setIsSpotlight(e.target.checked)}
-              className="rounded border-slate-300 text-gold-600 focus:ring-gold-500"
-            />
-            <label htmlFor="spotCheck" className="text-xs font-medium text-slate-700">
-              Jadikan sebagai Sosok Pilihan Utama (Spotlight di Beranda)
-            </label>
           </div>
 
           <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">

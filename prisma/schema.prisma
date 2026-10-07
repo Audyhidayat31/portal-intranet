@@ -206,10 +206,11 @@ model FigureProfile {
   id            String   @id @default(cuid())
   name          String
   slug          String   @unique
-  position      String // e.g. Pustakawan Ahli Utama
-  unitKerja     String // e.g. Deputi Bidang Pengembangan Bahan Pustaka
-  quote         String   @db.Text // Kutipan inspiratif
-  fullStory     String   @db.LongText // Cerita perjalanan dan kontribusi
+  position      String?  // e.g. Pustakawan Ahli Utama
+  unitKerja     String?  // e.g. Deputi Bidang Pengembangan Bahan Pustaka
+  quote         String?  @db.Text // Kutipan inspiratif
+  fullStory     String?  @db.LongText // Cerita perjalanan dan kontribusi
+  deskripsi     String?  @db.LongText // Deskripsi tokoh
   photoUrl      String?  @db.Text
   achievements  String?  @db.Text // JSON string or structured text of achievements
   careerHistory String?  @db.Text // Riwayat karier & jabatan penting
@@ -359,19 +360,12 @@ model DokumenIntern {
 
 // Sub Menu: Kupas Sosok
 model KupasSosok {
-  id                String   @id @default(cuid())
-  namaTokoh         String   @map("nama_tokoh") @db.VarChar(255)
-  slug              String   @unique @db.VarChar(255)
-  jabatan           String   @db.VarChar(255)
-  unitKerja         String   @map("unit_kerja") @db.VarChar(255)
-  kutipanInspiratif String   @map("kutipan_inspiratif") @db.Text
-  ceritaLengkap     String   @map("cerita_lengkap") @db.LongText
-  fotoUrl           String?  @map("foto_url") @db.Text
-  prestasi          String?  @db.Text
-  riwayatKarier     String?  @map("riwayat_karier") @db.Text
-  isSpotlight       Boolean  @default(false) @map("is_spotlight")
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
+  id        String   @id @default(cuid())
+  namaTokoh String   @map("nama_tokoh") @db.VarChar(255)
+  slug      String   @unique @db.VarChar(255)
+  deskripsi String   @db.LongText
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("kupas_sosok")
 }
