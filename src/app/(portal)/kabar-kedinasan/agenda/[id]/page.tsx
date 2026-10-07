@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -37,6 +37,19 @@ export default function DetailAgendaKegiatanPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState('');
+
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setCurrentUser(data.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!rawId) return;
@@ -102,7 +115,7 @@ export default function DetailAgendaKegiatanPage() {
     'Membangun Ekosistem Perpustakaan Digital Nasional Masa Depan';
 
   const displayDate = agendaItem?.publishedAt
-    ? agendaItem.publishedAt
+    ? formatDate(agendaItem.publishedAt)
     : '19 Agustus 2026';
 
   const displayContent =
@@ -186,13 +199,13 @@ export default function DetailAgendaKegiatanPage() {
           {/* Divider Line */}
           <div className="border-t border-[#c5c6d2] my-8" />
 
-          {/* Section: LAMPIRAN matching Coretan Opini Detail */}
+          {/* Section: LAMPIRAN */}
+          {(agendaItem?.attachmentUrl || agendaItem?.attachmentName) && (
           <div>
             <h3 className="text-xs font-bold text-[#1a1b20] uppercase tracking-wider mb-4">
               LAMPIRAN
             </h3>
-
-            {/* 5 Attachment Thumbnails matching Coretan Opini Detail */}
+            {/* 5 Attachment Thumbnails */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
               {MOCK_AGENDA_ATTACHMENTS_5.map((att) => (
                 <button
@@ -206,8 +219,10 @@ export default function DetailAgendaKegiatanPage() {
                   </span>
                 </button>
               ))}
+
             </div>
           </div>
+          )}
 
           {/* Divider Line */}
           <div className="border-t border-[#c5c6d2] my-8" />
@@ -215,32 +230,57 @@ export default function DetailAgendaKegiatanPage() {
           {/* Section: Footer Metadata & Action Buttons matching Coretan Opini Detail */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
             {/* Left: Dibuat oleh & copyright */}
-            <div className="text-xs text-[#757682] space-y-0.5">
-              <p className="font-semibold text-[#757682]">Dibuat oleh</p>
+            
+            <div className="flex flex-row gap-6">
+              <div className="text-xs text-[#757682] space-y-0.5 w-[220px]"><p className="font-semibold text-[#757682]">Dibuat oleh</p>
               <p className="font-semibold text-[#1a1b20]">
-                Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.
+                {agendaItem?.author?.name || agendaItem?.authorName || 'Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.'}
               </p>
               <p className="font-medium text-[#757682]">
                 {displayDate}
               </p>
+              <p className="font-medium text-[#757682]">
+                Status: {(agendaItem?.status === 'MENUNGGU' || agendaItem?.status === 'Menunggu' || agendaItem?.status === 'DRAFT') ? 'Menunggu' : 'Terbit'}
+              </p>
+            </div>
+              {/* Diperbarui Oleh */}
+              {(agendaItem?.updatedAt && agendaItem?.createdAt && new Date(agendaItem.updatedAt).getTime() - new Date(agendaItem.createdAt).getTime() > 1000) && (
+                <>
+                  <div className="border-l border-[#c5c6d2]" />
+                  <div className="text-xs text-[#757682] space-y-0.5 w-[220px]">
+                    <p className="font-semibold text-[#757682]">Diperbarui oleh</p>
+                    <p className="font-semibold text-[#1a1b20]">
+                      {agendaItem?.editor?.name || agendaItem?.author?.name || agendaItem?.authorName || 'Administrator Perpusnas'}
+                    </p>
+                    <p className="font-medium text-[#757682]">
+                      {formatDate(agendaItem.updatedAt)}
+                    </p>
+                    <p className="font-medium text-[#757682]">
+                      Status: {agendaItem?.status === 'MENUNGGU' || agendaItem?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Right: Edit & Hapus Buttons matching Coretan Opini Detail */}
-            <div className="flex items-center gap-3 self-end sm:self-auto">
-              <Link
-                href={`/kabar-kedinasan/agenda/${rawId}/edit`}
-                className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs inline-block text-center cursor-pointer"
-              >
-                Edit
-              </Link>
-              <button
-                type="button"
-                onClick={() => setIsDeleteModalOpen(true)}
-                className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-red-50 text-[#dc2626] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer"
-              >
-                Hapus
-              </button>
-            </div>
+            {currentUser && (currentUser.role === 'admin' || currentUser.name === (agendaItem?.author?.name || agendaItem?.authorName || 'Biro Hukum & Humas Perpusnas')) && (
+              <div className="flex items-center gap-3 self-end sm:self-auto">
+                <Link
+                  href={`/kabar-kedinasan/agenda/${rawId}/edit`}
+                  className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs inline-block text-center cursor-pointer"
+                >
+                  Edit
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-red-50 text-[#dc2626] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer"
+                >
+                  Hapus
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

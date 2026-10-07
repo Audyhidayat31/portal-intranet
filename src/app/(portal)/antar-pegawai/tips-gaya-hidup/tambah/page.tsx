@@ -202,7 +202,7 @@ export default function TambahTipsGayaHidupPage() {
           body: htmlContent || rawText || judul,
           coverImage: gambarPreview || '/images/tips-gaya-hidup/card-1.jpg',
           publishedAt: tanggal.toISOString(),
-          status: status === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
+          status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',
           attachmentName: lampiranFileName || null,
         }),
       });
@@ -574,8 +574,8 @@ export default function TambahTipsGayaHidupPage() {
                   type="file"
                   accept="image/*"
                   onChange={handleGambarFileChange}
-                  className="hidden"
-                />
+                  className="hidden" suppressHydrationWarning
+                 suppressHydrationWarning />
               </div>
 
               {/* Dashed preview box: Gambar Preview */}
@@ -625,8 +625,8 @@ export default function TambahTipsGayaHidupPage() {
                   type="file"
                   accept=".pdf,.doc,.docx,.jpg,.png"
                   onChange={handleLampiranFileChange}
-                  className="hidden"
-                />
+                  className="hidden" suppressHydrationWarning
+                 suppressHydrationWarning />
               </div>
 
               {/* Dashed preview box: File Preview */}

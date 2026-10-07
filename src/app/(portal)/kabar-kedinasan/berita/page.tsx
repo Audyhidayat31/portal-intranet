@@ -88,10 +88,23 @@ const MOCK_BERITA_6: NewsItem[] = [
 ];
 
 export default function BeritaPage() {
-  const [newsList, setNewsList] = useState<NewsItem[]>(MOCK_BERITA_6);
-  const [isLoading, setIsLoading] = useState(false);
+  const [newsList, setNewsList] = useState<NewsItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterAuthor, setFilterAuthor] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setCurrentUser(data.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const [successMessage, setSuccessMessage] = useState('');
   const [itemsPerPage, setItemsPerPage] = useState(9);
@@ -112,9 +125,7 @@ export default function BeritaPage() {
 
 
   const fetchNews = (q: string = '') => {
-    if (q.trim()) {
-      setIsLoading(true);
-    }
+    setIsLoading(true);
     fetch(`/api/news?q=${encodeURIComponent(q)}&limit=100`)
       .then((res) => res.json())
       .then((data) => {
@@ -134,11 +145,11 @@ export default function BeritaPage() {
           authorName: item.author?.name || 'Humas Perpusnas',
         }));
 
-        setNewsList(formattedApiItems);
+        setNewsList(formattedApiItems.length > 0 ? formattedApiItems : MOCK_BERITA_6);
       })
       .catch((e) => {
         console.error(e);
-        setNewsList([]);
+        setNewsList(MOCK_BERITA_6);
       })
       .finally(() => {
         setIsLoading(false);
@@ -155,7 +166,7 @@ export default function BeritaPage() {
   };
 
   return (
-    <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 bg-[#faf8ff] text-[#1a1b20] min-h-[calc(100vh-80px)] flex flex-col justify-between">
+    <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 bg-white text-[#1a1b20] min-h-[calc(100vh-80px)] flex flex-col justify-between">
       <div>
         {/* Breadcrumb matching Opini */}
         <nav aria-label="Breadcrumb" className="mb-8 text-sm text-[#444650] flex items-center gap-2">
@@ -235,25 +246,40 @@ export default function BeritaPage() {
             <span className="font-normal text-[#1a1b20]">data</span>
           </div>
 
-          {/* Right: Search Bar */}
-          <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full md:w-auto md:min-w-[400px]">
-            <div className="relative flex-grow">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari Berita terkini..."
-                className="w-full border border-[#c5c6d2] rounded-lg py-2 px-4 text-base bg-white text-[#1a1b20] placeholder-[#757682] focus:outline-none focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] transition-all"
-              />
+          <div className="flex flex-col md:flex-row items-end md:items-center gap-4 flex-grow justify-end w-full md:w-auto">
+            {/* Middle: Search Bar */}
+            <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full md:max-w-2xl flex-grow">
+              <div className="relative flex-grow">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Cari Berita terkini..."
+                  className="w-full border border-[#c5c6d2] rounded-lg py-2 px-4 text-base bg-white text-[#1a1b20] placeholder-[#757682] focus:outline-none focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] transition-all"
+                />
+              </div>
+              <button
+                type="submit"
+                aria-label="Cari"
+                className="bg-[#e9e7ee] border border-[#c5c6d2] rounded-lg px-4 flex items-center justify-center hover:bg-[#dad9e0] transition-colors cursor-pointer shrink-0"
+              >
+                <Search className="w-5 h-5 text-[#444650]" />
+              </button>
+            </form>
+
+            {/* Right: Filter Penulis */}
+            <div className="hidden md:flex items-center gap-2 shrink-0">
+              <span className="font-normal text-sm text-[#1a1b20]">Dibuat Oleh:</span>
+              <select
+                value={filterAuthor}
+                onChange={(e) => setFilterAuthor(e.target.value)}
+                className="bg-white border border-[#c5c6d2] rounded-lg px-3 py-2 text-sm text-[#1a1b20] focus:outline-none focus:border-[#00113a] cursor-pointer"
+              >
+                <option value="all">Semua Orang</option>
+                <option value="me">Hanya Saya</option>
+              </select>
             </div>
-            <button
-              type="submit"
-              aria-label="Cari"
-              className="bg-[#e9e7ee] border border-[#c5c6d2] rounded-lg px-4 flex items-center justify-center hover:bg-[#dad9e0] transition-colors cursor-pointer shrink-0"
-            >
-              <Search className="w-5 h-5 text-[#444650]" />
-            </button>
-          </form>
+          </div>
         </div>
 
         {/* Cards Grid: 3 Columns matching Opini */}
@@ -263,18 +289,31 @@ export default function BeritaPage() {
               <div key={n} className="border border-[#c5c6d2] rounded-xl overflow-hidden bg-white animate-pulse h-96" />
             ))}
           </div>
-        ) : newsList.length === 0 ? (
-          <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
-            <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Berita Ditemukan</h2>
-            <p className="text-sm text-[#444650]">
-              Silakan coba kata kunci pencarian lain atau tambahkan berita baru.
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {newsList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
-              const displayDate = item.publishedAt ? formatDate(item.publishedAt) : '19 Agustus 2026';
-              const isPublished = item.status === 'Terbit' || (item.status as any) === 'TERBIT' || !item.status;
+        ) : (() => {
+          const visibleNews = newsList.filter((item) => {
+            const isPublished = item.status === 'Terbit' || (item.status as any) === 'TERBIT';
+            if (isPublished) return true;
+            if (!currentUser) return false;
+            if (currentUser.role === 'admin') return true;
+            return currentUser.name === item.authorName;
+          });
+
+          if (visibleNews.length === 0) {
+            return (
+              <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
+                <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Berita Ditemukan</h2>
+                <p className="text-sm text-[#444650]">
+                  Silakan coba kata kunci pencarian lain atau tambahkan berita baru.
+                </p>
+              </div>
+            );
+          }
+
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+              {visibleNews.filter(item => filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id))).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
+                const displayDate = item.publishedAt ? formatDate(item.publishedAt) : '19 Agustus 2026';
+                const isPublished = item.status === 'Terbit' || (item.status as any) === 'TERBIT' || !item.status;
 
               return (
                 <article
@@ -332,7 +371,8 @@ export default function BeritaPage() {
               );
             })}
           </div>
-        )}
+          );
+        })()}
       </div>
 
       {/* Pagination Controls matching Opini */}

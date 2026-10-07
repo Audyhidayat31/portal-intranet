@@ -298,7 +298,7 @@ function GantiKataSandiContent() {
       </main>
 
       {/* Footer Matching Wireframe */}
-      <footer className="pt-2 pb-1 text-center text-xs sm:text-sm text-black font-normal">
+      <footer className="w-full mt-auto bg-[#f4f5f7] border-t border-slate-200/80 py-3 sm:py-3.5 text-center text-xs text-slate-500 font-normal">
         Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.
       </footer>
     </div>

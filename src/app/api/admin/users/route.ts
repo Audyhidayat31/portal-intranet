@@ -95,7 +95,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, name, email, roleId, status, position, unitKerja, satuanKerja, golRuang, phone, resetPassword } = body;
+    const { id, name, email, roleId, status, position, unitKerja, satuanKerja, golRuang, phone, resetPassword, nip, bio, birthDate } = body;
 
     const dataToUpdate: any = {
       name: name !== undefined ? name : undefined,
@@ -103,32 +103,41 @@ export async function PUT(request: NextRequest) {
       roleId: roleId !== undefined ? roleId : undefined,
       status: status !== undefined ? status : undefined,
     };
+    
+    if (nip !== undefined) {
+      dataToUpdate.nip = nip;
+    }
 
     if (resetPassword) {
       dataToUpdate.password = await hashPassword(resetPassword);
     }
 
     const effectiveUnitKerja = satuanKerja ? (unitKerja ? `${satuanKerja} - ${unitKerja}` : satuanKerja) : unitKerja;
-    const hasProfileData = name !== undefined || position !== undefined || effectiveUnitKerja !== undefined || golRuang !== undefined || phone !== undefined;
+    const hasProfileData = name !== undefined || position !== undefined || effectiveUnitKerja !== undefined || golRuang !== undefined || phone !== undefined || bio !== undefined || birthDate !== undefined || nip !== undefined;
 
     const profileUpsert = hasProfileData
       ? {
           profile: {
             upsert: {
               create: {
-                nip: (await prisma.user.findUnique({ where: { id } }))?.nip || '0000',
+                nip: nip || (await prisma.user.findUnique({ where: { id } }))?.nip || '0000',
                 fullName: name || 'Pengguna',
                 position: position || 'Aparatur Perpusnas',
                 unitKerja: effectiveUnitKerja || 'Perpusnas RI',
                 golRuang,
                 phone,
+                bio,
+                birthDate: birthDate ? new Date(birthDate) : null,
               },
               update: {
                 ...(name !== undefined && { fullName: name }),
+                ...(nip !== undefined && { nip }),
                 ...(position !== undefined && { position }),
                 ...(effectiveUnitKerja !== undefined && { unitKerja: effectiveUnitKerja }),
                 ...(golRuang !== undefined && { golRuang }),
                 ...(phone !== undefined && { phone }),
+                ...(bio !== undefined && { bio }),
+                ...(birthDate !== undefined && { birthDate: birthDate ? new Date(birthDate) : null }),
               },
             },
           },

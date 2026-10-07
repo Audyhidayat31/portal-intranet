@@ -105,7 +105,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { title, excerpt, content, coverImage, publishedAt, status } = body;
+    const { title, excerpt, content, coverImage, publishedAt, status, attachmentName, attachmentUrl } = body;
 
     try {
       const existing = await prisma.content.findFirst({
@@ -125,6 +125,8 @@ export async function PUT(
             ...(coverImage && { coverImage }),
             ...(publishedAt && { publishedAt: new Date(publishedAt) }),
             ...(status && { status: status === 'Menunggu' || status === 'MENUNGGU' ? 'MENUNGGU' : 'TERBIT' }),
+            ...(attachmentName !== undefined && { attachmentName }),
+            ...(attachmentUrl !== undefined && { attachmentUrl }),
           },
         });
 
@@ -136,9 +138,16 @@ export async function PUT(
       }
 
       // If not existing, try creating it in DB
-      const defaultUser = await prisma.user.findFirst();
+      const currentUser = await getCurrentUser();
       const newsCat = await prisma.category.findUnique({ where: { slug: 'berita' } });
-      if (defaultUser) {
+      let authorId;
+      if (currentUser) {
+        authorId = currentUser.userId;
+      } else {
+        const defaultUser = await prisma.user.findFirst();
+        if (defaultUser) authorId = defaultUser.id;
+      }
+      if (authorId) {
         const created = await prisma.content.create({
           data: {
             id,
@@ -149,9 +158,11 @@ export async function PUT(
             coverImage: coverImage || null,
             type: 'NEWS',
             status: status === 'Menunggu' || status === 'MENUNGGU' ? 'MENUNGGU' : 'TERBIT',
-            authorId: defaultUser.id,
+            authorId: authorId,
             categoryId: newsCat?.id || null,
             publishedAt: publishedAt ? new Date(publishedAt) : new Date(),
+            attachmentName: attachmentName || null,
+            attachmentUrl: attachmentUrl || null,
           },
         });
 

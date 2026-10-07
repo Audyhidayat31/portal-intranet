@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -44,6 +44,19 @@ export default function DetailLaporanPerjalananPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState('');
 
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setCurrentUser(data.data);
+        }
+      })
+      .catch(() => { });
+  }, []);
+
   useEffect(() => {
     if (!rawId) return;
 
@@ -84,7 +97,7 @@ Fokus utama dari pelatihan ini adalah pada implementasi sistem pengarsipan berba
 Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedang berlangsung di Perpusnas RI. Pengetahuan yang didapat akan segera dideseminasikan kepada tim IT dan kearsipan internal dalam sesi knowledge sharing minggu depan. Diharapkan kita dapat mengadopsi beberapa protokol keamanan baru yang diperkenalkan selama pelatihan.`,
               attachmentName: 'Laporan_Dinas_Kearsipan_Digital_Yogyakarta_2026.pdf',
               author: {
-                name: 'Budi Sujatmiko',
+                name: 'Ahmad Fauzi',
                 profile: {
                   position: 'Pustakawan Ahli Muda',
                   unitKerja: 'Pusat Preservasi & Pengolahan Bahan Pustaka',
@@ -247,33 +260,60 @@ Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedan
 
           {/* Footer Meta & Actions matching Stitch */}
           <footer className="flex flex-col md:flex-row justify-between items-start md:items-end border-t border-[#c5c6d2] pt-6 gap-6">
-            <div>
-              <span className="font-bold text-xs text-[#444650] block mb-1">
-                Dibuat oleh
-              </span>
-              <div className="text-sm sm:text-base font-medium text-[#1a1b20]">
-                {report?.author?.name || 'Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.'}
+            <div className="flex flex-row gap-6">
+              <div className="w-[220px]">
+                <span className="font-bold text-xs text-[#444650] block mb-1">
+                  Dibuat oleh
+                </span>
+                <div className="text-sm sm:text-base font-medium text-[#1a1b20]">
+                  {report?.author?.name || report?.authorName || 'Administrator Perpusnas'}
+                </div>
+                <div className="text-xs text-[#757682] mt-0.5">
+                  {report?.publishedAt ? formatDate(report.publishedAt) : '19 Agustus 2026'}
+                </div>
+                <div className="text-xs text-[#757682] mt-0.5">
+                  Status: {(report?.status === 'MENUNGGU' || report?.status === 'Menunggu' || report?.status === 'DRAFT') ? 'Menunggu' : 'Terbit'}
+                </div>
               </div>
-              <div className="text-xs text-[#757682] mt-0.5">
-                {report?.publishedAt ? formatDate(report.publishedAt) : '19 Agustus 2026'}
-              </div>
+
+              {(report?.updatedAt && report?.createdAt && new Date(report.updatedAt).getTime() - new Date(report.createdAt).getTime() > 1000) && (
+                <>
+                  <div className="border-l border-[#c5c6d2]" />
+                  <div className="w-[220px]">
+                    <span className="font-bold text-xs text-[#444650] block mb-1">
+                      Diperbarui oleh
+                    </span>
+                    <div className="text-sm sm:text-base font-medium text-[#1a1b20]">
+                      {report?.editor?.name || report?.author?.name || report?.authorName || 'Administrator Perpusnas'}
+                    </div>
+                    <div className="text-xs text-[#757682] mt-0.5">
+                      {formatDate(report.updatedAt)}
+                    </div>
+                    <div className="text-xs text-[#757682] mt-0.5">
+                      Status: {(report?.status === 'MENUNGGU' || report?.status === 'Menunggu' || report?.status === 'DRAFT') ? 'Menunggu' : 'Terbit'}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
-            <div className="flex gap-4 w-full md:w-auto">
-              <Link
-                href={`/kabar-kedinasan/laporan-perjalanan/${rawId}/edit`}
-                className="flex-1 md:flex-none px-6 py-2 border border-[#757682] text-[#1a1b20] rounded font-bold text-xs sm:text-sm hover:bg-[#efedf3] transition-colors inline-block text-center"
-              >
-                Edit
-              </Link>
-              <button
-                type="button"
-                onClick={() => setIsDeleteModalOpen(true)}
-                className="flex-1 md:flex-none px-6 py-2 border border-[#ba1a1a] text-[#ba1a1a] rounded font-bold text-xs sm:text-sm hover:bg-[#ffdad6] hover:border-[#ba1a1a] transition-colors"
-              >
-                Hapus
-              </button>
-            </div>
+            {currentUser && (currentUser.role === 'admin' || currentUser.name === (report?.author?.name || report?.authorName || 'Administrator Perpusnas')) && (
+              <div className="flex gap-4 w-full md:w-auto">
+                <Link
+                  href={`/kabar-kedinasan/laporan-perjalanan/${rawId}/edit`}
+                  className="flex-1 md:flex-none px-6 py-2 border border-[#757682] text-[#1a1b20] rounded font-bold text-xs sm:text-sm hover:bg-[#efedf3] transition-colors inline-block text-center"
+                >
+                  Edit
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="flex-1 md:flex-none px-6 py-2 border border-[#ba1a1a] text-[#ba1a1a] rounded font-bold text-xs sm:text-sm hover:bg-[#ffdad6] hover:border-[#ba1a1a] transition-colors"
+                >
+                  Hapus
+                </button>
+              </div>
+            )}
           </footer>
         </article>
       </div>

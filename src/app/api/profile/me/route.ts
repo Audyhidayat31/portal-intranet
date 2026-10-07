@@ -32,10 +32,14 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { phone, bio, education, birthDate, currentPassword, newPassword } = body;
+    const { name, nip, email, phone, bio, education, birthDate, avatarUrl, position, satuanKerja, currentPassword, newPassword } = body;
 
     // Password change check
     if (newPassword) {
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/;
+      if (!passwordRegex.test(newPassword)) {
+        return NextResponse.json({ success: false, message: 'Sandi baru minimal 8 karakter, mengandung huruf besar, huruf kecil, dan angka.' }, { status: 400 });
+      }
       if (!currentPassword) {
         return NextResponse.json({ success: false, message: 'Masukkan password lama untuk mengubah password' }, { status: 400 });
       }
@@ -63,8 +67,23 @@ export async function PUT(request: NextRequest) {
         bio: bio !== undefined ? bio : undefined,
         education: education !== undefined ? education : undefined,
         birthDate: birthDate ? new Date(birthDate) : undefined,
+        avatarUrl: avatarUrl !== undefined ? avatarUrl : undefined,
+        fullName: name !== undefined ? name : undefined,
+        nip: nip !== undefined ? nip : undefined,
+        position: position !== undefined ? position : undefined,
+        unitKerja: satuanKerja !== undefined ? satuanKerja : undefined,
       },
     });
+
+    if (name !== undefined || nip !== undefined) {
+      await prisma.user.update({
+        where: { id: user.userId },
+        data: {
+          name: name !== undefined ? name : undefined,
+          nip: nip !== undefined ? nip : undefined,
+        },
+      });
+    }
 
     await logActivity({
       userId: user.userId,

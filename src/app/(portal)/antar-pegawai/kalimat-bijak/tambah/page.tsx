@@ -188,7 +188,7 @@ export default function TambahKalimatBijakPage() {
           categorySlug: 'kalimat-bijak',
           body: editorRef.current?.innerHTML || deskripsiHtml || rawContent,
           coverImage: '/images/kabar-keluarga/card-1.jpg',
-          status: status === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
+          status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',
         }),
       });
 
@@ -215,7 +215,7 @@ export default function TambahKalimatBijakPage() {
   };
 
   return (
-    <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 bg-[#faf8ff] text-[#1a1b20] min-h-[calc(100vh-80px)] flex flex-col justify-between">
+    <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 bg-white text-[#1a1b20] min-h-[calc(100vh-80px)] flex flex-col justify-between">
       <div>
         {/* Breadcrumb matching Coretan Opini */}
         <nav aria-label="Breadcrumb" className="mb-8 text-sm text-[#444650] flex items-center gap-2">

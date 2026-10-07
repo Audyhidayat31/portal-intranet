@@ -31,24 +31,6 @@ export const MOCK_KARYA_AKADEMIK_ATTACHMENTS_5: KaryaAkademikAttachment[] = [
 
 export const STITCH_MOCK_KARYA_AKADEMIK: KaryaAkademikItem[] = [
   {
-    id: 'karya-akademik-1',
-    title: 'Penerbitan Buku Karya Sastra Prof. .... Berlangsung di Perpustakaan Nasional Republik Indonesia',
-    excerpt: 'Perpustakaan Nasional Republik Indonesia menyelenggarakan peluncuran dan apresiasi karya sastra monumental yang merangkum khazanah tradisi lisan dan manuskrip nusantara sebagai warisan peradaban bangsa.',
-    content: `Perpustakaan Nasional Republik Indonesia menyelenggarakan peluncuran dan apresiasi karya sastra monumental yang merangkum khazanah tradisi lisan dan manuskrip nusantara sebagai warisan peradaban bangsa.
-
-Acara ini dihadiri oleh para sastrawan nasional, sivitas akademika, peneliti pernaskahan kuno, serta jajaran pustakawan ahli dari berbagai wilayah. Kegiatan ini tidak hanya memaparkan kontribusi keilmuan kontemporer, tetapi juga menjadi momentum penting bagi penguatan deposit karya cetak dan karya rekam nasional sebagaimana diamanatkan oleh regulasi keperpustakaan.
-
-Melalui telaah kritis atas karya sastra ini, diharapkan generasi muda dan peneliti kebudayaan dapat mengeksplorasi kembali nilai-nilai luhur dan kearifan lokal yang terekam dalam naskah nusantara guna menjawab tantangan literasi di era disrupsi digital.`,
-    coverImage: '/images/kabar-keluarga/card-1.jpg',
-    publishedAt: '20 Agustus 2026',
-    status: 'Menunggu',
-    authorName: 'Budi Sujatmiko',
-    authorPosition: 'Pustakawan Ahli Madya',
-    authorUnit: 'Pusat Preservasi dan Alih Media Bahan Perpustakaan',
-    authorAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop',
-    attachments: MOCK_KARYA_AKADEMIK_ATTACHMENTS_5,
-  },
-  {
     id: 'karya-akademik-2',
     title: 'Analisis Bibliometrik Publikasi Ilmiah Manuskrip Kuno Nusantara Periode 2015-2025',
     excerpt: 'Kajian komprehensif mengenai pemetaan riset dan sitasi pernaskahan nusantara dalam jurnal bereputasi internasional menggunakan pendekatan analisis jaringan sitasi VOSviewer.',

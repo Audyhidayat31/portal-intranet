@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -43,6 +43,19 @@ export default function DetailTahukahAndaPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState('');
+
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setCurrentUser(data.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!rawId) return;
@@ -116,14 +129,22 @@ export default function DetailTahukahAndaPage() {
     ? formatDate(tahukahItem.publishedAt)
     : '20 Agustus 2026';
 
-  const displayAuthor = tahukahItem?.authorName || tahukahItem?.author?.name || 'Budi Sujatmiko';
+  const displayAuthor = tahukahItem?.authorName || tahukahItem?.author?.name || 'Ahmad Fauzi';
 
   const displayContent =
     tahukahItem?.body ||
     tahukahItem?.content ||
     DEFAULT_STITCH_TAHUKAH_ANDA_DETAIL.content;
 
-  const attachmentList = tahukahItem?.attachments || MOCK_TAHUKAH_ANDA_ATTACHMENTS_5;
+  const attachmentList = tahukahItem?.attachments || [];
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 flex flex-col gap-8 bg-white min-h-[60vh] justify-center items-center">
+        <div className="w-12 h-12 border-4 border-slate-200 border-t-[#00113a] rounded-full animate-spin"></div>
+        <p className="text-[#00113a] font-bold mt-4">Memuat artikel...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 bg-white min-h-[calc(100vh-80px)] flex flex-col justify-between">
@@ -181,6 +202,13 @@ export default function DetailTahukahAndaPage() {
             </p>
           </div>
 
+          {/* Featured Image */}
+          {(item?.coverImage || item?.coverImage) && (
+            <div className="mb-8 w-full aspect-[2/1] bg-slate-100 rounded-lg overflow-hidden border border-[#c5c6d2]">
+              <img src={item?.coverImage || item?.coverImage} alt={displayTitle} className="w-full h-full object-cover" />
+            </div>
+          )}
+
           {/* Section: Uraian Artikel Tahukah Anda matching Wireframe 2 */}
           <div>
             <h2 className="text-xs font-bold text-[#757682] mb-2">
@@ -191,65 +219,64 @@ export default function DetailTahukahAndaPage() {
               {displayContent}
             </div>
           </div>
-
-          {/* Divider Line */}
-          <div className="border-t border-[#c5c6d2] my-8" />
-
-          {/* Section: LAMPIRAN matching Wireframe 2 */}
-          <div>
-            <h3 className="text-xs font-bold text-[#1a1b20] uppercase tracking-wider mb-4">
-              LAMPIRAN
-            </h3>
-
-            {/* 5 Attachment Thumbnails matching Wireframe 2 */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
-              {attachmentList.map((att: any) => (
-                <button
-                  key={att.id}
-                  type="button"
-                  onClick={() => setPreviewImage(att.src)}
-                  className="aspect-square bg-[#e2e3ea] hover:bg-[#d8d9e2] border border-[#c5c6d2] rounded-md flex flex-col items-center justify-center text-xs text-[#757682] hover:text-[#00113a] font-medium transition-all group shadow-2xs cursor-pointer"
-                >
-                  <span className="text-xs font-medium text-[#757682] group-hover:text-[#1a1b20] transition-colors">
-                    {att.label}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Divider Line */}
           <div className="border-t border-[#c5c6d2] my-8" />
 
           {/* Section: Footer Metadata & Action Buttons matching Wireframe 2 */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
-            {/* Left: Dibuat oleh Budi Sujatmiko, 20 Agustus 2026 */}
-            <div className="text-xs text-[#757682] space-y-0.5">
-              <p className="font-semibold text-[#757682]">Dibuat oleh</p>
+            {/* Left: Dibuat oleh Ahmad Fauzi, 20 Agustus 2026 */}
+            
+            <div className="flex flex-row gap-6">
+              <div className="text-xs text-[#757682] space-y-0.5 w-[220px]"><p className="font-semibold text-[#757682]">Dibuat oleh</p>
               <p className="font-semibold text-[#1a1b20]">
-                {displayAuthor}, {displayDate}
+                {displayAuthor}
               </p>
               <p className="font-medium text-[#757682]">
-                Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.
+                {displayDate}
               </p>
+              
+              <p className="font-medium text-[#757682]">
+                Status: {tahukahItem?.status === 'MENUNGGU' || tahukahItem?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+              </p>
+            </div>
+              {/* Diperbarui Oleh */}
+              {true && (
+                <>
+                  <div className="border-l border-[#c5c6d2]" />
+                  <div className="text-xs text-[#757682] space-y-0.5 w-[220px]">
+                    <p className="font-semibold text-[#757682]">Diperbarui oleh</p>
+                    <p className="font-semibold text-[#1a1b20]">
+                      {tahukahItem?.editor?.name || tahukahItem?.author?.name || tahukahItem?.authorName || 'Administrator Perpusnas'}
+                    </p>
+                    <p className="font-medium text-[#757682]">
+                      {tahukahItem?.updatedAt ? formatDate(tahukahItem.updatedAt) : '24 Agustus 2026'}
+                    </p>
+                    <p className="font-medium text-[#757682]">
+                      Status: {tahukahItem?.status === 'MENUNGGU' || tahukahItem?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Right: Edit & Hapus Buttons matching Wireframe 2 */}
-            <div className="flex items-center gap-3 self-end sm:self-auto">
-              <Link
-                href={`/antar-pegawai/tahukah-anda/${rawId}/edit`}
-                className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs inline-block text-center cursor-pointer"
-              >
-                Edit
-              </Link>
-              <button
-                type="button"
-                onClick={() => setIsDeleteModalOpen(true)}
-                className="px-7 py-1.5 bg-white border border-[#dc2626] hover:bg-red-50 text-[#dc2626] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer"
-              >
-                Hapus
-              </button>
-            </div>
+            {currentUser && (currentUser.role === 'admin' || currentUser.name === (tahukahItem?.author?.name || tahukahItem?.authorName || 'Ahmad Fauzi')) && (
+              <div className="flex items-center gap-3 self-end sm:self-auto">
+                <Link
+                  href={`/antar-pegawai/tahukah-anda/${rawId}/edit`}
+                  className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs inline-block text-center cursor-pointer"
+                >
+                  Edit
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="px-7 py-1.5 bg-white border border-[#dc2626] hover:bg-red-50 text-[#dc2626] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer"
+                >
+                  Hapus
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

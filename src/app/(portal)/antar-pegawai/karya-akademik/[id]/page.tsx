@@ -12,6 +12,7 @@ import {
   CheckCircle,
   AlertTriangle,
 } from 'lucide-react';
+import { formatDate } from '@/lib/utils';
 import {
   STITCH_MOCK_KARYA_AKADEMIK,
   MOCK_KARYA_AKADEMIK_ATTACHMENTS_5,
@@ -26,7 +27,7 @@ export default function DetailKaryaAkademikPage() {
   const matchedInitial =
     STITCH_MOCK_KARYA_AKADEMIK.find(
       (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
-    ) || STITCH_MOCK_KARYA_AKADEMIK[0];
+    );
 
   const [item, setItem] = useState<KaryaAkademikItem | null>(matchedInitial);
   const [isLoading, setIsLoading] = useState(!matchedInitial);
@@ -38,6 +39,19 @@ export default function DetailKaryaAkademikPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState('');
+
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setCurrentUser(data.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!rawId) return;
@@ -65,7 +79,7 @@ export default function DetailKaryaAkademikPage() {
                 })
               : '20 Agustus 2026',
             status: apiData.status === 'TERBIT' ? 'Terbit' : 'Menunggu',
-            authorName: apiData.author?.name || 'Budi Sujatmiko',
+            authorName: apiData.author?.name || 'Ahmad Fauzi',
             authorPosition: apiData.author?.profile?.position || 'Peneliti Ahli Madya',
           };
           setItem(formatted);
@@ -127,7 +141,7 @@ export default function DetailKaryaAkademikPage() {
     'Penerbitan Buku Karya Sastra Prof. .... Berlangsung di Perpustakaan Nasional Republik Indonesia';
   const displayDate = item.publishedAt || '20 Agustus 2026';
   const displayContent = item.content || item.excerpt || '';
-  const displayAuthor = item.authorName || 'Budi Sujatmiko';
+  const displayAuthor = item.authorName || 'Ahmad Fauzi';
 
   const attachments =
     item.attachments && item.attachments.length > 0
@@ -188,6 +202,13 @@ export default function DetailKaryaAkademikPage() {
             </p>
           </div>
 
+          {/* Featured Image */}
+          {(item?.coverImage || item?.coverImage) && (
+            <div className="mb-8 w-full aspect-[2/1] bg-slate-100 rounded-lg overflow-hidden border border-[#c5c6d2]">
+              <img src={item?.coverImage || item?.coverImage} alt={displayTitle} className="w-full h-full object-cover" />
+            </div>
+          )}
+
           {/* Section: Uraian Karya Akademik matching Wireframe Gambar 3 */}
           <div>
             <h2 className="text-xs font-bold text-[#757682] mb-2">
@@ -231,32 +252,57 @@ export default function DetailKaryaAkademikPage() {
           {/* Section: Footer Metadata & Action Buttons matching Wireframe Gambar 3 */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
             {/* Left: Dibuat oleh, Author Name, Date as in Wireframe Gambar 3 */}
-            <div className="text-xs text-[#757682] space-y-0.5">
-              <p className="font-semibold text-[#757682]">Dibuat oleh</p>
+            
+            <div className="flex flex-row gap-6">
+              <div className="text-xs text-[#757682] space-y-0.5 w-[220px]"><p className="font-semibold text-[#757682]">Dibuat oleh</p>
               <p className="font-semibold text-[#1a1b20]">
                 {displayAuthor}
               </p>
               <p className="font-medium text-[#757682]">
                 {displayDate}
               </p>
+              <p className="font-medium text-[#757682]">
+                Status: {(item as any)?.status === 'MENUNGGU' || (item as any)?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+              </p>
+            </div>
+              {/* Diperbarui Oleh */}
+              {true && (
+                <>
+                  <div className="border-l border-[#c5c6d2]" />
+                  <div className="text-xs text-[#757682] space-y-0.5 w-[220px]">
+                    <p className="font-semibold text-[#757682]">Diperbarui oleh</p>
+                    <p className="font-semibold text-[#1a1b20]">
+                      {(item as any)?.editor?.name || (item as any)?.author?.name || (item as any)?.authorName || 'Administrator Perpusnas'}
+                    </p>
+                    <p className="font-medium text-[#757682]">
+                      {(item as any)?.updatedAt ? formatDate((item as any).updatedAt) : '24 Agustus 2026'}
+                    </p>
+                    <p className="font-medium text-[#757682]">
+                      Status: {(item as any)?.status === 'MENUNGGU' || (item as any)?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Right: Edit & Hapus Buttons matching Wireframe Gambar 3 & Gambar 2 */}
-            <div className="flex items-center gap-3 self-end sm:self-auto">
-              <Link
-                href={`/antar-pegawai/karya-akademik/${item?.id || rawId}/edit`}
-                className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer inline-flex items-center justify-center"
-              >
-                Edit
-              </Link>
-              <button
-                type="button"
-                onClick={() => setIsDeleteModalOpen(true)}
-                className="px-7 py-1.5 bg-white border border-[#dc2626] hover:bg-red-50 text-[#dc2626] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer"
-              >
-                Hapus
-              </button>
-            </div>
+            {currentUser && (currentUser.role === 'admin' || currentUser.name === (item?.authorName || (item as any)?.author?.name || displayAuthor)) && (
+              <div className="flex items-center gap-3 self-end sm:self-auto">
+                <Link
+                  href={`/antar-pegawai/karya-akademik/${item?.id || rawId}/edit`}
+                  className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer inline-flex items-center justify-center"
+                >
+                  Edit
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="px-7 py-1.5 bg-white border border-[#dc2626] hover:bg-red-50 text-[#dc2626] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer"
+                >
+                  Hapus
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

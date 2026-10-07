@@ -24,7 +24,7 @@ function formatMockBusinessTrip(mock: any) {
     status: 'TERBIT',
     publishedAt: mock.publishedAt ? new Date(mock.publishedAt).toISOString() : new Date().toISOString(),
     author: {
-      name: mock.author?.name || 'Budi Sujatmiko',
+      name: mock.author?.name || 'Ahmad Fauzi',
       nip: '198501152010011001',
       profile: {
         position: mock.author?.profile?.position || 'Pustakawan Ahli Muda',

@@ -1,27 +1,44 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   Search,
   Plus,
   ChevronRight,
+  ChevronDown,
   CheckCircle,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { STITCH_MOCK_FIGURES_6, FigureItem } from '@/lib/mock-kupas-sosok';
 
 export default function KupasSosokPage() {
-  const [figureList, setFigureList] = useState<FigureItem[]>(STITCH_MOCK_FIGURES_6);
-  const [isLoading, setIsLoading] = useState(false);
+  const [figureList, setFigureList] = useState<FigureItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterAuthor, setFilterAuthor] = useState('all');
+  const [itemsPerPage, setItemsPerPage] = useState(9);
+  const [isPerPageOpen, setIsPerPageOpen] = useState(false);
+  const perPageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (perPageRef.current && !perPageRef.current.contains(event.target as Node)) {
+        setIsPerPageOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const [currentPage, setCurrentPage] = useState(1);
   const [successMessage, setSuccessMessage] = useState('');
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   const fetchFigures = (q: string = '') => {
-    if (q.trim()) {
-      setIsLoading(true);
-    }
+    setIsLoading(true);
     fetch(`/api/figure-profiles?q=${encodeURIComponent(q)}`)
       .then((res) => res.json())
       .then((data) => {
@@ -37,13 +54,13 @@ export default function KupasSosokPage() {
           fullStory: item.fullStory || '',
           photoUrl: item.photoUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&auto=format&fit=crop',
           publishedAt: item.createdAt || new Date().toISOString(),
-          status: 'Terbit',
+          status: item.status || 'Terbit',
+          authorName: item.authorName || item.author?.name,
           isSpotlight: item.isSpotlight,
         }));
 
         if (q.trim()) {
-          const allPool = [...formattedApiItems, ...STITCH_MOCK_FIGURES_6];
-          const filtered = allPool.filter(
+          const filtered = formattedApiItems.filter(
             (item) =>
               item.name.toLowerCase().includes(q.toLowerCase()) ||
               item.position.toLowerCase().includes(q.toLowerCase()) ||
@@ -53,25 +70,12 @@ export default function KupasSosokPage() {
           );
           setFigureList(filtered);
         } else {
-          // Merge API items with mock items ensuring all 6 cards are shown
-          const combined = [...formattedApiItems];
-          for (const mockItem of STITCH_MOCK_FIGURES_6) {
-            if (combined.length >= 6) break;
-            const alreadyExists = combined.some(
-              (c) => c.slug === mockItem.slug || c.name.toLowerCase() === mockItem.name.toLowerCase()
-            );
-            if (!alreadyExists) {
-              combined.push(mockItem);
-            }
-          }
-          setFigureList(combined.slice(0, 6));
+          setFigureList(formattedApiItems);
         }
       })
       .catch((e) => {
         console.error(e);
-        if (!figureList || figureList.length === 0) {
-          setFigureList(STITCH_MOCK_FIGURES_6);
-        }
+        setFigureList([]);
       })
       .finally(() => {
         setIsLoading(false);
@@ -80,12 +84,31 @@ export default function KupasSosokPage() {
 
   useEffect(() => {
     fetchFigures();
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setCurrentUser(data.data);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     fetchFigures(searchQuery);
   };
+
+  const ITEMS_PER_PAGE = 6;
+  const visibleFigures = figureList.filter((item: any) => {
+    const isPublished = item.status === 'Terbit' || item.status === 'TERBIT' || (!item.status);
+    if (isPublished) return true;
+    if (!currentUser) return false;
+    if (currentUser.role === 'admin') return true;
+    return currentUser.name === (item.authorName || item.author?.name);
+  });
+  const totalPages = Math.ceil(visibleFigures.length / ITEMS_PER_PAGE) || 1;
+  const paginatedList = visibleFigures.filter(item => filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id))).slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   return (
     <div className="w-full bg-[#fcfcff] min-h-screen">
@@ -108,45 +131,94 @@ export default function KupasSosokPage() {
         )}
 
         {/* Header Section matching Stitch */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
             <h1 className="text-3xl sm:text-4xl font-bold text-[#00113a] mb-2 tracking-tight">
               Kupas Sosok
             </h1>
-            <p className="text-base text-[#444650]">
-              Deskripsi mengenai halaman Kupas Sosok
-            </p>
+            <p className="text-sm sm:text-base text-[#444650]">Kenali lebih dekat profil, rekam jejak, dan dedikasi sosok-sosok inspiratif di lingkungan Perpustakaan Nasional RI.</p>
           </div>
 
           <Link
             href="/kupas-sosok/tambah"
-            className="bg-[#002366] hover:bg-[#00113a] text-white font-bold text-sm px-6 py-3 rounded-lg flex items-center gap-2 shadow-sm transition-all duration-200 cursor-pointer shrink-0"
+            className="bg-[#00113a] hover:bg-[#2a4386] text-white font-bold py-2.5 px-6 rounded-lg transition-colors flex items-center gap-2 shadow-sm shrink-0"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-5 h-5" />
             <span>Tambah</span>
           </Link>
         </div>
 
-        {/* Search Bar matching Stitch */}
-        <div className="mb-12 max-w-2xl mx-auto flex gap-2">
-          <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full">
-            <div className="relative flex-grow">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari Kupas Sosok..."
-                className="w-full border border-[#c5c6d2] rounded-lg py-3 px-4 text-base bg-white text-[#1a1b20] placeholder-[#757682] focus:outline-none focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] transition-all"
-              />
+        {/* Controls Row */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          {/* Left: Tampilkan data */}
+          <div className="flex items-center gap-2 text-sm text-[#1a1b20] shrink-0" ref={perPageRef}>
+            <span className="font-normal text-[#1a1b20]">Tampilkan</span>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsPerPageOpen(!isPerPageOpen)}
+                className="w-14 bg-[#6c757d] hover:bg-[#5a6268] text-white px-2.5 py-1 rounded-md text-xs font-semibold flex items-center justify-between shadow-sm transition-colors cursor-pointer"
+              >
+                <span>{itemsPerPage}</span>
+                <ChevronDown className="w-3 h-3 text-white" />
+              </button>
+
+              {isPerPageOpen && (
+                <div className="absolute left-0 top-full mt-1 w-14 bg-white border border-[#c5c6d2] rounded-md shadow-lg z-30 py-1 text-center overflow-hidden">
+                  {[9, 18, 27].filter((n) => n !== itemsPerPage).map((num) => (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => {
+                        setItemsPerPage(num);
+                        setCurrentPage(1);
+                        setIsPerPageOpen(false);
+                      }}
+                      className="w-full text-xs py-1 hover:bg-[#efedf3] text-[#1a1b20] transition-colors cursor-pointer"
+                    >
+                      {num}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-            <button
-              type="submit"
-              aria-label="Cari"
-              className="bg-[#e9e7ee] border border-[#c5c6d2] rounded-lg px-4 flex items-center justify-center hover:bg-[#dad9e0] transition-colors cursor-pointer shrink-0"
-            >
-              <Search className="w-5 h-5 text-[#444650]" />
-            </button>
-          </form>
+            <span className="font-normal text-[#1a1b20]">data</span>
+          </div>
+
+          <div className="flex flex-col md:flex-row items-end md:items-center gap-4 flex-grow justify-end w-full md:w-auto">
+            {/* Middle: Search Bar */}
+            <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full md:max-w-2xl flex-grow">
+              <div className="relative flex-grow">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Cari Kupas Sosok..."
+                  className="w-full border border-[#c5c6d2] rounded-lg py-2 px-4 text-base bg-white text-[#1a1b20] placeholder-[#757682] focus:outline-none focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] transition-all"
+                />
+              </div>
+              <button
+                type="submit"
+                aria-label="Cari"
+                className="bg-[#e9e7ee] border border-[#c5c6d2] rounded-lg px-4 flex items-center justify-center hover:bg-[#dad9e0] transition-colors cursor-pointer shrink-0"
+              >
+                <Search className="w-5 h-5 text-[#444650]" />
+              </button>
+            </form>
+
+            {/* Right: Filter Penulis */}
+            <div className="hidden md:flex items-center gap-2 shrink-0">
+              <span className="font-normal text-sm text-[#1a1b20]">Dibuat Oleh:</span>
+              <select
+                value={filterAuthor}
+                onChange={(e) => setFilterAuthor(e.target.value)}
+                className="bg-white border border-[#c5c6d2] rounded-lg px-3 py-2 text-sm text-[#1a1b20] focus:outline-none focus:border-[#00113a] cursor-pointer"
+              >
+                <option value="all">Semua Orang</option>
+                <option value="me">Hanya Saya</option>
+              </select>
+            </div>
+          </div>
         </div>
 
         {/* Cards Grid: 3 Columns, 6 Cards matching Stitch */}
@@ -156,7 +228,7 @@ export default function KupasSosokPage() {
               <div key={n} className="border border-[#c5c6d2] rounded-xl overflow-hidden bg-white animate-pulse h-96" />
             ))}
           </div>
-        ) : figureList.length === 0 ? (
+        ) : paginatedList.length === 0 ? (
           <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
             <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Sosok Ditemukan</h2>
             <p className="text-sm text-[#444650]">
@@ -165,7 +237,7 @@ export default function KupasSosokPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {figureList.map((item) => {
+            {paginatedList.map((item) => {
               const displayDate = item.publishedAt ? formatDate(item.publishedAt) : '19 Agustus 2026';
 
               return (
@@ -226,44 +298,45 @@ export default function KupasSosokPage() {
           </div>
         )}
 
-        {/* Pagination Controls matching Stitch */}
-        <div className="flex justify-center items-center gap-2 pt-4 pb-8">
-          <button
-            type="button"
-            aria-label="Previous page"
-            disabled={currentPage <= 1}
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
-          >
-            &lt;
-          </button>
-
-          {[1, 2, 3, 4, 5].map((page) => (
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2 pt-4 pb-8">
             <button
-              key={page}
               type="button"
-              onClick={() => setCurrentPage(page)}
-              className={`w-8 h-8 rounded text-xs font-bold transition-colors flex items-center justify-center cursor-pointer ${
-                currentPage === page
-                  ? 'bg-[#00113a] text-white'
-                  : 'text-[#444650] hover:bg-[#f4f3f9] hover:text-[#00113a]'
-              }`}
+              aria-label="Previous page"
+              disabled={currentPage <= 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
             >
-              {page}
+              &lt;
             </button>
-          ))}
 
-          <span className="text-[#757682] text-xs font-bold px-1">...</span>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                type="button"
+                onClick={() => setCurrentPage(page)}
+                className={`w-8 h-8 rounded text-xs font-bold transition-colors flex items-center justify-center cursor-pointer ${
+                  currentPage === page
+                    ? 'bg-[#00113a] text-white'
+                    : 'text-[#444650] hover:bg-[#f4f3f9] hover:text-[#00113a]'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
 
-          <button
-            type="button"
-            aria-label="Next page"
-            onClick={() => setCurrentPage((p) => p + 1)}
-            className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors cursor-pointer"
-          >
-            &gt;
-          </button>
-        </div>
+            <button
+              type="button"
+              aria-label="Next page"
+              disabled={currentPage >= totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-40 cursor-pointer"
+            >
+              &gt;
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

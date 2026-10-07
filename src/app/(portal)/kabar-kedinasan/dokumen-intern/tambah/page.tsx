@@ -29,6 +29,7 @@ export default function TambahDokumenInternalPage() {
 
   // Form states
   const [judul, setJudul] = useState('');
+  const [nomorDokumen, setNomorDokumen] = useState('');
   const [tanggal, setTanggal] = useState<Date>(new Date());
   const [keteranganHtml, setKeteranganHtml] = useState('');
   const [lampiranName, setLampiranName] = useState('');
@@ -331,6 +332,28 @@ export default function TambahDokumenInternalPage() {
               </div>
             </div>
 
+            {/* Field: Nomor Dokumen */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4 items-start">
+              <label
+                htmlFor="nomorDokumen"
+                className="font-bold text-sm text-[#1a1b20] flex items-center h-10 md:col-span-1"
+              >
+                <span>Nomor Dokumen</span>
+                <span className="ml-auto pr-4 hidden md:inline">:</span>
+              </label>
+              <div className="md:col-span-3">
+                <input
+                  id="nomorDokumen"
+                  type="text"
+                  required
+                  placeholder="Masukkan Nomor Dokumen"
+                  value={nomorDokumen}
+                  onChange={(e) => setNomorDokumen(e.target.value)}
+                  className="w-full h-10 border border-[#c5c6d2] rounded focus:ring-1 focus:ring-[#00113a] focus:border-[#00113a] px-3 text-sm bg-white text-[#1a1b20] placeholder-[#757682] focus:outline-none transition-colors"
+                />
+              </div>
+            </div>
+
             {/* Field: Tanggal */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4 items-start relative">
               <label
@@ -564,8 +587,8 @@ export default function TambahDokumenInternalPage() {
                   type="file"
                   accept=".pdf,.docx,.doc"
                   onChange={handleFileChange}
-                  className="hidden"
-                />
+                  className="hidden" suppressHydrationWarning
+                 suppressHydrationWarning />
               </div>
             </div>
 

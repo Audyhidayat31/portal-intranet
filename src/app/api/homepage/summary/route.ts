@@ -13,6 +13,9 @@ export async function GET() {
       allProfiles,
       totalEmployees,
       totalPosts,
+      totalNews,
+      totalOpini,
+      totalTips,
     ] = await Promise.all([
       prisma.homepageSetting.findFirst(),
       prisma.content.findMany({
@@ -35,7 +38,7 @@ export async function GET() {
       prisma.employeePost.findMany({
         where: { status: 'TERBIT' },
         orderBy: { createdAt: 'desc' },
-        take: 4,
+        take: 15,
         include: { author: { select: { name: true, profile: { select: { avatarUrl: true, unitKerja: true } } } } },
       }),
       prisma.figureProfile.findFirst({
@@ -53,6 +56,9 @@ export async function GET() {
       }),
       prisma.user.count({ where: { role: { name: 'PEGAWAI' }, status: 'ACTIVE' } }),
       prisma.employeePost.count({ where: { status: 'TERBIT' } }),
+      prisma.content.count({ where: { type: 'NEWS', status: 'TERBIT' } }).catch(() => 0),
+      prisma.employeePost.count({ where: { categorySlug: 'opini', status: 'TERBIT' } }).catch(() => 0),
+      prisma.employeePost.count({ where: { categorySlug: 'tips-gaya-hidup', status: 'TERBIT' } }).catch(() => 0),
     ]);
 
     // Calculate birthdays this month
@@ -82,8 +88,11 @@ export async function GET() {
         spotlightFigure,
         birthdaysThisMonth,
         stats: {
-          totalEmployees: totalEmployees || 1280,
-          totalPosts: totalPosts || 42,
+          totalEmployees: totalEmployees ?? 0,
+          totalNews: totalNews ?? 0,
+          totalOpini: totalOpini ?? 0,
+          totalTips: totalTips ?? 0,
+          totalPosts: totalPosts ?? 0,
           activeAgendas: upcomingAgendas.length,
           totalDigitalDocs: 350,
         },

@@ -11,6 +11,7 @@ import {
   X,
   AlertTriangle,
 } from 'lucide-react';
+import { formatDate } from '@/lib/utils';
 import {
   ConsultationItem,
   ConsultationReplyItem,
@@ -30,9 +31,23 @@ export default function DetailKonsultasiPage() {
   // Modals for Consultation
   const [isDeleteConsultationOpen, setIsDeleteConsultationOpen] = useState(false);
 
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setCurrentUser(data.data);
+          setReplyAuthor(data.data.name || 'Ahmad Fauzi');
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   // Modals for Tanggapan (Replies)
   const [isAddReplyOpen, setIsAddReplyOpen] = useState(false);
-  const [replyAuthor, setReplyAuthor] = useState('Budi Sujatmiko');
+  const [replyAuthor, setReplyAuthor] = useState('Ahmad Fauzi');
   const [replyText, setReplyText] = useState('');
 
   const [editingReply, setEditingReply] = useState<ConsultationReplyItem | null>(null);
@@ -82,7 +97,7 @@ export default function DetailKonsultasiPage() {
                 ? 'Konsultasi Pegawai.pdf'
                 : 'Konsultasi Kesehatan.pdf',
             attachmentUrl: '#',
-            authorName: apiData.author?.name || 'Budi Sujatmiko',
+            authorName: apiData.author?.name || 'Ahmad Fauzi',
             replies: (apiData.replies || []).map((r: any) => ({
               id: r.id,
               authorName: r.author?.name || 'Pegawai',
@@ -104,6 +119,17 @@ export default function DetailKonsultasiPage() {
         setIsLoading(false);
       });
   }, [id]);
+
+  useEffect(() => {
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setReplyAuthor(data.data.name || 'Drs. Bambang Sudirman, M.Hum.');
+        }
+      })
+      .catch((err) => console.warn('Failed to fetch profile', err));
+  }, []);
 
   // Sync updates to localStorage helper
   const updateLocalItem = (updated: ConsultationItem) => {
@@ -145,7 +171,7 @@ export default function DetailKonsultasiPage() {
 
     const newReply: ConsultationReplyItem = {
       id: `rep-${Date.now()}`,
-      authorName: replyAuthor.trim() || 'Budi Sujatmiko',
+      authorName: replyAuthor.trim() || 'Ahmad Fauzi',
       date: '20 Agustus 2026',
       content: replyText.trim(),
     };
@@ -240,12 +266,12 @@ export default function DetailKonsultasiPage() {
         'Musim peralihan cuaca seringkali membawa lonjakan kasus batuk dan flu di lingkungan kerja. Mari tingkatkan daya tahan tubuh dengan menjaga hidrasi, konsumsi vitamin C, istirahat cukup, dan mengenakan masker saat berada di ruang kerja bersama.',
       attachmentName: 'Konsultasi Kesehatan.pdf',
       attachmentUrl: '#',
-      authorName: 'Budi Sujatmiko',
+      authorName: 'Ahmad Fauzi',
       replies: [],
     };
 
   return (
-    <div className="w-full bg-[#faf8ff] min-h-screen text-[#1a1b20]">
+    <div className="w-full bg-white min-h-screen text-[#1a1b20]">
       <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10">
         {/* Breadcrumb matching Stitch */}
         <nav
@@ -321,32 +347,57 @@ export default function DetailKonsultasiPage() {
 
           {/* Author Block & Edit / Hapus Action Buttons matching Wireframe 3 */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 pt-6 border-t border-[#c5c6d2]">
-            <div>
-              <p className="text-xs text-[#757682] mb-1">Dibuat oleh</p>
-              <p className="text-sm sm:text-base font-bold text-[#1a1b20]">
-                {currentItem.authorName}
-              </p>
-              <p className="text-xs sm:text-sm text-[#757682]">
-                {currentItem.date}
-              </p>
+            <div className="flex flex-row gap-6">
+              <div className="w-[220px]">
+                <p className="text-xs text-[#757682] mb-1 font-semibold">Dibuat oleh</p>
+                <p className="text-sm sm:text-base font-bold text-[#1a1b20]">
+                  {currentItem.authorName}
+                </p>
+                <p className="text-xs sm:text-sm text-[#757682]">
+                  {currentItem.date}
+                </p>
+                <p className="text-xs sm:text-sm text-[#757682]">
+                  Status: {(currentItem as any).status === 'MENUNGGU' || (currentItem as any).status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+                </p>
+              </div>
+              
+              {true && (
+                <>
+                  <div className="border-l border-[#c5c6d2]" />
+                  <div className="w-[220px]">
+                    <p className="text-xs text-[#757682] mb-1 font-semibold">Diperbarui oleh</p>
+                    <p className="text-sm sm:text-base font-bold text-[#1a1b20]">
+                      {(currentItem as any).editor?.name || currentItem.authorName || 'Administrator Perpusnas'}
+                    </p>
+                    <p className="text-xs sm:text-sm text-[#757682]">
+                      {(currentItem as any).updatedAt ? formatDate((currentItem as any).updatedAt) : '24 September 2026'}
+                    </p>
+                    <p className="text-xs sm:text-sm text-[#757682]">
+                      Status: {(currentItem as any).status === 'MENUNGGU' || (currentItem as any).status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Action Buttons: Edit & Hapus */}
-            <div className="flex items-center gap-3">
-              <Link
-                href={`/antar-pegawai/konsultasi/${id}/edit`}
-                className="border border-[#c5c6d2] hover:border-[#00113a] hover:bg-[#f4f3f9] text-[#1a1b20] text-sm font-semibold px-6 py-1.5 rounded-lg transition-colors cursor-pointer min-w-[90px] inline-block text-center"
-              >
-                Edit
-              </Link>
-              <button
-                type="button"
-                onClick={() => setIsDeleteConsultationOpen(true)}
-                className="border border-[#c5c6d2] hover:border-[#ba1a1a] hover:bg-red-50 text-[#1a1b20] hover:text-[#ba1a1a] text-sm font-semibold px-6 py-1.5 rounded-lg transition-colors cursor-pointer min-w-[90px]"
-              >
-                Hapus
-              </button>
-            </div>
+            {currentUser && (currentUser.role === 'admin' || currentUser.name === (currentItem.authorName || 'Ahmad Fauzi')) && (
+              <div className="flex items-center gap-3">
+                <Link
+                  href={`/antar-pegawai/konsultasi/${id}/edit`}
+                  className="border border-[#c5c6d2] hover:border-[#00113a] hover:bg-[#f4f3f9] text-[#1a1b20] text-sm font-semibold px-6 py-1.5 rounded-lg transition-colors cursor-pointer min-w-[90px] inline-block text-center"
+                >
+                  Edit
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteConsultationOpen(true)}
+                  className="border border-[#c5c6d2] hover:border-[#ba1a1a] hover:bg-red-50 text-[#1a1b20] hover:text-[#ba1a1a] text-sm font-semibold px-6 py-1.5 rounded-lg transition-colors cursor-pointer min-w-[90px]"
+                >
+                  Hapus
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -403,25 +454,27 @@ export default function DetailKonsultasiPage() {
                   </p>
 
                   {/* Bottom Right Actions: Edit & Hapus matching wireframe */}
-                  <div className="flex justify-end items-center gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingReply(reply);
-                        setEditReplyText(reply.content);
-                      }}
-                      className="border border-[#c5c6d2] hover:border-[#00113a] hover:bg-[#f4f3f9] text-[#1a1b20] text-xs font-medium px-4 py-1 rounded-full transition-colors cursor-pointer"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDeletingReplyId(reply.id)}
-                      className="border border-[#c5c6d2] hover:border-[#ba1a1a] hover:bg-red-50 text-[#1a1b20] hover:text-[#ba1a1a] text-xs font-medium px-4 py-1 rounded-full transition-colors cursor-pointer"
-                    >
-                      Hapus
-                    </button>
-                  </div>
+                  {currentUser && (currentUser.role === 'admin' || currentUser.name === reply.authorName) && (
+                    <div className="flex justify-end items-center gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingReply(reply);
+                          setEditReplyText(reply.content);
+                        }}
+                        className="border border-[#c5c6d2] hover:border-[#00113a] hover:bg-[#f4f3f9] text-[#1a1b20] text-xs font-medium px-4 py-1 rounded-full transition-colors cursor-pointer"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDeletingReplyId(reply.id)}
+                        className="border border-[#c5c6d2] hover:border-[#ba1a1a] hover:bg-red-50 text-[#1a1b20] hover:text-[#ba1a1a] text-xs font-medium px-4 py-1 rounded-full transition-colors cursor-pointer"
+                      >
+                        Hapus
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))
             )}
@@ -446,20 +499,6 @@ export default function DetailKonsultasiPage() {
               </div>
 
               <form onSubmit={handleAddReply} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-[#1a1b20] mb-1">
-                    Nama Penanggap
-                  </label>
-                  <input
-                    type="text"
-                    value={replyAuthor}
-                    onChange={(e) => setReplyAuthor(e.target.value)}
-                    required
-                    placeholder="Nama pengirim tanggapan"
-                    className="w-full border border-[#c5c6d2] rounded-lg p-2.5 text-sm text-[#1a1b20] outline-none focus:border-[#00113a]"
-                  />
-                </div>
-
                 <div>
                   <label className="block text-xs font-semibold text-[#1a1b20] mb-1">
                     Isi Tanggapan

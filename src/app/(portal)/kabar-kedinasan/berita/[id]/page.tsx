@@ -91,6 +91,19 @@ export default function DetailBeritaPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setCurrentUser(data.data);
+        }
+      })
+      .catch((err) => console.warn('Failed to fetch profile', err));
+  }, []);
+
   useEffect(() => {
     if (!rawId) return;
 
@@ -165,13 +178,40 @@ export default function DetailBeritaPage() {
   const displayDate = news?.publishedAt
     ? formatDate(news.publishedAt)
     : '19 Agustus 2026';
+  
+  const createdDate = news?.createdAt ? formatDate(news.createdAt) : displayDate;
+  const updatedDate = news?.updatedAt ? formatDate(news.updatedAt) : displayDate;
+
+  let realAttachments: { url: string, title: string }[] = [];
+  if (news?.attachmentUrl) {
+    try {
+      const urls = JSON.parse(news.attachmentUrl);
+      const names = news?.attachmentName ? news.attachmentName.split('|||') : [];
+      realAttachments = urls.map((u: string, i: number) => ({
+        url: u,
+        title: names[i] || `Lampiran ${i + 1}`
+      }));
+    } catch {
+      // Fallback if not valid JSON
+      if (news?.attachmentUrl.startsWith('data:image')) {
+         realAttachments = [{ url: news.attachmentUrl, title: news?.attachmentName || 'Lampiran 1' }];
+      }
+    }
+  }
+
+  let galleryItems: { url: string, title: string }[] = [];
+  if (news) {
+    galleryItems = realAttachments;
+  } else {
+    galleryItems = currentGalleryPhotos;
+  }
 
   const bodyParagraphs = (news?.body || news?.content || DEFAULT_NEWS_FALLBACK.body)
     .split(/\n\n+/)
     .filter((p: string) => p.trim().length > 0);
 
   return (
-    <div className="bg-[#faf8ff] min-h-[calc(100vh-80px)] text-[#1a1b20]">
+    <div className="bg-white min-h-[calc(100vh-80px)] text-[#1a1b20]">
       {/* Main Content Area matching Stitch screen spec */}
       <main className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 md:px-16 py-8 md:py-12">
         {/* Breadcrumbs matching Stitch */}
@@ -264,13 +304,21 @@ export default function DetailBeritaPage() {
                     <p className="text-sm text-[#1a1b20]">{authorName}</p>
                   </div>
                   <div>
+                    <h4 className="font-bold text-lg text-[#1a1b20] mb-1">Tanggal Dibuat</h4>
+                    <p className="text-sm text-[#1a1b20]">{createdDate}</p>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-lg text-[#1a1b20] mb-1">Diperbarui Oleh</h4>
+                    <p className="text-sm text-[#1a1b20]">{authorName}</p>
+                  </div>
+                  <div>
                     <h4 className="font-bold text-lg text-[#1a1b20] mb-1">Tanggal Diperbarui</h4>
-                    <p className="text-sm text-[#1a1b20]">{displayDate}</p>
+                    <p className="text-sm text-[#1a1b20]">{updatedDate}</p>
                   </div>
                   <div>
                     <h4 className="font-bold text-lg text-[#1a1b20] mb-1">Status</h4>
                     <p className="text-sm text-[#1a1b20] capitalize">
-                      {news?.status === 'PUBLISHED' || news?.status === 'TERBIT' ? 'Terbit' : (news?.status === 'DRAFT' || news?.status === 'DRAF' ? 'Menunggu' : (news?.status || 'Terbit'))}
+                      {news?.status === 'PUBLISHED' || news?.status === 'TERBIT' ? 'Terbit' : (news?.status === 'DRAFT' || news?.status === 'DRAF' || news?.status === 'MENUNGGU' ? 'Menunggu' : (news?.status || 'Terbit'))}
                     </p>
                   </div>
                 </div>
@@ -289,75 +337,40 @@ export default function DetailBeritaPage() {
               ))}
             </div>
 
-            <hr className="border-t border-[#c5c6d2] mb-12" />
+            {galleryItems.length > 0 && (
+              <>
+                <hr className="border-t border-[#c5c6d2] mb-12" />
 
-            {/* Galeri Foto Section */}
-            <section className="mb-16">
-              <h2 className="text-2xl sm:text-3xl font-bold text-[#1a1b20] mb-6">
-                Lampiran
-              </h2>
+                {/* Galeri Foto Section */}
+                <section className="mb-16">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-[#1a1b20] mb-6">
+                    Lampiran
+                  </h2>
 
-              {/* 3 Photos Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                {currentGalleryPhotos.map((photo, idx) => (
-                  <div
-                    key={idx}
-                    onClick={() => setPreviewImage(photo.url)}
-                    className="aspect-video bg-[#e3e2e8] rounded-lg border border-[#c5c6d2] overflow-hidden relative cursor-pointer group shadow-xs hover:shadow-md transition-all flex items-center justify-center"
-                  >
-                    <img
-                      src={photo.url}
-                      alt={photo.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
-                      <p className="text-xs text-white font-medium line-clamp-2 drop-shadow">
-                        {photo.title}
-                      </p>
-                    </div>
+                  {/* Horizontal Scroll Gallery */}
+                  <div className="flex overflow-x-auto gap-4 md:gap-6 pb-6 mb-2 scrollbar-thin scrollbar-thumb-[#c5c6d2] scrollbar-track-transparent snap-x snap-mandatory">
+                    {galleryItems.map((photo, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => setPreviewImage(photo.url)}
+                        className="min-w-[85vw] sm:min-w-[50vw] md:min-w-[calc(33.333%-1rem)] aspect-video shrink-0 snap-start bg-[#e3e2e8] rounded-lg border border-[#c5c6d2] overflow-hidden relative cursor-pointer group shadow-xs hover:shadow-md transition-all flex items-center justify-center"
+                      >
+                        <img
+                          src={photo.url}
+                          alt={photo.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+                          <p className="text-xs text-white font-medium line-clamp-2 drop-shadow">
+                            {photo.title}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-
-              {/* Gallery Pagination Controls matching Stitch */}
-              <nav aria-label="Pagination Galeri" className="flex items-center gap-2">
-                <button
-                  type="button"
-                  aria-label="Previous gallery page"
-                  disabled={galleryPage <= 1}
-                  onClick={() => setGalleryPage((p) => Math.max(1, p - 1))}
-                  className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-30 cursor-pointer"
-                >
-                  &lt;
-                </button>
-
-                {[1, 2, 3, 4, 5].map((page) => (
-                  <button
-                    key={page}
-                    type="button"
-                    onClick={() => setGalleryPage(page)}
-                    className={`w-8 h-8 rounded text-xs font-bold transition-colors flex items-center justify-center cursor-pointer ${galleryPage === page
-                        ? 'bg-[#00113a] text-white'
-                        : 'text-[#444650] hover:bg-[#efedf3] hover:text-[#00113a]'
-                      }`}
-                  >
-                    {page}
-                  </button>
-                ))}
-
-                <span className="text-[#757682] text-xs font-bold px-1">...</span>
-
-                <button
-                  type="button"
-                  aria-label="Next gallery page"
-                  disabled={galleryPage >= 5}
-                  onClick={() => setGalleryPage((p) => Math.min(5, p + 1))}
-                  className="w-8 h-8 flex items-center justify-center text-xs font-bold text-[#444650] hover:text-[#00113a] transition-colors disabled:opacity-30 cursor-pointer"
-                >
-                  &gt;
-                </button>
-              </nav>
-            </section>
+                </section>
+              </>
+            )}
 
             {/* Social Sharing Section matching Stitch */}
             <div className="flex flex-col md:flex-row justify-start items-start md:items-end gap-6 pt-6 mb-10 border-t border-[#c5c6d2]">
@@ -421,22 +434,24 @@ export default function DetailBeritaPage() {
             </div>
 
             {/* Action Buttons: Edit Berita & Hapus Berita matching Stitch */}
-            <div className="flex flex-wrap gap-4 pt-2">
-              <button
-                onClick={() => router.push(`/kabar-kedinasan/berita/${rawId}/edit`)}
-                className="px-8 py-3 bg-transparent border border-[#c5c6d2] text-[#1a1b20] font-bold text-sm rounded-md hover:bg-[#efedf3] hover:border-[#00113a] transition-all min-w-[140px] text-center shadow-xs inline-block"
-              >
-                Edit Berita
-              </button>
+            {currentUser && (currentUser.role === 'admin' || currentUser.name === news?.author?.name) && (
+              <div className="flex flex-wrap gap-4 pt-2">
+                <button
+                  onClick={() => router.push(`/kabar-kedinasan/berita/${rawId}/edit`)}
+                  className="px-8 py-3 bg-transparent border border-[#c5c6d2] text-[#1a1b20] font-bold text-sm rounded-md hover:bg-[#efedf3] hover:border-[#00113a] transition-all min-w-[140px] text-center shadow-xs inline-block"
+                >
+                  Edit Berita
+                </button>
 
-              <button
-                type="button"
-                onClick={() => setIsDeleteModalOpen(true)}
-                className="px-8 py-3 bg-transparent border border-[#c5c6d2] text-[#1a1b20] hover:text-red-700 hover:border-red-400 font-bold text-sm rounded-md hover:bg-red-50 transition-all min-w-[140px] text-center shadow-xs cursor-pointer"
-              >
-                Hapus Berita
-              </button>
-            </div>
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="px-8 py-3 bg-transparent border border-[#c5c6d2] text-[#1a1b20] hover:text-red-700 hover:border-red-400 font-bold text-sm rounded-md hover:bg-red-50 transition-all min-w-[140px] text-center shadow-xs cursor-pointer"
+                >
+                  Hapus Berita
+                </button>
+              </div>
+            )}
           </article>
         )}
       </main>

@@ -212,7 +212,7 @@ export default function TambahArtikelTahukahAndaPage() {
       coverImage: fallbackImage,
       publishedAt: tanggal.toISOString().split('T')[0],
       status: resolvedStatus,
-      authorName: 'Budi Sujatmiko',
+      authorName: 'Ahmad Fauzi',
       attachments: MOCK_TAHUKAH_ANDA_ATTACHMENTS_5,
     };
 
@@ -231,7 +231,7 @@ export default function TambahArtikelTahukahAndaPage() {
           body: htmlContent || rawText || judul,
           coverImage: fallbackImage,
           publishedAt: tanggal.toISOString(),
-          status: status === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
+          status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',
         }),
       });
     } catch {
@@ -546,8 +546,8 @@ export default function TambahArtikelTahukahAndaPage() {
                   type="file"
                   accept="image/*"
                   onChange={handleGambarFileChange}
-                  className="hidden"
-                />
+                  className="hidden" suppressHydrationWarning
+                 suppressHydrationWarning />
               </div>
 
               {/* Dashed preview box: Gambar Preview */}
@@ -597,8 +597,8 @@ export default function TambahArtikelTahukahAndaPage() {
                   type="file"
                   accept=".pdf,.doc,.docx,.jpg,.png"
                   onChange={handleLampiranFileChange}
-                  className="hidden"
-                />
+                  className="hidden" suppressHydrationWarning
+                 suppressHydrationWarning />
               </div>
 
               {/* Dashed preview box: File Preview */}

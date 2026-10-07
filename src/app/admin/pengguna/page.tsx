@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { 
@@ -73,6 +73,20 @@ export default function AdminPenggunaPage() {
   const [editUnitKerja, setEditUnitKerja] = useState('');
   const [editSatuanKerja, setEditSatuanKerja] = useState('');
   const [editResetPassword, setEditResetPassword] = useState('');
+  const [editNip, setEditNip] = useState('');
+  const [editAlamat, setEditAlamat] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editBirthDate, setEditBirthDate] = useState('');
+  const [editGolRuang, setEditGolRuang] = useState('');
+  const [editNotes, setEditNotes] = useState('');
+  
+  const [isEditSatuanKerjaDropdownOpen, setIsEditSatuanKerjaDropdownOpen] = useState(false);
+  const editSatuanKerjaDropdownRef = useRef<HTMLDivElement>(null);
+  const [isEditRoleDropdownOpen, setIsEditRoleDropdownOpen] = useState(false);
+  const editRoleDropdownRef = useRef<HTMLDivElement>(null);
+  const [isEditStatusDropdownOpen, setIsEditStatusDropdownOpen] = useState(false);
+  const editStatusDropdownRef = useRef<HTMLDivElement>(null);
+  
   const [isUpdating, setIsUpdating] = useState(false);
 
   // Delete State
@@ -310,6 +324,13 @@ export default function AdminPenggunaPage() {
     const foundSatuan = SATUAN_KERJA_OPTIONS.find(opt => user.profile?.unitKerja?.includes(opt));
     setEditSatuanKerja(foundSatuan || '');
     setEditResetPassword('');
+    
+    setEditNip(user.nip || user.profile?.nip || '');
+    setEditAlamat(user.profile?.bio || '');
+    setEditPhone(user.profile?.phone || '');
+    setEditBirthDate(user.profile?.birthDate ? new Date(user.profile.birthDate).toISOString().split('T')[0] : '');
+    setEditGolRuang(user.profile?.golRuang || '');
+    setEditNotes(user.profile?.notes || '');
   };
 
   // Update user
@@ -332,6 +353,11 @@ export default function AdminPenggunaPage() {
           unitKerja: editUnitKerja,
           satuanKerja: editSatuanKerja,
           resetPassword: editResetPassword || undefined,
+          nip: editNip,
+          bio: editAlamat || editNotes,
+          birthDate: editBirthDate,
+          golRuang: editGolRuang,
+          phone: editPhone,
         }),
       });
 
@@ -600,7 +626,9 @@ export default function AdminPenggunaPage() {
 
                       {/* Email */}
                       <td className="py-2.5 px-4 text-slate-600 font-mono text-[11px] border-r border-[#c5c6d2] whitespace-nowrap">
-                        {u.email}
+                        {u.email && u.email.length > 2
+                          ? `${u.email.charAt(0)}${'*'.repeat(u.email.length - 2)}${u.email.charAt(u.email.length - 1)}`
+                          : u.email}
                       </td>
 
                       {/* Peran: Pill badge matching wireframe */}
@@ -1097,162 +1125,324 @@ export default function AdminPenggunaPage() {
         </div>
       )}
 
-      {/* Edit User Modal */}
-      <Modal
-        isOpen={Boolean(editingUser)}
-        onClose={() => setEditingUser(null)}
-        title={`Ubah Pengguna: ${editingUser?.name || ''}`}
-        maxWidth="lg"
-      >
-        <form onSubmit={handleUpdate} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Nama Lengkap
-              </label>
-              <input
-                type="text"
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                required
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:border-[#007BFF] focus:outline-hidden"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                value={editEmail}
-                onChange={(e) => setEditEmail(e.target.value)}
-                required
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:border-[#007BFF] focus:outline-hidden"
-              />
-            </div>
-          </div>
+      {/* Edit User Modal - Matching Tambah Pengguna Layout */}
+      {editingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
+            onClick={() => setEditingUser(null)}
+          />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Role Akses
-              </label>
-              <div className="relative">
-                <select
-                  value={editRoleId}
-                  onChange={(e) => setEditRoleId(e.target.value)}
-                  className="w-full appearance-none rounded-xl border border-slate-300 bg-white px-3 py-2 pr-8 text-xs text-slate-900 focus:border-[#007BFF] focus:outline-none cursor-pointer"
-                >
-                  {roles.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.name === 'ADMINISTRATOR' ? 'Admin' : 'Pegawai'}
-                    </option>
-                  ))}
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-500">
-                  <ChevronDown className="w-4 h-4" />
+          {/* Modal Container */}
+          <div className="relative w-full max-w-2xl bg-white border border-[#c5c6d2] shadow-2xl rounded-lg z-10 my-8 p-6 sm:p-8 max-h-[90vh] overflow-y-auto overflow-x-hidden">
+            {/* Header: Title & Red Square Close Button [X] */}
+            <div className="flex items-center justify-between pb-3 mb-6 border-b border-slate-200">
+              <h2 className="text-xl font-black text-[#00113a] tracking-tight">
+                Ubah Pengguna
+              </h2>
+              <button
+                type="button"
+                onClick={() => setEditingUser(null)}
+                className="w-6 h-6 bg-[#d32f2f] hover:bg-[#b71c1c] text-white flex items-center justify-center rounded-xs font-bold text-xs transition-colors shadow-2xs cursor-pointer"
+                title="Tutup"
+              >
+                <X className="w-4 h-4 stroke-[3]" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdate} className="space-y-6">
+              {/* SECTION 1: DATA PRIBADI (MATCHING WIREFRAME) */}
+              <div className="border border-[#c5c6d2] rounded-md p-5 sm:p-6 bg-white space-y-4 shadow-2xs">
+                <h3 className="text-base sm:text-lg font-bold text-[#00113a]">
+                  Data Pribadi
+                </h3>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                    Nama Lengkap
+                  </label>
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    placeholder="Masukkan nama lengkap beserta gelar..."
+                    required
+                    className="w-full rounded-md border border-[#c5c6d2] bg-white px-3.5 py-2 text-xs text-slate-900 focus:border-[#00113a] focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                    Nomor Induk Pegawai
+                  </label>
+                  <input
+                    type="text"
+                    value={editNip}
+                    onChange={(e) => setEditNip(e.target.value)}
+                    placeholder="Contoh: 198501152010011001"
+                    className="w-full rounded-md border border-[#c5c6d2] bg-white px-3.5 py-2 text-xs text-slate-900 focus:border-[#00113a] focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                    Email Kedinasan
+                  </label>
+                  <input
+                    type="email"
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                    placeholder="nama@perpusnas.go.id"
+                    required
+                    className="w-full rounded-md border border-[#c5c6d2] bg-white px-3.5 py-2 text-xs text-slate-900 focus:border-[#00113a] focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                    Alamat Domisili
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={editAlamat}
+                    onChange={(e) => setEditAlamat(e.target.value)}
+                    placeholder="Masukkan alamat domisili lengkap..."
+                    className="w-full rounded-md border border-[#c5c6d2] bg-white px-3.5 py-2 text-xs text-slate-900 focus:border-[#00113a] focus:outline-none transition-colors resize-none leading-relaxed"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                    Nomor Seluler
+                  </label>
+                  <input
+                    type="tel"
+                    value={editPhone}
+                    onChange={(e) => setEditPhone(e.target.value)}
+                    placeholder="081234567890"
+                    className="w-full rounded-md border border-[#c5c6d2] bg-white px-3.5 py-2 text-xs text-slate-900 focus:border-[#00113a] focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                    Tanggal Lahir
+                  </label>
+                  <input
+                    type="date"
+                    value={editBirthDate}
+                    onChange={(e) => setEditBirthDate(e.target.value)}
+                    className="w-full rounded-md border border-[#c5c6d2] bg-white px-3.5 py-2 text-xs text-slate-900 focus:border-[#00113a] focus:outline-none transition-colors cursor-pointer"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                    Reset Kata Sandi (Opsional)
+                  </label>
+                  <input
+                    type="password"
+                    value={editResetPassword}
+                    onChange={(e) => setEditResetPassword(e.target.value)}
+                    placeholder="Kosongkan jika tidak ingin mereset"
+                    className="w-full rounded-md border border-[#c5c6d2] bg-white px-3.5 py-2 text-xs text-slate-900 focus:border-[#00113a] focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    type="submit"
+                    disabled={isUpdating}
+                    className="px-6 py-2 bg-[#8d99ae] hover:bg-[#6c757d] text-white text-xs font-bold rounded-md transition-colors shadow-2xs cursor-pointer active:scale-95 disabled:opacity-50"
+                  >
+                    {isUpdating ? 'Menyimpan...' : 'Simpan'}
+                  </button>
                 </div>
               </div>
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Status Akun
-              </label>
-              <div className="relative">
-                <select
-                  value={editStatus}
-                  onChange={(e) => setEditStatus(e.target.value)}
-                  className="w-full appearance-none rounded-xl border border-slate-300 bg-white px-3 py-2 pr-8 text-xs text-slate-900 focus:border-[#007BFF] focus:outline-none cursor-pointer"
-                >
-                  <option value="ACTIVE">Aktif</option>
-                  <option value="INACTIVE">Non-Aktif</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-500">
-                  <ChevronDown className="w-4 h-4" />
+
+              {/* SECTION 2: UNIT KERJA (MATCHING WIREFRAME) */}
+              <div className="border border-[#c5c6d2] rounded-md p-5 sm:p-6 bg-white space-y-4 shadow-2xs">
+                <h3 className="text-base sm:text-lg font-bold text-[#00113a]">
+                  Unit Kerja
+                </h3>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                    Unit Kerja / Direktorat
+                  </label>
+                  <input
+                    type="text"
+                    value={editUnitKerja}
+                    onChange={(e) => setEditUnitKerja(e.target.value)}
+                    placeholder="Contoh: Pusat Preservasi Manuskrip & Bahan Perpustakaan"
+                    className="w-full rounded-md border border-[#c5c6d2] bg-white px-3.5 py-2 text-xs text-slate-900 focus:border-[#00113a] focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                    Jabatan
+                  </label>
+                  <input
+                    type="text"
+                    value={editPosition}
+                    onChange={(e) => setEditPosition(e.target.value)}
+                    placeholder="Contoh: Pustakawan Ahli Muda"
+                    className="w-full rounded-md border border-[#c5c6d2] bg-white px-3.5 py-2 text-xs text-slate-900 focus:border-[#00113a] focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                    Golongan / Ruang
+                  </label>
+                  <input
+                    type="text"
+                    value={editGolRuang}
+                    onChange={(e) => setEditGolRuang(e.target.value)}
+                    placeholder="Contoh: III/a - Penata Muda"
+                    className="w-full rounded-md border border-[#c5c6d2] bg-white px-3.5 py-2 text-xs text-slate-900 focus:border-[#00113a] focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
+                    Uraian Tugas / Catatan Kedinasan
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={editNotes}
+                    onChange={(e) => setEditNotes(e.target.value)}
+                    placeholder="Deskripsi tugas atau penempatan kedinasan..."
+                    className="w-full rounded-md border border-[#c5c6d2] bg-white px-3.5 py-2 text-xs text-slate-900 focus:border-[#00113a] focus:outline-none transition-colors resize-none leading-relaxed"
+                  />
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    type="submit"
+                    disabled={isUpdating}
+                    className="px-6 py-2 bg-[#8d99ae] hover:bg-[#6c757d] text-white text-xs font-bold rounded-md transition-colors shadow-2xs cursor-pointer active:scale-95 disabled:opacity-50"
+                  >
+                    {isUpdating ? 'Menyimpan...' : 'Simpan'}
+                  </button>
                 </div>
               </div>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Satuan Kerja
-              </label>
-              <div className="relative">
-                <select
-                  value={editSatuanKerja}
-                  onChange={(e) => setEditSatuanKerja(e.target.value)}
-                  className="w-full appearance-none rounded-xl border border-slate-300 bg-white px-3 py-2 pr-8 text-xs text-slate-900 focus:border-[#007BFF] focus:outline-none cursor-pointer"
-                >
-                  <option value="">-- Pilih Satuan Kerja --</option>
-                  {SATUAN_KERJA_OPTIONS.map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
-                  ))}
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-500">
-                  <ChevronDown className="w-4 h-4" />
+              {/* SECTION 3: SATUAN KERJA, PERAN, STATUS & ACTIONS */}
+              <div className={`pt-2 transition-all duration-200 ${isEditRoleDropdownOpen || isEditSatuanKerjaDropdownOpen || isEditStatusDropdownOpen ? 'pb-28' : 'pb-1'}`}>
+                
+                <div className="relative w-56 sm:w-64 mb-3.5" ref={editSatuanKerjaDropdownRef}>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    Satuan Kerja
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsEditSatuanKerjaDropdownOpen(!isEditSatuanKerjaDropdownOpen);
+                      setIsEditRoleDropdownOpen(false);
+                      setIsEditStatusDropdownOpen(false);
+                    }}
+                    className="w-full flex items-center justify-between px-3.5 py-2.5 bg-[#5b6b82] text-white text-xs font-bold rounded-xl hover:bg-[#485568] transition-colors cursor-pointer shadow-xs"
+                  >
+                    <span className="truncate pr-2">{editSatuanKerja || 'Satuan Kerja'}</span>
+                    <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${isEditSatuanKerjaDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {isEditSatuanKerjaDropdownOpen && (
+                    <div className="absolute left-0 w-56 sm:w-64 mt-1 bg-white border border-[#c5c6d2] rounded-xl shadow-lg overflow-hidden py-1 z-50 animate-in fade-in zoom-in-95 duration-150">
+                      {SATUAN_KERJA_OPTIONS.map((item) => {
+                        const isSelected = editSatuanKerja === item;
+                        return (
+                          <button
+                            key={item}
+                            type="button"
+                            onClick={() => {
+                              setEditSatuanKerja(item);
+                              setIsEditSatuanKerjaDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-2.5 text-xs font-semibold transition-colors flex items-center justify-between cursor-pointer ${
+                              isSelected
+                                ? 'bg-slate-100 text-[#00113a] font-bold'
+                                : 'text-slate-700 hover:bg-slate-50'
+                            }`}
+                          >
+                            <span>{item}</span>
+                            {isSelected && <Check className="w-3.5 h-3.5 text-[#007BFF]" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                <div className="relative w-56 sm:w-64 mb-3.5" ref={editRoleDropdownRef}>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    Peran
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsEditRoleDropdownOpen(!isEditRoleDropdownOpen);
+                      setIsEditSatuanKerjaDropdownOpen(false);
+                      setIsEditStatusDropdownOpen(false);
+                    }}
+                    className="w-full flex items-center justify-between px-3.5 py-2.5 bg-[#5b6b82] text-white text-xs font-bold rounded-xl hover:bg-[#485568] transition-colors cursor-pointer shadow-xs"
+                  >
+                    <span>{roles.find(r => r.id === editRoleId)?.name === 'ADMINISTRATOR' ? 'Admin' : 'Pegawai'}</span>
+                    <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${isEditRoleDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {isEditRoleDropdownOpen && (
+                    <div className="absolute left-0 w-56 sm:w-64 mt-1 bg-white border border-[#c5c6d2] rounded-xl shadow-lg overflow-hidden py-1 z-50 animate-in fade-in zoom-in-95 duration-150">
+                      {roles.map((r) => {
+                        const isSelected = editRoleId === r.id;
+                        const label = r.name === 'ADMINISTRATOR' ? 'Admin' : 'Pegawai';
+                        return (
+                          <button
+                            key={r.id}
+                            type="button"
+                            onClick={() => {
+                              setEditRoleId(r.id);
+                              setIsEditRoleDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-2.5 text-xs font-semibold transition-colors flex items-center justify-between cursor-pointer ${
+                              isSelected
+                                ? 'bg-slate-100 text-[#00113a] font-bold'
+                                : 'text-slate-700 hover:bg-slate-50'
+                            }`}
+                          >
+                            <span>{label}</span>
+                            {isSelected && <Check className="w-3.5 h-3.5 text-[#007BFF]" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setEditingUser(null)}
+                    className="px-5 py-2 text-xs font-bold rounded-xl border border-[#c5c6d2] text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isUpdating}
+                    className="px-6 py-2 text-xs font-bold rounded-xl bg-[#00113a] hover:bg-[#2a4386] text-white transition-all shadow-xs disabled:opacity-50 cursor-pointer active:scale-95"
+                  >
+                    {isUpdating ? 'Menyimpan...' : 'Simpan Perubahan'}
+                  </button>
                 </div>
               </div>
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Jabatan
-              </label>
-              <input
-                type="text"
-                value={editPosition}
-                onChange={(e) => setEditPosition(e.target.value)}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:border-[#007BFF] focus:outline-hidden"
-              />
-            </div>
+            </form>
           </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Unit Kerja / Direktorat
-            </label>
-            <input
-              type="text"
-              value={editUnitKerja}
-              onChange={(e) => setEditUnitKerja(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:border-[#007BFF] focus:outline-hidden"
-            />
-          </div>
-
-          <div className="pt-2 border-t border-slate-100">
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Reset Kata Sandi (Opsional)
-            </label>
-            <input
-              type="password"
-              placeholder="Masukkan kata sandi baru jika ingin mereset"
-              value={editResetPassword}
-              onChange={(e) => setEditResetPassword(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:border-[#007BFF] focus:outline-hidden"
-            />
-          </div>
-
-          <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={() => setEditingUser(null)}
-              className="px-4 py-2 text-xs font-bold rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              disabled={isUpdating}
-              className="px-4 py-2 text-xs font-bold rounded-xl bg-[#007BFF] text-white hover:bg-[#0069d9] transition-all disabled:opacity-50"
-            >
-              {isUpdating ? 'Menyimpan...' : 'Simpan Perubahan'}
-            </button>
-          </div>
-        </form>
-      </Modal>
+        </div>
+      )}
 
       {/* Delete Confirm Dialog */}
       <ConfirmDialog

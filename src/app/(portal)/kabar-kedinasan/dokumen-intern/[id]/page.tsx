@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -45,6 +45,19 @@ export default function DetailDokumenInternalPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState('');
+
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setCurrentUser(data.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!rawId) return;
@@ -218,27 +231,29 @@ Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedan
           <div className="border-t border-[#c5c6d2] my-8" />
 
           {/* Section: LAMPIRAN */}
-          <div>
-            <h3 className="text-xs font-bold text-[#1a1b20] uppercase tracking-wider mb-4">
-              LAMPIRAN
-            </h3>
+          {(documentItem?.attachmentUrl || documentItem?.attachmentName) && (
+            <div>
+              <h3 className="text-xs font-bold text-[#1a1b20] uppercase tracking-wider mb-4">
+                LAMPIRAN
+              </h3>
 
-            {/* 5 Attachment Thumbnails matching Stitch */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
-              {MOCK_ATTACHMENT_IMAGES.map((att) => (
-                <button
-                  key={att.id}
-                  type="button"
-                  onClick={() => setPreviewImage(att.src)}
-                  className="aspect-square bg-[#e2e3ea] hover:bg-[#d8d9e2] border border-[#c5c6d2] rounded-md flex flex-col items-center justify-center text-xs text-[#757682] hover:text-[#00113a] font-medium transition-all group shadow-2xs cursor-pointer"
-                >
-                  <span className="text-xs font-medium text-[#757682] group-hover:text-[#1a1b20] transition-colors">
-                    {att.label}
-                  </span>
-                </button>
-              ))}
+              {/* 5 Attachment Thumbnails matching Stitch */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
+                {MOCK_ATTACHMENT_IMAGES.map((att) => (
+                  <button
+                    key={att.id}
+                    type="button"
+                    onClick={() => setPreviewImage(att.src)}
+                    className="aspect-square bg-[#e2e3ea] hover:bg-[#d8d9e2] border border-[#c5c6d2] rounded-md flex flex-col items-center justify-center text-xs text-[#757682] hover:text-[#00113a] font-medium transition-all group shadow-2xs cursor-pointer"
+                  >
+                    <span className="text-xs font-medium text-[#757682] group-hover:text-[#1a1b20] transition-colors">
+                      {att.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Divider Line */}
           <div className="border-t border-[#c5c6d2] my-8" />
@@ -246,34 +261,54 @@ Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedan
           {/* Section: Footer Metadata & Action Buttons matching Stitch */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
             {/* Left: Dibuat oleh & copyright */}
-            <div className="text-xs text-[#757682] space-y-0.5">
-              <p className="font-semibold text-[#757682]">Dibuat oleh</p>
+            
+            <div className="flex flex-row gap-6">
+              <div className="text-xs text-[#757682] space-y-0.5 w-[220px]"><p className="font-semibold text-[#757682]">Dibuat oleh</p>
               <p className="font-semibold text-[#1a1b20]">
-                Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.
+                {documentItem?.author?.name || documentItem?.authorName || 'Administrator Perpusnas'}
               </p>
               <p className="font-medium text-[#757682]">
                 {documentItem?.publishedAt
                   ? formatDate(documentItem.publishedAt)
                   : '20 Agustus 2026'}
               </p>
+              <p className="font-medium text-[#757682]">
+                Status: {documentItem?.status === 'MENUNGGU' || documentItem?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+              </p>
+            </div>
+              {/* Diperbarui Oleh */}
+              {(documentItem?.updatedAt && documentItem?.createdAt && new Date(documentItem.updatedAt).getTime() - new Date(documentItem.createdAt).getTime() > 1000) && (
+                <>
+                  <div className="border-l border-[#c5c6d2]" />
+                  <div className="text-xs text-[#757682] space-y-0.5 w-[220px]">
+                    <p className="font-semibold text-[#757682]">Diperbarui oleh</p>
+                    <p className="font-semibold text-[#1a1b20]">
+                      {documentItem?.editor?.name || documentItem?.author?.name || documentItem?.authorName || 'Administrator Perpusnas'}
+                    </p>
+                    <p className="font-medium text-[#757682]">
+                      {formatDate(documentItem.updatedAt)}
+                    </p>
+                    <p className="font-medium text-[#757682]">
+                      Status: {documentItem?.status === 'MENUNGGU' || documentItem?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Right: Edit & Hapus Buttons matching Stitch */}
-            <div className="flex items-center gap-3 self-end sm:self-auto">
-              <Link
-                href={`/kabar-kedinasan/dokumen-intern/${rawId}/edit`}
-                className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs inline-block text-center"
-              >
-                Edit
-              </Link>
-              <button
-                type="button"
-                onClick={() => setIsDeleteModalOpen(true)}
-                className="px-7 py-1.5 bg-white border border-[#dc2626] hover:bg-red-50 text-[#dc2626] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer"
-              >
-                Hapus
-              </button>
-            </div>
+            {currentUser && (currentUser.role === 'admin' || currentUser.name === (documentItem?.author?.name || documentItem?.authorName || 'Administrator Perpusnas')) && (
+              <div className="flex items-center gap-3 self-end sm:self-auto">
+                
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="px-7 py-1.5 bg-white border border-[#dc2626] hover:bg-red-50 text-[#dc2626] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer"
+                >
+                  Hapus
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

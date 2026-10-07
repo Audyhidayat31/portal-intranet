@@ -26,6 +26,7 @@ export default function LihatPegawaiPage() {
 
   const [employee, setEmployee] = useState<MockEmployee | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Edit Modal State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -35,6 +36,15 @@ export default function LihatPegawaiPage() {
 
   useEffect(() => {
     if (!employeeId) return;
+
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setCurrentUser(data.data);
+        }
+      })
+      .catch(() => {});
 
     fetch(`/api/employees/${employeeId}`)
       .then((res) => res.json())
@@ -192,18 +202,20 @@ export default function LihatPegawaiPage() {
                   </div>
 
                   {/* Blue Pencil Icon Badge (Matching Wireframe) */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditForm(employee);
-                      setIsEditModalOpen(true);
-                    }}
-                    aria-label="Ubah foto atau profil"
-                    className="absolute bottom-1 right-2 w-8 h-8 rounded-full bg-[#007BFF] hover:bg-[#0056b3] text-white flex items-center justify-center shadow-md border-2 border-white transition-transform hover:scale-110 active:scale-95 cursor-pointer"
-                    title="Edit Profil"
-                  >
-                    <Pencil className="w-3.5 h-3.5 fill-white" />
-                  </button>
+                  {currentUser?.role === 'ADMINISTRATOR' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditForm(employee);
+                        setIsEditModalOpen(true);
+                      }}
+                      aria-label="Ubah foto atau profil"
+                      className="absolute bottom-1 right-2 w-8 h-8 rounded-full bg-[#007BFF] hover:bg-[#0056b3] text-white flex items-center justify-center shadow-md border-2 border-white transition-transform hover:scale-110 active:scale-95 cursor-pointer"
+                      title="Edit Profil"
+                    >
+                      <Pencil className="w-3.5 h-3.5 fill-white" />
+                    </button>
+                  )}
                 </div>
 
                 {/* Name, NIP, Position */}
@@ -332,19 +344,21 @@ export default function LihatPegawaiPage() {
               </div>
 
               {/* Action Buttons: [ Edit ] Button matching wireframe */}
-              <div className="pt-6 flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditForm(employee);
-                    setIsEditModalOpen(true);
-                  }}
-                  className="px-6 py-2 rounded-lg border border-[#c5c6d2] bg-white hover:bg-slate-50 text-[#00113a] font-bold text-xs sm:text-sm shadow-2xs transition-colors flex items-center gap-2 cursor-pointer"
-                >
-                  <Pencil className="w-3.5 h-3.5" />
-                  <span>Edit</span>
-                </button>
-              </div>
+              {currentUser?.role === 'ADMINISTRATOR' && (
+                <div className="pt-6 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditForm(employee);
+                      setIsEditModalOpen(true);
+                    }}
+                    className="px-6 py-2 rounded-lg border border-[#c5c6d2] bg-white hover:bg-slate-50 text-[#00113a] font-bold text-xs sm:text-sm shadow-2xs transition-colors flex items-center gap-2 cursor-pointer"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                    <span>Edit</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -376,26 +390,27 @@ export default function LihatPegawaiPage() {
                   Foto Profil
                 </label>
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                  <div 
+                    className={`w-16 h-16 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center ${editForm.avatarUrl ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
+                    onClick={() => {
+                      if (editForm.avatarUrl) {
+                        window.open(editForm.avatarUrl, '_blank');
+                      }
+                    }}
+                    title={editForm.avatarUrl ? "Klik untuk melihat foto penuh" : ""}
+                  >
                     {editForm.avatarUrl ? (
                       <img src={editForm.avatarUrl} alt="Preview" className="w-full h-full object-cover" />
                     ) : (
-                      <User className="w-8 h-8 text-slate-400 m-auto" />
+                      <User className="w-8 h-8 text-slate-400" />
                     )}
                   </div>
                   <div className="flex-grow space-y-2">
                     <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold cursor-pointer transition-colors">
                       <Upload className="w-3.5 h-3.5" />
                       <span>Unggah Foto Baru</span>
-                      <input type="file" accept="image/*" onChange={handleAvatarFile} className="hidden" />
+                      <input type="file" accept="image/*" onChange={handleAvatarFile} className="hidden" suppressHydrationWarning  suppressHydrationWarning />
                     </label>
-                    <input
-                      type="url"
-                      value={editForm.avatarUrl || ''}
-                      onChange={(e) => setEditForm({ ...editForm, avatarUrl: e.target.value })}
-                      placeholder="Atau masukkan URL foto"
-                      className="w-full rounded border border-[#c5c6d2] px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-[#00113a]"
-                    />
                   </div>
                 </div>
               </div>

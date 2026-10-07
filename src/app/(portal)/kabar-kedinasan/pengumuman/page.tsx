@@ -29,61 +29,18 @@ const MOCK_ATTACHMENT_IMAGES = [
 ];
 
 // 5 Mock Announcements matching Stitch
-const STITCH_MOCK_ANNOUNCEMENTS_5 = [
-  {
-    id: 'stitch-pengumuman-1',
-    title: 'Penerbitan Buku Karya Sastra Prof. .... Berlangsung di Perpustakaan Nasional Republik Indonesia',
-    excerpt: 'Pengumuman publikasi Penerbitan Buku Karya Sastra Profesor ...',
-    content: 'Sehubungan dengan program penerbitan karya sastra dan pengayaan khazanah literasi nasional, Perpustakaan Nasional Republik Indonesia mengumumkan pelaksanaan kurasi naskah dan penerbitan buku karya sastra terpilih.\n\nSeluruh pegawai dan civitas akademika di lingkungan Perpustakaan Nasional RI diundang untuk menghadiri acara bedah buku dan peluncuran resmi yang diselenggarakan di Ruang Serbaguna Lantai 4 Gedung Fasilitas Layanan Perpustakaan Nasional, Jl. Medan Merdeka Selatan No. 11, Jakarta Pusat.',
-    publishedAt: '2026-08-20',
-    attachmentName: 'Surat_Edaran_Penerbitan_Karya_Sastra_2026.pdf',
-    author: { name: 'Budi Sujatmiko' },
-  },
-  {
-    id: 'stitch-pengumuman-2',
-    title: 'Penerbitan Buku Karya Sastra Prof. .... Berlangsung di Perpustakaan Nasional Republik Indonesia',
-    excerpt: 'Pengumuman publikasi Penerbitan Buku Karya Sastra Profesor ...',
-    content: 'Pemberitahuan kepada seluruh unit kerja terkait pedoman pengajuan nomor registrasi ISBN dan standardisasi katalogisasi dalam terbitan (KDT) untuk naskah karya ilmiah dan sastra terbitan tahun anggaran 2026.\n\nBatas akhir penyerahan naskah digital lengkap beserta ringkasan eksekutif dapat dikirimkan melalui surel persuratan resmi atau portal intranet internal sebelum akhir bulan berjalan.',
-    publishedAt: '2026-08-20',
-    attachmentName: 'Pedoman_Standardisasi_KDT_2026.pdf',
-    author: { name: 'Budi Sujatmiko' },
-  },
-  {
-    id: 'stitch-pengumuman-3',
-    title: 'Penerbitan Buku Karya Sastra Prof. .... Berlangsung di Perpustakaan Nasional Republik Indonesia',
-    excerpt: 'Pengumuman publikasi Penerbitan Buku Karya Sastra Profesor ...',
-    content: 'Informasi jadwal pelaksanaan lokakarya penulisan kreatif dan penyusunan antologi sastra daerah bagi para pegawai di lingkungan Perpustakaan Nasional RI.\n\nKegiatan ini dirancang untuk memfasilitasi peningkatan kompetensi literasi menulis serta pelestarian budaya daerah melalui karya literatur terstruktur.',
-    publishedAt: '2026-08-20',
-    attachmentName: 'Jadwal_Lokakarya_Penulisan_Sastra.pdf',
-    author: { name: 'Budi Sujatmiko' },
-  },
-  {
-    id: 'stitch-pengumuman-4',
-    title: 'Penerbitan Buku Karya Sastra Prof. .... Berlangsung di Perpustakaan Nasional Republik Indonesia',
-    excerpt: 'Pengumuman publikasi Penerbitan Buku Karya Sastra Profesor ...',
-    content: 'Diumumkan kepada seluruh jajaran bahwa Perpustakaan Nasional membuka kesempatan publikasi artikel ilmiah dan tinjauan literatur sastra nusantara pada jurnal terindeks edisi volume ke-14.\n\nNaskah yang lolos seleksi awal dari Dewan Redaksi akan mendapatkan bantuan pendampingan penulisan hingga tahap penerbitan akhir.',
-    publishedAt: '2026-08-20',
-    attachmentName: 'Call_For_Papers_Jurnal_Sastra_Vol14.pdf',
-    author: { name: 'Budi Sujatmiko' },
-  },
-  {
-    id: 'stitch-pengumuman-5',
-    title: 'Penerbitan Buku Karya Sastra Prof. .... Berlangsung di Perpustakaan Nasional Republik Indonesia',
-    excerpt: 'Pengumuman publikasi Penerbitan Buku Karya Sastra Profesor ...',
-    content: 'Ketentuan teknis mengenai serah simpan karya cetak dan karya rekam (SSKCKR) atas karya-karya sastra dan hasil penelitian mutakhir yang dihasilkan oleh pustakawan madya dan utama.\n\nDokumen fisik dan salinan digital wajib diserahkan kepada Bagian Akuisisi dan Pengolahan untuk diarsipkan ke dalam basis data repositori nasional.',
-    publishedAt: '2026-08-20',
-    attachmentName: 'Surat_Pemberitahuan_SSKCKR_2026.pdf',
-    author: { name: 'Budi Sujatmiko' },
-  },
+const STITCH_MOCK_ANNOUNCEMENTS_5: any[] = [
 ];
 
 export default function PengumumanPage() {
-  const [announcements, setAnnouncements] = useState<any[]>(STITCH_MOCK_ANNOUNCEMENTS_5);
+  const [announcements, setAnnouncements] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterAuthor, setFilterAuthor] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<any | null>(null);
   const [previewAttachment, setPreviewAttachment] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Add Announcement State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -94,34 +51,43 @@ export default function PengumumanPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [successMessage, setSuccessMessage] = useState('');
-  
-  // Dropdown Pagination state
+
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [isPerPageOpen, setIsPerPageOpen] = useState(false);
   const perPageRef = useRef<HTMLDivElement>(null);
+
+  // Edit Announcement State variables moved up
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
+  const [editAttachmentName, setEditAttachmentName] = useState('');
+  const [editStatus, setEditStatus] = useState('Terbit');
+  const [isEditStatusMenuOpen, setIsEditStatusMenuOpen] = useState(false);
+  const editStatusMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (perPageRef.current && !perPageRef.current.contains(event.target as Node)) {
         setIsPerPageOpen(false);
       }
+      if (editStatusMenuRef.current && !editStatusMenuRef.current.contains(event.target as Node)) {
+        setIsEditStatusMenuOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
+
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
 
-  // Edit Announcement State
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editTitle, setEditTitle] = useState('');
-  const [editContent, setEditContent] = useState('');
-  const [editAttachmentName, setEditAttachmentName] = useState('');
-  
-  const [editAttachments, setEditAttachments] = useState<{file: File | null, name: string, preview: string | null}[]>([]);
+  // Edit Announcement State variables are declared above
+
+  const [editAttachments, setEditAttachments] = useState<{ file: File | null, name: string, preview: string | null }[]>([]);
   const editAttachmentInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [isUpdating, setIsUpdating] = useState(false);
 
   const handleEditAttachmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -144,7 +110,7 @@ export default function PengumumanPage() {
     }
     if (e.target) e.target.value = '';
   };
-  
+
   const removeEditAttachment = (index: number) => {
     const updated = editAttachments.filter((_, i) => i !== index);
     setEditAttachments(updated);
@@ -162,11 +128,11 @@ export default function PengumumanPage() {
       .then((data) => {
         const apiItems = data.success && Array.isArray(data.data) ? data.data : [];
 
-        setAnnouncements(apiItems);
+        setAnnouncements(apiItems.length > 0 ? apiItems : STITCH_MOCK_ANNOUNCEMENTS_5);
       })
       .catch((e) => {
         console.error(e);
-        setAnnouncements([]);
+        setAnnouncements(STITCH_MOCK_ANNOUNCEMENTS_5);
       })
       .finally(() => {
         setIsLoading(false);
@@ -175,6 +141,14 @@ export default function PengumumanPage() {
 
   useEffect(() => {
     fetchAnnouncements();
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setCurrentUser(data.data);
+        }
+      })
+      .catch(() => { });
   }, []);
 
   // Prevent background scrolling when any modal is open
@@ -235,6 +209,7 @@ export default function PengumumanPage() {
 
   const handleOpenEdit = (item: any) => {
     setEditTitle(item.title || '');
+    setEditStatus((item.status === 'MENUNGGU' || item.status === 'Menunggu' || item.status === 'DRAFT') ? 'Menunggu' : 'Terbit');
     setEditContent(item.content || item.body || item.excerpt || '');
     setEditAttachmentName(item.attachmentName || '');
     if (item.attachmentName) {
@@ -258,6 +233,7 @@ export default function PengumumanPage() {
           title: editTitle,
           content: editContent,
           attachmentName: editAttachmentName,
+          status: editStatus === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
         }),
       });
       const data = await res.json();
@@ -268,6 +244,9 @@ export default function PengumumanPage() {
           content: editContent,
           body: editContent,
           attachmentName: editAttachmentName,
+          status: editStatus === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
+          updatedAt: data.data?.updatedAt || new Date().toISOString(),
+          editor: currentUser,
         };
         setSelectedAnnouncement(updated);
         setAnnouncements((prev) =>
@@ -282,6 +261,9 @@ export default function PengumumanPage() {
           content: editContent,
           body: editContent,
           attachmentName: editAttachmentName,
+          status: editStatus === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
+          updatedAt: new Date().toISOString(),
+          editor: currentUser,
         };
         setSelectedAnnouncement(updated);
         setAnnouncements((prev) =>
@@ -296,6 +278,8 @@ export default function PengumumanPage() {
         content: editContent,
         body: editContent,
         attachmentName: editAttachmentName,
+        updatedAt: new Date().toISOString(),
+        editor: currentUser,
       };
       setSelectedAnnouncement(updated);
       setAnnouncements((prev) =>
@@ -350,64 +334,77 @@ export default function PengumumanPage() {
           </div>
         )}
 
-        {/* Header Section matching Stitch */}
+        {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
             <h1 className="text-3xl sm:text-4xl font-bold text-[#00113a] mb-2 tracking-tight">
               Pengumuman
             </h1>
             <p className="text-sm sm:text-base text-[#444650]">
-              Surat edaran, cuti, dan arahan pimpinan</p>
-            
-            <div className="mt-4">
-            {/* Tampilkan [ 5 v ] data */}
-            <div className="flex items-center gap-2 text-sm text-[#1a1b20] shrink-0" ref={perPageRef}>
-              <span className="font-normal text-[#1a1b20]">Tampilkan</span>
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setIsPerPageOpen(!isPerPageOpen)}
-                  className="w-14 bg-[#6c757d] hover:bg-[#5a6268] text-white px-2.5 py-1 rounded-md text-xs font-semibold flex items-center justify-between shadow-sm transition-colors cursor-pointer"
-                >
-                  <span>{itemsPerPage}</span>
-                  <ChevronDown className="w-3 h-3 text-white" />
-                </button>
+              Surat edaran, cuti, dan arahan pimpinan
+            </p>
+          </div>
+          <Link
+            href="/kabar-kedinasan/pengumuman/tambah"
+            className="bg-[#00113a] hover:bg-[#2a4386] text-white font-bold py-2.5 px-6 rounded-lg transition-colors flex items-center gap-2 shadow-sm shrink-0"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Tambah</span>
+          </Link>
+        </div>
 
-                {isPerPageOpen && (
-                  <div className="absolute left-0 top-full mt-1 w-14 bg-white border border-[#c5c6d2] rounded-md shadow-lg z-30 py-1 text-center overflow-hidden">
-                    {[5, 10, 15].filter((n) => n !== itemsPerPage).map((num) => (
-                      <button
-                        key={num}
-                        type="button"
-                        onClick={() => {
-                          setItemsPerPage(num);
-                          setCurrentPage(1); // Reset page when changing items per page
-                          setIsPerPageOpen(false);
-                        }}
-                        className="w-full text-xs py-1 hover:bg-[#efedf3] text-[#1a1b20] transition-colors cursor-pointer"
-                      >
-                        {num}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <span className="font-normal text-[#1a1b20]">data</span>
+        {/* Controls Row */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          {/* Left: Tampilkan [ 5 v ] data */}
+          <div className="flex items-center gap-2 text-sm text-[#1a1b20] shrink-0" ref={perPageRef}>
+            <span className="font-normal text-[#1a1b20]">Tampilkan</span>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsPerPageOpen(!isPerPageOpen)}
+                className="w-14 bg-[#6c757d] hover:bg-[#5a6268] text-white px-2.5 py-1 rounded-md text-xs font-semibold flex items-center justify-between shadow-sm transition-colors cursor-pointer"
+              >
+                <span>{itemsPerPage}</span>
+                <ChevronDown className="w-3 h-3 text-white" />
+              </button>
+
+              {isPerPageOpen && (
+                <div className="absolute left-0 top-full mt-1 w-14 bg-white border border-[#c5c6d2] rounded-md shadow-lg z-30 py-1 text-center overflow-hidden">
+                  {[5, 10, 15].filter((n) => n !== itemsPerPage).map((num) => (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => {
+                        setItemsPerPage(num);
+                        setCurrentPage(1); // Reset page when changing items per page
+                        setIsPerPageOpen(false);
+                      }}
+                      className="w-full text-xs py-1 hover:bg-[#efedf3] text-[#1a1b20] transition-colors cursor-pointer"
+                    >
+                      {num}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-            </div>
+            <span className="font-normal text-[#1a1b20]">data</span>
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full md:w-auto">
-            {/* Tambah Button */}
-            <Link
-              href="/kabar-kedinasan/pengumuman/tambah"
-              className="bg-[#00113a] hover:bg-[#2a4386] text-white font-bold text-xs sm:text-sm py-2 px-4 rounded transition-colors flex items-center justify-center gap-1.5 shadow-sm shrink-0"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Tambah</span>
-            </Link>
+            {/* Left: Filter Penulis */}
+            <div className="hidden md:flex items-center gap-2 shrink-0">
+              <span className="font-normal text-sm text-[#1a1b20]">Dibuat Oleh:</span>
+              <select
+                value={filterAuthor}
+                onChange={(e) => setFilterAuthor(e.target.value)}
+                className="bg-white border border-[#c5c6d2] rounded-lg px-3 py-2 text-sm text-[#1a1b20] focus:outline-none focus:border-[#00113a] cursor-pointer"
+              >
+                <option value="all">Semua Orang</option>
+                <option value="me">Hanya Saya</option>
+              </select>
+            </div>
 
-            {/* Search Input Bar with embedded search icon matching Stitch */}
+            {/* Right: Search Input Bar with embedded search icon */}
             <form onSubmit={handleSearchSubmit} className="relative w-full sm:w-64 flex items-center">
               <input
                 type="text"
@@ -434,8 +431,14 @@ export default function PengumumanPage() {
               <div key={n} className="border border-[#c5c6d2] rounded-xl p-6 bg-slate-50 animate-pulse h-32" />
             ))}
           </div>
-        ) : announcements.length === 0 ? (
-          <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-[#faf8ff] my-8">
+        ) : announcements.filter((item) => {
+          const isPublished = item.status === 'Terbit' || item.status === 'TERBIT' || (!item.status);
+          if (isPublished) return true;
+          if (!currentUser) return false;
+          if (currentUser.role === 'admin') return true;
+          return currentUser.name === (item.authorName || item.author?.name);
+        }).length === 0 ? (
+          <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
             <Megaphone className="w-12 h-12 text-[#757682] mx-auto mb-3 opacity-60" />
             <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Pengumuman Ditemukan</h2>
             <p className="text-sm text-[#444650]">
@@ -444,7 +447,13 @@ export default function PengumumanPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-4 mb-8">
-            {announcements.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
+            {announcements.filter((item) => {
+              const isPublished = item.status === 'Terbit' || item.status === 'TERBIT' || (!item.status);
+              if (isPublished) return true;
+              if (!currentUser) return false;
+              if (currentUser.role === 'admin') return true;
+              return currentUser.name === (item.authorName || item.author?.name);
+            }).filter(item => filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id))).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
               const displayDate = item.publishedAt
                 ? formatDate(item.publishedAt)
                 : '20 AGUSTUS 2026';
@@ -474,8 +483,8 @@ export default function PengumumanPage() {
                   <div className="shrink-0 mt-4 sm:mt-auto self-end flex items-center gap-3">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-tight ${(item.status === 'MENUNGGU' || item.status === 'Menunggu' || item.status === 'DRAFT')
-                          ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                          : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                        : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                         }`}
                     >
                       Status: {(item.status === 'MENUNGGU' || item.status === 'Menunggu' || item.status === 'DRAFT') ? 'Menunggu' : 'Terbit'}
@@ -496,12 +505,18 @@ export default function PengumumanPage() {
       </div>
 
       {/* Pagination Controls */}
-      <Pagination 
-          currentPage={currentPage}
-          totalItems={announcements.length}
-          itemsPerPage={itemsPerPage}
-          onPageChange={setCurrentPage}
-        />
+      <Pagination
+        currentPage={currentPage}
+        totalItems={announcements.filter((item) => {
+          const isPublished = item.status === 'Terbit' || item.status === 'TERBIT' || (!item.status);
+          if (isPublished) return true;
+          if (!currentUser) return false;
+          if (currentUser.role === 'admin') return true;
+          return currentUser.name === (item.authorName || item.author?.name);
+        }).length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
 
       {/* Detail Pengumuman Modal on List View (EXACT Stitch Screen Spec) */}
       {selectedAnnouncement && (
@@ -523,6 +538,7 @@ export default function PengumumanPage() {
               <h1 className="text-2xl sm:text-3xl font-bold text-[#1a1b20] mb-4 leading-snug">
                 {selectedAnnouncement.title}
               </h1>
+
               <div className="text-sm text-[#1a1b20]">
                 <p className="font-bold">Tanggal Pengumuman</p>
                 <p className="text-[#1a1b20] mt-0.5">
@@ -532,6 +548,9 @@ export default function PengumumanPage() {
                 </p>
               </div>
             </header>
+
+
+
 
             {/* Content Body (Uraian Pengumuman) */}
             <div className="prose max-w-none text-sm sm:text-base text-[#1a1b20] mb-8 flex-grow leading-relaxed">
@@ -544,56 +563,81 @@ export default function PengumumanPage() {
             </div>
 
             {/* Attachments Section (5 Image Placeholders matching Stitch) */}
-            <section className="mb-8">
-              <h2 className="text-xs font-bold text-[#1a1b20] mb-3">Lampiran</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
-                {MOCK_ATTACHMENT_IMAGES.map((att) => (
-                  <div
-                    key={att.id}
-                    onClick={() => setPreviewAttachment(att.url)}
-                    className="aspect-square bg-[#efedf3] border border-[#c5c6d2] rounded flex flex-col items-center justify-center hover:bg-[#e9e7ee] transition-colors cursor-pointer group p-2 relative overflow-hidden"
-                  >
-                    <img
-                      src={att.url}
-                      alt={`Lampiran ${att.id}`}
-                      className="w-full h-full object-cover rounded opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all"
-                    />
-                    <span className="absolute bottom-1 bg-black/60 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
-                      {att.label} {att.id}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </section>
+            {(selectedAnnouncement.attachmentName || selectedAnnouncement.attachmentUrl) && (
+              <section className="mb-8">
+                <h2 className="text-xs font-bold text-[#1a1b20] mb-3">Lampiran</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
+                  {MOCK_ATTACHMENT_IMAGES.map((att) => (
+                    <div
+                      key={att.id}
+                      onClick={() => setPreviewAttachment(att.url)}
+                      className="aspect-square bg-[#efedf3] border border-[#c5c6d2] rounded flex flex-col items-center justify-center hover:bg-[#e9e7ee] transition-colors cursor-pointer group p-2 relative overflow-hidden"
+                    >
+                      <img
+                        src={att.url}
+                        alt={`Lampiran ${att.id}`}
+                        className="w-full h-full object-cover rounded opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all"
+                      />
+                      <span className="absolute bottom-1 bg-black/60 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                        {att.label} {att.id}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* Footer / Meta Section matching Stitch */}
             <footer className="flex flex-col sm:flex-row justify-between items-start sm:items-end border-t border-[#c5c6d2] pt-6 gap-4">
-              <div className="text-sm text-[#1a1b20]">
-                <p className="font-bold">Dibuat oleh</p>
-                <p className="text-[#1a1b20]">{selectedAnnouncement.author?.name || 'Budi Sujatmiko'}</p>
-                <p className="text-[#444650]">
-                  {selectedAnnouncement.publishedAt
-                    ? formatDate(selectedAnnouncement.publishedAt)
-                    : '20 Agustus 2026'}
-                </p>
+              <div className="flex flex-row gap-6">
+                <div className="text-sm text-[#1a1b20] w-[220px]">
+                  <p className="font-bold">Dibuat oleh</p>
+                  <p className="text-[#1a1b20]">{selectedAnnouncement.author?.name || 'Ahmad Fauzi'}</p>
+                  <p className="text-[#444650] mb-1">
+                    {selectedAnnouncement.publishedAt
+                      ? formatDate(selectedAnnouncement.publishedAt)
+                      : '20 Agustus 2026'}
+                  </p>
+                  <p className="text-[#444650] font-medium">
+                    Status: {(selectedAnnouncement.status === 'MENUNGGU' || selectedAnnouncement.status === 'Menunggu' || selectedAnnouncement.status === 'DRAFT') ? 'Menunggu' : 'Terbit'}
+                  </p>
+                </div>
+
+                {selectedAnnouncement.updatedAt && selectedAnnouncement.createdAt && new Date(selectedAnnouncement.updatedAt).getTime() - new Date(selectedAnnouncement.createdAt).getTime() > 1000 && (
+                  <>
+                    <div className="border-l border-[#c5c6d2]" />
+                    <div className="text-sm text-[#1a1b20] w-[220px]">
+                      <p className="font-bold">Diperbarui oleh</p>
+                      <p className="text-[#1a1b20]">{selectedAnnouncement.editor?.name || selectedAnnouncement.author?.name || selectedAnnouncement.authorName || 'Ahmad Fauzi'}</p>
+                      <p className="text-[#444650] mb-1">
+                        {formatDate(selectedAnnouncement.updatedAt)}
+                      </p>
+                      <p className="text-[#444650] font-medium">
+                        Status: {(selectedAnnouncement.status === 'MENUNGGU' || selectedAnnouncement.status === 'Menunggu' || selectedAnnouncement.status === 'DRAFT') ? 'Menunggu' : 'Terbit'}
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
 
-              <div className="flex gap-4">
-                <button
-                  type="button"
-                  onClick={() => handleOpenEdit(selectedAnnouncement)}
-                  className="px-6 py-2 border border-[#757682] rounded text-[#1a1b20] hover:bg-[#efedf3] hover:border-[#00113a] transition-colors font-bold text-sm min-w-[90px] text-center"
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsDeleteModalOpen(true)}
-                  className="px-6 py-2 border border-[#757682] rounded text-[#1a1b20] hover:bg-red-50 hover:border-red-400 hover:text-red-700 transition-colors font-bold text-sm min-w-[90px] text-center"
-                >
-                  Hapus
-                </button>
-              </div>
+              {currentUser && (currentUser.role === 'admin' || currentUser.name === (selectedAnnouncement.author?.name || selectedAnnouncement.authorName || 'Ahmad Fauzi')) && (
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => handleOpenEdit(selectedAnnouncement)}
+                    className="px-6 py-2 border border-[#757682] rounded text-[#1a1b20] hover:bg-[#efedf3] hover:border-[#00113a] transition-colors font-bold text-sm min-w-[90px] text-center"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsDeleteModalOpen(true)}
+                    className="px-6 py-2 border border-[#757682] rounded text-[#1a1b20] hover:bg-red-50 hover:border-red-400 hover:text-red-700 transition-colors font-bold text-sm min-w-[90px] text-center"
+                  >
+                    Hapus
+                  </button>
+                </div>
+              )}
             </footer>
           </article>
         </div>
@@ -651,6 +695,46 @@ export default function PengumumanPage() {
                 />
               </div>
 
+              {/* Status Edit Dropdown */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4 items-center mb-4">
+                <label className="font-bold text-xs md:text-sm text-[#1a1b20] flex items-center h-10 md:col-span-1">
+                  <span>Status</span>
+                  <span className="ml-auto pr-4 hidden md:inline">:</span>
+                </label>
+                <div className="md:col-span-3 relative w-full md:w-56" ref={editStatusMenuRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditStatusMenuOpen(!isEditStatusMenuOpen)}
+                    className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${isEditStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
+                      }`}
+                  >
+                    <span className="truncate">{editStatus || 'Jenis Status'}</span>
+                    <ChevronDown className={`w-4 h-4 text-white transition-transform ${isEditStatusMenuOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {isEditStatusMenuOpen && (
+                    <div className="absolute top-full left-0 w-full bg-white border border-[#c5c6d2] rounded-b-md shadow-lg z-50 overflow-hidden">
+                      <div className="flex flex-col text-sm text-[#1a1b20]">
+                        <button
+                          type="button"
+                          onClick={() => { setEditStatus('Terbit'); setIsEditStatusMenuOpen(false); }}
+                          className={`text-left px-4 py-2.5 hover:bg-[#efedf3] transition-colors ${editStatus === 'Terbit' ? 'bg-[#efedf3] font-bold' : ''}`}
+                        >
+                          Terbit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setEditStatus('Menunggu'); setIsEditStatusMenuOpen(false); }}
+                          className={`text-left px-4 py-2.5 hover:bg-[#efedf3] transition-colors ${editStatus === 'Menunggu' ? 'bg-[#efedf3] font-bold' : ''}`}
+                        >
+                          Menunggu
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div>
                 <label className="block text-xs font-bold text-[#1a1b20] mb-1.5">
                   Uraian / Isi Pengumuman
@@ -684,7 +768,7 @@ export default function PengumumanPage() {
                       multiple
                       onChange={handleEditAttachmentChange}
                       className="hidden"
-                    />
+                     suppressHydrationWarning />
                     <button
                       type="button"
                       onClick={() => editAttachmentInputRef.current?.click()}
@@ -694,7 +778,7 @@ export default function PengumumanPage() {
                       Upload
                     </button>
                   </div>
-                  
+
                   {/* Previews */}
                   {editAttachments.length > 0 && (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">

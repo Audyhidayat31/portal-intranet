@@ -33,6 +33,19 @@ export default function DetailKalimatBijakPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState('');
 
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setCurrentUser(data.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     if (!rawId) return;
 
@@ -109,7 +122,7 @@ export default function DetailKalimatBijakPage() {
   }
 
   const displayQuote = item.quote || item.content || item.title || 'Deskripsi Kutipan Kalimat Bijak';
-  const displayAuthor = item.authorName || 'Budi Sujatmiko';
+  const displayAuthor = item.authorName || 'Ahmad Fauzi';
   const displayDate = item.publishedAt || '20 Agustus 2026';
 
   const figureSource = item.figure
@@ -166,32 +179,57 @@ export default function DetailKalimatBijakPage() {
           {/* Bottom Row: Metadata Left & Actions Right matching Wireframe Gambar 2 */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 pt-6">
             {/* Left: Dibuat oleh, Author Name, Date */}
-            <div className="text-xs text-[#757682] space-y-0.5">
-              <p className="font-semibold text-[#757682]">Dibuat oleh</p>
+            
+            <div className="flex flex-row gap-6">
+              <div className="text-xs text-[#757682] space-y-0.5 w-[220px]"><p className="font-semibold text-[#757682]">Dibuat oleh</p>
               <p className="font-semibold text-[#1a1b20]">
                 {displayAuthor}
               </p>
               <p className="font-medium text-[#757682]">
-                {displayDate}
+                {displayDate.includes('-') && displayDate.length === 10 ? '20 Agustus 2026' : (item?.publishedAt ? formatDate(item.publishedAt) : displayDate)}
               </p>
+              <p className="font-medium text-[#757682]">
+                Status: {(item as any)?.status === 'MENUNGGU' || (item as any)?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+              </p>
+            </div>
+              {/* Diperbarui Oleh */}
+              {true && (
+                <>
+                  <div className="border-l border-[#c5c6d2]" />
+                  <div className="text-xs text-[#757682] space-y-0.5 w-[220px]">
+                    <p className="font-semibold text-[#757682]">Diperbarui oleh</p>
+                    <p className="font-semibold text-[#1a1b20]">
+                      {(item as any)?.editor?.name || (item as any)?.author?.name || (item as any)?.authorName || 'Administrator Perpusnas'}
+                    </p>
+                    <p className="font-medium text-[#757682]">
+                      {(item as any)?.updatedAt ? formatDate((item as any).updatedAt) : '24 Agustus 2026'}
+                    </p>
+                    <p className="font-medium text-[#757682]">
+                      Status: {(item as any)?.status === 'MENUNGGU' || (item as any)?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Right: Edit & Hapus Buttons matching Wireframe */}
-            <div className="flex items-center gap-3 self-end sm:self-auto">
-              <Link
-                href={`/antar-pegawai/kalimat-bijak/${item?.id || rawId}/edit`}
-                className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer inline-flex items-center justify-center"
-              >
-                Edit
-              </Link>
-              <button
-                type="button"
-                onClick={() => setIsDeleteModalOpen(true)}
-                className="px-7 py-1.5 bg-white border border-[#dc2626] hover:bg-red-50 text-[#dc2626] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer"
-              >
-                Hapus
-              </button>
-            </div>
+            {currentUser && (currentUser.role === 'admin' || currentUser.name === (item?.authorName || displayAuthor)) && (
+              <div className="flex items-center gap-3 self-end sm:self-auto">
+                <Link
+                  href={`/antar-pegawai/kalimat-bijak/${item?.id || rawId}/edit`}
+                  className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer inline-flex items-center justify-center"
+                >
+                  Edit
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="px-7 py-1.5 bg-white border border-[#dc2626] hover:bg-red-50 text-[#dc2626] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer"
+                >
+                  Hapus
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -249,7 +249,7 @@ export default function TambahKonsultasiPage() {
       description: rawText || judul.trim(),
       attachmentName: finalAttachment,
       attachmentUrl: '#',
-      authorName: 'Budi Sujatmiko',
+      authorName: 'Ahmad Fauzi',
       replies: [],
     };
 
@@ -624,8 +624,8 @@ export default function TambahKonsultasiPage() {
                   type="file"
                   accept=".pdf,.doc,.docx"
                   onChange={handleLampiranFileChange}
-                  className="hidden"
-                />
+                  className="hidden" suppressHydrationWarning
+                 suppressHydrationWarning />
               </div>
 
               {/* Dashed preview box: File Preview */}

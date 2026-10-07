@@ -22,10 +22,12 @@ import { STITCH_MOCK_OPINI_6, OpiniItem } from '@/lib/mock-opini';
 import { Pagination } from '@/components/ui/Pagination';
 
 export default function CoretanOpiniPage() {
-  const [opiniList, setOpiniList] = useState<OpiniItem[]>(STITCH_MOCK_OPINI_6);
-  const [isLoading, setIsLoading] = useState(false);
+  const [opiniList, setOpiniList] = useState<OpiniItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterAuthor, setFilterAuthor] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Detail Modal State
   const [selectedOpini, setSelectedOpini] = useState<OpiniItem | null>(null);
@@ -83,8 +85,7 @@ export default function CoretanOpiniPage() {
         }));
 
         if (q.trim()) {
-          const allPool = [...formattedApiItems, ...STITCH_MOCK_OPINI_6];
-          const filtered = allPool.filter(
+          const filtered = formattedApiItems.filter(
             (item) =>
               item.title.toLowerCase().includes(q.toLowerCase()) ||
               item.excerpt.toLowerCase().includes(q.toLowerCase()) ||
@@ -93,23 +94,12 @@ export default function CoretanOpiniPage() {
           );
           setOpiniList(filtered);
         } else {
-          // Merge API items with mock items ensuring all 6 cards are shown
-          const combined = [...formattedApiItems];
-          for (const mockItem of STITCH_MOCK_OPINI_6) {
-            if (combined.length >= 6) break;
-            const alreadyExists = combined.some((c) => c.id === mockItem.id);
-            if (!alreadyExists) {
-              combined.push(mockItem);
-            }
-          }
-          setOpiniList(combined.slice(0, 6));
+          setOpiniList(formattedApiItems);
         }
       })
       .catch((e) => {
         console.error(e);
-        if (!opiniList || opiniList.length === 0) {
-          setOpiniList(STITCH_MOCK_OPINI_6);
-        }
+        setOpiniList([]);
       })
       .finally(() => {
         setIsLoading(false);
@@ -186,7 +176,7 @@ export default function CoretanOpiniPage() {
   };
 
   return (
-    <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 bg-[#faf8ff] text-[#1a1b20] min-h-[calc(100vh-80px)] flex flex-col justify-between">
+    <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 bg-white text-[#1a1b20] min-h-[calc(100vh-80px)] flex flex-col justify-between">
       <div>
         {/* Breadcrumb matching Stitch */}
         <nav aria-label="Breadcrumb" className="mb-8 text-sm text-[#444650] flex items-center gap-2">
@@ -210,20 +200,19 @@ export default function CoretanOpiniPage() {
         )}
 
         {/* Header Section matching Stitch */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
             <h1 className="text-3xl sm:text-4xl font-bold text-[#00113a] mb-2 tracking-tight">
               Coretan Opini
             </h1>
-            <p className="text-base text-[#444650]">
-              Gagasan & pemikiran pegawai</p>
+            <p className="text-sm sm:text-base text-[#444650]">Gagasan & pemikiran pegawai</p>
           </div>
 
           <Link
             href="/antar-pegawai/opini/tambah"
-            className="bg-[#002366] hover:bg-[#00113a] text-white font-bold text-sm px-6 py-3 rounded-lg flex items-center gap-2 shadow-sm transition-all duration-200 cursor-pointer shrink-0"
+            className="bg-[#00113a] hover:bg-[#2a4386] text-white font-bold py-2.5 px-6 rounded-lg transition-colors flex items-center gap-2 shadow-sm shrink-0"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-5 h-5" />
             <span>Tambah</span>
           </Link>
         </div>        {/* Controls Row */}
@@ -263,9 +252,9 @@ export default function CoretanOpiniPage() {
             <span className="font-normal text-[#1a1b20]">data</span>
           </div>
 
-          {/* Center: Search Bar */}
-          <div className="flex-1 flex justify-center w-full">
-            <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full md:max-w-2xl">
+          <div className="flex flex-col md:flex-row items-end md:items-center gap-4 flex-grow justify-end w-full md:w-auto">
+            {/* Middle: Search Bar */}
+            <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full md:max-w-2xl flex-grow">
               <div className="relative flex-grow">
                 <input
                   type="text"
@@ -283,10 +272,20 @@ export default function CoretanOpiniPage() {
                 <Search className="w-5 h-5 text-[#444650]" />
               </button>
             </form>
-          </div>
 
-          {/* Right: Dummy spacing to balance center */}
-          <div className="hidden md:block w-32 shrink-0"></div>
+            {/* Right: Filter Penulis */}
+            <div className="hidden md:flex items-center gap-2 shrink-0">
+              <span className="font-normal text-sm text-[#1a1b20]">Dibuat Oleh:</span>
+              <select
+                value={filterAuthor}
+                onChange={(e) => setFilterAuthor(e.target.value)}
+                className="bg-white border border-[#c5c6d2] rounded-lg px-3 py-2 text-sm text-[#1a1b20] focus:outline-none focus:border-[#00113a] cursor-pointer"
+              >
+                <option value="all">Semua Orang</option>
+                <option value="me">Hanya Saya</option>
+              </select>
+            </div>
+          </div>
         </div>
 
         {/* Cards Grid: 3 Columns, 6 Cards matching Stitch */}
@@ -305,7 +304,7 @@ export default function CoretanOpiniPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {opiniList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
+            {opiniList.filter(item => filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id))).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
               const displayDate = item.publishedAt ? formatDate(item.publishedAt) : '19 Agustus 2026';
 
               return (
