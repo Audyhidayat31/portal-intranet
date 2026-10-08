@@ -1,5 +1,5 @@
 -- Portal Intranet Perpustakaan Nasional RI - Database Dump
--- Generated: 2026-10-07T03:17:12.433Z
+-- Generated: 2026-10-08T02:00:23.079Z
 -- Database: portal_intranet
 -- Sub Menu Tables: Berita, Pengumuman, Agenda, Laporan, Dokumen Intern, Antar Pegawai (Opini, Humor, Jelajah, Keluarga, Kalimat Bijak, Akademik, Tips, Olahraga, Tahukah Anda), Profil, Kupas Sosok, Admin, Log Aktivitas.
 
@@ -20,7 +20,15 @@ USE `portal_intranet`;
 --
 
 DROP TABLE IF EXISTS `peran`;
-undefined;
+CREATE TABLE `peran` (
+  `id` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `createdAt` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updatedAt` datetime(3) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `peran_name_key` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `peran` (2 rows)
@@ -39,7 +47,14 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `izin`;
-undefined;
+CREATE TABLE `izin` (
+  `id` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `code` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `module` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `izin_code_key` (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `izin` (10 rows)
@@ -66,7 +81,16 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `peran_izin`;
-undefined;
+CREATE TABLE `peran_izin` (
+  `id` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `roleId` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `permissionId` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `peran_izin_roleId_permissionId_key` (`roleId`,`permissionId`),
+  KEY `peran_izin_permissionId_fkey` (`permissionId`),
+  CONSTRAINT `peran_izin_permissionId_fkey` FOREIGN KEY (`permissionId`) REFERENCES `izin` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `peran_izin_roleId_fkey` FOREIGN KEY (`roleId`) REFERENCES `peran` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `peran_izin` (10 rows)
@@ -93,7 +117,22 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `pengguna`;
-undefined;
+CREATE TABLE `pengguna` (
+  `id` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `nip` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `password` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `roleId` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'ACTIVE',
+  `createdAt` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updatedAt` datetime(3) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `pengguna_nip_key` (`nip`),
+  UNIQUE KEY `pengguna_email_key` (`email`),
+  KEY `pengguna_roleId_fkey` (`roleId`),
+  CONSTRAINT `pengguna_roleId_fkey` FOREIGN KEY (`roleId`) REFERENCES `peran` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `pengguna` (5 rows)
@@ -115,7 +154,28 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `profil_pegawai`;
-undefined;
+CREATE TABLE `profil_pegawai` (
+  `id` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `userId` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `nip` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `fullName` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `position` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `unitKerja` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `golRuang` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `phone` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `avatarUrl` text COLLATE utf8mb4_unicode_ci,
+  `birthDate` datetime(3) DEFAULT NULL,
+  `education` text COLLATE utf8mb4_unicode_ci,
+  `careerHistory` text COLLATE utf8mb4_unicode_ci,
+  `achievements` text COLLATE utf8mb4_unicode_ci,
+  `bio` text COLLATE utf8mb4_unicode_ci,
+  `createdAt` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updatedAt` datetime(3) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `profil_pegawai_userId_key` (`userId`),
+  UNIQUE KEY `profil_pegawai_nip_key` (`nip`),
+  CONSTRAINT `profil_pegawai_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `pengguna` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `profil_pegawai` (5 rows)
@@ -137,7 +197,16 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `kategori`;
-undefined;
+CREATE TABLE `kategori` (
+  `id` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `group` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `createdAt` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `kategori_slug_key` (`slug`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `kategori` (17 rows)
@@ -171,7 +240,19 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `pengaturan_beranda`;
-undefined;
+CREATE TABLE `pengaturan_beranda` (
+  `id` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `heroTitle` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Selamat Datang di Portal Intranet Perpusnas RI',
+  `heroSubtitle` varchar(1000) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Pusat Informasi Internal, Kolaborasi, dan Layanan Terintegrasi Pegawai Perpustakaan Nasional Republik Indonesia',
+  `heroBadge` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Kiprah Literasi Bangsa',
+  `heroBannerUrl` text COLLATE utf8mb4_unicode_ci,
+  `quoteText` varchar(1000) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Membaca adalah jembatan emas menuju peradaban bangsa yang unggul dan berkarakter.',
+  `quoteAuthor` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Prof. Dr. Ir. Muhammad Syarif Bando, M.M.',
+  `quoteAuthorRole` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Kepala Perpustakaan Nasional RI (Periode 2016-2023)',
+  `announcementTicker` varchar(1000) COLLATE utf8mb4_unicode_ci DEFAULT 'Pemberitahuan: Seluruh pegawai dihimbau melengkapi data profil kepegawaian terkini sebelum akhir bulan.',
+  `updatedAt` datetime(3) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `pengaturan_beranda` (1 rows)
@@ -189,7 +270,20 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `log_aktivitas`;
-undefined;
+CREATE TABLE `log_aktivitas` (
+  `id` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `userId` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `action` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `module` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `targetId` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ipAddress` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT '127.0.0.1',
+  `userAgent` text COLLATE utf8mb4_unicode_ci,
+  `createdAt` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  KEY `log_aktivitas_userId_fkey` (`userId`),
+  CONSTRAINT `log_aktivitas_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `pengguna` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `log_aktivitas` (3 rows)
@@ -209,7 +303,27 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `berita`;
-undefined;
+CREATE TABLE `berita` (
+  `id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `judul` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ringkasan` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `isi` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `gambar_sampul` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `penulis_id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `nama_penulis` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'Humas Perpusnas',
+  `sumber` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'www.perpusnas.go.id',
+  `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'TERBIT',
+  `tanggal_terbit` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `jumlah_baca` int NOT NULL DEFAULT '0',
+  `disematkan` tinyint(1) NOT NULL DEFAULT '0',
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `berita_slug_key` (`slug`),
+  KEY `berita_penulis_id_fkey` (`penulis_id`),
+  CONSTRAINT `berita_penulis_id_fkey` FOREIGN KEY (`penulis_id`) REFERENCES `pengguna` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `berita` (9 rows)
@@ -217,16 +331,16 @@ undefined;
 
 LOCK TABLES `berita` WRITE;
 /*!40000 ALTER TABLE `berita` DISABLE KEYS */;
-INSERT INTO `berita` (`id`, `judul`, `slug`, `ringkasan`, `isi`, `gambar_sampul`, `penulis_id`, `nama_penulis`, `status`, `tanggal_terbit`, `jumlah_baca`, `disematkan`, `created_at`, `updated_at`) VALUES 
-('cmuaohmwh001tzbpbhk0gxe6o', 'Perpusnas Resmikan Layanan Digital Koleksi Naskah Kuno Berbasis AI', 'perpusnas-resmikan-layanan-digital-koleksi-naskah-kuno-ai', 'Inovasi teknologi kecerdasan buatan kini diintegrasikan untuk transkripsi dan transliterasi otomatis naskah nusantara berumur ratusan tahun.', 'Perpustakaan Nasional Republik Indonesia secara resmi meluncurkan pembaruan platform preservasi digital naskah kuno nusantara dengan dukungan AI. Layanan ini memungkinkan para peneliti, akademisi, dan masyarakat umum untuk membaca naskah beraksara Pegon, Jawa, Bali, dan Sunda kuno dengan terjemahan instan ke dalam Bahasa Indonesia modern.\n\nDalam sambutannya, Kepala Perpustakaan Nasional menegaskan bahwa langkah ini adalah bukti nyata komitmen lembaga dalam mengawal amanat pelestarian warisan budaya bangsa sekaligus merespons disrupsi teknologi abad ke-21 secara proaktif.\n\nPegawai di seluruh unit kerja diharapkan turut menyosialisasikan layanan kebanggaan ini kepada para pemustaka di seluruh penjuru tanah air.', 'https://images.unsplash.com/photo-1507842229451-7f01be8510d2?w=800&auto=format&fit=crop', 'cmuaohmus001ezbpbyejw0jab', 'Humas Perpusnas', 'PUBLISHED', '2026-09-21 03:21:15', 1420, 1, '2026-09-21 03:21:15', '2026-09-21 03:21:15'),
-('cmuaohmwq001vzbpbrhfupovd', 'Kunjungan Delegasi Perpustakaan Nasional Australia (NLA) Perkuat Kerja Sama Bilateral', 'kunjungan-delegasi-perpustakaan-nasional-australia-2026', 'Pertemuan bilateral membahas pertukaran arsip digital, program magang pustakawan muda, dan pelestarian peta sejarah maritim Asia-Pasifik.', 'Delegasi tingkat tinggi dari National Library of Australia (NLA) mengunjungi Gedung Fasilitas Layanan Perpustakaan Nasional RI di Jalan Medan Merdeka Selatan No. 11, Jakarta. Kunjungan diplomatik dan teknis ini menghasilkan kesepakatan pembaruan MoU terkait pertukaran data bibliografi serta transfer teknologi konservasi kertas langka.\n\nSeluruh tim kerja Pusat Preservasi dan Alih Media Bahan Perpustakaan turut mendampingi proses workshop bersama yang diselenggarakan di lantai 8.', 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=800&auto=format&fit=crop', 'cmuaohmus001ezbpbyejw0jab', 'Humas Perpusnas', 'PUBLISHED', '2026-09-21 03:21:15', 890, 0, '2026-09-21 03:21:15', '2026-09-21 03:21:15'),
-('cmuaohmwv001xzbpb0gdte9o5', 'Pekan Literasi Kebangsaan 2026 Sukses Digelar di 38 Provinsi', 'pekan-literasi-kebangsaan-2026-sukses-digelar', 'Rangkaian festival buku keliling, bedah buku tematik, dan lomba bertutur daerah berhasil menjangkau lebih dari 2 juta generasi muda Indonesia.', 'Pekan Literasi Kebangsaan 2026 yang diinisiasi oleh Perpustakaan Nasional RI bersama Dinas Perpustakaan dan Kearsipan Daerah di seluruh Indonesia berakhir dengan sukses. Tingkat partisipasi masyarakat meningkat 34% dibanding tahun sebelumnya, didorong oleh kolaborasi perpustakaan desa ramah anak dan armada perpustakaan keliling modern.', 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=800&auto=format&fit=crop', 'cmuaohmus001ezbpbyejw0jab', 'Humas Perpusnas', 'PUBLISHED', '2026-09-21 03:21:15', 650, 0, '2026-09-21 03:21:15', '2026-09-21 03:21:15'),
-('stitch-1', 'Minat membaca Warga Indonesia semakin membaik', 'stitch-1', 'Menurut penelitian pada tanggal 19 Agustus 2026 terlihat bahwa jumlah peminat buku di berbagai daerah mengalami peningkatan signifikan...', 'Menurut penelitian yang dirilis pada tanggal 19 Agustus 2026, indeks kegemaran membaca masyarakat Indonesia mengalami lonjakan positif. Hal ini didorong oleh peningkatan penetrasi perpustakaan digital, penyediaan pojok baca terpadu di ruang publik, serta optimalisasi layanan perpustakaan berbasis inklusi sosial yang gencar dilaksanakan oleh Perpustakaan Nasional RI bersama seluruh pemangku kepentingan daerah.', 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80', 'cmuaohmus001ezbpbyejw0jab', 'Humas Perpusnas', 'PUBLISHED', '2026-09-21 03:21:22', 0, 0, '2026-09-21 03:21:22', '2026-09-21 03:21:22'),
-('stitch-2', 'Perpustakaan Digital Terpadu Dukung Pembelajaran Jarak Jauh', 'stitch-2', 'Integrasi teknologi dalam membaca dokumen digital melalui tablet cerdas semakin memudahkan pemustaka dalam menjangkau koleksi naskah kuno...', 'Integrasi teknologi dalam membaca dokumen digital melalui tablet dan gawai cerdas semakin memudahkan masyarakat dalam menjangkau koleksi naskah kuno, jurnal penelitian, serta buku teks terakreditasi melalui portal iPusnas dan IOS.', 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=800&q=80', 'cmuaohmus001ezbpbyejw0jab', 'Humas Perpusnas', 'DRAFT', '2026-09-21 03:21:22', 0, 0, '2026-09-21 03:21:22', '2026-09-21 03:21:22'),
-('stitch-3', 'Gedung Layanan Merdeka Selatan Catatkan Rekor Kunjungan Tertinggi', 'stitch-3', 'Gedung fasilitas layanan Perpustakaan Nasional di Jalan Medan Merdeka Selatan terus mencatatkan lonjakan kunjungan pemustaka harian...', 'Gedung fasilitas layanan Perpustakaan Nasional di Jalan Medan Merdeka Selatan terus mencatatkan lonjakan kunjungan pemustaka harian hingga mencapai rekor tertinggi pada kuartal ketiga tahun ini.', 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=800&q=80', 'cmuaohmus001ezbpbyejw0jab', 'Humas Perpusnas', 'PUBLISHED', '2026-09-21 03:21:22', 0, 0, '2026-09-21 03:21:22', '2026-09-21 03:21:22'),
-('stitch-4', 'Diskusi Standardisasi Kurikulum Literasi Informasi Era Modern', 'stitch-4', 'Diskusi kelompok terarah antar civitas akademika dan pustakawan profesional membahas standardisasi kurikulum literasi informasi...', 'Diskusi kelompok terarah antar civitas akademika dan pustakawan profesional membahas standardisasi kurikulum literasi informasi di era komputasi awan.', 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=800&q=80', 'cmuaohmus001ezbpbyejw0jab', 'Humas Perpusnas', 'DRAFT', '2026-09-21 03:21:22', 0, 0, '2026-09-21 03:21:22', '2026-09-21 03:21:22'),
-('stitch-5', 'Penataan Rak Buku Tematik dan Sistem Otomasi RFID Terbaru', 'stitch-5', 'Penataan tata kelola rak buku tematik dan sistem katalog otomatisasi RFID di seluruh lantai layanan mempercepat waktu temu koleksi...', 'Penataan tata kelola rak buku tematik dan sistem katalog otomatisasi RFID di seluruh lantai layanan mempercepat waktu temu kembali koleksi referensi.', 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=800&q=80', 'cmuaohmus001ezbpbyejw0jab', 'Humas Perpusnas', 'PUBLISHED', '2026-09-21 03:21:22', 0, 0, '2026-09-21 03:21:22', '2026-09-21 03:21:22'),
-('stitch-6', 'Peningkatan Aksesibilitas Fasilitas Inklusi Ramah Disabilitas', 'stitch-6', 'Layanan ruang baca lansia dan disabilitas dilengkapi fasilitas pendukung ergonomis serta perangkat bantu baca audio ramah tuna netra...', 'Layanan ruang baca lansia dan disabilitas dilengkapi dengan fasilitas pendukung ergonomis serta perangkat bantu baca audio ramah tuna netra demi pemerataan akses informasi.', 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=800&q=80', 'cmuaohmus001ezbpbyejw0jab', 'Humas Perpusnas', 'PUBLISHED', '2026-09-21 03:21:22', 0, 0, '2026-09-21 03:21:22', '2026-09-21 03:21:22');
+INSERT INTO `berita` (`id`, `judul`, `slug`, `ringkasan`, `isi`, `gambar_sampul`, `penulis_id`, `nama_penulis`, `sumber`, `status`, `tanggal_terbit`, `jumlah_baca`, `disematkan`, `created_at`, `updated_at`) VALUES 
+('cmuaohmwh001tzbpbhk0gxe6o', 'Perpusnas Resmikan Layanan Digital Koleksi Naskah Kuno Berbasis AI', 'perpusnas-resmikan-layanan-digital-koleksi-naskah-kuno-ai', 'Inovasi teknologi kecerdasan buatan kini diintegrasikan untuk transkripsi dan transliterasi otomatis naskah nusantara berumur ratusan tahun.', 'Perpustakaan Nasional Republik Indonesia secara resmi meluncurkan pembaruan platform preservasi digital naskah kuno nusantara dengan dukungan AI. Layanan ini memungkinkan para peneliti, akademisi, dan masyarakat umum untuk membaca naskah beraksara Pegon, Jawa, Bali, dan Sunda kuno dengan terjemahan instan ke dalam Bahasa Indonesia modern.\n\nDalam sambutannya, Kepala Perpustakaan Nasional menegaskan bahwa langkah ini adalah bukti nyata komitmen lembaga dalam mengawal amanat pelestarian warisan budaya bangsa sekaligus merespons disrupsi teknologi abad ke-21 secara proaktif.\n\nPegawai di seluruh unit kerja diharapkan turut menyosialisasikan layanan kebanggaan ini kepada para pemustaka di seluruh penjuru tanah air.', 'https://images.unsplash.com/photo-1507842229451-7f01be8510d2?w=800&auto=format&fit=crop', 'cmuaohmus001ezbpbyejw0jab', 'Humas Perpusnas', 'www.perpusnas.go.id', 'PUBLISHED', '2026-09-21 03:21:15', 1420, 1, '2026-09-21 03:21:15', '2026-10-08 08:57:47'),
+('cmuaohmwq001vzbpbrhfupovd', 'Kunjungan Delegasi Perpustakaan Nasional Australia (NLA) Perkuat Kerja Sama Bilateral', 'kunjungan-delegasi-perpustakaan-nasional-australia-2026', 'Pertemuan bilateral membahas pertukaran arsip digital, program magang pustakawan muda, dan pelestarian peta sejarah maritim Asia-Pasifik.', 'Delegasi tingkat tinggi dari National Library of Australia (NLA) mengunjungi Gedung Fasilitas Layanan Perpustakaan Nasional RI di Jalan Medan Merdeka Selatan No. 11, Jakarta. Kunjungan diplomatik dan teknis ini menghasilkan kesepakatan pembaruan MoU terkait pertukaran data bibliografi serta transfer teknologi konservasi kertas langka.\n\nSeluruh tim kerja Pusat Preservasi dan Alih Media Bahan Perpustakaan turut mendampingi proses workshop bersama yang diselenggarakan di lantai 8.', 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=800&auto=format&fit=crop', 'cmuaohmus001ezbpbyejw0jab', 'Humas Perpusnas', 'www.perpusnas.go.id', 'PUBLISHED', '2026-09-21 03:21:15', 890, 0, '2026-09-21 03:21:15', '2026-10-08 08:57:47'),
+('cmuaohmwv001xzbpb0gdte9o5', 'Pekan Literasi Kebangsaan 2026 Sukses Digelar di 38 Provinsi', 'pekan-literasi-kebangsaan-2026-sukses-digelar', 'Rangkaian festival buku keliling, bedah buku tematik, dan lomba bertutur daerah berhasil menjangkau lebih dari 2 juta generasi muda Indonesia.', 'Pekan Literasi Kebangsaan 2026 yang diinisiasi oleh Perpustakaan Nasional RI bersama Dinas Perpustakaan dan Kearsipan Daerah di seluruh Indonesia berakhir dengan sukses. Tingkat partisipasi masyarakat meningkat 34% dibanding tahun sebelumnya, didorong oleh kolaborasi perpustakaan desa ramah anak dan armada perpustakaan keliling modern.', 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=800&auto=format&fit=crop', 'cmuaohmus001ezbpbyejw0jab', 'Humas Perpusnas', 'www.perpusnas.go.id', 'PUBLISHED', '2026-09-21 03:21:15', 650, 0, '2026-09-21 03:21:15', '2026-10-08 08:57:47'),
+('stitch-1', 'Minat membaca Warga Indonesia semakin membaik', 'stitch-1', 'Menurut penelitian pada tanggal 19 Agustus 2026 terlihat bahwa jumlah peminat buku di berbagai daerah mengalami peningkatan signifikan...', 'Menurut penelitian yang dirilis pada tanggal 19 Agustus 2026, indeks kegemaran membaca masyarakat Indonesia mengalami lonjakan positif. Hal ini didorong oleh peningkatan penetrasi perpustakaan digital, penyediaan pojok baca terpadu di ruang publik, serta optimalisasi layanan perpustakaan berbasis inklusi sosial yang gencar dilaksanakan oleh Perpustakaan Nasional RI bersama seluruh pemangku kepentingan daerah.', 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80', 'cmuaohmus001ezbpbyejw0jab', 'Humas Perpusnas', 'www.perpusnas.go.id', 'PUBLISHED', '2026-09-21 03:21:22', 0, 0, '2026-09-21 03:21:22', '2026-10-08 08:57:47'),
+('stitch-2', 'Perpustakaan Digital Terpadu Dukung Pembelajaran Jarak Jauh', 'stitch-2', 'Integrasi teknologi dalam membaca dokumen digital melalui tablet cerdas semakin memudahkan pemustaka dalam menjangkau koleksi naskah kuno...', 'Integrasi teknologi dalam membaca dokumen digital melalui tablet dan gawai cerdas semakin memudahkan masyarakat dalam menjangkau koleksi naskah kuno, jurnal penelitian, serta buku teks terakreditasi melalui portal iPusnas dan IOS.', 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=800&q=80', 'cmuaohmus001ezbpbyejw0jab', 'Humas Perpusnas', 'www.perpusnas.go.id', 'DRAFT', '2026-09-21 03:21:22', 0, 0, '2026-09-21 03:21:22', '2026-10-08 08:57:47'),
+('stitch-3', 'Gedung Layanan Merdeka Selatan Catatkan Rekor Kunjungan Tertinggi', 'stitch-3', 'Gedung fasilitas layanan Perpustakaan Nasional di Jalan Medan Merdeka Selatan terus mencatatkan lonjakan kunjungan pemustaka harian...', 'Gedung fasilitas layanan Perpustakaan Nasional di Jalan Medan Merdeka Selatan terus mencatatkan lonjakan kunjungan pemustaka harian hingga mencapai rekor tertinggi pada kuartal ketiga tahun ini.', 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=800&q=80', 'cmuaohmus001ezbpbyejw0jab', 'Humas Perpusnas', 'www.perpusnas.go.id', 'PUBLISHED', '2026-09-21 03:21:22', 0, 0, '2026-09-21 03:21:22', '2026-10-08 08:57:47'),
+('stitch-4', 'Diskusi Standardisasi Kurikulum Literasi Informasi Era Modern', 'stitch-4', 'Diskusi kelompok terarah antar civitas akademika dan pustakawan profesional membahas standardisasi kurikulum literasi informasi...', 'Diskusi kelompok terarah antar civitas akademika dan pustakawan profesional membahas standardisasi kurikulum literasi informasi di era komputasi awan.', 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=800&q=80', 'cmuaohmus001ezbpbyejw0jab', 'Humas Perpusnas', 'www.perpusnas.go.id', 'DRAFT', '2026-09-21 03:21:22', 0, 0, '2026-09-21 03:21:22', '2026-10-08 08:57:47'),
+('stitch-5', 'Penataan Rak Buku Tematik dan Sistem Otomasi RFID Terbaru', 'stitch-5', 'Penataan tata kelola rak buku tematik dan sistem katalog otomatisasi RFID di seluruh lantai layanan mempercepat waktu temu koleksi...', 'Penataan tata kelola rak buku tematik dan sistem katalog otomatisasi RFID di seluruh lantai layanan mempercepat waktu temu kembali koleksi referensi.', 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=800&q=80', 'cmuaohmus001ezbpbyejw0jab', 'Humas Perpusnas', 'www.perpusnas.go.id', 'PUBLISHED', '2026-09-21 03:21:22', 0, 0, '2026-09-21 03:21:22', '2026-10-08 08:57:47'),
+('stitch-6', 'Peningkatan Aksesibilitas Fasilitas Inklusi Ramah Disabilitas', 'stitch-6', 'Layanan ruang baca lansia dan disabilitas dilengkapi fasilitas pendukung ergonomis serta perangkat bantu baca audio ramah tuna netra...', 'Layanan ruang baca lansia dan disabilitas dilengkapi dengan fasilitas pendukung ergonomis serta perangkat bantu baca audio ramah tuna netra demi pemerataan akses informasi.', 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=800&q=80', 'cmuaohmus001ezbpbyejw0jab', 'Humas Perpusnas', 'www.perpusnas.go.id', 'PUBLISHED', '2026-09-21 03:21:22', 0, 0, '2026-09-21 03:21:22', '2026-10-08 08:57:47');
 /*!40000 ALTER TABLE `berita` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -235,7 +349,27 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `pengumuman`;
-undefined;
+CREATE TABLE `pengumuman` (
+  `id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `judul` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ringkasan` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `isi` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `file_lampiran` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `nama_lampiran` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ukuran_file` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `penulis_id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `nama_penulis` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'Biro SDM Perpusnas',
+  `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'TERBIT',
+  `tanggal_terbit` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `disematkan` tinyint(1) NOT NULL DEFAULT '0',
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `pengumuman_slug_key` (`slug`),
+  KEY `pengumuman_penulis_id_fkey` (`penulis_id`),
+  CONSTRAINT `pengumuman_penulis_id_fkey` FOREIGN KEY (`penulis_id`) REFERENCES `pengguna` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `pengumuman` (2 rows)
@@ -254,7 +388,25 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `agenda_kegiatan`;
-undefined;
+CREATE TABLE `agenda_kegiatan` (
+  `id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `nama_kegiatan` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `deskripsi` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tanggal_mulai` datetime(3) NOT NULL,
+  `tanggal_selesai` datetime(3) DEFAULT NULL,
+  `lokasi` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `gambar_sampul` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `penulis_id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'TERBIT',
+  `tanggal_terbit` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `agenda_slug_key` (`slug`),
+  KEY `agenda_penulis_id_fkey` (`penulis_id`),
+  CONSTRAINT `agenda_penulis_id_fkey` FOREIGN KEY (`penulis_id`) REFERENCES `pengguna` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `agenda_kegiatan` (9 rows)
@@ -280,7 +432,25 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `laporan_perjalanan_dinas`;
-undefined;
+CREATE TABLE `laporan_perjalanan_dinas` (
+  `id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `judul_laporan` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `kota_tujuan` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ringkasan` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `laporan_lengkap` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `file_laporan` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `nama_file` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `penulis_id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'TERBIT',
+  `tanggal_terbit` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `laporan_perjalanan_slug_key` (`slug`),
+  KEY `laporan_perjalanan_penulis_id_fkey` (`penulis_id`),
+  CONSTRAINT `laporan_perjalanan_penulis_id_fkey` FOREIGN KEY (`penulis_id`) REFERENCES `pengguna` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `laporan_perjalanan_dinas` (7 rows)
@@ -304,7 +474,16 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `kupas_sosok`;
-undefined;
+CREATE TABLE `kupas_sosok` (
+  `id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `nama_tokoh` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `deskripsi` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `kupas_sosok_slug_key` (`slug`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `kupas_sosok` (8 rows)
@@ -329,7 +508,24 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `profil_tokoh`;
-undefined;
+CREATE TABLE `profil_tokoh` (
+  `id` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `deskripsi` longtext COLLATE utf8mb4_unicode_ci,
+  `position` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `unitKerja` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `quote` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `fullStory` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `photoUrl` text COLLATE utf8mb4_unicode_ci,
+  `achievements` text COLLATE utf8mb4_unicode_ci,
+  `careerHistory` text COLLATE utf8mb4_unicode_ci,
+  `isSpotlight` tinyint(1) NOT NULL DEFAULT '0',
+  `createdAt` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updatedAt` datetime(3) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `profil_tokoh_slug_key` (`slug`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `profil_tokoh` (8 rows)
@@ -354,7 +550,23 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `coretan_opini`;
-undefined;
+CREATE TABLE `coretan_opini` (
+  `id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `judul` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `isi` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `gambar_sampul` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `penulis_id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'TERBIT',
+  `jumlah_suka` int NOT NULL DEFAULT '0',
+  `jumlah_baca` int NOT NULL DEFAULT '0',
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `coretan_opini_slug_key` (`slug`),
+  KEY `coretan_opini_penulis_id_fkey` (`penulis_id`),
+  CONSTRAINT `coretan_opini_penulis_id_fkey` FOREIGN KEY (`penulis_id`) REFERENCES `pengguna` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `coretan_opini` (7 rows)
@@ -378,7 +590,23 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `humor_pegawai`;
-undefined;
+CREATE TABLE `humor_pegawai` (
+  `id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `judul` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `isi` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `gambar_sampul` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `penulis_id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'TERBIT',
+  `jumlah_suka` int NOT NULL DEFAULT '0',
+  `jumlah_baca` int NOT NULL DEFAULT '0',
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `humor_pegawai_slug_key` (`slug`),
+  KEY `humor_pegawai_penulis_id_fkey` (`penulis_id`),
+  CONSTRAINT `humor_pegawai_penulis_id_fkey` FOREIGN KEY (`penulis_id`) REFERENCES `pengguna` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `humor_pegawai` (7 rows)
@@ -402,7 +630,23 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `jelajah_bumi`;
-undefined;
+CREATE TABLE `jelajah_bumi` (
+  `id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `judul` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `isi` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `gambar_sampul` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `penulis_id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'TERBIT',
+  `jumlah_suka` int NOT NULL DEFAULT '0',
+  `jumlah_baca` int NOT NULL DEFAULT '0',
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `jelajah_bumi_slug_key` (`slug`),
+  KEY `jelajah_bumi_penulis_id_fkey` (`penulis_id`),
+  CONSTRAINT `jelajah_bumi_penulis_id_fkey` FOREIGN KEY (`penulis_id`) REFERENCES `pengguna` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `jelajah_bumi` (7 rows)
@@ -426,7 +670,23 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `kabar_keluarga`;
-undefined;
+CREATE TABLE `kabar_keluarga` (
+  `id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `judul` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `isi` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `gambar_sampul` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `penulis_id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'TERBIT',
+  `jumlah_suka` int NOT NULL DEFAULT '0',
+  `jumlah_baca` int NOT NULL DEFAULT '0',
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `kabar_keluarga_slug_key` (`slug`),
+  KEY `kabar_keluarga_penulis_id_fkey` (`penulis_id`),
+  CONSTRAINT `kabar_keluarga_penulis_id_fkey` FOREIGN KEY (`penulis_id`) REFERENCES `pengguna` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `kabar_keluarga` (7 rows)
@@ -450,7 +710,23 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `kalimat_bijak`;
-undefined;
+CREATE TABLE `kalimat_bijak` (
+  `id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `judul` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `isi` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `gambar_sampul` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `penulis_id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'TERBIT',
+  `jumlah_suka` int NOT NULL DEFAULT '0',
+  `jumlah_baca` int NOT NULL DEFAULT '0',
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `kalimat_bijak_slug_key` (`slug`),
+  KEY `kalimat_bijak_penulis_id_fkey` (`penulis_id`),
+  CONSTRAINT `kalimat_bijak_penulis_id_fkey` FOREIGN KEY (`penulis_id`) REFERENCES `pengguna` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `kalimat_bijak` (7 rows)
@@ -474,7 +750,23 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `karya_akademik`;
-undefined;
+CREATE TABLE `karya_akademik` (
+  `id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `judul` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `isi` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `gambar_sampul` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `penulis_id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'TERBIT',
+  `jumlah_suka` int NOT NULL DEFAULT '0',
+  `jumlah_baca` int NOT NULL DEFAULT '0',
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `karya_akademik_slug_key` (`slug`),
+  KEY `karya_akademik_penulis_id_fkey` (`penulis_id`),
+  CONSTRAINT `karya_akademik_penulis_id_fkey` FOREIGN KEY (`penulis_id`) REFERENCES `pengguna` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `karya_akademik` (7 rows)
@@ -498,7 +790,23 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `tips_gaya_hidup`;
-undefined;
+CREATE TABLE `tips_gaya_hidup` (
+  `id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `judul` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `isi` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `gambar_sampul` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `penulis_id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'TERBIT',
+  `jumlah_suka` int NOT NULL DEFAULT '0',
+  `jumlah_baca` int NOT NULL DEFAULT '0',
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `tips_gaya_hidup_slug_key` (`slug`),
+  KEY `tips_gaya_hidup_penulis_id_fkey` (`penulis_id`),
+  CONSTRAINT `tips_gaya_hidup_penulis_id_fkey` FOREIGN KEY (`penulis_id`) REFERENCES `pengguna` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tips_gaya_hidup` (10 rows)
@@ -525,7 +833,23 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `olahraga`;
-undefined;
+CREATE TABLE `olahraga` (
+  `id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `judul` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `isi` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `gambar_sampul` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `penulis_id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'TERBIT',
+  `jumlah_suka` int NOT NULL DEFAULT '0',
+  `jumlah_baca` int NOT NULL DEFAULT '0',
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `olahraga_slug_key` (`slug`),
+  KEY `olahraga_penulis_id_fkey` (`penulis_id`),
+  CONSTRAINT `olahraga_penulis_id_fkey` FOREIGN KEY (`penulis_id`) REFERENCES `pengguna` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `olahraga` (7 rows)
@@ -549,7 +873,23 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `tahukah_anda`;
-undefined;
+CREATE TABLE `tahukah_anda` (
+  `id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `judul` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `isi` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `gambar_sampul` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `penulis_id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'TERBIT',
+  `jumlah_suka` int NOT NULL DEFAULT '0',
+  `jumlah_baca` int NOT NULL DEFAULT '0',
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `tahukah_anda_slug_key` (`slug`),
+  KEY `tahukah_anda_penulis_id_fkey` (`penulis_id`),
+  CONSTRAINT `tahukah_anda_penulis_id_fkey` FOREIGN KEY (`penulis_id`) REFERENCES `pengguna` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tahukah_anda` (7 rows)
@@ -573,7 +913,20 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `topik_konsultasi`;
-undefined;
+CREATE TABLE `topik_konsultasi` (
+  `id` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `title` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `category` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `question` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `authorId` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'OPEN',
+  `isPrivate` tinyint(1) NOT NULL DEFAULT '0',
+  `createdAt` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updatedAt` datetime(3) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `topik_konsultasi_authorId_fkey` (`authorId`),
+  CONSTRAINT `topik_konsultasi_authorId_fkey` FOREIGN KEY (`authorId`) REFERENCES `pengguna` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `topik_konsultasi` (8 rows)
@@ -598,7 +951,19 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `balasan_konsultasi`;
-undefined;
+CREATE TABLE `balasan_konsultasi` (
+  `id` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `topicId` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `authorId` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `replyText` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `isAdminReply` tinyint(1) NOT NULL DEFAULT '0',
+  `createdAt` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  KEY `balasan_konsultasi_topicId_fkey` (`topicId`),
+  KEY `balasan_konsultasi_authorId_fkey` (`authorId`),
+  CONSTRAINT `balasan_konsultasi_authorId_fkey` FOREIGN KEY (`authorId`) REFERENCES `pengguna` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `balasan_konsultasi_topicId_fkey` FOREIGN KEY (`topicId`) REFERENCES `topik_konsultasi` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `balasan_konsultasi` (2 rows)
@@ -617,7 +982,36 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `konten`;
-undefined;
+CREATE TABLE `konten` (
+  `id` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `title` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `excerpt` text COLLATE utf8mb4_unicode_ci,
+  `body` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `coverImage` text COLLATE utf8mb4_unicode_ci,
+  `type` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PUBLISHED',
+  `categoryId` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `authorId` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `publishedAt` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `eventStartDate` datetime(3) DEFAULT NULL,
+  `eventEndDate` datetime(3) DEFAULT NULL,
+  `eventLocation` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `destinationCity` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `attachmentUrl` text COLLATE utf8mb4_unicode_ci,
+  `attachmentName` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `fileSize` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `isPinned` tinyint(1) NOT NULL DEFAULT '0',
+  `viewCount` int NOT NULL DEFAULT '0',
+  `createdAt` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updatedAt` datetime(3) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `konten_slug_key` (`slug`),
+  KEY `konten_categoryId_fkey` (`categoryId`),
+  KEY `konten_authorId_fkey` (`authorId`),
+  CONSTRAINT `konten_authorId_fkey` FOREIGN KEY (`authorId`) REFERENCES `pengguna` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `konten_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `kategori` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `konten` (34 rows)
@@ -668,7 +1062,24 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `postingan_pegawai`;
-undefined;
+CREATE TABLE `postingan_pegawai` (
+  `id` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `title` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `body` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `categorySlug` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `authorId` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `coverImage` text COLLATE utf8mb4_unicode_ci,
+  `status` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PUBLISHED',
+  `likesCount` int NOT NULL DEFAULT '0',
+  `viewsCount` int NOT NULL DEFAULT '0',
+  `createdAt` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updatedAt` datetime(3) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `postingan_pegawai_slug_key` (`slug`),
+  KEY `postingan_pegawai_authorId_fkey` (`authorId`),
+  CONSTRAINT `postingan_pegawai_authorId_fkey` FOREIGN KEY (`authorId`) REFERENCES `pengguna` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `postingan_pegawai` (66 rows)
@@ -752,7 +1163,18 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `komentar_postingan`;
-undefined;
+CREATE TABLE `komentar_postingan` (
+  `id` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `postId` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `authorId` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `content` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  KEY `komentar_postingan_postId_fkey` (`postId`),
+  KEY `komentar_postingan_authorId_fkey` (`authorId`),
+  CONSTRAINT `komentar_postingan_authorId_fkey` FOREIGN KEY (`authorId`) REFERENCES `pengguna` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `komentar_postingan_postId_fkey` FOREIGN KEY (`postId`) REFERENCES `postingan_pegawai` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `komentar_postingan` (9 rows)
@@ -778,7 +1200,25 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `dokumen_internal`;
-undefined;
+CREATE TABLE `dokumen_internal` (
+  `id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `nama_dokumen` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `deskripsi` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `kategori_dokumen` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'Pedoman & SOP',
+  `file_url` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `nama_file` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ukuran_file` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `penulis_id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'TERBIT',
+  `tanggal_terbit` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `dokumen_intern_slug_key` (`slug`),
+  KEY `dokumen_intern_penulis_id_fkey` (`penulis_id`),
+  CONSTRAINT `dokumen_intern_penulis_id_fkey` FOREIGN KEY (`penulis_id`) REFERENCES `pengguna` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `dokumen_internal` (7 rows)
@@ -804,4 +1244,4 @@ UNLOCK TABLES;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
--- Dump completed on 2026-10-07T03:17:12.672Z
+-- Dump completed on 2026-10-08T02:00:23.356Z
