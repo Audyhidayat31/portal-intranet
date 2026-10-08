@@ -71,6 +71,7 @@ export async function POST(request: NextRequest) {
       status,
       attachmentName,
       attachmentUrl,
+      source,
     } = body;
 
     if (!title || !content) {
@@ -120,6 +121,7 @@ export async function POST(request: NextRequest) {
         publishedAt: publishedAt ? new Date(publishedAt) : new Date(),
         attachmentName: attachmentName || null,
         attachmentUrl: attachmentUrl || null,
+        source: source || null,
       },
     });
 

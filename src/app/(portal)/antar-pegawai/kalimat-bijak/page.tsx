@@ -19,6 +19,7 @@ import {
 export default function KalimatBijakPage() {
   const [allItems, setAllItems] = useState<KalimatBijakItem[]>([]);
   const [filteredItems, setFilteredItems] = useState<KalimatBijakItem[]>([]);
+  const [selectedQuote, setSelectedQuote] = useState<KalimatBijakItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterAuthor, setFilterAuthor] = useState('all');
@@ -56,7 +57,7 @@ export default function KalimatBijakPage() {
           quote: item.body || item.excerpt || item.title,
           excerpt: item.excerpt || (item.body ? item.body.slice(0, 110) + '...' : item.title),
           content: item.body || '',
-          figure: item.author?.name || 'Tokoh Bangsa',
+          figure: item.title || 'Tokoh Bangsa',
           figureDate: '1-06-1945',
           publishedAt: item.createdAt
             ? new Date(item.createdAt).toLocaleDateString('id-ID', {
@@ -301,25 +302,33 @@ export default function KalimatBijakPage() {
                 </div>
 
                 {/* Bottom Bar matching Wireframe: [Lihat] on left and [Status : Terbit] on right */}
-                <div className="flex items-center justify-between pt-4 border-t border-slate-100 mt-2">
-                  {/* Tombol Lihat matching Wireframe pill button */}
-                  <Link
-                    href={`/antar-pegawai/kalimat-bijak/${item.id}`}
-                    className="px-5 py-1 rounded-full bg-[#00113a] hover:bg-[#2a4386] text-white text-xs font-semibold transition-all shadow-2xs cursor-pointer inline-block text-center"
-                  >
-                    Lihat
-                  </Link>
+                <div className="grid grid-cols-3 items-center pt-4 border-t border-slate-100 mt-2">
+                  {/* Left Spacer */}
+                  <div></div>
 
-                  {/* Status Badge matching Wireframe pill: Status : Terbit */}
-                  <span
-                    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold tracking-tight border ${
-                      item.status === 'Terbit'
-                        ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
-                        : 'border-amber-300 bg-amber-50 text-amber-700'
-                    }`}
-                  >
-                    Status : {item.status}
-                  </span>
+                  {/* Tombol Lihat Center */}
+                  <div className="flex justify-center">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedQuote(item)}
+                      className="px-6 py-1.5 rounded-full bg-[#00113a] hover:bg-[#2a4386] text-white text-xs font-semibold transition-all shadow-2xs cursor-pointer inline-block text-center"
+                    >
+                      Lihat
+                    </button>
+                  </div>
+
+                  {/* Status Badge Right */}
+                  <div className="flex justify-end">
+                    <span
+                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold tracking-tight border ${
+                        item.status === 'Terbit'
+                          ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
+                          : 'border-amber-300 bg-amber-50 text-amber-700'
+                      }`}
+                    >
+                      Status : {item.status}
+                    </span>
+                  </div>
                 </div>
               </article>
             ))}
@@ -334,7 +343,54 @@ export default function KalimatBijakPage() {
           itemsPerPage={6}
           onPageChange={setCurrentPage}
         />
-    </div>
+    
+      {/* Modal Detail Kalimat Bijak */}
+      {selectedQuote && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 relative max-w-3xl w-full max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200 flex flex-col p-8 md:p-12">
+            
+            {/* Close Button on Top Right */}
+            <button
+              onClick={() => setSelectedQuote(null)}
+              className="absolute top-6 right-6 w-8 h-8 rounded bg-red-600 hover:bg-red-700 text-white flex items-center justify-center transition-colors"
+              aria-label="Tutup popup"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Quote Content */}
+            <div className="flex-grow flex flex-col items-center justify-center py-10">
+              <p className="text-xl md:text-2xl lg:text-3xl font-bold text-[#1a1b20] text-center leading-relaxed tracking-tight max-w-2xl mx-auto">
+                "{selectedQuote.quote.replace(/<[^>]+>/g, '').replace(/^"|"$/g, '')}"
+              </p>
+              <p className="text-sm md:text-base text-slate-500 mt-6 font-medium text-center">
+                {selectedQuote.title}, {selectedQuote.figureDate || '1-06-1945'}
+              </p>
+            </div>
+
+            {/* Bottom Meta Info */}
+            <div className="mt-8 flex flex-col sm:flex-row gap-6 border-t border-slate-100 pt-6">
+              <div className="flex-1 flex flex-col gap-1 border-l-2 border-slate-200 pl-4">
+                <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Dibuat oleh</span>
+                <span className="text-xs font-bold text-[#1a1b20]">{selectedQuote.authorName || 'Ahmad Fauzi'}</span>
+                <span className="text-[11px] text-slate-500">{selectedQuote.publishedAt}</span>
+                <span className="text-[11px] text-slate-500">Status: {selectedQuote.status}</span>
+              </div>
+              <div className="flex-1 flex flex-col gap-1 border-l-2 border-slate-200 pl-4">
+                <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Diperbarui oleh</span>
+                <span className="text-xs font-bold text-[#1a1b20]">Administrator Perpusnas</span>
+                <span className="text-[11px] text-slate-500">{selectedQuote.publishedAt}</span>
+                <span className="text-[11px] text-slate-500">Status: {selectedQuote.status}</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+</div>
   );
 }
 

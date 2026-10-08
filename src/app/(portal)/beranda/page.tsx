@@ -383,7 +383,7 @@ export default function BerandaPage() {
         <div className="flex justify-between items-end border-b border-[#c5c6d2] pb-2">
           <h2 className="text-2xl sm:text-3xl font-bold text-[#00113a]">Antar Pegawai</h2>
         </div>
-        <div className="relative group">
+        <div className="relative group/section">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {currentPosts.map((post: any, idx: number) => (
             <div
@@ -438,7 +438,7 @@ export default function BerandaPage() {
           <button 
             onClick={() => setCurrentPostPage(prev => Math.max(0, prev - 1))}
             disabled={currentPostPage === 0}
-            className="absolute -left-4 sm:-left-8 md:-left-12 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border border-[#c5c6d2] shadow-md flex items-center justify-center text-[#00113a] disabled:opacity-0 transition-all opacity-0 group-hover:opacity-100 hover:bg-slate-50 z-10"
+            className="absolute -left-4 sm:-left-8 md:-left-12 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border border-[#c5c6d2] shadow-md flex items-center justify-center text-[#00113a] disabled:opacity-0 transition-all opacity-0 group-hover/section:opacity-100 hover:bg-slate-50 z-10"
             aria-label="Previous page"
           >
             <ChevronLeft className="w-6 h-6" />
@@ -448,7 +448,7 @@ export default function BerandaPage() {
           <button 
             onClick={() => setCurrentPostPage(prev => Math.min(Math.max(0, Math.ceil((postsList?.length || 1) / 3) - 1), prev + 1))}
             disabled={currentPostPage >= Math.min(5, Math.ceil((postsList?.length || 0) / 3) || 1) - 1}
-            className="absolute -right-4 sm:-right-8 md:-right-12 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border border-[#c5c6d2] shadow-md flex items-center justify-center text-[#00113a] disabled:opacity-0 transition-all opacity-0 group-hover:opacity-100 hover:bg-slate-50 z-10"
+            className="absolute -right-4 sm:-right-8 md:-right-12 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border border-[#c5c6d2] shadow-md flex items-center justify-center text-[#00113a] disabled:opacity-0 transition-all opacity-0 group-hover/section:opacity-100 hover:bg-slate-50 z-10"
             aria-label="Next page"
           >
             <ChevronRight className="w-6 h-6" />
