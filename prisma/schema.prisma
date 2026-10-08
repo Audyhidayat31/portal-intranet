@@ -132,6 +132,7 @@ model Content {
   destinationCity String? // For BUSINESS_TRIP
   attachmentUrl   String?   @db.LongText // For INTERNAL_DOCUMENT or ANNOUNCEMENT
   attachmentName  String?
+  source          String? // For NEWS
   fileSize        String?
   isPinned        Boolean   @default(false)
   viewCount       Int       @default(0)

@@ -19,6 +19,7 @@ import {
   Quote,
   ImageIcon,
   Upload,
+  X,
   CheckCircle,
 } from 'lucide-react';
 
@@ -32,7 +33,8 @@ export default function TambahAgendaPage() {
   const [deskripsiHtml, setDeskripsiHtml] = useState('');
   const [gambarFileName, setGambarFileName] = useState('');
   const [gambarPreview, setGambarPreview] = useState<string | null>(null);
-  const [lampiranFileName, setLampiranFileName] = useState('');
+  const [lampiranAttachments, setLampiranAttachments] = useState<Array<{ file: File, name: string, preview: string | null }>>([]);
+  const [modalImageUrl, setModalImageUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -179,11 +181,38 @@ export default function TambahAgendaPage() {
     }
   };
 
-  const handleLampiranFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setLampiranFileName(file.name);
+  const handleLampiranFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    if (lampiranAttachments.length + files.length > 10) {
+      alert('Maksimal 10 lampiran diperbolehkan');
+      return;
     }
+
+    const newAttachments = await Promise.all(
+      files.map(async (file) => {
+        let preview = null;
+        if (file.type.startsWith('image/')) {
+          preview = URL.createObjectURL(file);
+        }
+        return {
+          file,
+          name: file.name,
+          preview,
+        };
+      })
+    );
+
+    setLampiranAttachments([...lampiranAttachments, ...newAttachments]);
+    if (lampiranInputRef.current) {
+      lampiranInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveLampiran = (index: number) => {
+    setLampiranAttachments((prev) => prev.filter((_, i) => i !== index));
+    if (lampiranInputRef.current) lampiranInputRef.current.value = '';
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -213,6 +242,8 @@ export default function TambahAgendaPage() {
           coverImage: gambarPreview || 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80',
           eventStartDate: tanggal.toISOString(),
           status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',
+          attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments.map(a => a.name).join('|||') : null,
+          attachmentUrl: lampiranAttachments.length > 0 ? JSON.stringify(lampiranAttachments.map(a => a.preview || '')) : null,
         }),
       });
 
@@ -355,55 +386,7 @@ export default function TambahAgendaPage() {
               )}
             </div>
 
-            {/* 3. Status Dropdown matching Coretan Opini Tambah */}
-            <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Status <span className="float-right hidden md:inline">:</span>
-            </label>
-            <div className="relative w-full md:w-56" ref={statusMenuRef}>
-              <button
-                type="button"
-                onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
-                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${
-                  isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
-                }`}
-              >
-                <span className="truncate">{status || 'Jenis Status'}</span>
-                <ChevronDown className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {isStatusMenuOpen && (
-                <div className="absolute top-full left-0 z-50 w-full bg-white border border-[#c5c6d2] border-t-0 rounded-b-md shadow-lg py-1 animate-fadeIn">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStatus('Terbit');
-                      setIsStatusMenuOpen(false);
-                    }}
-                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                      status === 'Terbit'
-                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
-                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                    }`}
-                  >
-                    Terbit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStatus('Menunggu');
-                      setIsStatusMenuOpen(false);
-                    }}
-                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                      status === 'Menunggu'
-                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
-                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                    }`}
-                  >
-                    Menunggu
-                  </button>
-                </div>
-              )}
-            </div>
+            
 
             {/* 4. Deskripsi */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
@@ -512,11 +495,11 @@ export default function TambahAgendaPage() {
             </label>
             <div className="flex flex-col gap-4">
               <div className="flex">
-                <input
+                <input suppressHydrationWarning
                   type="text"
                   readOnly
                   value={gambarFileName}
-                  placeholder="Nama File.jpg/png"
+                  placeholder="Berkas berupa .jpg/ .png"
                   className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
                 />
                 <button
@@ -526,26 +509,36 @@ export default function TambahAgendaPage() {
                 >
                   Upload
                 </button>
-                <input
+                <input suppressHydrationWarning
                   ref={gambarInputRef}
                   type="file"
                   accept="image/*"
                   onChange={handleGambarFileChange}
-                  className="hidden" suppressHydrationWarning
-                 suppressHydrationWarning />
+                  className="hidden" />
               </div>
 
               {/* Dashed preview box: Gambar Preview */}
               <div
-                onClick={() => gambarInputRef.current?.click()}
+                onClick={() => {
+                  if (gambarPreview) {
+                    setModalImageUrl(gambarPreview);
+                  } else {
+                    gambarInputRef.current?.click();
+                  }
+                }}
                 className="w-full md:w-2/3 h-64 bg-[#efedf3] border-2 border-dashed border-[#c5c6d2] rounded flex items-center justify-center text-[#757682] text-sm relative group cursor-pointer hover:bg-[#e9e7ee] transition-colors overflow-hidden"
               >
                 {gambarPreview ? (
-                  <img
-                    src={gambarPreview}
-                    alt="Pratinjau Gambar"
-                    className="w-full h-full object-cover"
-                  />
+                  <div className="w-full h-full p-2 relative flex items-center justify-center bg-white/50">
+                    <img
+                      src={gambarPreview}
+                      alt="Pratinjau Gambar Berita"
+                      className="max-w-full max-h-full object-contain"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 text-white font-medium backdrop-blur-sm">
+                      Klik untuk memperbesar
+                    </div>
+                  </div>
                 ) : (
                   <>
                     <span>Gambar Preview</span>
@@ -559,53 +552,116 @@ export default function TambahAgendaPage() {
 
             {/* 6. Lampiran */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Lampiran <span className="float-right hidden md:inline">:</span>
+              Lampiran (Maks. 10 File) <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="flex flex-col gap-4">
               <div className="flex">
-                <input
+                <input suppressHydrationWarning
                   type="text"
                   readOnly
-                  value={lampiranFileName}
-                  placeholder="Nama File.pdf/doc"
+                  value={lampiranAttachments.length > 0 ? `${lampiranAttachments.length} file dipilih` : ''}
+                  placeholder="Berkas berupa .jpg/ .png"
                   className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
                 />
                 <button
                   type="button"
                   onClick={() => lampiranInputRef.current?.click()}
-                  className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer"
+                  disabled={lampiranAttachments.length >= 10}
+                  className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer disabled:opacity-50"
                 >
                   Upload
                 </button>
-                <input
+                <input suppressHydrationWarning
                   ref={lampiranInputRef}
                   type="file"
-                  accept=".pdf,.doc,.docx,.jpg,.png"
+                  multiple
                   onChange={handleLampiranFileChange}
-                  className="hidden" suppressHydrationWarning
-                 suppressHydrationWarning />
+                  className="hidden" />
               </div>
 
-              {/* Dashed preview box: File Preview */}
-              <div
-                onClick={() => lampiranInputRef.current?.click()}
-                className="w-full md:w-2/3 h-64 bg-[#efedf3] border-2 border-dashed border-[#c5c6d2] rounded flex items-center justify-center text-[#757682] text-sm relative group cursor-pointer hover:bg-[#e9e7ee] transition-colors overflow-hidden"
-              >
-                {lampiranFileName ? (
-                  <div className="p-4 text-center">
-                    <Upload className="w-8 h-8 text-[#00113a] mx-auto mb-2" />
-                    <span className="font-semibold text-[#00113a] block break-all">{lampiranFileName}</span>
-                    <span className="text-xs text-emerald-600 font-medium mt-1 inline-block">Berkas Terlampir</span>
-                  </div>
-                ) : (
-                  <>
-                    <span>File Preview</span>
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/5">
-                      <Upload className="w-8 h-8 text-[#757682]" />
+              {/* Previews */}
+              {lampiranAttachments.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 w-full">
+                  {lampiranAttachments.map((att, idx) => (
+                    <div key={idx} className="relative group bg-[#e9e7ee] border border-[#c5c6d2] rounded-md overflow-hidden aspect-square flex flex-col items-center justify-center cursor-pointer" onClick={() => { if (att.preview) setModalImageUrl(att.preview); }}>
+                      {att.preview ? (
+                        <>
+                          <img src={att.preview} alt={att.name} className="w-full h-full object-contain p-1" />
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 text-white font-medium backdrop-blur-sm pointer-events-none">
+                            <span className="text-xs text-center px-2">Klik untuk memperbesar</span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex flex-col items-center gap-2 p-2">
+                          <Upload className="w-8 h-8 text-[#00113a]" />
+                          <span className="text-[10px] font-bold text-center break-all line-clamp-2 text-[#00113a]">{att.name}</span>
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); handleRemoveLampiran(idx); }}
+                        className="absolute top-1 right-1 bg-black/60 hover:bg-black text-white p-1 rounded-full transition-colors opacity-0 group-hover:opacity-100"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                      {att.preview && (
+                        <span className="absolute bottom-0 w-full bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center">
+                          {att.name}
+                        </span>
+                      )}
                     </div>
-                  </>
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            {/* 7. Status Dropdown */}
+            <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
+              Status <span className="float-right hidden md:inline">:</span>
+            </label>
+            <div className="relative w-full md:w-56" ref={statusMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
+                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${
+                  isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
+                }`}
+              >
+                <span className="truncate">{status || 'Jenis Status'}</span>
+                <ChevronDown className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isStatusMenuOpen && (
+                <div className="absolute top-full left-0 z-50 w-full bg-white border border-[#c5c6d2] border-t-0 rounded-b-md shadow-lg py-1 animate-fadeIn">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatus('Terbit');
+                      setIsStatusMenuOpen(false);
+                    }}
+                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
+                      status === 'Terbit'
+                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                    }`}
+                  >
+                    Terbit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatus('Menunggu');
+                      setIsStatusMenuOpen(false);
+                    }}
+                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
+                      status === 'Menunggu'
+                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                    }`}
+                  >
+                    Menunggu
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -627,6 +683,31 @@ export default function TambahAgendaPage() {
           </div>
         </form>
       </div>
+      {/* Lightbox Preview Modal */}
+      {modalImageUrl && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fadeIn p-4 sm:p-8"
+          onClick={() => setModalImageUrl(null)}
+        >
+          <button
+            type="button"
+            className="absolute top-4 right-4 sm:top-8 sm:right-8 text-white/70 hover:text-white bg-black/50 hover:bg-black/80 rounded-full p-2 transition-all cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              setModalImageUrl(null);
+            }}
+          >
+            <X className="w-6 h-6 sm:w-8 sm:h-8" />
+          </button>
+
+          <img
+            src={modalImageUrl}
+            alt="Pratinjau Gambar Penuh"
+            className="max-w-full max-h-full object-contain rounded shadow-2xl cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 }

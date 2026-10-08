@@ -108,7 +108,7 @@ export default function DetailBeritaPage() {
     if (!rawId) return;
 
     setIsLoading(true);
-    fetch(`/api/news/${rawId}`)
+    fetch(`/api/news/${rawId}`, { cache: 'no-store' })
       .then((res) => {
         if (!res.ok) throw new Error('Not found in DB');
         return res.json();
@@ -128,7 +128,7 @@ export default function DetailBeritaPage() {
           id: rawId,
           title: rawId.startsWith('stitch-')
             ? 'Minat membaca Warga Indonesia semakin membaik'
-            : 'Judul Berita',
+            : 'Berita tidak ditemukan atau gagal dimuat.',
         };
         setNews(fallback);
         setIsLoading(false);

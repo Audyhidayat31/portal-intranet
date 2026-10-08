@@ -57,7 +57,7 @@ export default function DetailAgendaKegiatanPage() {
     if (!matchedInitial) {
       setIsLoading(true);
     }
-    fetch(`/api/agendas/${rawId}`)
+    fetch(`/api/agendas/${rawId}`, { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data) {
@@ -77,10 +77,11 @@ export default function DetailAgendaKegiatanPage() {
           } else {
             const fallback = {
               id: rawId,
-              title: 'Membangun Ekosistem Perpustakaan Digital Nasional Masa Depan',
-              publishedAt: '2026-08-19',
-              eventLocation: 'Ruang Teater Lt. 2, Gedung Perpusnas Medan Merdeka Selatan',
-              body: `Rapat koordinasi nasional dan pemaparan hasil riset indeks kegemaran membaca masyarakat Indonesia bersama pemangku kepentingan perpustakaan daerah. Menampilkan inovasi pojok baca terpadu dan layanan perpustakaan digital inklusif.\n\nKegiatan ini berfokus pada sinkronisasi data repositori daerah dengan server induk Perpustakaan Nasional RI demi mendukung satu data literasi nusantara.`,
+              title: 'Agenda Kegiatan',
+              publishedAt: new Date().toISOString(),
+              eventLocation: '-',
+              body: 'Agenda kegiatan tidak ditemukan atau gagal dimuat.',
+              author: { name: 'Administrator' }
             };
             setAgendaItem(fallback);
           }
@@ -110,18 +111,20 @@ export default function DetailAgendaKegiatanPage() {
     }
   };
 
-  const displayTitle =
-    agendaItem?.title ||
-    'Membangun Ekosistem Perpustakaan Digital Nasional Masa Depan';
+  const displayTitle = agendaItem?.title || 'Agenda Kegiatan';
 
-  const displayDate = agendaItem?.publishedAt
-    ? formatDate(agendaItem.publishedAt)
-    : '19 Agustus 2026';
+  const displayDate = agendaItem?.publishedAt ? formatDate(agendaItem.publishedAt) : '-';
 
-  const displayContent =
-    agendaItem?.body ||
-    agendaItem?.content ||
-    `Rapat koordinasi nasional dan pemaparan hasil riset indeks kegemaran membaca masyarakat Indonesia bersama pemangku kepentingan perpustakaan daerah. Menampilkan inovasi pojok baca terpadu dan layanan perpustakaan digital inklusif.\n\nKegiatan ini berfokus pada sinkronisasi data repositori daerah dengan server induk Perpustakaan Nasional RI demi mendukung satu data literasi nusantara.`;
+  const displayContent = agendaItem?.body || agendaItem?.content || '-';
+
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 bg-white min-h-[calc(100vh-80px)] flex flex-col items-center justify-center">
+        <div className="w-8 h-8 border-4 border-[#00113a] border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-[#444650] font-medium">Memuat data agenda...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 bg-white min-h-[calc(100vh-80px)] flex flex-col justify-between">
@@ -185,6 +188,12 @@ export default function DetailAgendaKegiatanPage() {
             )}
           </div>
 
+          {agendaItem?.coverImage && (
+            <div className="mb-6 w-full max-h-[400px] bg-[#f4f3f9] rounded-lg overflow-hidden border border-[#c5c6d2] flex items-center justify-center cursor-pointer" onClick={() => setPreviewImage(agendaItem.coverImage)}>
+              <img src={agendaItem.coverImage} alt={displayTitle} className="w-full h-full object-contain max-h-[400px]" />
+            </div>
+          )}
+
           {/* Section: Uraian Agenda Kegiatan */}
           <div>
             <h2 className="text-xs font-bold text-[#757682] mb-2">
@@ -207,18 +216,43 @@ export default function DetailAgendaKegiatanPage() {
             </h3>
             {/* 5 Attachment Thumbnails */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
-              {MOCK_AGENDA_ATTACHMENTS_5.map((att) => (
-                <button
-                  key={att.id}
-                  type="button"
-                  onClick={() => setPreviewImage(att.src)}
-                  className="aspect-square bg-[#e2e3ea] hover:bg-[#d8d9e2] border border-[#c5c6d2] rounded-md flex flex-col items-center justify-center text-xs text-[#757682] hover:text-[#00113a] font-medium transition-all group shadow-2xs cursor-pointer"
-                >
-                  <span className="text-xs font-medium text-[#757682] group-hover:text-[#1a1b20] transition-colors">
-                    {att.label}
-                  </span>
-                </button>
-              ))}
+              {(() => {
+                let realAttachments: { src: string, label: string }[] = [];
+                if (agendaItem?.attachmentUrl) {
+                  try {
+                    const urls = JSON.parse(agendaItem.attachmentUrl);
+                    const names = agendaItem.attachmentName ? agendaItem.attachmentName.split('|||') : [];
+                    realAttachments = urls.map((u: string, i: number) => ({
+                      src: u,
+                      label: names[i] || `Lampiran ${i + 1}`
+                    }));
+                  } catch {
+                    if (agendaItem.attachmentUrl.startsWith('data:image') || agendaItem.attachmentUrl.startsWith('blob:')) {
+                      realAttachments = [{ src: agendaItem.attachmentUrl, label: agendaItem.attachmentName || 'Lampiran 1' }];
+                    }
+                  }
+                } else if (agendaItem?.id?.startsWith('stitch-')) {
+                   realAttachments = MOCK_AGENDA_ATTACHMENTS_5;
+                }
+                
+                return realAttachments.map((att, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setPreviewImage(att.src)}
+                    className="aspect-square bg-[#e2e3ea] hover:bg-[#d8d9e2] border border-[#c5c6d2] rounded-md flex flex-col items-center justify-center text-xs text-[#757682] hover:text-[#00113a] font-medium transition-all group shadow-2xs cursor-pointer overflow-hidden p-2"
+                  >
+                    {att.src && !att.src.includes('pdf') && !att.label.includes('pdf') ? (
+                      <img src={att.src} alt={att.label} className="w-full h-full object-cover mb-1 opacity-70 group-hover:opacity-100 transition-opacity" />
+                    ) : (
+                      <div className="flex-1 flex items-center justify-center">📄</div>
+                    )}
+                    <span className="text-[10px] font-medium text-[#757682] group-hover:text-[#1a1b20] transition-colors truncate w-full text-center">
+                      {att.label}
+                    </span>
+                  </button>
+                ));
+              })()}
 
             </div>
           </div>
@@ -234,7 +268,7 @@ export default function DetailAgendaKegiatanPage() {
             <div className="flex flex-row gap-6">
               <div className="text-xs text-[#757682] space-y-0.5 w-[220px]"><p className="font-semibold text-[#757682]">Dibuat oleh</p>
               <p className="font-semibold text-[#1a1b20]">
-                {agendaItem?.author?.name || agendaItem?.authorName || 'Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.'}
+                {agendaItem?.author?.name || agendaItem?.authorName || 'Administrator Perpustakaan Nasional'}
               </p>
               <p className="font-medium text-[#757682]">
                 {displayDate}
