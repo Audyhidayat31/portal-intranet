@@ -105,6 +105,7 @@ erDiagram
         longtext isi
         text gambar_sampul
         varchar penulis_id FK
+        varchar sumber
         varchar status
         datetime tanggal_terbit
         int jumlah_baca
@@ -348,7 +349,7 @@ erDiagram
 
 ### B. Sub Menu Kabar Kedinasan
 Seluruh tabel dinas berelasi langsung ke `pengguna` (`penulis_id`):
-- **`berita`**: Berita dan rilis pers kegiatan perpustakaan.
+- **`berita`**: Berita dan rilis pers kegiatan perpustakaan (memuat atribut `sumber` informasi rujukan berita).
 - **`pengumuman`**: Surat edaran, keputusan kedinasan, dan file lampiran.
 - **`agenda_kegiatan`**: Kalender acara dinas, rapat koordinasi, diklat, dan lokasi.
 - **`laporan_perjalanan_dinas`**: Catatan perjalanan dinas pegawai ke wilayah/daerah beserta dokumen bukti tugas.
@@ -383,7 +384,7 @@ Setiap rubrik interaksi internal pegawai memiliki tabel independen yang terhubun
 | :--- | :--- | :--- | :--- |
 | `pengguna` | `id` | `peran_id` $\rightarrow$ `peran.id` | Akun pengguna intranet |
 | `profil_pegawai` | `id` | `user_id` $\rightarrow$ `pengguna.id` | Data biografi, NIP, unit kerja, pendidikan |
-| `berita` | `id` | `penulis_id` $\rightarrow$ `pengguna.id` | Menu Kabar Kedinasan $\rightarrow$ Berita |
+| `berita` | `id` | `penulis_id` $\rightarrow$ `pengguna.id` | Menu Kabar Kedinasan $\rightarrow$ Berita (memuat atribut `sumber`) |
 | `pengumuman` | `id` | `penulis_id` $\rightarrow$ `pengguna.id` | Menu Kabar Kedinasan $\rightarrow$ Pengumuman |
 | `agenda_kegiatan` | `id` | `penulis_id` $\rightarrow$ `pengguna.id` | Menu Kabar Kedinasan $\rightarrow$ Agenda |
 | `laporan_perjalanan_dinas` | `id` | `penulis_id` $\rightarrow$ `pengguna.id` | Menu Kabar Kedinasan $\rightarrow$ Laporan Perjalanan |

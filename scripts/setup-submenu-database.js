@@ -16,6 +16,7 @@ async function main() {
       \`gambar_sampul\` text COLLATE utf8mb4_unicode_ci,
       \`penulis_id\` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
       \`nama_penulis\` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT 'Humas Perpusnas',
+      \`sumber\` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT 'www.perpusnas.go.id',
       \`status\` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'TERBIT',
       \`tanggal_terbit\` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
       \`jumlah_baca\` int NOT NULL DEFAULT '0',
@@ -308,8 +309,8 @@ async function main() {
 
   // BERITA
   await prisma.$executeRawUnsafe(`
-    INSERT INTO \`berita\` (\`id\`, \`judul\`, \`slug\`, \`ringkasan\`, \`isi\`, \`gambar_sampul\`, \`penulis_id\`, \`status\`, \`tanggal_terbit\`, \`jumlah_baca\`, \`disematkan\`, \`created_at\`, \`updated_at\`)
-    SELECT k.\`id\`, k.\`title\`, k.\`slug\`, k.\`excerpt\`, k.\`body\`, k.\`coverImage\`, k.\`authorId\`, k.\`status\`, k.\`publishedAt\`, k.\`viewCount\`, k.\`isPinned\`, k.\`createdAt\`, k.\`updatedAt\`
+    INSERT INTO \`berita\` (\`id\`, \`judul\`, \`slug\`, \`ringkasan\`, \`isi\`, \`gambar_sampul\`, \`penulis_id\`, \`nama_penulis\`, \`sumber\`, \`status\`, \`tanggal_terbit\`, \`jumlah_baca\`, \`disematkan\`, \`created_at\`, \`updated_at\`)
+    SELECT k.\`id\`, k.\`title\`, k.\`slug\`, k.\`excerpt\`, k.\`body\`, k.\`coverImage\`, k.\`authorId\`, 'Humas Perpusnas', 'www.perpusnas.go.id', k.\`status\`, k.\`publishedAt\`, k.\`viewCount\`, k.\`isPinned\`, k.\`createdAt\`, k.\`updatedAt\`
     FROM \`konten\` k
     WHERE k.\`type\` = 'NEWS'
     ON DUPLICATE KEY UPDATE 
@@ -317,6 +318,7 @@ async function main() {
       \`isi\` = VALUES(\`isi\`), 
       \`ringkasan\` = VALUES(\`ringkasan\`), 
       \`gambar_sampul\` = VALUES(\`gambar_sampul\`), 
+      \`sumber\` = COALESCE(\`berita\`.\`sumber\`, 'www.perpusnas.go.id'),
       \`status\` = VALUES(\`status\`);
   `);
   console.log('  ↳ Table berita populated.');

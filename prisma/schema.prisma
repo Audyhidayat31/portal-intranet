@@ -267,6 +267,7 @@ model Berita {
   penulisId     String   @map("penulis_id")
   penulis       User     @relation("BeritaAuthor", fields: [penulisId], references: [id], onDelete: Cascade)
   namaPenulis   String?  @default("Humas Perpusnas") @map("nama_penulis") @db.VarChar(191)
+  sumber        String?  @default("www.perpusnas.go.id") @db.VarChar(255)
   status        String   @default("TERBIT") @db.VarChar(50) // TERBIT, MENUNGGU, DRAFT, ARSIP
   tanggalTerbit DateTime @default(now()) @map("tanggal_terbit")
   jumlahBaca    Int      @default(0) @map("jumlah_baca")
