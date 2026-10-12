@@ -85,7 +85,7 @@ USE \`portal_intranet\`;
 
     // SHOW CREATE TABLE
     const createResult = await prisma.$queryRawUnsafe(`SHOW CREATE TABLE \`${tableName}\``);
-    const createTableStmt = createResult[0]['Create Table'];
+    const createTableStmt = createResult[0]['Create Table'] || createResult[0]['f1'] || Object.values(createResult[0])[1];
 
     sqlOutput += `--\n-- Table structure for table \`${tableName}\`\n--\n\n`;
     sqlOutput += `DROP TABLE IF EXISTS \`${tableName}\`;\n`;
