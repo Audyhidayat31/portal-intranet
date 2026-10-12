@@ -70,8 +70,8 @@ export default function DetailCoretanOpiniPage() {
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data) {
-          const item = data.data;
-          setOpiniItem(item);
+          const opiniItem = data.data;
+          setOpiniItem(opiniItem);
         } else {
           // Check if it matches our mock items
           const matchedMock = STITCH_MOCK_OPINI_6.find(
@@ -200,9 +200,9 @@ export default function DetailCoretanOpiniPage() {
           </div>
 
           {/* Featured Image */}
-          {(item?.coverImage || item?.coverImage) && (
+          {(opiniItem?.coverImage || opiniItem?.coverImage) && (
             <div className="mb-8 w-full aspect-[2/1] bg-slate-100 rounded-lg overflow-hidden border border-[#c5c6d2]">
-              <img src={item?.coverImage || item?.coverImage} alt={displayTitle} className="w-full h-full object-cover" />
+              <img src={opiniItem?.coverImage || opiniItem?.coverImage} alt={displayTitle} className="w-full h-full object-cover" />
             </div>
           )}
 

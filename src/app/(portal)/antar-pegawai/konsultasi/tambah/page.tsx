@@ -227,18 +227,21 @@ export default function TambahKonsultasiPage() {
       return;
     }
 
+    if (!jenisKonsultasi) {
+      alert('Jenis Konsultasi wajib dipilih');
+      return;
+    }
+
+    if (!status) {
+      alert('Status Konsultasi wajib dipilih');
+      return;
+    }
+
     setIsSubmitting(true);
 
-    const finalCategory =
-      (jenisKonsultasi as 'IT' | 'Kesehatan' | 'Pegawai') || 'Kesehatan';
-    const finalStatus = (status as 'Terbit' | 'Menunggu') || 'Terbit';
-    const finalAttachment =
-      lampiranFileName ||
-      (finalCategory === 'IT'
-        ? 'Konsultasi IT.pdf'
-        : finalCategory === 'Pegawai'
-        ? 'Konsultasi Pegawai.pdf'
-        : 'Konsultasi Kesehatan.pdf');
+    const finalCategory = jenisKonsultasi as 'IT' | 'Kesehatan' | 'Pegawai';
+    const finalStatus = status as 'Terbit' | 'Menunggu';
+    const finalAttachment = lampiranFileName || undefined;
 
     const newItem: ConsultationItem = {
       id: String(Date.now()),
@@ -624,8 +627,7 @@ export default function TambahKonsultasiPage() {
                   type="file"
                   accept=".pdf,.doc,.docx"
                   onChange={handleLampiranFileChange}
-                  className="hidden" suppressHydrationWarning
-                 suppressHydrationWarning />
+                  className="hidden" suppressHydrationWarning />
               </div>
 
               {/* Dashed preview box: File Preview */}

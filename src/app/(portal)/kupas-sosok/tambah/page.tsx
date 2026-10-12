@@ -224,7 +224,7 @@ export default function TambahKupasSosokPage() {
           unitKerja: unitKerja || 'Perpustakaan Nasional RI',
           quote: 'Mendedikasikan karya untuk kemajuan literasi bangsa.',
           fullStory: plainStory,
-          photoUrl: gambarPreview || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&auto=format&fit=crop',
+          photoUrl: gambarPreview || '',
           isSpotlight: false,
         }),
       });
@@ -563,8 +563,7 @@ export default function TambahKupasSosokPage() {
                     type="file"
                     accept="image/*"
                     onChange={handleGambarFileChange}
-                    className="hidden" suppressHydrationWarning
-                   suppressHydrationWarning />
+                    className="hidden" suppressHydrationWarning />
                 </div>
 
                 {/* Dashed preview box: Gambar Preview */}
@@ -614,8 +613,7 @@ export default function TambahKupasSosokPage() {
                     type="file"
                     accept=".pdf,.doc,.docx,.jpg,.png"
                     onChange={handleLampiranFileChange}
-                    className="hidden" suppressHydrationWarning
-                   suppressHydrationWarning />
+                    className="hidden" suppressHydrationWarning />
                 </div>
 
                 {/* Dashed preview box: File Preview */}

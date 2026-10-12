@@ -47,7 +47,10 @@ export default function DetailKalimatBijakPage() {
   }, []);
 
   useEffect(() => {
-    if (!rawId) return;
+    if (rawId) {
+      router.replace(`/antar-pegawai/kalimat-bijak?view=${rawId}`);
+      return;
+    }
 
     fetch(`/api/employee-posts/${rawId}`)
       .then((res) => res.json())
@@ -61,26 +64,20 @@ export default function DetailKalimatBijakPage() {
             excerpt: apiData.excerpt || apiData.title,
             content: apiData.body || '',
             figure: apiData.title || 'Soekarno',
-            figureDate: apiData.publishedAt ? formatDate(apiData.publishedAt) : '1-06-1940',
+            figureDate: '',
             publishedAt: apiData.publishedAt ? formatDate(apiData.publishedAt) : '20-08-2026',
             status: apiData.status === 'TERBIT' ? 'Terbit' : 'Menunggu',
+            createdAt: apiData.createdAt,
+            updatedAt: apiData.updatedAt,
           };
           setItem(formatted);
         } else {
-          const matchedMock = STITCH_MOCK_KALIMAT_BIJAK.find(
-            (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
-          );
-          if (matchedMock) {
-            setItem(matchedMock);
-          }
+          setItem(null);
         }
         setIsLoading(false);
       })
       .catch(() => {
-        const matchedMock = STITCH_MOCK_KALIMAT_BIJAK.find((m) => m.id === rawId);
-        if (matchedMock) {
-          setItem(matchedMock);
-        }
+        setItem(null);
         setIsLoading(false);
       });
   }, [rawId]);
@@ -125,9 +122,7 @@ export default function DetailKalimatBijakPage() {
   const displayAuthor = item.authorName || 'Ahmad Fauzi';
   const displayDate = item.publishedAt || '20 Agustus 2026';
 
-  const figureSource = item.figure
-    ? `${item.figure}${item.figureDate ? `, ${item.figureDate}` : ''}`
-    : (item.title ? `${item.title}, 1-06-1940` : 'Soekarno, 1-06-1940');
+  const figureSource = item.figure || item.title || '';
 
   return (
     <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 bg-white min-h-[calc(100vh-80px)] flex flex-col justify-between">
@@ -193,7 +188,7 @@ export default function DetailKalimatBijakPage() {
               </p>
             </div>
               {/* Diperbarui Oleh */}
-              {true && (
+              {Boolean((item as any)?.updatedAt && (item as any)?.createdAt && Math.abs(new Date((item as any).updatedAt).getTime() - new Date((item as any).createdAt).getTime()) > 5000) && (
                 <>
                   <div className="border-l border-[#c5c6d2]" />
                   <div className="text-xs text-[#757682] space-y-0.5 w-[220px]">
@@ -202,7 +197,7 @@ export default function DetailKalimatBijakPage() {
                       {(item as any)?.editor?.name || (item as any)?.author?.name || (item as any)?.authorName || 'Administrator Perpusnas'}
                     </p>
                     <p className="font-medium text-[#757682]">
-                      {(item as any)?.updatedAt ? formatDate((item as any).updatedAt) : '24 Agustus 2026'}
+                      {(item as any)?.updatedAt ? formatDate((item as any).updatedAt) : ''}
                     </p>
                     <p className="font-medium text-[#757682]">
                       Status: {(item as any)?.status === 'MENUNGGU' || (item as any)?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}

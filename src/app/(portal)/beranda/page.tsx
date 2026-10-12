@@ -19,15 +19,20 @@ export default function BerandaPage() {
   const [userSession, setUserSession] = useState<any>(null);
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [currentPostPage, setCurrentPostPage] = useState(0);
+  const [latestKalimatBijak, setLatestKalimatBijak] = useState<any>(null);
 
   useEffect(() => {
     Promise.all([
       fetch('/api/homepage/summary').then((res) => res.json()),
       fetch('/api/auth/me').then((res) => res.json()),
+      fetch('/api/employee-posts?category=kalimat-bijak').then((res) => res.json()).catch(() => null),
     ])
-      .then(([homeRes, authRes]) => {
+      .then(([homeRes, authRes, bijakRes]) => {
         if (homeRes.success) setData(homeRes.data);
         if (authRes.success) setUserSession(authRes.data);
+        if (bijakRes?.success && Array.isArray(bijakRes.data) && bijakRes.data.length > 0) {
+          setLatestKalimatBijak(bijakRes.data[0]);
+        }
         setIsLoading(false);
       })
       .catch((err) => {
@@ -36,7 +41,13 @@ export default function BerandaPage() {
       });
   }, []);
 
-  const { setting, latestNews, latestPosts, spotlightFigure, birthdaysThisMonth } = data || {};
+  const { setting, latestNews, latestPosts, spotlightFigure, birthdaysThisMonth, kalimatBijak } = data || {};
+
+  const activeBijak = latestKalimatBijak || kalimatBijak;
+  const rawBijakQuote = activeBijak?.body || activeBijak?.quote || setting?.quoteText || 'Membaca dan melestarikan khazanah literasi adalah ikhtiar luhur merajut martabat dan masa depan bangsa.';
+  const cleanBijakQuote = rawBijakQuote.replace(/<[^>]+>/g, '').replace(/^"|"$/g, '').trim();
+  const bijakFigureOrAuthor = activeBijak?.title || activeBijak?.figure || activeBijak?.author?.name || setting?.quoteAuthor || 'Pimpinan Perpustakaan Nasional RI';
+  const bijakTargetId = activeBijak?.id || '';
 
   // Default banners matching the admin page
   const DEFAULT_BANNERS = [
@@ -142,7 +153,7 @@ export default function BerandaPage() {
   ];
 
   const categories = ['HUMOR', 'KONSULTASI', 'OPINI', 'OLAHRAGA', 'TAHUKAH ANDA', 'TIPS GAYA HIDUP', 'KARYA AKADEMIK'];
-  const generatedPosts = Array.from({ length: 15 }).map((_, idx) => ({
+  const generatedPosts = Array.from({ length: 9 }).map((_, idx) => ({
     id: `p${idx + 1}`,
     title: `Minat membaca Warga Indonesia semakin membaik - Bagian ${idx + 1}`,
     content: 'Menurut penelitian pada tanggal 19 Agustus 2026 terlihat bahwa jumlah peminat buku...',
@@ -156,7 +167,16 @@ export default function BerandaPage() {
     status: 'Terbit'
   }));
 
-  const postsList = latestPosts && latestPosts.length > 0 ? latestPosts : generatedPosts;
+  const combinedPosts = [...(latestPosts || [])];
+  if (combinedPosts.length < 9) {
+    for (const gen of generatedPosts) {
+      if (combinedPosts.length >= 9) break;
+      if (!combinedPosts.some((p: any) => p.id === gen.id || p.title === gen.title)) {
+        combinedPosts.push(gen);
+      }
+    }
+  }
+  const postsList = combinedPosts.slice(0, 9);
   const currentPosts = postsList.slice(currentPostPage * 3, currentPostPage * 3 + 3);
 
   const birthdays = birthdaysThisMonth && birthdaysThisMonth.length > 0 ? birthdaysThisMonth.slice(0, 4) : [
@@ -447,7 +467,7 @@ export default function BerandaPage() {
           {/* Right Arrow */}
           <button 
             onClick={() => setCurrentPostPage(prev => Math.min(Math.max(0, Math.ceil((postsList?.length || 1) / 3) - 1), prev + 1))}
-            disabled={currentPostPage >= Math.min(5, Math.ceil((postsList?.length || 0) / 3) || 1) - 1}
+            disabled={currentPostPage >= Math.max(0, Math.ceil((postsList?.length || 0) / 3) - 1)}
             className="absolute -right-4 sm:-right-8 md:-right-12 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border border-[#c5c6d2] shadow-md flex items-center justify-center text-[#00113a] disabled:opacity-0 transition-all opacity-0 group-hover/section:opacity-100 hover:bg-slate-50 z-10"
             aria-label="Next page"
           >
@@ -457,7 +477,7 @@ export default function BerandaPage() {
         
         {/* Pagination Controls */}
         <div className="flex justify-center items-center gap-2 pt-4">
-          {Array.from({ length: Math.min(5, Math.ceil((postsList?.length || 0) / 3) || 1) }).map((_, idx) => (
+          {Array.from({ length: Math.ceil((postsList?.length || 0) / 3) || 1 }).map((_, idx) => (
             <button
               key={idx}
               onClick={() => setCurrentPostPage(idx)}
@@ -473,14 +493,17 @@ export default function BerandaPage() {
       {/* Kalimat Bijak Section */}
       <section className="space-y-4">
         <h2 className="text-2xl sm:text-3xl font-bold text-[#00113a]">Kalimat Bijak</h2>
-        <div className="border border-[#c5c6d2] rounded-xl p-8 md:p-12 bg-white text-center shadow-sm">
+        <Link
+          href={bijakTargetId ? `/antar-pegawai/kalimat-bijak?view=${bijakTargetId}` : '/antar-pegawai/kalimat-bijak'}
+          className="block border border-[#c5c6d2] rounded-xl p-8 md:p-12 bg-white text-center shadow-sm hover:shadow-md hover:border-[#00113a] transition-all cursor-pointer group"
+        >
           <p className="text-base sm:text-lg text-[#1a1b20] italic mb-4 max-w-3xl mx-auto leading-relaxed">
-            "{setting?.quoteText || 'Esensi Menjadi manusia adalah ketika seseorang tidak hanya mencari kesempurnaan'}"
+            "{cleanBijakQuote}"
           </p>
           <p className="font-bold text-xs sm:text-sm text-[#444650]">
-            {setting?.quoteAuthor || 'George Orwell (1903-1950) novelis asal Inggris'}
+            {bijakFigureOrAuthor}
           </p>
-        </div>
+        </Link>
       </section>
 
       {/* Selamat Ulang Tahun Section */}

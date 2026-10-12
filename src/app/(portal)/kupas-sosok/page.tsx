@@ -8,6 +8,7 @@ import {
   ChevronRight,
   ChevronDown,
   CheckCircle,
+  User,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { STITCH_MOCK_FIGURES_6, FigureItem } from '@/lib/mock-kupas-sosok';
@@ -52,7 +53,7 @@ export default function KupasSosokPage() {
           unitKerja: item.unitKerja || '',
           quote: item.quote || '',
           fullStory: item.fullStory || '',
-          photoUrl: item.photoUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&auto=format&fit=crop',
+          photoUrl: item.photoUrl || '',
           publishedAt: item.createdAt || new Date().toISOString(),
           status: item.status || 'Terbit',
           authorName: item.authorName || item.author?.name,
@@ -245,13 +246,19 @@ export default function KupasSosokPage() {
                   key={item.id || item.slug}
                   className="bg-white border border-[#c5c6d2] rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-300 group"
                 >
-                  {/* Card Cover Image */}
-                  <div className="w-full h-48 border-b border-[#c5c6d2] overflow-hidden relative shrink-0 bg-slate-100">
-                    <img
-                      src={item.photoUrl}
-                      alt={item.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
+                  {/* Card Cover Image / Profile Icon */}
+                  <div className="w-full h-48 border-b border-[#c5c6d2] overflow-hidden relative shrink-0 bg-gradient-to-b from-[#f8f9fa] to-[#eaedf3] flex items-center justify-center">
+                    {item.photoUrl && !item.photoUrl.includes('unsplash.com') ? (
+                      <img
+                        src={item.photoUrl}
+                        alt={item.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-24 h-24 rounded-full bg-white border-2 border-[#d5d7e2] shadow-xs flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                        <User className="w-12 h-12 text-[#00113a]/50 stroke-[1.5]" />
+                      </div>
+                    )}
                   </div>
 
                   {/* Card Content Body */}

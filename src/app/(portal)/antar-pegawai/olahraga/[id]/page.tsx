@@ -77,8 +77,8 @@ export default function DetailOlahragaPage() {
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data) {
-          const item = data.data;
-          setOlahragaItem(item);
+          const olahragaItem = data.data;
+          setOlahragaItem(olahragaItem);
         } else {
           const matchedMock = STITCH_MOCK_OLAHRAGA_9.find(
             (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
@@ -203,9 +203,9 @@ export default function DetailOlahragaPage() {
           </div>
 
           {/* Featured Image */}
-          {(item?.coverImage || item?.coverImage) && (
+          {(olahragaItem?.coverImage || olahragaItem?.coverImage) && (
             <div className="mb-8 w-full aspect-[2/1] bg-slate-100 rounded-lg overflow-hidden border border-[#c5c6d2]">
-              <img src={item?.coverImage || item?.coverImage} alt={displayTitle} className="w-full h-full object-cover" />
+              <img src={olahragaItem?.coverImage || olahragaItem?.coverImage} alt={displayTitle} className="w-full h-full object-cover" />
             </div>
           )}
 

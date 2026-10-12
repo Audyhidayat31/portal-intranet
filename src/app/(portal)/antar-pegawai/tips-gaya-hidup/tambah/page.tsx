@@ -574,8 +574,7 @@ export default function TambahTipsGayaHidupPage() {
                   type="file"
                   accept="image/*"
                   onChange={handleGambarFileChange}
-                  className="hidden" suppressHydrationWarning
-                 suppressHydrationWarning />
+                  className="hidden" suppressHydrationWarning />
               </div>
 
               {/* Dashed preview box: Gambar Preview */}
@@ -625,8 +624,7 @@ export default function TambahTipsGayaHidupPage() {
                   type="file"
                   accept=".pdf,.doc,.docx,.jpg,.png"
                   onChange={handleLampiranFileChange}
-                  className="hidden" suppressHydrationWarning
-                 suppressHydrationWarning />
+                  className="hidden" suppressHydrationWarning />
               </div>
 
               {/* Dashed preview box: File Preview */}

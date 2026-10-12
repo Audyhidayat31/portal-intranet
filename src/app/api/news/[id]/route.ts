@@ -4,38 +4,15 @@ import { getCurrentUser } from '@/lib/auth';
 import { MOCK_BERITA_6 } from '@/lib/mock-news';
 
 function findMockNews(id: string) {
-  const cleanId = id.toLowerCase();
-  return MOCK_BERITA_6.find(
-    (m) =>
-      m.id?.toLowerCase() === cleanId ||
-      m.title.toLowerCase().includes(cleanId)
-  );
+  return MOCK_BERITA_6.find((item) => item.id === id);
 }
 
-function formatMockNews(mock: any) {
+function formatMockNews(item: any) {
   return {
-    id: mock.id,
-    title: mock.title,
-    slug: mock.id,
-    excerpt: mock.excerpt,
-    body: mock.content,
-    coverImage: mock.coverImage,
-    type: 'NEWS',
-    status: mock.status === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
-    publishedAt: mock.publishedAt ? new Date(mock.publishedAt).toISOString() : new Date().toISOString(),
-    author: {
-      name: mock.authorName || 'Humas Perpusnas',
-      nip: '198501152010011001',
-      profile: {
-        avatarUrl: mock.coverImage,
-        position: 'Pranata Humas Ahli Muda',
-        unitKerja: 'Biro Hukum dan Hubungan Masyarakat',
-      },
-    },
-    category: {
-      name: 'Berita',
-      slug: 'berita',
-    },
+    ...item,
+    coverImage: item.coverImage || 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80',
+    content: item.body || item.content || item.excerpt,
+    body: item.body || item.content || item.excerpt,
   };
 }
 
@@ -49,11 +26,11 @@ export async function GET(
     try {
       const item = await prisma.content.findFirst({
         where: {
+          type: 'NEWS',
           OR: [
             { id },
             { slug: id },
           ],
-          type: 'NEWS',
         },
         include: {
           author: {
@@ -69,12 +46,33 @@ export async function GET(
               },
             },
           },
-          category: true,
         },
       });
 
       if (item) {
-        return NextResponse.json({ success: true, data: item });
+        const mappedItem = {
+          id: item.id,
+          title: item.title,
+          slug: item.slug,
+          excerpt: item.excerpt,
+          body: item.body,
+          content: item.body,
+          coverImage: item.coverImage,
+          publishedAt: item.publishedAt,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
+          status: item.status,
+          source: item.source,
+          attachmentUrl: item.attachmentUrl,
+          attachmentName: item.attachmentName,
+          isPinned: item.isPinned,
+          viewCount: item.viewCount,
+          author: item.author ? {
+            name: item.author.name,
+            profile: item.author.profile
+          } : { name: 'Humas Perpusnas' }
+        };
+        return NextResponse.json({ success: true, data: mappedItem });
       }
     } catch (dbErr) {
       console.warn('Prisma findFirst error in news GET:', dbErr);
@@ -105,13 +103,13 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { title, excerpt, content, coverImage, publishedAt, status, attachmentName, attachmentUrl } = body;
+    const { title, excerpt, content, coverImage, publishedAt, status, attachmentName, attachmentUrl, source } = body;
 
     try {
       const existing = await prisma.content.findFirst({
         where: {
-          OR: [{ id }, { slug: id }],
           type: 'NEWS',
+          OR: [{ id }, { slug: id }],
         },
       });
 
@@ -119,14 +117,15 @@ export async function PUT(
         const updated = await prisma.content.update({
           where: { id: existing.id },
           data: {
-            ...(title && { title }),
-            ...(excerpt && { excerpt }),
+            ...(title && { title: title }),
+            ...(excerpt !== undefined && { excerpt: excerpt }),
             ...(content && { body: content }),
-            ...(coverImage && { coverImage }),
+            ...(coverImage !== undefined && { coverImage: coverImage }),
             ...(publishedAt && { publishedAt: new Date(publishedAt) }),
             ...(status && { status: status === 'Menunggu' || status === 'MENUNGGU' ? 'MENUNGGU' : 'TERBIT' }),
-            ...(attachmentName !== undefined && { attachmentName }),
-            ...(attachmentUrl !== undefined && { attachmentUrl }),
+            ...(attachmentName !== undefined && { attachmentName: attachmentName }),
+            ...(attachmentUrl !== undefined && { attachmentUrl: attachmentUrl }),
+            ...(source !== undefined && { source: source }),
           },
         });
 
@@ -139,7 +138,6 @@ export async function PUT(
 
       // If not existing, try creating it in DB
       const currentUser = await getCurrentUser();
-      const newsCat = await prisma.category.findUnique({ where: { slug: 'berita' } });
       let authorId;
       if (currentUser) {
         authorId = currentUser.userId;
@@ -147,6 +145,7 @@ export async function PUT(
         const defaultUser = await prisma.user.findFirst();
         if (defaultUser) authorId = defaultUser.id;
       }
+      
       if (authorId) {
         const created = await prisma.content.create({
           data: {
@@ -159,10 +158,10 @@ export async function PUT(
             type: 'NEWS',
             status: status === 'Menunggu' || status === 'MENUNGGU' ? 'MENUNGGU' : 'TERBIT',
             authorId: authorId,
-            categoryId: newsCat?.id || null,
             publishedAt: publishedAt ? new Date(publishedAt) : new Date(),
             attachmentName: attachmentName || null,
             attachmentUrl: attachmentUrl || null,
+            source: source || null,
           },
         });
 
@@ -176,13 +175,9 @@ export async function PUT(
       console.warn('Prisma update/create failed in news PUT:', dbErr);
     }
 
-    return NextResponse.json({
-      success: true,
-      message: 'Berita berhasil diperbarui',
-      data: { id, title, excerpt, content, coverImage, publishedAt, status },
-    });
+    return NextResponse.json({ success: true, message: 'Berita berhasil diperbarui (Mock)' });
   } catch (error) {
-    console.error('Error updating news:', error);
+    console.error('Error updating news item:', error);
     return NextResponse.json(
       { success: false, message: 'Gagal memperbarui berita' },
       { status: 500 }
@@ -200,8 +195,8 @@ export async function DELETE(
     try {
       const existing = await prisma.content.findFirst({
         where: {
-          OR: [{ id }, { slug: id }],
           type: 'NEWS',
+          OR: [{ id }, { slug: id }],
         },
       });
 
@@ -211,7 +206,7 @@ export async function DELETE(
         });
       }
     } catch (dbErr) {
-      console.warn('Prisma delete failed in news DELETE:', dbErr);
+      console.warn('Prisma delete error in news DELETE:', dbErr);
     }
 
     return NextResponse.json({
@@ -219,7 +214,7 @@ export async function DELETE(
       message: 'Berita berhasil dihapus',
     });
   } catch (error) {
-    console.error('Error deleting news:', error);
+    console.error('Error deleting news item:', error);
     return NextResponse.json(
       { success: false, message: 'Gagal menghapus berita' },
       { status: 500 }

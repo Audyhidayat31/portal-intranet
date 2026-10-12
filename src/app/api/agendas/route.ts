@@ -59,6 +59,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    let authorId = defaultUser?.id;
     const slug = `${title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')

@@ -59,16 +59,6 @@ export default function DetailKonsultasiPage() {
   useEffect(() => {
     if (!id) return;
     setIsLoading(true);
-
-    const allStored = getStoredConsultations();
-    const found = allStored.find((c) => c.id === id || String(c.id) === String(id));
-
-    if (found) {
-      setItem(found);
-      setIsLoading(false);
-    }
-
-    // Also attempt fetching from API
     fetch(`/api/consultations/${id}`)
       .then((res) => res.json())
       .then((data) => {
@@ -90,12 +80,7 @@ export default function DetailKonsultasiPage() {
             }),
             status: apiData.status === 'OPEN' ? 'Menunggu' : 'Terbit',
             description: apiData.question || '',
-            attachmentName:
-              apiData.category === 'IT'
-                ? 'Konsultasi IT.pdf'
-                : apiData.category === 'KEPEGAWAIAN'
-                ? 'Konsultasi Pegawai.pdf'
-                : 'Konsultasi Kesehatan.pdf',
+            attachmentName: apiData.attachmentName || null,
             attachmentUrl: '#',
             authorName: apiData.author?.name || 'Ahmad Fauzi',
             replies: (apiData.replies || []).map((r: any) => ({
@@ -361,7 +346,7 @@ export default function DetailKonsultasiPage() {
                 </p>
               </div>
               
-              {true && (
+              {Boolean((currentItem as any).updatedAt && (currentItem as any).createdAt && Math.abs(new Date((currentItem as any).updatedAt).getTime() - new Date((currentItem as any).createdAt).getTime()) > 5000) && (
                 <>
                   <div className="border-l border-[#c5c6d2]" />
                   <div className="w-[220px]">
@@ -370,7 +355,7 @@ export default function DetailKonsultasiPage() {
                       {(currentItem as any).editor?.name || currentItem.authorName || 'Administrator Perpusnas'}
                     </p>
                     <p className="text-xs sm:text-sm text-[#757682]">
-                      {(currentItem as any).updatedAt ? formatDate((currentItem as any).updatedAt) : '24 September 2026'}
+                      {(currentItem as any).updatedAt ? formatDate((currentItem as any).updatedAt) : ""}
                     </p>
                     <p className="text-xs sm:text-sm text-[#757682]">
                       Status: {(currentItem as any).status === 'MENUNGGU' || (currentItem as any).status === 'Menunggu' ? 'Menunggu' : 'Terbit'}

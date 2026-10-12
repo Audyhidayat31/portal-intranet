@@ -74,11 +74,11 @@ export default function AgendaKegiatanPage() {
           authorName: item.author?.name || 'Biro Umum Perpusnas',
         }));
 
-        setAgendas(formattedApiItems.length > 0 ? formattedApiItems : STITCH_MOCK_AGENDAS_6);
+        setAgendas(formattedApiItems);
       })
       .catch((e) => {
         console.error(e);
-        setAgendas(STITCH_MOCK_AGENDAS_6);
+        setAgendas([]);
       })
       .finally(() => {
         setIsLoading(false);

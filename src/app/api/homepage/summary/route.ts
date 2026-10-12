@@ -16,34 +16,35 @@ export async function GET() {
       totalNews,
       totalOpini,
       totalTips,
+      latestKalimatBijak,
     ] = await Promise.all([
       prisma.homepageSetting.findFirst(),
-      prisma.content.findMany({
-        where: { type: 'NEWS', status: 'TERBIT' },
-        orderBy: [{ isPinned: 'desc' }, { publishedAt: 'desc' }],
+      prisma.berita.findMany({
+        where: { status: { in: ['TERBIT', 'PUBLISHED'] } },
+        orderBy: [{ disematkan: 'desc' }, { tanggalTerbit: 'desc' }],
         take: 4,
-        include: { author: { select: { name: true } }, category: true },
+        include: { penulis: { select: { name: true } } },
       }),
-      prisma.content.findMany({
-        where: { type: 'ANNOUNCEMENT', status: 'TERBIT' },
-        orderBy: [{ isPinned: 'desc' }, { publishedAt: 'desc' }],
-        take: 4,
-        include: { category: true },
-      }),
-      prisma.content.findMany({
-        where: { type: 'AGENDA', status: 'TERBIT' },
-        orderBy: { eventStartDate: 'asc' },
+      prisma.pengumuman.findMany({
+        where: { status: { in: ['TERBIT', 'PUBLISHED'] } },
+        orderBy: [{ disematkan: 'desc' }, { tanggalTerbit: 'desc' }],
         take: 4,
       }),
+      prisma.agendaKegiatan.findMany({
+        where: { status: { in: ['TERBIT', 'PUBLISHED'] } },
+        orderBy: { tanggalMulai: 'asc' },
+        take: 4,
+      }),
+      // For "latest posts" on homepage, we can query from a generic table or just mix and match
       prisma.employeePost.findMany({
-        where: { status: 'TERBIT' },
+        where: { status: { in: ['TERBIT', 'PUBLISHED'] } },
         orderBy: { createdAt: 'desc' },
-        take: 15,
+        take: 9,
         include: { author: { select: { name: true, profile: { select: { avatarUrl: true, unitKerja: true } } } } },
       }),
       prisma.figureProfile.findFirst({
-        where: { isSpotlight: true },
-      }) || prisma.figureProfile.findFirst({ orderBy: { createdAt: 'desc' } }),
+        orderBy: [{ isSpotlight: 'desc' }, { createdAt: 'desc' }],
+      }),
       prisma.employeeProfile.findMany({
         select: {
           id: true,
@@ -54,11 +55,28 @@ export async function GET() {
           avatarUrl: true,
         },
       }),
-      prisma.user.count({ where: { role: { name: 'PEGAWAI' }, status: 'ACTIVE' } }),
-      prisma.employeePost.count({ where: { status: 'TERBIT' } }),
-      prisma.content.count({ where: { type: 'NEWS', status: 'TERBIT' } }).catch(() => 0),
-      prisma.employeePost.count({ where: { categorySlug: 'opini', status: 'TERBIT' } }).catch(() => 0),
-      prisma.employeePost.count({ where: { categorySlug: 'tips-gaya-hidup', status: 'TERBIT' } }).catch(() => 0),
+      prisma.user.count({ 
+        where: { 
+          status: 'ACTIVE',
+          role: {
+            name: {
+              not: 'ADMINISTRATOR'
+            }
+          }
+        } 
+      }),
+      prisma.employeePost.count({ where: { status: { in: ['TERBIT', 'PUBLISHED'] } } }),
+      prisma.content.count({ where: { type: 'NEWS', status: { in: ['TERBIT', 'PUBLISHED', 'MENUNGGU'] } } }).catch(() => 0),
+      prisma.employeePost.count({ where: { categorySlug: 'opini', status: { in: ['TERBIT', 'PUBLISHED'] } } }).catch(() => 0),
+      prisma.employeePost.count({ where: { categorySlug: 'tips-gaya-hidup', status: { in: ['TERBIT', 'PUBLISHED'] } } }).catch(() => 0),
+      prisma.employeePost.findFirst({
+        where: {
+          categorySlug: 'kalimat-bijak',
+          status: { in: ['TERBIT', 'PUBLISHED'] },
+        },
+        orderBy: { createdAt: 'desc' },
+        include: { author: { select: { name: true } } },
+      }).catch(() => null),
     ]);
 
     // Calculate birthdays this month
@@ -68,6 +86,36 @@ export async function GET() {
       const bDate = new Date(p.birthDate);
       return bDate.getMonth() === currentMonth;
     }).slice(0, 5);
+
+    // Map Berita to News format
+    const mappedNews = latestNews.map(item => ({
+      id: item.id,
+      slug: item.slug,
+      title: item.judul,
+      excerpt: item.ringkasan,
+      coverImage: item.gambarSampul,
+      publishedAt: item.tanggalTerbit,
+      author: item.penulis ? { name: item.penulis.name } : { name: item.namaPenulis },
+    }));
+
+    // Map Pengumuman to Announcement format
+    const mappedAnnouncements = announcements.map(item => ({
+      id: item.id,
+      slug: item.slug,
+      title: item.judul,
+      excerpt: item.ringkasan,
+      publishedAt: item.tanggalTerbit,
+    }));
+
+    // Map AgendaKegiatan to Agenda format
+    const mappedAgendas = upcomingAgendas.map(item => ({
+      id: item.id,
+      slug: item.slug,
+      title: item.namaKegiatan,
+      eventStartDate: item.tanggalMulai,
+      eventEndDate: item.tanggalSelesai,
+      location: item.lokasi,
+    }));
 
     return NextResponse.json({
       success: true,
@@ -81,11 +129,32 @@ export async function GET() {
           quoteAuthorRole: 'Perpustakaan Nasional Republik Indonesia',
           announcementTicker: 'Pemberitahuan: Seluruh pegawai dihimbau melengkapi data profil kepegawaian terkini sebelum akhir bulan.',
         },
-        latestNews,
-        announcements,
-        upcomingAgendas,
+        latestNews: mappedNews,
+        announcements: mappedAnnouncements,
+        upcomingAgendas: mappedAgendas,
         latestPosts,
-        spotlightFigure,
+        kalimatBijak: latestKalimatBijak
+          ? {
+              id: latestKalimatBijak.id,
+              title: latestKalimatBijak.title,
+              quote: latestKalimatBijak.body || latestKalimatBijak.title,
+              figure: latestKalimatBijak.title || 'Tokoh Bangsa',
+              author: latestKalimatBijak.author?.name || 'Ahmad Fauzi, S.Kom.',
+            }
+          : null,
+        spotlightFigure: spotlightFigure
+          ? {
+              ...spotlightFigure,
+              title: spotlightFigure.position
+                ? `${spotlightFigure.name.toUpperCase()} : ${spotlightFigure.position.toUpperCase()}`
+                : spotlightFigure.name.toUpperCase(),
+              bio:
+                spotlightFigure.fullStory ||
+                spotlightFigure.quote ||
+                '',
+              avatarUrl: spotlightFigure.photoUrl || null,
+            }
+          : null,
         birthdaysThisMonth,
         stats: {
           totalEmployees: totalEmployees ?? 0,
@@ -101,7 +170,7 @@ export async function GET() {
   } catch (error) {
     console.error('Error fetching homepage summary:', error);
     return NextResponse.json(
-      { success: false, message: 'Gagal memuat data ringkasan beranda' },
+      { success: false, message: 'Gagal memuat ringkasan beranda' },
       { status: 500 }
     );
   }

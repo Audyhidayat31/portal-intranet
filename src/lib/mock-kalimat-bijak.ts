@@ -16,9 +16,13 @@ export interface KalimatBijakItem {
   figureDate: string;
   publishedAt: string;
   status: 'Terbit' | 'Menunggu';
+  createdAt?: string;
+  updatedAt?: string;
   coverImage?: string;
   authorName?: string;
   authorPosition?: string;
+  editorName?: string;
+  editor?: { name: string };
   attachments?: KalimatBijakAttachment[];
 }
 

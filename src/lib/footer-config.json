@@ -113,7 +113,9 @@
     "telepon": "085717147303",
     "email": "persuratan@perpusnas.go.id",
     "alamat1": "Jl. Salemba Raya No. 28A, Jakarta 10430",
-    "alamat2": "Jl. Medan Merdeka Selatan No. 11, Jakarta 10110"
+    "tautanAlamat1": "https://maps.app.goo.gl/oxvaGWqMEcuip3QEA",
+    "alamat2": "Jl. Medan Merdeka Selatan No. 11, Jakarta 10110",
+    "tautanAlamat2": "https://maps.app.goo.gl/dYu7zE4hWiyKmwNK8"
   },
   "copyright": "Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia."
 }

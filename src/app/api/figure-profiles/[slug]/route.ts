@@ -22,11 +22,22 @@ export async function GET(
     const { slug } = await params;
 
     try {
-      const figure = await prisma.figureProfile.findFirst({
+      let figure = await prisma.figureProfile.findFirst({
         where: {
           OR: [{ slug }, { id: slug }],
         },
       });
+
+      if (!figure) {
+        const normalized = slug.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+        const allFigures = await prisma.figureProfile.findMany();
+        figure =
+          allFigures.find((f) => {
+            const fSlugNorm = f.slug.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+            const fNameNorm = f.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+            return fSlugNorm === normalized || fNameNorm.includes(normalized) || normalized.includes(fSlugNorm);
+          }) || null;
+      }
 
       if (figure) {
         return NextResponse.json({ success: true, data: figure });

@@ -20,11 +20,13 @@ export default function LoginPage() {
     headline: string;
     subheadline: string;
     status: string;
+    imageUrl?: string;
   }>({
     headline: 'Pemberitahuan',
     subheadline:
       'Diberitahukan kepada seluruh pegawai bahwa sistem portal intranet akan menjalani sinkronisasi berkala pada hari Jumat pukul 17.00 WIB. Pastikan pekerjaan Anda telah tersimpan.',
     status: 'AKTIF',
+    imageUrl: '/images/logo-perpusnas.png',
   });
 
   useEffect(() => {
@@ -98,7 +100,7 @@ export default function LoginPage() {
       {/* Main Content Area */}
       <main className="flex-1 flex items-center justify-center px-6 sm:px-10 md:px-14 lg:px-20 py-8 sm:py-12 md:py-16">
         <div className="w-full max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14 lg:gap-20 items-center">
-          
+
           {/* Left Column: Form Section */}
           <div className="flex flex-col justify-center max-w-[440px] w-full mx-auto md:mx-0">
             {/* Logo Brand */}
@@ -272,11 +274,13 @@ export default function LoginPage() {
           {/* Right Column: Centered Star & Pemberitahuan (as per Wireframe) */}
           <div className="flex flex-col items-center justify-center text-center px-4 max-w-[420px] mx-auto w-full">
             {/* Big Perpusnas Star Logo */}
-            <img
-              src="/images/logo-perpusnas.png"
-              alt="Logo Perpustakaan Nasional RI"
-              className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 mb-5 object-contain"
-            />
+            {infoPenting.imageUrl ? (
+              <img
+                src={infoPenting.imageUrl}
+                alt="Logo Perpustakaan Nasional RI"
+                className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 mb-5 object-contain"
+              />
+            ) : null}
 
             {/* Pemberitahuan Title */}
             <h2 className="text-xl sm:text-2xl font-bold text-[#00113a] mb-3">

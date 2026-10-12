@@ -227,7 +227,7 @@ model HomepageSetting {
   heroTitle          String   @default("Selamat Datang di Portal Intranet Perpusnas RI")
   heroSubtitle       String   @default("Pusat Informasi Internal, Kolaborasi, dan Layanan Terintegrasi Pegawai Perpustakaan Nasional Republik Indonesia") @db.VarChar(1000)
   heroBadge          String   @default("Kiprah Literasi Bangsa")
-  heroBannerUrl      String?  @db.Text
+  heroBannerUrl      String?  @db.LongText
   quoteText          String   @default("Membaca adalah jembatan emas menuju peradaban bangsa yang unggul dan berkarakter.") @db.VarChar(1000)
   quoteAuthor        String   @default("Prof. Dr. Ir. Muhammad Syarif Bando, M.M.")
   quoteAuthorRole    String   @default("Kepala Perpustakaan Nasional RI (Periode 2016-2023)")
@@ -264,6 +264,8 @@ model Berita {
   ringkasan     String?  @db.Text
   isi           String   @db.LongText
   gambarSampul  String?  @map("gambar_sampul") @db.Text
+  fileLampiran  String?  @map("file_lampiran") @db.Text
+  namaLampiran  String?  @map("nama_lampiran") @db.VarChar(255)
   penulisId     String   @map("penulis_id")
   penulis       User     @relation("BeritaAuthor", fields: [penulisId], references: [id], onDelete: Cascade)
   namaPenulis   String?  @default("Humas Perpusnas") @map("nama_penulis") @db.VarChar(191)

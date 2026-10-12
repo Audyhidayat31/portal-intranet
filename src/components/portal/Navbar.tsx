@@ -49,7 +49,7 @@ export function PortalNavbar() {
           setCurrentUser(data.data);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const handleLogout = async () => {

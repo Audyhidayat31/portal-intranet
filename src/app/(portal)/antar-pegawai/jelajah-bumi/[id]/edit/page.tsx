@@ -671,8 +671,7 @@ export default function EditJelajahBumiPage() {
                   type="file"
                   accept="image/*"
                   onChange={handleGambarFileChange}
-                  className="hidden" suppressHydrationWarning
-                 suppressHydrationWarning />
+                  className="hidden" suppressHydrationWarning />
               </div>
 
               {/* Dashed preview box */}
@@ -722,8 +721,7 @@ export default function EditJelajahBumiPage() {
                   type="file"
                   accept=".pdf,.doc,.docx,.jpg,.png"
                   onChange={handleLampiranFileChange}
-                  className="hidden" suppressHydrationWarning
-                 suppressHydrationWarning />
+                  className="hidden" suppressHydrationWarning />
               </div>
 
               {/* Dashed preview box */}

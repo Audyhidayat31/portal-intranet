@@ -21,14 +21,8 @@ export default function DetailAgendaKegiatanPage() {
   const router = useRouter();
   const rawId = (params?.id as string) || '';
 
-  const matchedInitial = STITCH_MOCK_AGENDAS_6.find(
-    (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
-  );
-
-  const [agendaItem, setAgendaItem] = useState<any>(
-    matchedInitial ? { ...matchedInitial, body: matchedInitial.content } : null
-  );
-  const [isLoading, setIsLoading] = useState(!matchedInitial);
+  const [agendaItem, setAgendaItem] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Lightbox preview for attachments
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -54,9 +48,7 @@ export default function DetailAgendaKegiatanPage() {
   useEffect(() => {
     if (!rawId) return;
 
-    if (!matchedInitial) {
-      setIsLoading(true);
-    }
+    setIsLoading(true);
     fetch(`/api/agendas/${rawId}`, { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
@@ -64,35 +56,12 @@ export default function DetailAgendaKegiatanPage() {
           const item = data.data;
           setAgendaItem(item);
         } else {
-          const matchedMock = STITCH_MOCK_AGENDAS_6.find(
-            (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
-          );
-
-          if (matchedMock) {
-            const fullItem = {
-              ...matchedMock,
-              body: matchedMock.content,
-            };
-            setAgendaItem(fullItem);
-          } else {
-            const fallback = {
-              id: rawId,
-              title: 'Agenda Kegiatan',
-              publishedAt: new Date().toISOString(),
-              eventLocation: '-',
-              body: 'Agenda kegiatan tidak ditemukan atau gagal dimuat.',
-              author: { name: 'Administrator' }
-            };
-            setAgendaItem(fallback);
-          }
+          setAgendaItem(null);
         }
         setIsLoading(false);
       })
       .catch(() => {
-        const matchedMock = STITCH_MOCK_AGENDAS_6.find((m) => m.id === rawId);
-        if (matchedMock) {
-          setAgendaItem(matchedMock);
-        }
+        setAgendaItem(null);
         setIsLoading(false);
       });
   }, [rawId]);

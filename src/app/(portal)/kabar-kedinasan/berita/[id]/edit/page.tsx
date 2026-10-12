@@ -67,6 +67,7 @@ export default function EditBeritaPage() {
 
   // Form states
   const [judul, setJudul] = useState('');
+  const [sumber, setSumber] = useState('');
   const [tanggal, setTanggal] = useState<Date>(new Date());
   const [status, setStatus] = useState<'Terbit' | 'Menunggu' | ''>('Terbit');
   const [deskripsiHtml, setDeskripsiHtml] = useState('');
@@ -120,6 +121,7 @@ export default function EditBeritaPage() {
         if (data.success && data.data) {
           const item = data.data;
           setJudul(item.title || '');
+          setSumber(item.source || '');
           if (item.publishedAt) {
             const d = new Date(item.publishedAt);
             if (!isNaN(d.getTime())) {
@@ -360,6 +362,7 @@ export default function EditBeritaPage() {
           coverImage: resolvedCoverImage,
           publishedAt: tanggal.toISOString(),
           status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',
+          source: sumber,
           attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments.map(a => a.name).join('|||') : null,
           attachmentUrl: lampiranAttachments.length > 0 ? JSON.stringify(lampiranAttachments.map(a => a.preview || '')) : null,
         }),
@@ -423,6 +426,21 @@ export default function EditBeritaPage() {
                 value={judul}
                 onChange={(e) => setJudul(e.target.value)}
                 placeholder="Nama judul Berita"
+                className="w-full border border-[#c5c6d2] rounded p-3 text-sm sm:text-base text-[#1a1b20] placeholder-[#757682] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none transition-colors"
+              />
+            </div>
+
+            {/* Sumber */}
+            <label htmlFor="sumber" className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
+              Sumber <span className="float-right hidden md:inline">:</span>
+            </label>
+            <div>
+              <input
+                id="sumber"
+                type="text"
+                value={sumber}
+                onChange={(e) => setSumber(e.target.value)}
+                placeholder="Contoh: www.perpusnas.go.id"
                 className="w-full border border-[#c5c6d2] rounded p-3 text-sm sm:text-base text-[#1a1b20] placeholder-[#757682] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none transition-colors"
               />
             </div>
@@ -495,53 +513,6 @@ export default function EditBeritaPage() {
                       );
                     })}
                   </div>
-                </div>
-              )}
-            </div>
-
-            {/* 3. Status Dropdown */}
-            <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Status <span className="float-right hidden md:inline">:</span>
-            </label>
-            <div className="relative w-full md:w-56" ref={statusMenuRef}>
-              <button
-                type="button"
-                onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
-                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
-                  }`}
-              >
-                <span className="truncate">{status || 'Jenis Status'}</span>
-                <ChevronDown className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {isStatusMenuOpen && (
-                <div className="absolute top-full left-0 z-50 w-full bg-white border border-[#c5c6d2] border-t-0 rounded-b-md shadow-lg py-1 animate-fadeIn">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStatus('Terbit');
-                      setIsStatusMenuOpen(false);
-                    }}
-                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Terbit'
-                      ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
-                      : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                      }`}
-                  >
-                    Terbit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStatus('Menunggu');
-                      setIsStatusMenuOpen(false);
-                    }}
-                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Menunggu'
-                      ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
-                      : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                      }`}
-                  >
-                    Menunggu
-                  </button>
                 </div>
               )}
             </div>
@@ -663,7 +634,7 @@ export default function EditBeritaPage() {
                   type="file"
                   accept="image/*"
                   onChange={handleGambarFileChange}
-                  className="hidden" suppressHydrationWarning />
+                  className="hidden"  />
               </div>
 
               {/* Dashed preview box */}
@@ -725,7 +696,7 @@ export default function EditBeritaPage() {
                   type="file"
                   multiple
                   onChange={handleLampiranFileChange}
-                  className="hidden" suppressHydrationWarning />
+                  className="hidden"  />
               </div>
 
               {/* Previews */}
@@ -761,6 +732,53 @@ export default function EditBeritaPage() {
                       </button>
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+
+            {/* Status Dropdown (Pindah ke bawah) */}
+            <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
+              Status <span className="float-right hidden md:inline">:</span>
+            </label>
+            <div className="relative w-full md:w-56" ref={statusMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
+                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
+                  }`}
+              >
+                <span className="truncate">{status || 'Jenis Status'}</span>
+                <ChevronDown className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isStatusMenuOpen && (
+                <div className="absolute top-full left-0 z-50 w-full bg-white border border-[#c5c6d2] border-t-0 rounded-b-md shadow-lg py-1 animate-fadeIn">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatus('Terbit');
+                      setIsStatusMenuOpen(false);
+                    }}
+                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Terbit'
+                      ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                      : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                      }`}
+                  >
+                    Terbit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatus('Menunggu');
+                      setIsStatusMenuOpen(false);
+                    }}
+                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Menunggu'
+                      ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                      : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                      }`}
+                  >
+                    Menunggu
+                  </button>
                 </div>
               )}
             </div>

@@ -524,7 +524,6 @@ export default function TambahKaryaAkademikPage() {
                   accept="image/*"
                   onChange={handleGambarFileChange}
                   className="hidden" suppressHydrationWarning
-                  suppressHydrationWarning
                 />
               </div>
 
@@ -576,7 +575,6 @@ export default function TambahKaryaAkademikPage() {
                   accept=".pdf,.doc,.docx,.jpg,.png"
                   onChange={handleLampiranFileChange}
                   className="hidden" suppressHydrationWarning
-                  suppressHydrationWarning
                 />
               </div>
 

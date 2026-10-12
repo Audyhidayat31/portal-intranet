@@ -307,9 +307,7 @@ export default function EditKupasSosokPage() {
             unitKerja: unitKerja || 'Perpustakaan Nasional RI',
             quote: 'Mendedikasikan karya untuk kemajuan literasi bangsa.',
             fullStory: plainStory,
-            photoUrl:
-              gambarPreview ||
-              'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&auto=format&fit=crop',
+            photoUrl: gambarPreview || '',
             isSpotlight: false,
           }),
         });
@@ -668,8 +666,7 @@ export default function EditKupasSosokPage() {
                   ref={gambarInputRef}
                   onChange={handleGambarFileChange}
                   accept="image/*"
-                  className="hidden" suppressHydrationWarning
-                 suppressHydrationWarning />
+                  className="hidden" suppressHydrationWarning />
 
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                   {gambarPreview ? (
@@ -724,8 +721,7 @@ export default function EditKupasSosokPage() {
                   ref={lampiranInputRef}
                   onChange={handleLampiranFileChange}
                   accept=".pdf,.doc,.docx"
-                  className="hidden" suppressHydrationWarning
-                 suppressHydrationWarning />
+                  className="hidden" suppressHydrationWarning />
 
                 <div className="flex items-center gap-3">
                   <button
