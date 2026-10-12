@@ -145,11 +145,11 @@ export default function BeritaPage() {
           authorName: item.author?.name || 'Humas Perpusnas',
         }));
 
-        setNewsList(formattedApiItems.length > 0 ? formattedApiItems : MOCK_BERITA_6);
+        setNewsList(formattedApiItems);
       })
       .catch((e) => {
         console.error(e);
-        setNewsList(MOCK_BERITA_6);
+        setNewsList([]);
       })
       .finally(() => {
         setIsLoading(false);
@@ -344,6 +344,9 @@ export default function BeritaPage() {
                             Status: Menunggu
                           </span>
                         )}
+                      </div>
+                      <div className="mb-3 text-xs text-[#757682] font-medium">
+                        Oleh: {item.authorName}
                       </div>
 
                       {/* Card Title */}

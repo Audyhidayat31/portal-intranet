@@ -1,6 +1,7 @@
 'use client';
 
 import { Pagination } from '@/components/ui/Pagination';
+import { formatDate } from '@/lib/utils';
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
@@ -20,6 +21,88 @@ export default function KalimatBijakPage() {
   const [allItems, setAllItems] = useState<KalimatBijakItem[]>([]);
   const [filteredItems, setFilteredItems] = useState<KalimatBijakItem[]>([]);
   const [selectedQuote, setSelectedQuote] = useState<KalimatBijakItem | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  
+  // Auto-open modal popup if ?view= or ?id= is present in URL
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const viewId = params.get('view') || params.get('id');
+    if (!viewId) return;
+
+    if (allItems.length > 0) {
+      const found = allItems.find((itm) => itm.id === viewId);
+      if (found) {
+        const localEditor = typeof window !== 'undefined' ? localStorage.getItem(`last_editor_${found.id}`) : null;
+        const localUpdatedAt = typeof window !== 'undefined' ? localStorage.getItem(`last_updated_at_${found.id}`) : null;
+        setSelectedQuote({
+          ...found,
+          ...(localEditor ? { editorName: localEditor } : {}),
+          ...(localUpdatedAt ? { updatedAt: localUpdatedAt } : {}),
+        });
+        return;
+      }
+    }
+
+    // Fetch directly from API if not yet in state
+    fetch(`/api/employee-posts/${viewId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          const apiData = data.data;
+          const localEditor = typeof window !== 'undefined' ? localStorage.getItem(`last_editor_${apiData.id}`) : null;
+          const localUpdatedAt = typeof window !== 'undefined' ? localStorage.getItem(`last_updated_at_${apiData.id}`) : null;
+          const formatted: KalimatBijakItem = {
+            id: apiData.id,
+            title: apiData.title,
+            quote: apiData.body || apiData.excerpt || apiData.title,
+            excerpt: apiData.excerpt || apiData.title,
+            content: apiData.body || '',
+            figure: apiData.title || '',
+            figureDate: '',
+            publishedAt: apiData.createdAt || apiData.publishedAt
+              ? formatDate(apiData.createdAt || apiData.publishedAt)
+              : '20 Agustus 2026',
+            status: apiData.status === 'MENUNGGU' || apiData.status === 'Menunggu' ? 'Menunggu' : 'Terbit',
+            authorName: apiData.author?.name || 'Ahmad Fauzi, S.Kom.',
+            authorPosition: apiData.author?.profile?.position || 'Pustakawan Ahli Madya',
+            createdAt: apiData.createdAt,
+            updatedAt: localUpdatedAt || apiData.updatedAt,
+            editorName: localEditor || apiData.editorName || apiData.editor?.name || undefined,
+          };
+          setSelectedQuote(formatted);
+        }
+      })
+      .catch(() => {});
+  }, [allItems]);
+
+  const handleCloseModal = () => {
+    setSelectedQuote(null);
+    if (typeof window !== 'undefined' && window.location.search) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('view');
+      url.searchParams.delete('id');
+      window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
+    }
+  };
+
+  const handleDeleteQuote = async () => {
+    if (!selectedQuote) return;
+    setIsDeleting(true);
+    try {
+      await fetch(`/api/employee-posts/${selectedQuote.id}`, { method: 'DELETE' });
+      setAllItems((prev) => prev.filter((item) => item.id !== selectedQuote.id));
+      setFilteredItems((prev) => prev.filter((item) => item.id !== selectedQuote.id));
+      setIsDeleteModalOpen(false);
+      setSelectedQuote(null);
+    } catch (err) {
+      console.error('Failed to delete quote:', err);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterAuthor, setFilterAuthor] = useState('all');
@@ -58,7 +141,7 @@ export default function KalimatBijakPage() {
           excerpt: item.excerpt || (item.body ? item.body.slice(0, 110) + '...' : item.title),
           content: item.body || '',
           figure: item.title || 'Tokoh Bangsa',
-          figureDate: '1-06-1945',
+          figureDate: '',
           publishedAt: item.createdAt
             ? new Date(item.createdAt).toLocaleDateString('id-ID', {
                 day: 'numeric',
@@ -67,8 +150,11 @@ export default function KalimatBijakPage() {
               })
             : '20 Agustus 2026',
           status: item.status === 'MENUNGGU' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit',
-          authorName: item.author?.name || 'Pegawai Perpusnas',
+          authorName: item.author?.name || 'Ahmad Fauzi, S.Kom.',
           authorPosition: item.author?.profile?.position || 'Pustakawan Ahli Madya',
+          createdAt: item.createdAt,
+          updatedAt: (typeof window !== 'undefined' ? localStorage.getItem(`last_updated_at_${item.id}`) : null) || item.updatedAt,
+          editorName: (typeof window !== 'undefined' ? localStorage.getItem(`last_editor_${item.id}`) : null) || item.editorName || item.editor?.name || undefined,
         }));
 
         const pool = [...STITCH_MOCK_KALIMAT_BIJAK];
@@ -292,12 +378,12 @@ export default function KalimatBijakPage() {
                 {/* Quote Content matching Wireframe ("Deskripsi Kutipan" centered) */}
                 <div className="text-center py-4 flex flex-col items-center justify-center flex-grow">
                   <p className="text-sm sm:text-base text-slate-800 font-medium italic leading-relaxed max-w-[420px] mx-auto">
-                    &ldquo;{item.quote}&rdquo;
+                    &ldquo;{item.quote.replace(/<[^>]+>/g, '').replace(/^[\"“”']+|[\"“”']+$/g, '')}&rdquo;
                   </p>
 
                   {/* Figure and Date matching Wireframe ("Soekarno, 1-06-1945") */}
                   <p className="text-xs text-slate-500 mt-3 font-normal">
-                    {item.figure}, {item.figureDate}
+                    {item.figure || item.title}
                   </p>
                 </div>
 
@@ -351,7 +437,7 @@ export default function KalimatBijakPage() {
             
             {/* Close Button on Top Right */}
             <button
-              onClick={() => setSelectedQuote(null)}
+              onClick={handleCloseModal}
               className="absolute top-6 right-6 w-8 h-8 rounded bg-red-600 hover:bg-red-700 text-white flex items-center justify-center transition-colors"
               aria-label="Tutup popup"
             >
@@ -366,26 +452,73 @@ export default function KalimatBijakPage() {
                 "{selectedQuote.quote.replace(/<[^>]+>/g, '').replace(/^"|"$/g, '')}"
               </p>
               <p className="text-sm md:text-base text-slate-500 mt-6 font-medium text-center">
-                {selectedQuote.title}, {selectedQuote.figureDate || '1-06-1945'}
+                {selectedQuote.title || selectedQuote.figure}
               </p>
             </div>
 
-            {/* Bottom Meta Info */}
-            <div className="mt-8 flex flex-col sm:flex-row gap-6 border-t border-slate-100 pt-6">
-              <div className="flex-1 flex flex-col gap-1 border-l-2 border-slate-200 pl-4">
-                <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Dibuat oleh</span>
-                <span className="text-xs font-bold text-[#1a1b20]">{selectedQuote.authorName || 'Ahmad Fauzi'}</span>
-                <span className="text-[11px] text-slate-500">{selectedQuote.publishedAt}</span>
-                <span className="text-[11px] text-slate-500">Status: {selectedQuote.status}</span>
+            {/* Bottom Meta Info & Actions */}
+            <div className="mt-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 border-t border-[#c5c6d2] pt-6">
+              <div className="flex flex-row gap-6">
+                <div className="flex flex-col gap-1 border-l-2 border-slate-200 pl-4 min-w-[140px]">
+                  <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Dibuat oleh</span>
+                  <span className="text-xs font-bold text-[#1a1b20]">{selectedQuote.authorName || 'Ahmad Fauzi, S.Kom.'}</span>
+                  <span className="text-[11px] text-slate-500">{selectedQuote.publishedAt}</span>
+                  <span className="text-[11px] text-slate-500">Status: {selectedQuote.status}</span>
+                </div>
+                <div className="flex flex-col gap-1 border-l-2 border-slate-200 pl-4 min-w-[140px]">
+                  <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Diperbarui oleh</span>
+                  <span className="text-xs font-bold text-[#1a1b20]">{(typeof window !== 'undefined' && localStorage.getItem(`last_editor_${selectedQuote.id}`)) || selectedQuote.editorName || (selectedQuote as any).editor?.name || currentUser?.name || selectedQuote.authorName || 'Administrator Perpusnas'}</span>
+                  <span className="text-[11px] text-slate-500">{(typeof window !== 'undefined' && localStorage.getItem(`last_updated_at_${selectedQuote.id}`)) ? formatDate(localStorage.getItem(`last_updated_at_${selectedQuote.id}`)!) : (selectedQuote.updatedAt ? formatDate(selectedQuote.updatedAt) : selectedQuote.publishedAt)}</span>
+                  <span className="text-[11px] text-slate-500">Status: {selectedQuote.status}</span>
+                </div>
               </div>
-              <div className="flex-1 flex flex-col gap-1 border-l-2 border-slate-200 pl-4">
-                <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Diperbarui oleh</span>
-                <span className="text-xs font-bold text-[#1a1b20]">Administrator Perpusnas</span>
-                <span className="text-[11px] text-slate-500">{selectedQuote.publishedAt}</span>
-                <span className="text-[11px] text-slate-500">Status: {selectedQuote.status}</span>
+
+              {/* Action Buttons: Edit and Hapus (Pojok Kanan Bawah) */}
+              <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                <Link
+                  href={`/antar-pegawai/kalimat-bijak/${selectedQuote.id}/edit`}
+                  className="px-6 py-2 border border-[#757682] rounded text-[#1a1b20] hover:bg-[#efedf3] hover:border-[#00113a] transition-colors font-bold text-sm min-w-[90px] text-center inline-flex items-center justify-center cursor-pointer shadow-2xs"
+                >
+                  Edit
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="px-6 py-2 border border-[#757682] rounded text-[#1a1b20] hover:bg-red-50 hover:border-red-400 hover:text-red-700 transition-colors font-bold text-sm min-w-[90px] text-center cursor-pointer shadow-2xs"
+                >
+                  Hapus
+                </button>
               </div>
             </div>
 
+          </div>
+        </div>
+      )}
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && selectedQuote && (
+        <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-[#c5c6d2]">
+            <h2 className="text-xl font-bold text-[#00113a] mb-2">Hapus Kalimat Bijak?</h2>
+            <p className="text-sm text-[#444650] mb-6">
+              Apakah Anda yakin ingin menghapus kalimat bijak ini? Tindakan ini tidak dapat dibatalkan.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="px-4 py-2 text-sm font-bold text-[#444650] hover:bg-[#f4f3f9] rounded-md transition-colors cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={handleDeleteQuote}
+                className="px-5 py-2 text-sm font-bold bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
+              >
+                {isDeleting ? 'Menghapus...' : 'Ya, Hapus'}
+              </button>
+            </div>
           </div>
         </div>
       )}

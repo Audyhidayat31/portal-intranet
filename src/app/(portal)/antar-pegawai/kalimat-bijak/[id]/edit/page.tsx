@@ -60,6 +60,20 @@ export default function EditKalimatBijakPage() {
   // Editor ref
   const editorRef = useRef<HTMLDivElement>(null);
 
+  // Current logged in user
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setCurrentUser(data.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   // Check active styles under selection
   const checkActiveStyles = useCallback(() => {
     try {
@@ -239,6 +253,14 @@ export default function EditKalimatBijakPage() {
     }
 
     setIsSubmitting(true);
+    const activeEditorName = currentUser?.name || currentUser?.fullName || 'Ahmad Fauzi, S.Kom.';
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(`last_editor_${rawId}`, activeEditorName);
+        localStorage.setItem(`last_updated_at_${rawId}`, new Date().toISOString());
+      } catch {}
+    }
+
     try {
       await fetch(`/api/employee-posts/${rawId}`, {
         method: 'PUT',
@@ -247,17 +269,18 @@ export default function EditKalimatBijakPage() {
           title: judul,
           body: htmlContent || rawText || judul,
           status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',
+          editorName: activeEditorName,
         }),
       });
 
       setSuccessMessage('Perubahan Kalimat Bijak berhasil disimpan!');
       setTimeout(() => {
-        router.push(`/antar-pegawai/kalimat-bijak/${rawId}`);
+        router.push(`/antar-pegawai/kalimat-bijak?view=${rawId}`);
       }, 1000);
     } catch {
       setSuccessMessage('Perubahan Kalimat Bijak berhasil disimpan (mode lokal)!');
       setTimeout(() => {
-        router.push(`/antar-pegawai/kalimat-bijak/${rawId}`);
+        router.push(`/antar-pegawai/kalimat-bijak?view=${rawId}`);
       }, 1000);
     } finally {
       setIsSubmitting(false);
@@ -398,57 +421,9 @@ export default function EditKalimatBijakPage() {
               )}
             </div>
 
-            {/* 3. Status Dropdown */}
-            <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Status <span className="float-right hidden md:inline">:</span>
-            </label>
-            <div className="relative w-full md:w-56" ref={statusMenuRef}>
-              <button
-                type="button"
-                onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
-                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${
-                  isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
-                }`}
-              >
-                <span className="truncate">{status || 'Jenis Status'}</span>
-                <ChevronDown className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''}`} />
-              </button>
 
-              {isStatusMenuOpen && (
-                <div className="absolute top-full left-0 z-50 w-full bg-white border border-[#c5c6d2] border-t-0 rounded-b-md shadow-lg py-1 animate-fadeIn">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStatus('Terbit');
-                      setIsStatusMenuOpen(false);
-                    }}
-                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                      status === 'Terbit'
-                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
-                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                    }`}
-                  >
-                    Terbit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStatus('Menunggu');
-                      setIsStatusMenuOpen(false);
-                    }}
-                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                      status === 'Menunggu'
-                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
-                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                    }`}
-                  >
-                    Menunggu
-                  </button>
-                </div>
-              )}
-            </div>
 
-            {/* 4. Deskripsi */}
+            {/* 3. Deskripsi */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
               Deskripsi <span className="float-right hidden md:inline">:</span>
             </label>
@@ -605,6 +580,56 @@ export default function EditKalimatBijakPage() {
                 className="w-full p-4 text-sm sm:text-base outline-none min-h-[190px] max-h-[400px] overflow-y-auto leading-relaxed bg-white text-[#1a1b20]"
               />
             </div>
+
+            {/* 4. Status Dropdown */}
+            <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
+              Status <span className="float-right hidden md:inline">:</span>
+            </label>
+            <div className="relative w-full md:w-56" ref={statusMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
+                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${
+                  isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
+                }`}
+              >
+                <span className="truncate">{status || 'Jenis Status'}</span>
+                <ChevronDown className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isStatusMenuOpen && (
+                <div className="absolute top-full left-0 z-50 w-full bg-white border border-[#c5c6d2] border-t-0 rounded-b-md shadow-lg py-1 animate-fadeIn">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatus('Terbit');
+                      setIsStatusMenuOpen(false);
+                    }}
+                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
+                      status === 'Terbit'
+                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                    }`}
+                  >
+                    Terbit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatus('Menunggu');
+                      setIsStatusMenuOpen(false);
+                    }}
+                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
+                      status === 'Menunggu'
+                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                    }`}
+                  >
+                    Menunggu
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Form Actions */}
@@ -617,7 +642,7 @@ export default function EditKalimatBijakPage() {
               {isSubmitting ? 'Menyimpan...' : 'Simpan'}
             </button>
             <Link
-              href={`/antar-pegawai/kalimat-bijak/${rawId}`}
+              href="/antar-pegawai/kalimat-bijak"
               className="bg-transparent border border-[#757682] text-[#444650] rounded px-8 py-3 text-base font-medium hover:bg-[#f4f3f9] transition-colors inline-block text-center cursor-pointer"
             >
               Keluar

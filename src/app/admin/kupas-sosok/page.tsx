@@ -58,7 +58,7 @@ export default function AdminKupasSosokPage() {
           unitKerja,
           quote,
           fullStory,
-          photoUrl: photoUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&auto=format&fit=crop',
+          photoUrl: photoUrl || '',
           isSpotlight,
         }),
       });

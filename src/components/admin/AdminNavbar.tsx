@@ -272,8 +272,7 @@ export function AdminNavbar({ onToggleSidebar }: { onToggleSidebar?: () => void 
             </button>
 
             {activeDropdown === 'admin' && (
-              <div className="absolute top-full right-0 lg:left-0 mt-1 w-72 rounded-2xl bg-white p-2 shadow-2xl border border-slate-200 animate-in fade-in slide-in-from-top-1 z-50">
-
+              <div className="absolute top-full right-0 lg:left-0 mt-1 w-52 rounded-2xl bg-white p-2 shadow-2xl border border-slate-200 animate-in fade-in slide-in-from-top-1 z-50">
                 <div className="py-1 space-y-0.5">
                   {ADMIN_MENU_ITEMS.map((item) => {
                     const isActive = pathname === item.href || pathname.startsWith(item.href);
@@ -284,26 +283,19 @@ export function AdminNavbar({ onToggleSidebar }: { onToggleSidebar?: () => void 
                         href={item.href}
                         onClick={() => setActiveDropdown(null)}
                         className={cn(
-                          'flex flex-col p-2.5 rounded-xl transition-colors',
+                          'block p-2.5 rounded-xl transition-colors text-left',
                           isActive
                             ? 'bg-[#00113a]/5 text-[#00113a] font-bold'
                             : 'text-slate-700 hover:bg-slate-50 hover:text-[#00113a]'
                         )}
                       >
-                        <div className="text-left">
-                          <p className={cn('text-xs leading-tight', isActive ? 'font-bold text-[#00113a]' : 'font-semibold text-slate-800')}>
-                            {item.label}
-                          </p>
-                          <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1 leading-snug">
-                            {item.desc}
-                          </p>
-                        </div>
+                        <p className={cn('text-xs leading-tight', isActive ? 'font-bold text-[#00113a]' : 'font-semibold text-slate-800')}>
+                          {item.label}
+                        </p>
                       </Link>
                     );
                   })}
                 </div>
-
-
               </div>
             )}
           </div>

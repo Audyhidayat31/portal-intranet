@@ -226,7 +226,7 @@ model HomepageSetting {
   heroTitle          String   @default("Selamat Datang di Portal Intranet Perpusnas RI")
   heroSubtitle       String   @default("Pusat Informasi Internal, Kolaborasi, dan Layanan Terintegrasi Pegawai Perpustakaan Nasional Republik Indonesia") @db.VarChar(1000)
   heroBadge          String   @default("Kiprah Literasi Bangsa")
-  heroBannerUrl      String?  @db.Text
+  heroBannerUrl      String?  @db.LongText
   quoteText          String   @default("Membaca adalah jembatan emas menuju peradaban bangsa yang unggul dan berkarakter.") @db.VarChar(1000)
   quoteAuthor        String   @default("Prof. Dr. Ir. Muhammad Syarif Bando, M.M.")
   quoteAuthorRole    String   @default("Kepala Perpustakaan Nasional RI (Periode 2016-2023)")
@@ -263,9 +263,12 @@ model Berita {
   ringkasan     String?  @db.Text
   isi           String   @db.LongText
   gambarSampul  String?  @map("gambar_sampul") @db.Text
+  fileLampiran  String?  @map("file_lampiran") @db.Text
+  namaLampiran  String?  @map("nama_lampiran") @db.VarChar(255)
   penulisId     String   @map("penulis_id")
   penulis       User     @relation("BeritaAuthor", fields: [penulisId], references: [id], onDelete: Cascade)
   namaPenulis   String?  @default("Humas Perpusnas") @map("nama_penulis") @db.VarChar(191)
+  sumber        String?  @db.VarChar(255)
   status        String   @default("TERBIT") @db.VarChar(50) // TERBIT, MENUNGGU, DRAFT, ARSIP
   tanggalTerbit DateTime @default(now()) @map("tanggal_terbit")
   jumlahBaca    Int      @default(0) @map("jumlah_baca")
@@ -363,10 +366,10 @@ model KupasSosok {
   id                String   @id @default(cuid())
   namaTokoh         String   @map("nama_tokoh") @db.VarChar(255)
   slug              String   @unique @db.VarChar(255)
-  jabatan           String   @db.VarChar(255)
-  unitKerja         String   @map("unit_kerja") @db.VarChar(255)
-  kutipanInspiratif String   @map("kutipan_inspiratif") @db.Text
-  ceritaLengkap     String   @map("cerita_lengkap") @db.LongText
+  jabatan           String?  @db.VarChar(255)
+  unitKerja         String?  @map("unit_kerja") @db.VarChar(255)
+  kutipanInspiratif String?  @map("kutipan_inspiratif") @db.Text
+  ceritaLengkap     String?  @map("cerita_lengkap") @db.LongText
   fotoUrl           String?  @map("foto_url") @db.Text
   prestasi          String?  @db.Text
   riwayatKarier     String?  @map("riwayat_karier") @db.Text

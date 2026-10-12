@@ -22,6 +22,19 @@ export async function GET(request: NextRequest) {
       ];
     }
 
+    const user = await getCurrentUser();
+    if (user?.role !== 'ADMINISTRATOR') {
+      where.AND = [
+        {
+          OR: [
+            { status: 'ANSWERED' },
+            { status: 'CLOSED' },
+            { authorId: user?.userId || 'not-logged-in' }
+          ]
+        }
+      ];
+    }
+
     const topics = await withDbRetry(() =>
       prisma.consultationTopic.findMany({
         where,

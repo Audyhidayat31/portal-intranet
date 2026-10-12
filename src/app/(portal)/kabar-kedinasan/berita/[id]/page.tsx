@@ -297,7 +297,7 @@ export default function DetailBeritaPage() {
                 <div className="p-5 flex flex-col gap-4 flex-grow">
                   <div>
                     <h4 className="font-bold text-lg text-[#1a1b20] mb-1">Sumber</h4>
-                    <p className="text-sm text-[#1a1b20]">www.perpusnas.go.id</p>
+                    <p className="text-sm text-[#1a1b20]">{news?.source || '-'}</p>
                   </div>
                   <div>
                     <h4 className="font-bold text-lg text-[#1a1b20] mb-1">Dibuat Oleh</h4>

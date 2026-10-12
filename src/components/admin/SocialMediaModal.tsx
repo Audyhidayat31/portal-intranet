@@ -211,10 +211,10 @@ export function SocialMediaModal({
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4 text-left">
-          {/* 1. Gambar Banner */}
+          {/* 1. Gambar Ikon */}
           <div>
             <label className="block text-xs font-bold text-slate-800 mb-1.5">
-              Gambar Banner
+              Gambar Ikon
             </label>
 
             {/* Input Row: [ Pilih Berkas ] [ File berupa .png atau .jpg ] */}
@@ -225,7 +225,7 @@ export function SocialMediaModal({
                 accept=".png,.jpg,.jpeg,image/png,image/jpeg"
                 onChange={handleFileChange}
                 className="hidden"
-                id="social-media-banner-upload"
+                id="social-media-icon-upload"
               />
               <button
                 type="button"

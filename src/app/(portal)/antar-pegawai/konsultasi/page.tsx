@@ -54,7 +54,7 @@ export default function KonsultasiPage() {
     fetch('/api/consultations')
       .then((res) => res.json())
       .then((data) => {
-        if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+        if (data.success && Array.isArray(data.data)) {
           const apiItems: ConsultationItem[] = data.data.map((topic: any) => ({
             id: topic.id,
             title: topic.title,
@@ -71,12 +71,7 @@ export default function KonsultasiPage() {
             }),
             status: topic.status === 'OPEN' ? 'Menunggu' : 'Terbit',
             description: topic.question || topic.description || '',
-            attachmentName:
-              topic.category === 'IT'
-                ? 'Konsultasi IT.pdf'
-                : topic.category === 'KEPEGAWAIAN'
-                ? 'Konsultasi Pegawai.pdf'
-                : 'Konsultasi Kesehatan.pdf',
+            attachmentName: topic.attachmentName || null,
             attachmentUrl: '#',
             authorName: topic.author?.name || 'Pegawai Perpusnas',
             replies: (topic.replies || []).map((r: any) => ({
@@ -90,13 +85,7 @@ export default function KonsultasiPage() {
               content: r.replyText,
             })),
           }));
-
-          // Merge API items with local mock ensuring no duplication
-          const existingIds = new Set(apiItems.map((i) => i.id));
-          const filteredLocal = localData.filter((i) => !existingIds.has(i.id));
-          const combined = [...apiItems, ...filteredLocal];
-          setConsultations(combined);
-          saveStoredConsultations(combined);
+          setConsultations(apiItems);
         }
       })
       .catch((err) => {

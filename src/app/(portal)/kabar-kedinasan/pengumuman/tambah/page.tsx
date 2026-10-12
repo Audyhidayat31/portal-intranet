@@ -727,7 +727,7 @@ export default function TambahPengumumanPage() {
                     multiple
                     suppressHydrationWarning
                     onChange={handleAttachmentChange}
-                    className="hidden" suppressHydrationWarning />
+                    className="hidden"  />
                   <button
                     type="button"
                     onClick={() => attachmentInputRef.current?.click()}

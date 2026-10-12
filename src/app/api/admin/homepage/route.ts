@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { logActivity } from '@/lib/audit';
@@ -49,9 +49,37 @@ const DEFAULT_BANNERS = [
   },
 ];
 
+export const dynamic = 'force-dynamic';
+
+const BANNERS_FILE_PATH = path.join(process.cwd(), 'src', 'lib', 'banners-config.json');
 const FOOTER_FILE_PATH = path.join(process.cwd(), 'src', 'lib', 'footer-config.json');
 const INFO_PENTING_FILE = path.join(process.cwd(), 'src', 'lib', 'info-penting-config.json');
 const TENTANG_FILE_PATH = path.join(process.cwd(), 'src', 'lib', 'tentang-config.json');
+
+function getBannersConfig(): any[] {
+  try {
+    if (fs.existsSync(BANNERS_FILE_PATH)) {
+      const data = fs.readFileSync(BANNERS_FILE_PATH, 'utf-8');
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.error('Error reading banners config file:', err);
+  }
+  return DEFAULT_BANNERS;
+}
+
+function saveBannersConfig(banners: any[]) {
+  try {
+    fs.writeFileSync(BANNERS_FILE_PATH, JSON.stringify(banners, null, 2), 'utf-8');
+    return true;
+  } catch (err) {
+    console.error('Error saving banners config file:', err);
+    return false;
+  }
+}
 
 function getTentangConfig() {
   try {
@@ -200,7 +228,9 @@ function getFooterConfig() {
       telepon: '085717147303',
       email: 'persuratan@perpusnas.go.id',
       alamat1: 'Jl. Salemba Raya No. 28A, Jakarta 10430',
+      tautanAlamat1: '',
       alamat2: 'Jl. Medan Merdeka Selatan No. 11, Jakarta 10110',
+      tautanAlamat2: '',
     },
     copyright: 'Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.',
   };
@@ -227,10 +257,14 @@ export async function GET() {
         const parsed = JSON.parse(setting.heroBannerUrl);
         if (Array.isArray(parsed) && parsed.length > 0) {
           banners = parsed;
+        } else {
+          banners = getBannersConfig();
         }
       } catch (e) {
-        // heroBannerUrl is a regular single URL string, keep default banners
+        banners = getBannersConfig();
       }
+    } else {
+      banners = getBannersConfig();
     }
 
     const isOldDefaultGreeting = !setting?.heroTitle ||
@@ -344,6 +378,11 @@ export async function PUT(request: NextRequest) {
       savedTentang = mergedTentang;
     }
 
+    // Save banners to file config as persistent backup
+    if (banners && Array.isArray(banners)) {
+      saveBannersConfig(banners);
+    }
+
     const existing = await prisma.homepageSetting.findFirst();
     
     // Prepare updated fields
@@ -393,7 +432,7 @@ export async function PUT(request: NextRequest) {
       message: 'Konfigurasi Halaman Utama berhasil disimpan!',
       data: {
         setting,
-        banners,
+        banners: banners || getBannersConfig(),
         greeting: {
           headline: setting.heroTitle,
           subheadline: setting.heroSubtitle,

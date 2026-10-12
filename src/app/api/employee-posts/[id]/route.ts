@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getCurrentUser } from '@/lib/auth';
+import { logActivity } from '@/lib/audit';
 import { STITCH_MOCK_OPINI_6 } from '@/lib/mock-opini';
 import { STITCH_MOCK_HUMOR_9 } from '@/lib/mock-humor';
 import { STITCH_MOCK_JELAJAH_BUMI_9 } from '@/lib/mock-jelajah-bumi';
@@ -103,7 +105,29 @@ export async function GET(
       });
 
       if (item) {
-        return NextResponse.json({ success: true, data: item });
+        let editorName = null;
+        try {
+          const lastLog = await prisma.activityLog.findFirst({
+            where: {
+              targetId: item.id,
+              action: 'UPDATE',
+            },
+            orderBy: { createdAt: 'desc' },
+            include: {
+              user: { select: { name: true } },
+            },
+          });
+          editorName = lastLog?.user?.name || null;
+        } catch {}
+
+        return NextResponse.json({
+          success: true,
+          data: {
+            ...item,
+            editor: editorName ? { name: editorName } : null,
+            editorName: editorName || null,
+          },
+        });
       }
     } catch (dbErr) {
       console.warn('Database query error in employee-posts GET, falling back to mock:', dbErr);
@@ -136,6 +160,8 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
     const { title, body: contentBody, coverImage, status } = body;
+    const user = await getCurrentUser();
+    const currentUserName = user?.name || body.editorName || null;
 
     let existing: any = null;
     try {
@@ -164,16 +190,32 @@ export async function PUT(
         },
       });
 
+      if (user?.userId) {
+        await logActivity({
+          userId: user.userId,
+          action: 'UPDATE',
+          module: 'POSTS',
+          targetId: existing.id,
+          description: `Memperbarui postingan pegawai: ${existing.title}`,
+        });
+      }
+
       return NextResponse.json({
         success: true,
         message: 'Postingan berhasil diperbarui',
-        data: updated,
+        data: {
+          ...updated,
+          editor: currentUserName ? { name: currentUserName } : null,
+          editorName: currentUserName,
+        },
       });
     }
 
     // If not existing in database, create or return fallback
     try {
-      const defaultUser = await prisma.user.findFirst();
+      const defaultUser = user?.userId
+        ? await prisma.user.findUnique({ where: { id: user.userId } })
+        : await prisma.user.findFirst();
       if (defaultUser) {
         const catSlug =
           id.startsWith('opini') ? 'opini' :
@@ -199,10 +241,24 @@ export async function PUT(
           },
         });
 
+        if (user?.userId) {
+          await logActivity({
+            userId: user.userId,
+            action: 'UPDATE',
+            module: 'POSTS',
+            targetId: created.id,
+            description: `Memperbarui postingan pegawai: ${created.title}`,
+          });
+        }
+
         return NextResponse.json({
           success: true,
           message: 'Postingan berhasil diperbarui',
-          data: created,
+          data: {
+            ...created,
+            editor: currentUserName ? { name: currentUserName } : null,
+            editorName: currentUserName,
+          },
         });
       }
     } catch (createErr) {
@@ -212,7 +268,15 @@ export async function PUT(
     return NextResponse.json({
       success: true,
       message: 'Postingan berhasil diperbarui secara lokal',
-      data: { id, title, body: contentBody, coverImage, status },
+      data: {
+        id,
+        title,
+        body: contentBody,
+        coverImage,
+        status,
+        editor: currentUserName ? { name: currentUserName } : null,
+        editorName: currentUserName,
+      },
     });
   } catch (error) {
     console.error('Error updating employee post:', error);

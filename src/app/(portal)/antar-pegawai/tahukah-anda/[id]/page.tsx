@@ -74,8 +74,8 @@ export default function DetailTahukahAndaPage() {
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data) {
-          const item = data.data;
-          setTahukahItem(item);
+          const tahukahItem = data.data;
+          setTahukahItem(tahukahItem);
         } else {
           const matchedMock = STITCH_MOCK_TAHUKAH_ANDA_9.find(
             (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
@@ -203,9 +203,9 @@ export default function DetailTahukahAndaPage() {
           </div>
 
           {/* Featured Image */}
-          {(item?.coverImage || item?.coverImage) && (
+          {(tahukahItem?.coverImage || tahukahItem?.coverImage) && (
             <div className="mb-8 w-full aspect-[2/1] bg-slate-100 rounded-lg overflow-hidden border border-[#c5c6d2]">
-              <img src={item?.coverImage || item?.coverImage} alt={displayTitle} className="w-full h-full object-cover" />
+              <img src={tahukahItem?.coverImage || tahukahItem?.coverImage} alt={displayTitle} className="w-full h-full object-cover" />
             </div>
           )}
 

@@ -30,6 +30,8 @@ import {
   Check,
   Building2,
   ChevronDown,
+  X,
+  Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { CardSkeleton } from '@/components/ui/Skeleton';
@@ -57,14 +59,20 @@ export default function AdminHomepageKelolaPage() {
   const [savedInfoPenting, setSavedInfoPenting] = useState({
     headline: 'Pemberitahuan',
     subheadline: 'Gunakan Nomor Induk Pegawai (NIP) resmi dan kata sandi kedinasan Anda. Jangan pernah membagikan kata sandi kepada siapapun demi menjaga integritas data kepegawaian Perpusnas RI.',
+    imageUrl: '/images/logo-perpusnas.png',
+    imageName: '',
     status: 'AKTIF' as 'AKTIF' | 'MENUNGGU',
   });
 
   const [formInfoPenting, setFormInfoPenting] = useState({
     headline: 'Pemberitahuan',
     subheadline: 'Gunakan Nomor Induk Pegawai (NIP) resmi dan kata sandi kedinasan Anda. Jangan pernah membagikan kata sandi kepada siapapun demi menjaga integritas data kepegawaian Perpusnas RI.',
+    imageUrl: '/images/logo-perpusnas.png',
+    imageName: '',
     status: 'AKTIF' as 'AKTIF' | 'MENUNGGU',
   });
+  const [isInfoPentingModalOpen, setIsInfoPentingModalOpen] = useState(false);
+  const infoPentingFileInputRef = useRef<HTMLInputElement | null>(null);
 
   // ---------------- TAB UTAMA: PENGATURAN UMUM ----------------
   const [utamaData, setUtamaData] = useState({
@@ -196,8 +204,12 @@ export default function AdminHomepageKelolaPage() {
     telepon: '085717147303',
     email: 'persuratan@perpusnas.go.id',
     alamat1: 'Jl. Salemba Raya No. 28A, Jakarta 10430',
+    tautanAlamat1: '',
     alamat2: 'Jl. Medan Merdeka Selatan No. 11, Jakarta 10110',
+    tautanAlamat2: '',
   });
+  const [kontakSuccessMsg, setKontakSuccessMsg] = useState<string | null>(null);
+  const [kontakErrorMsg, setKontakErrorMsg] = useState<string | null>(null);
 
   // Modals for Footer
   const [isSocialModalOpen, setIsSocialModalOpen] = useState(false);
@@ -213,13 +225,13 @@ export default function AdminHomepageKelolaPage() {
   // Fetch initial data
   useEffect(() => {
     Promise.all([
-      fetch('/api/admin/homepage').then((res) => res.json()),
-      fetch('/api/auth/me').then((res) => res.json()),
+      fetch('/api/admin/homepage', { cache: 'no-store' }).then((res) => res.json()),
+      fetch('/api/auth/me', { cache: 'no-store' }).then((res) => res.json()),
     ])
       .then(([homeRes, authRes]) => {
         if (homeRes.success && homeRes.data) {
           const d = homeRes.data;
-          if (d.banners) setBanners(d.banners);
+          if (d.banners && Array.isArray(d.banners)) setBanners(d.banners);
           if (d.greeting) {
             setSavedGreeting(d.greeting);
             setUcapanHeadline(d.greeting.headline || '');
@@ -249,7 +261,12 @@ export default function AdminHomepageKelolaPage() {
               setDigitalServiceList(d.footer.digitalServices);
             }
             if (d.footer.kontak) {
-              setKontakData(d.footer.kontak);
+              setKontakData((prev) => ({
+                ...prev,
+                ...d.footer.kontak,
+                tautanAlamat1: d.footer.kontak.tautanAlamat1 || '',
+                tautanAlamat2: d.footer.kontak.tautanAlamat2 || '',
+              }));
             }
           }
         }
@@ -318,6 +335,7 @@ export default function AdminHomepageKelolaPage() {
       const data = await res.json();
       if (data.success) {
         setSavedInfoPenting(data.data);
+        setIsInfoPentingModalOpen(false);
         showNotification('success', 'Pemberitahuan berhasil disimpan dan langsung diterapkan ke Halaman Login!');
       } else {
         showNotification('error', data.message || 'Gagal menyimpan Pemberitahuan.');
@@ -329,19 +347,62 @@ export default function AdminHomepageKelolaPage() {
     }
   };
 
+  const handleInfoPentingImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        showNotification('error', 'File gambar maksimal berukuran 5 MB.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setFormInfoPenting((prev) => ({
+            ...prev,
+            imageUrl: event.target?.result as string,
+            imageName: file.name,
+          }));
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveInfoPentingImage = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setFormInfoPenting((prev) => ({
+      ...prev,
+      imageUrl: '',
+      imageName: '',
+    }));
+    if (infoPentingFileInputRef.current) {
+      infoPentingFileInputRef.current.value = '';
+    }
+  };
+
+  const handleResetToDefaultInfoPentingImage = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setFormInfoPenting((prev) => ({
+      ...prev,
+      imageUrl: '/images/logo-perpusnas.png',
+      imageName: 'logo-perpusnas.png',
+    }));
+    if (infoPentingFileInputRef.current) {
+      infoPentingFileInputRef.current.value = '';
+    }
+  };
+
   const handleCancelInfoPenting = () => {
-    setFormInfoPenting(savedInfoPenting);
-    showNotification('success', 'Perubahan dibatalkan, form dikembalikan ke data tersimpan.');
+    setFormInfoPenting({ ...savedInfoPenting });
+    if (infoPentingFileInputRef.current) {
+      infoPentingFileInputRef.current.value = '';
+    }
+    setIsInfoPentingModalOpen(false);
   };
 
   const handleEditInfoPentingFromPreview = () => {
-    setFormInfoPenting(savedInfoPenting);
-    const formElement = document.getElementById('form-ubah-info-penting');
-    if (formElement) {
-      formElement.scrollIntoView({ behavior: 'smooth' });
-      const input = document.getElementById('info-headline-input');
-      input?.focus();
-    }
+    setFormInfoPenting({ ...savedInfoPenting });
+    setIsInfoPentingModalOpen(true);
   };
 
   // ----------------- TAB UTAMA HANDLER -----------------
@@ -388,11 +449,15 @@ export default function AdminHomepageKelolaPage() {
       const newBanner: BannerItem = {
         ...bannerData,
         id: `banner-${Date.now()}`,
-        createdBy: adminUser?.name || 'Admin 1',
+        createdBy: adminUser?.name || 'Administrator Perpusnas',
         createdAt: new Date().toISOString(),
       };
-      updatedBanners = [newBanner, ...banners];
+      updatedBanners = [...banners, newBanner];
     }
+
+    // Perbarui state secara langsung agar banner langsung tampil di tabel
+    setBanners(updatedBanners);
+    setIsBannerModalOpen(false);
 
     try {
       const res = await fetch('/api/admin/homepage', {
@@ -402,7 +467,9 @@ export default function AdminHomepageKelolaPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setBanners(updatedBanners);
+        if (data.data?.banners && Array.isArray(data.data.banners)) {
+          setBanners(data.data.banners);
+        }
         showNotification('success', editingBanner ? 'Banner berhasil diperbarui!' : 'Banner baru berhasil ditambahkan!');
       } else {
         showNotification('error', data.message || 'Gagal menyimpan banner.');
@@ -683,12 +750,22 @@ export default function AdminHomepageKelolaPage() {
   const handleSaveKontak = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
+    setKontakSuccessMsg(null);
+    setKontakErrorMsg(null);
     const success = await persistFooterData({ kontak: kontakData });
     setIsSaving(false);
     if (success) {
+      setKontakSuccessMsg('Berhasil menyimpan data! Informasi kontak & lokasi gedung telah diperbarui.');
       showNotification('success', 'Informasi Kontak Footer berhasil disimpan!');
+      setTimeout(() => {
+        setKontakSuccessMsg(null);
+      }, 5000);
     } else {
+      setKontakErrorMsg('Gagal menyimpan informasi kontak.');
       showNotification('error', 'Gagal menyimpan informasi kontak.');
+      setTimeout(() => {
+        setKontakErrorMsg(null);
+      }, 5000);
     }
   };
 
@@ -704,6 +781,7 @@ export default function AdminHomepageKelolaPage() {
           </div>
         );
       case 'x':
+      case 'twitter':
         return (
           <div className="w-7 h-7 rounded-md bg-slate-950 flex items-center justify-center text-white mx-auto shadow-2xs shrink-0">
             <svg className="w-3 h-3 fill-white" viewBox="0 0 24 24">
@@ -750,6 +828,14 @@ export default function AdminHomepageKelolaPage() {
 
   return (
     <div className="w-full max-w-[1280px] mx-auto space-y-7 text-[#1a1b20] overflow-x-hidden">
+      {/* Floating Pop up Alert Feedback (Visible at any scroll position) */}
+      {kontakSuccessMsg && (
+        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-5 py-3.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs sm:text-sm font-semibold shadow-xl animate-fadeIn">
+          <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span>{kontakSuccessMsg}</span>
+        </div>
+      )}
+
       {/* 1. BREADCRUMB, PAGE TITLE & SUBTITLE (WIREFRAME) */}
       <div className="space-y-1.5">
 
@@ -863,9 +949,10 @@ export default function AdminHomepageKelolaPage() {
                   type="button"
                   onClick={handleSaveDeskripsi}
                   disabled={isSaving}
-                  className="px-6 py-2 rounded-xl bg-[#00113a] hover:bg-[#2a4386] text-white text-xs font-bold transition-all shadow-xs disabled:opacity-50 flex items-center gap-1.5 active:scale-95 cursor-pointer"
+                  className="px-6 py-2 rounded-xl bg-[#00113a] hover:bg-[#2a4386] text-white text-xs font-bold transition-all shadow-xs disabled:opacity-50 active:scale-95 cursor-pointer"
                 >
-                  <Save className="w-3.5 h-3.5" />Simpan</button>
+                  {isSaving ? 'Menyimpan...' : 'Simpan'}
+                </button>
               </div>
             </div>
           </section>
@@ -879,9 +966,6 @@ export default function AdminHomepageKelolaPage() {
                     <h2 className="text-sm font-bold text-slate-900">
                       Media Sosial Resmi
                     </h2>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
-                      {socialMediaList.length} Akun
-                    </span>
                   </div>
                   <p className="text-[11px] text-slate-500 mt-0.5 truncate">
                     Daftar tautan akun media sosial resmi yang tampil di footer.
@@ -1278,15 +1362,60 @@ export default function AdminHomepageKelolaPage() {
                     className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs sm:text-sm text-slate-800 focus:bg-white focus:border-[#00113a] focus:ring-2 focus:ring-[#00113a]/15 focus:outline-none transition-all"
                   />
                 </div>
+
+                {/* Tautan Alamat 1 */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                    <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+                    Tautan Alamat 1
+                  </label>
+                  <input
+                    type="url"
+                    value={kontakData.tautanAlamat1 || ''}
+                    onChange={(e) => setKontakData({ ...kontakData, tautanAlamat1: e.target.value })}
+                    placeholder="https://maps.app.goo.gl/... atau tautan lokasi Google Maps"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs sm:text-sm text-slate-800 focus:bg-white focus:border-[#00113a] focus:ring-2 focus:ring-[#00113a]/15 focus:outline-none transition-all"
+                  />
+                </div>
+
+                {/* Tautan Alamat 2 */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                    <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+                    Tautan Alamat 2
+                  </label>
+                  <input
+                    type="url"
+                    value={kontakData.tautanAlamat2 || ''}
+                    onChange={(e) => setKontakData({ ...kontakData, tautanAlamat2: e.target.value })}
+                    placeholder="https://maps.app.goo.gl/... atau tautan lokasi Google Maps"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs sm:text-sm text-slate-800 focus:bg-white focus:border-[#00113a] focus:ring-2 focus:ring-[#00113a]/15 focus:outline-none transition-all"
+                  />
+                </div>
               </div>
+
+              {/* Feedback Pop up matching login style */}
+              {kontakSuccessMsg && (
+                <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold animate-fadeIn shadow-2xs">
+                  <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>{kontakSuccessMsg}</span>
+                </div>
+              )}
+              {kontakErrorMsg && (
+                <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold animate-fadeIn shadow-2xs">
+                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                  <span>{kontakErrorMsg}</span>
+                </div>
+              )}
 
               <div className="flex justify-end pt-3 border-t border-slate-100">
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-6 py-2.5 rounded-xl bg-[#00113a] hover:bg-[#2a4386] text-white text-xs font-bold transition-all shadow-xs disabled:opacity-50 flex items-center gap-1.5 active:scale-95 cursor-pointer"
+                  className="px-6 py-2.5 rounded-xl bg-[#00113a] hover:bg-[#2a4386] text-white text-xs font-bold transition-all shadow-xs disabled:opacity-50 active:scale-95 cursor-pointer"
                 >
-                  <Save className="w-3.5 h-3.5" />Simpan</button>
+                  {isSaving ? 'Menyimpan...' : 'Simpan'}
+                </button>
               </div>
             </form>
           </section>
@@ -1307,106 +1436,44 @@ export default function AdminHomepageKelolaPage() {
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              {/* ---------------- KOLOM KIRI: PREVIEW CARD (WIREFRAME) ---------------- */}
-              <div className="lg:col-span-5">
-                <div className="bg-white rounded-xl border border-slate-300/90 shadow-2xs p-6 space-y-4 min-h-[220px] flex flex-col justify-between">
-                  <div className="space-y-2">
-                    <h3 className="text-base font-bold text-slate-900">
-                      {savedInfoPenting.headline || 'Pemberitahuan'}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                      {savedInfoPenting.subheadline || 'Deskripsi atau subheadline info penting..'}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                    <div>
-                      {savedInfoPenting.status === 'AKTIF' ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs font-semibold bg-[#dcfce7] text-[#15803d] border border-[#86efac]">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#16a34a]" />
-                          Aktif
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs font-semibold bg-[#fef9c3] text-[#a16207] border border-[#fde047]">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#ca8a04]" />
-                          Menunggu
-                        </span>
-                      )}
+            <div className="max-w-xl">
+              {/* ---------------- PREVIEW CARD ---------------- */}
+              <div className="bg-white rounded-xl border border-slate-300/90 shadow-2xs p-6 space-y-4 min-h-[180px] flex flex-col justify-between">
+                <div className="space-y-4">
+                  <div className="flex items-start gap-4">
+                    {savedInfoPenting.imageUrl ? (
+                      <div className="w-16 h-16 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center p-2 shrink-0 overflow-hidden shadow-2xs">
+                        <img
+                          src={savedInfoPenting.imageUrl}
+                          alt="Ikon/Gambar Pemberitahuan"
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                    ) : null}
+                    <div className="space-y-1">
+                      <h3 className="text-base font-bold text-slate-900">
+                        {savedInfoPenting.headline || 'Pemberitahuan'}
+                      </h3>
+                      <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                        {savedInfoPenting.subheadline || 'Deskripsi atau subheadline info penting..'}
+                      </p>
                     </div>
-
-                    <button
-                      type="button"
-                      onClick={handleEditInfoPentingFromPreview}
-                      className="px-4 py-1.5 rounded bg-slate-500 hover:bg-slate-600 text-white text-xs font-medium transition-all shadow-2xs cursor-pointer flex items-center gap-1.5 active:scale-95"
-                    >
-                      <Pencil className="w-3 h-3" />
-                      Edit
-                    </button>
                   </div>
                 </div>
-              </div>
 
-              {/* ---------------- KOLOM KANAN: FORM UBAH PEMBERITAHUAN (WIREFRAME) ---------------- */}
-              <div className="lg:col-span-7" id="form-ubah-info-penting">
-                <div className="bg-white rounded-xl border border-slate-300/90 shadow-2xs p-6 space-y-4">
-                  <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3">
-                    Ubah Pemberitahuan
-                  </h3>
-
-                  <form onSubmit={handleSaveInfoPenting} className="space-y-4">
-                    <div className="space-y-1.5">
-                      <label htmlFor="info-headline-input" className="block text-xs font-semibold text-slate-800">
-                        Headline
-                      </label>
-                      <input
-                        id="info-headline-input"
-                        type="text"
-                        value={formInfoPenting.headline}
-                        onChange={(e) => setFormInfoPenting({ ...formInfoPenting, headline: e.target.value })}
-                        placeholder="Judul Pemberitahuan"
-                        className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-xs sm:text-sm text-slate-800 focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none transition-all"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label htmlFor="info-subheadline-input" className="block text-xs font-semibold text-slate-800">
-                        Subheadline
-                      </label>
-                      <textarea
-                        id="info-subheadline-input"
-                        rows={3}
-                        value={formInfoPenting.subheadline}
-                        onChange={(e) => setFormInfoPenting({ ...formInfoPenting, subheadline: e.target.value })}
-                        placeholder="Deskripsi atau subheadline info penting.."
-                        className="w-full rounded border border-slate-300 bg-white p-3 text-xs sm:text-sm text-slate-800 focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none transition-all resize-none leading-relaxed"
-                      />
-                    </div>
-
-                    <div className="flex items-center gap-3 pt-3 border-t border-slate-100">
-                      <button
-                        type="button"
-                        onClick={handleCancelInfoPenting}
-                        className="px-5 py-2 rounded bg-[#ef4444] hover:bg-[#dc2626] text-white text-xs font-semibold transition-all shadow-xs cursor-pointer active:scale-95"
-                      >
-                        Batal
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={isSaving}
-                        className="px-6 py-2 rounded bg-[#00113a] hover:bg-[#2a4386] text-white text-xs font-bold transition-all shadow-xs disabled:opacity-50 flex items-center gap-1.5 active:scale-95 cursor-pointer"
-                      >
-                        <Save className="w-3.5 h-3.5" />
-                        {isSaving ? 'Menyimpan...' : 'Simpan'}
-                      </button>
-                    </div>
-                  </form>
+                <div className="flex items-center justify-end pt-4 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={handleEditInfoPentingFromPreview}
+                    className="px-4 py-1.5 rounded bg-slate-500 hover:bg-slate-600 text-white text-xs font-medium transition-all shadow-2xs cursor-pointer flex items-center gap-1.5 active:scale-95"
+                  >
+                    <Pencil className="w-3 h-3" />
+                    Ubah
+                  </button>
                 </div>
               </div>
             </div>
           </div>
-
-
         </div>
       )}
 
@@ -1421,7 +1488,7 @@ export default function AdminHomepageKelolaPage() {
               <div className="flex items-center gap-3">
                 <div>
                   <h2 className="text-base font-bold text-slate-900">
-                    Banner Promosi & Agenda
+                    Banner Halaman Beranda
                   </h2>
                   <p className="text-xs text-slate-500 mt-0.5">
                     Banner slider pada halaman depan beranda intranet.
@@ -1446,7 +1513,7 @@ export default function AdminHomepageKelolaPage() {
                     <th className="py-2 px-2 w-[27%]">Headline</th>
                     <th className="py-2 px-2 w-[26%]">Subheadline</th>
                     <th className="py-2 px-1 w-[11%] text-center">Status</th>
-                    <th className="py-2 px-2 w-[13%] text-left">Dibuat Oleh</th>
+                    <th className="py-2 px-2 w-[13%] text-left">Diperbarui Oleh</th>
                     <th className="py-2 px-1 w-[9%] text-center">Aksi</th>
                   </tr>
                 </thead>
@@ -1575,12 +1642,7 @@ export default function AdminHomepageKelolaPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-4 mt-4 border-t border-slate-200/60">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
-                    {savedGreeting.status === 'TERBIT' ? 'Terbit' : 'Menunggu'}
-                  </span>
-
+                <div className="flex items-center justify-end pt-4 mt-4 border-t border-slate-200/60">
                   <button
                     type="button"
                     onClick={handleEditUcapanFromPreview}
@@ -1854,6 +1916,158 @@ export default function AdminHomepageKelolaPage() {
         isLoading={isDeletingService}
         variant="danger"
       />
+      {/* Modal: Ubah Pemberitahuan */}
+      {isInfoPentingModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto font-sans">
+          {/* Backdrop with blur */}
+          <div
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity"
+            onClick={handleCancelInfoPenting}
+            aria-hidden="true"
+          />
+
+          {/* Modal Container */}
+          <div
+            className="relative w-full max-w-lg bg-white border border-slate-200 shadow-2xl rounded-2xl z-10 p-6 sm:p-7 max-h-[94vh] overflow-y-auto my-3 animate-in fade-in zoom-in-95 duration-200 text-left"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-200">
+              <h2 className="text-lg sm:text-xl font-bold text-[#00113a] tracking-tight">
+                Ubah Pemberitahuan
+              </h2>
+              <button
+                type="button"
+                onClick={handleCancelInfoPenting}
+                className="w-6 h-6 bg-[#d32f2f] hover:bg-[#b71c1c] active:scale-95 text-white flex items-center justify-center rounded-xs font-bold text-xs transition-all shadow-2xs cursor-pointer"
+                title="Tutup"
+              >
+                <X className="w-4 h-4 stroke-[3]" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveInfoPenting} className="space-y-4">
+              {/* Bagian Ubah Gambar */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-slate-800">
+                  Ubah Gambar
+                </label>
+
+                {/* Input Berkas */}
+                <div className="flex items-stretch border border-slate-300 rounded-lg overflow-hidden shadow-2xs focus-within:border-[#00113a] focus-within:ring-1 focus-within:ring-[#00113a] transition-all">
+                  <input
+                    ref={infoPentingFileInputRef}
+                    type="file"
+                    accept=".png,.jpg,.jpeg,.svg,image/png,image/jpeg,image/svg+xml"
+                    onChange={handleInfoPentingImageChange}
+                    className="hidden"
+                    id="info-penting-image-upload"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => infoPentingFileInputRef.current?.click()}
+                    className="px-3.5 py-2 bg-slate-200 hover:bg-slate-300 active:scale-95 text-slate-800 text-xs font-semibold border-r border-slate-300 transition-all shrink-0 cursor-pointer"
+                  >
+                    Pilih Berkas
+                  </button>
+                  <div
+                    onClick={() => infoPentingFileInputRef.current?.click()}
+                    className="flex-1 px-3 py-2 bg-white text-xs text-slate-600 truncate cursor-pointer flex items-center select-none hover:text-slate-800 transition-colors"
+                  >
+                    {formInfoPenting.imageName || 'File berupa .png, .jpg, atau .svg'}
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-slate-500 pt-0.5">
+                  File maksimal berukuran 5 MB
+                </p>
+
+                {/* Kotak Preview Gambar */}
+                {formInfoPenting.imageUrl ? (
+                  <div className="relative mt-2 w-full h-32 bg-slate-50 border border-slate-200 rounded-xl overflow-hidden flex items-center justify-center shadow-2xs group">
+                    <img
+                      src={formInfoPenting.imageUrl}
+                      alt="Preview Gambar Pemberitahuan"
+                      className="max-h-24 max-w-[85%] object-contain transition-transform group-hover:scale-105"
+                    />
+
+                    {/* Button silang berbentuk lingkaran di pojok kanan atas */}
+                    <button
+                      type="button"
+                      onClick={handleRemoveInfoPentingImage}
+                      className="absolute top-2 right-2 w-7 h-7 rounded-full bg-slate-900/60 hover:bg-red-600 active:scale-95 text-white flex items-center justify-center text-xs transition-colors cursor-pointer shadow-xs z-10"
+                      title="Hapus gambar (tanpa gambar)"
+                    >
+                      <X className="w-4 h-4 stroke-[2.5]" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="relative mt-2 w-full h-28 bg-slate-50/70 border border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center text-slate-400 gap-1.5 p-3 select-none">
+                    <ImageIcon className="w-6 h-6 text-slate-400 stroke-1" />
+                    <span className="text-xs font-semibold text-slate-600">
+                      Tidak menggunakan gambar
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleResetToDefaultInfoPentingImage}
+                      className="text-[11px] text-[#007BFF] hover:underline font-medium cursor-pointer"
+                    >
+                      Gunakan Ikon Default Perpusnas
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Headline */}
+              <div className="space-y-1.5">
+                <label htmlFor="info-headline-input" className="block text-xs font-semibold text-slate-800">
+                  Headline
+                </label>
+                <input
+                  id="info-headline-input"
+                  type="text"
+                  value={formInfoPenting.headline}
+                  onChange={(e) => setFormInfoPenting({ ...formInfoPenting, headline: e.target.value })}
+                  placeholder="Judul Pemberitahuan"
+                  className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-xs sm:text-sm text-slate-800 focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none transition-all"
+                  autoFocus
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="info-subheadline-input" className="block text-xs font-semibold text-slate-800">
+                  Subheadline
+                </label>
+                <textarea
+                  id="info-subheadline-input"
+                  rows={4}
+                  value={formInfoPenting.subheadline}
+                  onChange={(e) => setFormInfoPenting({ ...formInfoPenting, subheadline: e.target.value })}
+                  placeholder="Deskripsi atau subheadline info penting.."
+                  className="w-full rounded border border-slate-300 bg-white p-3 text-xs sm:text-sm text-slate-800 focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none transition-all resize-none leading-relaxed"
+                />
+              </div>
+
+              <div className="flex items-center gap-3 pt-3 border-t border-slate-100">
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="px-6 py-2 rounded bg-[#00113a] hover:bg-[#2a4386] text-white text-xs font-bold transition-all shadow-xs disabled:opacity-50 active:scale-95 cursor-pointer"
+                >
+                  {isSaving ? 'Menyimpan...' : 'Simpan'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCancelInfoPenting}
+                  className="px-5 py-2 rounded bg-[#ef4444] hover:bg-[#dc2626] text-white text-xs font-semibold transition-all shadow-xs cursor-pointer active:scale-95"
+                >
+                  Batal
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

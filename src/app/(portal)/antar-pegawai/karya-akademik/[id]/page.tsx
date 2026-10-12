@@ -29,7 +29,7 @@ export default function DetailKaryaAkademikPage() {
       (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
     );
 
-  const [item, setItem] = useState<KaryaAkademikItem | null>(matchedInitial);
+  const [item, setItem] = useState<KaryaAkademikItem | null>(matchedInitial || null);
   const [isLoading, setIsLoading] = useState(!matchedInitial);
 
   // Lightbox preview for attachments

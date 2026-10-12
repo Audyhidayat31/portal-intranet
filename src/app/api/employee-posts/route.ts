@@ -35,6 +35,19 @@ export async function GET(request: NextRequest) {
       ];
     }
 
+    const user = await getCurrentUser();
+    if (user?.role !== 'ADMINISTRATOR') {
+      where.AND = [
+        {
+          OR: [
+            { status: 'TERBIT' },
+            { status: 'PUBLISHED' },
+            { authorId: user?.userId || 'not-logged-in' }
+          ]
+        }
+      ];
+    }
+
     const posts = await prisma.employeePost.findMany({
       where,
       orderBy: { createdAt: 'desc' },
@@ -61,7 +74,40 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ success: true, data: posts });
+    let postsWithEditor: any[] = posts;
+    try {
+      const postIds = posts.map((p) => p.id);
+      const updateLogs = await prisma.activityLog.findMany({
+        where: {
+          targetId: { in: postIds },
+          action: 'UPDATE',
+        },
+        orderBy: { createdAt: 'desc' },
+        include: {
+          user: { select: { name: true } },
+        },
+      });
+
+      const editorMap = new Map<string, string>();
+      for (const log of updateLogs) {
+        if (log.targetId && log.user?.name && !editorMap.has(log.targetId)) {
+          editorMap.set(log.targetId, log.user.name);
+        }
+      }
+
+      postsWithEditor = posts.map((p) => {
+        const editorName = editorMap.get(p.id) || null;
+        return {
+          ...p,
+          editor: editorName ? { name: editorName } : null,
+          editorName,
+        };
+      });
+    } catch (logErr) {
+      console.warn('Failed to query update logs for posts:', logErr);
+    }
+
+    return NextResponse.json({ success: true, data: postsWithEditor });
   } catch (error) {
     console.error('Error fetching employee posts:', error);
     return NextResponse.json({ success: false, message: 'Gagal memuat postingan' }, { status: 500 });

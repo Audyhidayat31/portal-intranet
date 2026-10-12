@@ -79,9 +79,9 @@ export default function LupaKataSandiPage() {
   };
 
   return (
-    <div className="bg-white text-[#191c1d] min-h-screen flex flex-col justify-between selection:bg-[#007BFF] selection:text-white p-3 sm:p-5">
+    <div className="bg-white text-[#191c1d] min-h-screen flex flex-col justify-between selection:bg-[#007BFF] selection:text-white">
       {/* Main Content Area */}
-      <main className="flex-1 flex items-center justify-center">
+      <main className="flex-1 flex items-center justify-center p-3 sm:p-5">
         {/* Large Rounded Card Matching Wireframe */}
         <div className="bg-white rounded-[24px] sm:rounded-[32px] border border-black/80 sm:border-black w-full max-w-[1200px] py-8 sm:py-12 md:py-14 px-4 sm:px-10 flex flex-col items-center justify-center relative shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
           

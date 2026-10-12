@@ -128,13 +128,10 @@ Beliau memimpin proyek integrasi katalog induk nasional dan layanan akses reposi
   const displayContent = figureItem?.fullStory || figureItem?.body || figureItem?.quote || '';
 
   // Attachments
-  const attachmentImages = [
-    { id: 1, label: 'Gambar', src: figureItem?.photoUrl || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80' },
-    { id: 2, label: 'Gambar', src: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80' },
-    { id: 3, label: 'Gambar', src: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80' },
-    { id: 4, label: 'Gambar', src: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=800&q=80' },
-    { id: 5, label: 'Gambar', src: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=800&q=80' },
-  ];
+  const hasRealPhoto = Boolean(figureItem?.photoUrl && !figureItem.photoUrl.includes('unsplash.com'));
+  const attachmentImages = hasRealPhoto
+    ? [{ id: 1, label: 'Foto Profil', src: figureItem.photoUrl }]
+    : [];
 
   if (isLoading) {
     return (
@@ -223,20 +220,24 @@ Beliau memimpin proyek integrasi katalog induk nasional dan layanan akses reposi
             </h3>
 
             {/* Attachment Thumbnails matching Stitch */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
-              {attachmentImages.map((att) => (
-                <button
-                  key={att.id}
-                  type="button"
-                  onClick={() => setPreviewImage(att.src)}
-                  className="aspect-square bg-[#e2e3ea] hover:bg-[#d8d9e2] border border-[#c5c6d2] rounded-md flex flex-col items-center justify-center text-xs text-[#757682] hover:text-[#00113a] font-medium transition-all group shadow-2xs cursor-pointer"
-                >
-                  <span className="text-xs font-medium text-[#757682] group-hover:text-[#1a1b20] transition-colors">
-                    {att.label}
-                  </span>
-                </button>
-              ))}
-            </div>
+            {attachmentImages.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
+                {attachmentImages.map((att) => (
+                  <button
+                    key={att.id}
+                    type="button"
+                    onClick={() => setPreviewImage(att.src)}
+                    className="aspect-square bg-[#e2e3ea] hover:bg-[#d8d9e2] border border-[#c5c6d2] rounded-md flex flex-col items-center justify-center text-xs text-[#757682] hover:text-[#00113a] font-medium transition-all group shadow-2xs cursor-pointer"
+                  >
+                    <span className="text-xs font-medium text-[#757682] group-hover:text-[#1a1b20] transition-colors">
+                      {att.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-[#757682] italic">Tidak ada lampiran foto</p>
+            )}
           </div>
 
           {/* Divider Line */}

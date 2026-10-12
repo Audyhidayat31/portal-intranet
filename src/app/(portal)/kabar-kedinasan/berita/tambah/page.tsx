@@ -565,7 +565,7 @@ export default function TambahBeritaPage() {
                   type="file"
                   accept="image/*"
                   onChange={handleGambarFileChange}
-                  className="hidden" suppressHydrationWarning />
+                  className="hidden"  />
               </div>
 
               {/* Dashed preview box: Gambar Preview */}
@@ -627,7 +627,7 @@ export default function TambahBeritaPage() {
                   type="file"
                   multiple
                   onChange={handleLampiranFileChange}
-                  className="hidden" suppressHydrationWarning />
+                  className="hidden"  />
               </div>
 
               {/* Previews */}

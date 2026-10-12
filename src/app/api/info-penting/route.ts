@@ -9,6 +9,8 @@ const INFO_PENTING_FILE = path.join(process.cwd(), 'src', 'lib', 'info-penting-c
 const DEFAULT_CONFIG = {
   headline: 'Pemberitahuan',
   subheadline: 'Gunakan Nomor Induk Pegawai (NIP) resmi dan kata sandi kedinasan Anda. Jangan pernah membagikan kata sandi kepada siapapun demi menjaga integritas data kepegawaian Perpusnas RI.',
+  imageUrl: '/images/logo-perpusnas.png',
+  imageName: 'logo-perpusnas.png',
   status: 'AKTIF',
   updatedAt: new Date().toISOString(),
   updatedBy: 'Administrator',
@@ -52,7 +54,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { headline, subheadline, status } = body;
+    const { headline, subheadline, status, imageUrl, imageName } = body;
 
     if (!headline || !headline.trim()) {
       return NextResponse.json({ success: false, message: 'Headline pemberitahuan wajib diisi.' }, { status: 400 });
@@ -63,6 +65,8 @@ export async function PUT(request: NextRequest) {
       ...currentConfig,
       headline: headline.trim(),
       subheadline: (subheadline || '').trim(),
+      imageUrl: imageUrl !== undefined ? imageUrl : (currentConfig.imageUrl || '/images/logo-perpusnas.png'),
+      imageName: imageName !== undefined ? imageName : currentConfig.imageName,
       status: status === 'MENUNGGU' ? 'MENUNGGU' : 'AKTIF',
       updatedAt: new Date().toISOString(),
       updatedBy: user.name || 'Administrator',
