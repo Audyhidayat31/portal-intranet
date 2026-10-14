@@ -22,6 +22,8 @@ import {
   Highlighter,
   Type,
   Upload,
+  FileText,
+  X,
 } from 'lucide-react';
 
 export default function TambahDokumenInternalPage() {
@@ -32,9 +34,11 @@ export default function TambahDokumenInternalPage() {
   const [nomorDokumen, setNomorDokumen] = useState('');
   const [tanggal, setTanggal] = useState<Date>(new Date());
   const [keteranganHtml, setKeteranganHtml] = useState('');
-  const [lampiranName, setLampiranName] = useState('');
+  const [attachments, setAttachments] = useState<{ file?: File; name: string; preview?: string | null }[]>([]);
   const [jenisDokumen, setJenisDokumen] = useState('');
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState<'Terbit' | 'Menunggu' | ''>('Terbit');
+  const [isStatusMenuOpen, setIsStatusMenuOpen] = useState(false);
+  const statusMenuRef = useRef<HTMLDivElement>(null);
 
   // Active toolbar formatting states
   const [activeStyles, setActiveStyles] = useState({
@@ -56,7 +60,7 @@ export default function TambahDokumenInternalPage() {
 
   // WYSIWYG Editor Ref
   const editorRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const attachmentInputRef = useRef<HTMLInputElement>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
@@ -91,6 +95,12 @@ export default function TambahDokumenInternalPage() {
         !datePickerRef.current.contains(event.target as Node)
       ) {
         setIsDatePickerOpen(false);
+      }
+      if (
+        statusMenuRef.current &&
+        !statusMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsStatusMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -160,19 +170,65 @@ export default function TambahDokumenInternalPage() {
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setLampiranName(e.target.files[0].name);
+  const handleAttachmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    const nonPdf = files.find(
+      (f) => !f.name.toLowerCase().endsWith('.pdf') && f.type !== 'application/pdf'
+    );
+    if (nonPdf) {
+      alert(`File "${nonPdf.name}" bukan format .pdf. Hanya file .pdf yang diperbolehkan.`);
+      if (attachmentInputRef.current) attachmentInputRef.current.value = '';
+      return;
     }
+
+    const oversized = files.find((f) => f.size > 5 * 1024 * 1024);
+    if (oversized) {
+      alert(`File "${oversized.name}" melebihi ukuran maksimal 5MB`);
+      if (attachmentInputRef.current) attachmentInputRef.current.value = '';
+      return;
+    }
+
+    if (attachments.length + files.length > 10) {
+      alert('Maksimal 10 lampiran diperbolehkan');
+      return;
+    }
+
+    const newAttachments = files.map((file) => ({
+      file,
+      name: file.name,
+      preview: null,
+    }));
+
+    setAttachments([...attachments, ...newAttachments]);
+    if (attachmentInputRef.current) {
+      attachmentInputRef.current.value = '';
+    }
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments(attachments.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const rawText = editorRef.current?.innerText?.trim() || '';
     const htmlContent = editorRef.current?.innerHTML?.trim() || '';
-
     if (!judul.trim()) {
-      alert('Nama judul dokumen wajib diisi.');
+      alert('Silakan isi Judul');
+      return;
+    }
+    if (!nomorDokumen.trim()) {
+      alert('Silakan isi Nomor Dokumen');
+      return;
+    }
+    if (!rawText && !htmlContent) {
+      alert('Silakan isi Keterangan');
+      return;
+    }
+    if (!jenisDokumen.trim()) {
+      alert('Silakan pilih Jenis Dokumen');
       return;
     }
 
@@ -183,9 +239,10 @@ export default function TambahDokumenInternalPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: judul,
+          documentNumber: nomorDokumen,
           categoryName: jenisDokumen,
-          keterangan: htmlContent || rawText || judul,
-          attachmentName: lampiranName || `${judul.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
+          keterangan: htmlContent || rawText,
+          attachmentName: attachments.length > 0 ? attachments.map((a) => a.name).join(', ') : undefined,
           publishedAt: tanggal.toISOString(),
           status: status || 'Terbit',
         }),
@@ -316,7 +373,7 @@ export default function TambahDokumenInternalPage() {
                 htmlFor="judul"
                 className="font-bold text-sm text-[#1a1b20] flex items-center h-10 md:col-span-1"
               >
-                <span>Judul</span>
+                <span>Judul <span className="text-red-500">*</span></span>
                 <span className="ml-auto pr-4 hidden md:inline">:</span>
               </label>
               <div className="md:col-span-3">
@@ -338,7 +395,7 @@ export default function TambahDokumenInternalPage() {
                 htmlFor="nomorDokumen"
                 className="font-bold text-sm text-[#1a1b20] flex items-center h-10 md:col-span-1"
               >
-                <span>Nomor Dokumen</span>
+                <span>Nomor Dokumen <span className="text-red-500">*</span></span>
                 <span className="ml-auto pr-4 hidden md:inline">:</span>
               </label>
               <div className="md:col-span-3">
@@ -443,7 +500,7 @@ export default function TambahDokumenInternalPage() {
                 htmlFor="keterangan"
                 className="font-bold text-sm text-[#1a1b20] pt-2 md:col-span-1 flex items-start"
               >
-                <span>Keterangan</span>
+                <span>Keterangan <span className="text-red-500">*</span></span>
                 <span className="ml-auto pr-4 hidden md:inline">:</span>
               </label>
               <div className="md:col-span-3 border border-[#c5c6d2] rounded overflow-hidden shadow-xs">
@@ -563,31 +620,78 @@ export default function TambahDokumenInternalPage() {
                 htmlFor="lampiran"
                 className="font-bold text-sm text-[#1a1b20] flex items-center h-10 md:col-span-1"
               >
-                <span>Lampiran</span>
+                <span>Lampiran (Maks. 10 File)</span>
                 <span className="ml-auto pr-4 hidden md:inline">:</span>
               </label>
-              <div className="md:col-span-3 flex items-center">
-                <input
-                  id="lampiran"
-                  type="text"
-                  placeholder="Nama file .pdf/ .docx"
-                  value={lampiranName}
-                  onChange={(e) => setLampiranName(e.target.value)}
-                  className="w-full h-10 border border-[#c5c6d2] rounded-l focus:ring-1 focus:ring-[#00113a] focus:border-[#00113a] px-3 text-sm bg-white text-[#1a1b20] placeholder-[#757682] focus:outline-none transition-colors"
-                />
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="h-10 px-6 border border-l-0 border-[#c5c6d2] rounded-r bg-[#f4f3f9] hover:bg-[#e9e7ee] text-[#1a1b20] text-sm font-semibold transition-colors shrink-0 cursor-pointer"
-                >
-                  Upload
-                </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".pdf,.docx,.doc"
-                  onChange={handleFileChange}
-                  className="hidden" suppressHydrationWarning />
+              <div className="md:col-span-3 space-y-4">
+                <div>
+                  <div className="flex">
+                    <input
+                      type="text"
+                      readOnly
+                      value={attachments.length > 0 ? (attachments.length === 1 ? attachments[0].name : `${attachments.length} file dipilih`) : ''}
+                      placeholder="File berupa .pdf"
+                      className="flex-grow h-10 border border-r-0 border-[#c5c6d2] rounded-l px-3 text-sm bg-white text-[#444650] placeholder-[#757682] cursor-default focus:outline-none"
+                    />
+                    <input
+                      ref={attachmentInputRef}
+                      type="file"
+                      accept=".pdf,application/pdf"
+                      multiple
+                      suppressHydrationWarning
+                      onChange={handleAttachmentChange}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => attachmentInputRef.current?.click()}
+                      disabled={attachments.length >= 10}
+                      className="px-6 h-10 bg-[#e9e7ee] border border-[#c5c6d2] rounded-r text-[#1a1b20] font-bold text-xs sm:text-sm hover:bg-[#e1e3e4] transition-colors disabled:opacity-50 cursor-pointer"
+                    >
+                      Upload
+                    </button>
+                  </div>
+                  <p className="text-xs text-[#757682] mt-1.5 font-normal">File Maksimal 5MB</p>
+                </div>
+
+                {/* Previews */}
+                {attachments.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 w-full">
+                    {attachments.map((att, idx) => (
+                      <div
+                        key={idx}
+                        className="relative group bg-[#e9e7ee] border border-[#c5c6d2] rounded-md overflow-hidden aspect-square flex flex-col items-center justify-center"
+                      >
+                        {att.preview ? (
+                          <img
+                            src={att.preview}
+                            alt={att.name}
+                            className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                          />
+                        ) : (
+                          <div className="flex flex-col items-center gap-2 p-2">
+                            <FileText className="w-8 h-8 text-[#00113a]" />
+                            <span className="text-[10px] font-bold text-center break-all line-clamp-2 text-[#00113a]">
+                              {att.name}
+                            </span>
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => removeAttachment(idx)}
+                          className="absolute top-1 right-1 bg-black/60 hover:bg-black text-white p-1 rounded-full transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                        {att.preview && (
+                          <span className="absolute bottom-0 w-full bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center">
+                            {att.name}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -597,12 +701,13 @@ export default function TambahDokumenInternalPage() {
                 htmlFor="jenisDokumen"
                 className="font-bold text-sm text-[#1a1b20] flex items-center h-10 md:col-span-1"
               >
-                <span>Jenis Dokumen</span>
+                <span>Jenis Dokumen <span className="text-red-500">*</span></span>
                 <span className="ml-auto pr-4 hidden md:inline">:</span>
               </label>
               <div className="md:col-span-2 relative">
                 <select
                   id="jenisDokumen"
+                  required
                   value={jenisDokumen}
                   onChange={(e) => setJenisDokumen(e.target.value)}
                   className="w-full h-10 border border-[#c5c6d2] rounded appearance-none bg-[#f4f3f9] text-[#1a1b20] px-3 text-sm focus:outline-none focus:border-[#00113a] cursor-pointer"
@@ -617,26 +722,57 @@ export default function TambahDokumenInternalPage() {
             </div>
 
             {/* Field: Status */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4 items-start">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4 items-center">
               <label
-                htmlFor="status"
                 className="font-bold text-sm text-[#1a1b20] flex items-center h-10 md:col-span-1"
               >
                 <span>Status</span>
                 <span className="ml-auto pr-4 hidden md:inline">:</span>
               </label>
-              <div className="md:col-span-2 relative">
-                <select
-                  id="status"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  className="w-full h-10 border border-[#c5c6d2] rounded appearance-none bg-[#f4f3f9] text-[#1a1b20] px-3 text-sm focus:outline-none focus:border-[#00113a] cursor-pointer"
+              <div className="md:col-span-3 relative w-full md:w-56" ref={statusMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
+                  className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${
+                    isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
+                  }`}
                 >
-                  <option value="">Pilih Jenis Status</option>
-                  <option value="Terbit">Terbit</option>
-                  <option value="Menunggu">Menunggu</option>
-                </select>
-                <ChevronDown className="w-4 h-4 text-[#757682] absolute right-3 top-3 pointer-events-none" />
+                  <span className="truncate">{status || 'Pilih Jenis Status'}</span>
+                  <ChevronDown className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isStatusMenuOpen && (
+                  <div className="absolute top-full left-0 z-50 w-full bg-white border border-[#c5c6d2] border-t-0 rounded-b-md shadow-lg py-1 animate-fadeIn">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStatus('Terbit');
+                        setIsStatusMenuOpen(false);
+                      }}
+                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
+                        status === 'Terbit'
+                          ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                          : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                      }`}
+                    >
+                      Terbit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStatus('Menunggu');
+                        setIsStatusMenuOpen(false);
+                      }}
+                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
+                        status === 'Menunggu'
+                          ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                          : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                      }`}
+                    >
+                      Menunggu
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 

@@ -64,7 +64,7 @@ export default function LaporanPerjalananPage() {
       .then((data) => {
         const apiItems = data.success && Array.isArray(data.data) ? data.data : [];
 
-        setReports(apiItems.length > 0 ? apiItems : STITCH_MOCK_BUSINESS_TRIPS_5);
+        setReports(apiItems);
       })
       .catch((e) => {
         console.error(e);

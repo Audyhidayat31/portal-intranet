@@ -43,7 +43,7 @@ Hasil analisis menunjukkan peningkatan tren riset kolaboratif antarbangsa dengan
     authorName: 'Dr. Sri Rahayu, M.Hum.',
     authorPosition: 'Peneliti Ahli Utama',
     authorUnit: 'Pusat Riset dan Pengembangan Perpustakaan',
-    authorAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop',
+    authorAvatar: '/images/logo-perpusnas.png',
     attachments: MOCK_KARYA_AKADEMIK_ATTACHMENTS_5,
   },
   {
@@ -59,7 +59,7 @@ Tulisan ini menjabarkan implementasi protokol OAIS (Open Archival Information Sy
     authorName: 'Ahmad Fauzi, M.Kom.',
     authorPosition: 'Pranata Komputer Ahli Muda',
     authorUnit: 'Pusat Data dan Informasi (Pusdatin)',
-    authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop',
+    authorAvatar: '/images/logo-perpusnas.png',
     attachments: MOCK_KARYA_AKADEMIK_ATTACHMENTS_5,
   },
   {
@@ -75,7 +75,7 @@ Riset ini mengusulkan roadmap peningkatan kapasitas pustakawan dalam mendampingi
     authorName: 'Dewi Lestari, S.Sos.',
     authorPosition: 'Pustakawan Ahli Pertama',
     authorUnit: 'Direktorat Layanan Perpustakaan dan Informasi',
-    authorAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop',
+    authorAvatar: '/images/logo-perpusnas.png',
     attachments: MOCK_KARYA_AKADEMIK_ATTACHMENTS_5,
   },
   {
@@ -91,7 +91,7 @@ Melalui perancangan model graf pengetahuan (knowledge graph), pemustaka dapat me
     authorName: 'Hendra Gunawan, S.Kom., M.T.I.',
     authorPosition: 'Pranata Komputer Ahli Madya',
     authorUnit: 'Pusat Data dan Informasi',
-    authorAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop',
+    authorAvatar: '/images/logo-perpusnas.png',
     attachments: MOCK_KARYA_AKADEMIK_ATTACHMENTS_5,
   },
   {
@@ -107,7 +107,7 @@ Melalui pelatihan literasi digital, wirausaha kuliner, kerajinan tangan, dan per
     authorName: 'Dra. Endang Sulistyowati, M.Si.',
     authorPosition: 'Pustakawan Ahli Utama',
     authorUnit: 'Pusat Pengembangan Perpustakaan Umum dan Khusus',
-    authorAvatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop',
+    authorAvatar: '/images/logo-perpusnas.png',
     attachments: MOCK_KARYA_AKADEMIK_ATTACHMENTS_5,
   },
   {
@@ -123,7 +123,7 @@ Kajian ini menelaah varian bahasa Melayu-Riau beraksara Jawi abad ke-18 dengan m
     authorName: 'Rahmat Hidayat, M.Hum.',
     authorPosition: 'Filolog Ahli Muda',
     authorUnit: 'Pusat Preservasi dan Alih Media Bahan Perpustakaan',
-    authorAvatar: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=200&h=200&fit=crop',
+    authorAvatar: '/images/logo-perpusnas.png',
     attachments: MOCK_KARYA_AKADEMIK_ATTACHMENTS_5,
   },
 ];

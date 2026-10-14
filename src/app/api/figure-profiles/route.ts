@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
         fullStory: descContent,
         photoUrl:
           photoUrl ||
-          'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&auto=format&fit=crop',
+          '/images/logo-perpusnas.png',
         isSpotlight: Boolean(isSpotlight),
       },
     });

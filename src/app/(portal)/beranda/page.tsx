@@ -26,9 +26,30 @@ export default function BerandaPage() {
       fetch('/api/homepage/summary').then((res) => res.json()),
       fetch('/api/auth/me').then((res) => res.json()),
       fetch('/api/employee-posts?category=kalimat-bijak').then((res) => res.json()).catch(() => null),
+      fetch('/api/figure-profiles').then((res) => res.json()).catch(() => null),
     ])
-      .then(([homeRes, authRes, bijakRes]) => {
-        if (homeRes.success) setData(homeRes.data);
+      .then(([homeRes, authRes, bijakRes, figureRes]) => {
+        if (homeRes.success) {
+          let summaryData = homeRes.data;
+          // Prioritaskan figure aktif dari tabel profil_tokoh jika ada
+          if (figureRes?.success && Array.isArray(figureRes.data) && figureRes.data.length > 0) {
+            const spotlight = figureRes.data.find((f) => f.isSpotlight) || figureRes.data[0];
+            if (spotlight) {
+              summaryData = {
+                ...summaryData,
+                spotlightFigure: {
+                  ...spotlight,
+                  title: spotlight.position
+                    ? `${spotlight.name.toUpperCase()} : ${spotlight.position.toUpperCase()}`
+                    : spotlight.name.toUpperCase(),
+                  bio: spotlight.deskripsi || spotlight.fullStory || spotlight.quote || '',
+                  avatarUrl: spotlight.photoUrl || null,
+                },
+              };
+            }
+          }
+          setData(summaryData);
+        }
         if (authRes.success) setUserSession(authRes.data);
         if (bijakRes?.success && Array.isArray(bijakRes.data) && bijakRes.data.length > 0) {
           setLatestKalimatBijak(bijakRes.data[0]);
@@ -306,9 +327,9 @@ export default function BerandaPage() {
       <section className="bg-[#f4f3f9] rounded-2xl p-6 sm:p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 md:gap-12 border border-[#e3e2e8]">
         <div className="w-full md:w-1/3 flex justify-center">
           <div className="w-48 h-48 sm:w-56 sm:h-56 md:w-60 md:h-60 rounded-xl border border-[#c5c6d2] bg-white flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
-            {spotlightFigure?.avatarUrl ? (
+            {spotlightFigure?.avatarUrl || spotlightFigure?.photoUrl ? (
               <img
-                src={spotlightFigure.avatarUrl}
+                src={spotlightFigure.avatarUrl || spotlightFigure.photoUrl}
                 alt={spotlightFigure.name || 'Tokoh Perpusnas'}
                 className="w-full h-full object-cover"
               />
@@ -320,10 +341,15 @@ export default function BerandaPage() {
         <div className="w-full md:w-2/3 space-y-4 text-left">
           <h2 className="text-lg sm:text-xl font-bold text-[#00113a]">Kupas Sosok</h2>
           <h3 className="text-2xl sm:text-3xl font-bold text-[#1a1b20] uppercase tracking-wide leading-snug">
-            {spotlightFigure?.title || 'JNB TAIRAS : PEJUANG PUSTAKAWAN'}
+            {spotlightFigure?.position 
+              ? `${spotlightFigure.name.toUpperCase()} : ${spotlightFigure.position.toUpperCase()}`
+              : (spotlightFigure?.title || spotlightFigure?.name?.toUpperCase() || 'JNB TAIRAS : PEJUANG PUSTAKAWAN')}
           </h3>
-          <p className="text-sm sm:text-base text-[#444650] leading-relaxed">
-            {spotlightFigure?.bio ||
+          <p className="text-sm sm:text-base text-[#444650] leading-relaxed line-clamp-3">
+            {spotlightFigure?.deskripsi ||
+              spotlightFigure?.fullStory ||
+              spotlightFigure?.quote ||
+              spotlightFigure?.bio ||
               'Jon Ngion Benyamin Tairas, atau lebih dikenal dengan inisial JNB. Tairas dalam kurun waktu yang tidak pendek, lebih dari 50 tahun mengabdikan seluruh hidupnya di dunia kepustakawanan.'}
           </p>
           <div className="pt-2">
@@ -348,12 +374,22 @@ export default function BerandaPage() {
               key={item.id || idx}
               className="border border-[#c5c6d2] rounded-xl overflow-hidden bg-white shadow-sm flex flex-col group cursor-pointer hover:shadow-md transition-shadow"
             >
-              <div className="h-48 bg-[#e3e2e8] w-full relative overflow-hidden">
-                <img
-                  src={item.coverImage || '/images/berita-arsip.webp'}
-                  alt={item.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
+              <div className="h-48 bg-[#f4f5f8] w-full relative overflow-hidden flex items-center justify-center">
+                {item.coverImage?.includes('logo-perpusnas') ? (
+                  <div className="w-full h-full flex items-center justify-center p-6 bg-white/60">
+                    <img
+                      src={item.coverImage}
+                      alt={item.title}
+                      className="max-h-full max-w-[80%] object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-xs"
+                    />
+                  </div>
+                ) : (
+                  <img
+                    src={item.coverImage || '/images/berita-arsip.webp'}
+                    alt={item.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                )}
               </div>
               <div className="p-5 flex flex-col flex-grow justify-between">
                 <div>
@@ -518,7 +554,7 @@ export default function BerandaPage() {
               : 'Doa terbaik kami untuk Bapak/Ibu di momen bertambahnya usia. Semoga selalu dianugerahi kesehatan, kebahagiaan, kelancaran, serta kesuksesan dalam setiap karya.'}
           </p>
         </div>
-        <div className="w-full lg:w-2/3 flex overflow-x-auto gap-4 pb-2">
+        <div className="w-full lg:w-2/3 flex overflow-x-auto gap-4 pb-2 justify-start sm:justify-end">
           {birthdays.map((emp: any, idx: number) => (
             <div
               key={emp.id || idx}

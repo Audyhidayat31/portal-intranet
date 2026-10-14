@@ -3,11 +3,9 @@ import { prisma } from '@/lib/prisma';
 import { STITCH_MOCK_BUSINESS_TRIPS_5 } from '@/lib/mock-business-trips';
 
 function findMockBusinessTrip(id: string) {
-  const cleanId = id.toLowerCase();
+  const cleanId = id.toLowerCase().trim();
   return STITCH_MOCK_BUSINESS_TRIPS_5.find(
-    (m) =>
-      m.id?.toLowerCase() === cleanId ||
-      m.title.toLowerCase().includes(cleanId)
+    (m) => m.id?.toLowerCase() === cleanId
   );
 }
 
@@ -96,7 +94,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { title, excerpt, content, destinationCity, attachmentName, status } = body;
+    const { title, excerpt, content, destinationCity, attachmentName, status, publishedAt, authorName, nama } = body;
 
     try {
       const existing = await prisma.content.findFirst({
@@ -106,6 +104,17 @@ export async function PUT(
       });
 
       if (existing) {
+        const authorNameValue = authorName || nama;
+        let updateAuthorId = existing.authorId;
+        if (authorNameValue) {
+          const matchedUser = await prisma.user.findFirst({
+            where: { name: { contains: authorNameValue } },
+          });
+          if (matchedUser) {
+            updateAuthorId = matchedUser.id;
+          }
+        }
+
         const updated = await prisma.content.update({
           where: { id: existing.id },
           data: {
@@ -114,6 +123,8 @@ export async function PUT(
             body: content !== undefined ? content : existing.body,
             destinationCity: destinationCity !== undefined ? destinationCity : existing.destinationCity,
             attachmentName: attachmentName !== undefined ? attachmentName : existing.attachmentName,
+            publishedAt: publishedAt ? new Date(publishedAt) : existing.publishedAt,
+            authorId: updateAuthorId,
             status:
               status !== undefined
                 ? status === 'Menunggu' || status === 'MENUNGGU'

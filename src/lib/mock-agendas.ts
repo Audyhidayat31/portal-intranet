@@ -14,10 +14,10 @@ export interface AgendaItem {
 
 export const MOCK_AGENDA_ATTACHMENTS_5 = [
   { id: 1, label: 'Gambar', src: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=800&auto=format&fit=crop&q=80', fileName: 'rundown_kegiatan_agenda.jpg' },
-  { id: 2, label: 'Gambar', src: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=800&auto=format&fit=crop&q=80', fileName: 'denah_ruangan_acara.jpg' },
-  { id: 3, label: 'Gambar', src: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&auto=format&fit=crop&q=80', fileName: 'daftar_undangan_resmi.pdf' },
-  { id: 4, label: 'Gambar', src: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?w=800&auto=format&fit=crop&q=80', fileName: 'materi_presentasi_narasumber.pdf' },
-  { id: 5, label: 'Gambar', src: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&auto=format&fit=crop&q=80', fileName: 'surat_edaran_kedinasan.pdf' },
+  { id: 2, label: 'Gambar', src: '/images/logo-perpusnas.png', fileName: 'denah_ruangan_acara.jpg' },
+  { id: 3, label: 'Gambar', src: '/images/logo-perpusnas.png', fileName: 'daftar_undangan_resmi.pdf' },
+  { id: 4, label: 'Gambar', src: '/images/logo-perpusnas.png', fileName: 'materi_presentasi_narasumber.pdf' },
+  { id: 5, label: 'Gambar', src: '/images/logo-perpusnas.png', fileName: 'surat_edaran_kedinasan.pdf' },
 ];
 
 export const STITCH_MOCK_AGENDAS_6: AgendaItem[] = [
@@ -43,7 +43,7 @@ Kegiatan ini berfokus pada sinkronisasi data repositori daerah dengan server ind
     content: `Workshop peningkatan standar operasional prosedur penerimaan kunjungan pemustaka khusus dan pengenalan fasilitas ruang baca braille interaktif.
 
 Para peserta akan dibekali keahlian interaksi dan pemanfaatan alat bantu audio-visual cerdas untuk mendampingi pemustaka berkebutuhan khusus.`,
-    coverImage: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=800&auto=format&fit=crop&q=80',
+    coverImage: '/images/logo-perpusnas.png',
     publishedAt: '19 Agustus 2026',
     eventStartDate: '2026-08-19T09:30:00.000Z',
     eventLocation: 'Layanan Pemustaka Khusus Lt. 7, Gedung Perpusnas',
@@ -58,7 +58,7 @@ Para peserta akan dibekali keahlian interaksi dan pemanfaatan alat bantu audio-v
     content: `Evaluasi berkala pelaksanaan program perpustakaan berbasis inklusi sosial tingkat nasional untuk pengentasan kemiskinan dan pemberdayaan ekonomi masyarakat desa binaan.
 
 Menghadirkan kisah sukses pustakawan penggerak dari berbagai pelosok tanah air.`,
-    coverImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&auto=format&fit=crop&q=80',
+    coverImage: '/images/logo-perpusnas.png',
     publishedAt: '19 Agustus 2026',
     eventStartDate: '2026-08-19T13:00:00.000Z',
     eventLocation: 'Auditorium Utama Lt. 4, Gedung Perpusnas Merdeka Selatan',
@@ -71,7 +71,7 @@ Menghadirkan kisah sukses pustakawan penggerak dari berbagai pelosok tanah air.`
     title: 'Seminar Restorasi dan Preservasi Naskah Kuno Nusantara',
     excerpt: 'Kajian teknologi laboratorium kimia dan digitalisasi berkas kuno dalam mengamankan fisik naskah lontar abad ke-16 dari degradasi kelembapan...',
     content: `Kajian teknologi laboratorium kimia dan digitalisasi berkas kuno dalam mengamankan fisik naskah lontar abad ke-16 dari degradasi kelembapan dan mikroorganisme perusak bahan organik.`,
-    coverImage: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?w=800&auto=format&fit=crop&q=80',
+    coverImage: '/images/logo-perpusnas.png',
     publishedAt: '19 Agustus 2026',
     eventStartDate: '2026-08-19T10:00:00.000Z',
     eventLocation: 'Laboratorium Preservasi Bahan Pustaka, Salemba Raya',
@@ -84,7 +84,7 @@ Menghadirkan kisah sukses pustakawan penggerak dari berbagai pelosok tanah air.`
     title: 'Peluncuran Aplikasi Katalog Induk Nasional Terintegrasi AI',
     excerpt: 'Sosialisasi implementasi kecerdasan artifisial generasi terbaru dalam percepatan temu balik informasi repositori bahan pustaka nasional...',
     content: `Sosialisasi implementasi kecerdasan artifisial generasi terbaru dalam percepatan temu balik informasi repositori bahan pustaka nasional. Pemustaka dapat mencari kutipan naskah berbasis deskripsi suara dan gambar.`,
-    coverImage: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&auto=format&fit=crop&q=80',
+    coverImage: '/images/logo-perpusnas.png',
     publishedAt: '18 Agustus 2026',
     eventStartDate: '2026-08-18T14:00:00.000Z',
     eventLocation: 'Pusat Data dan Informasi (Pusdatin)',

@@ -13,13 +13,12 @@ import {
   Underline,
   List,
   Link2,
-  Heading1,
-  Heading2,
-  Type,
-  Quote,
   ImageIcon,
   Upload,
   CheckCircle,
+  Loader2,
+  FileText,
+  X,
 } from 'lucide-react';
 import {
   getStoredTahukahAnda,
@@ -29,6 +28,52 @@ import {
   DEFAULT_STITCH_TAHUKAH_ANDA_DETAIL,
   MOCK_TAHUKAH_ANDA_ATTACHMENTS_5,
 } from '@/lib/mock-tahukah-anda';
+
+const compressImage = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 1200;
+        const MAX_HEIGHT = 1200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            height *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.8));
+      };
+      img.onerror = (error) => reject(error);
+    };
+    reader.onerror = (error) => reject(error);
+  });
+};
+
+const readFileAsDataUrl = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
 
 export default function EditArtikelTahukahAndaPage() {
   const params = useParams();
@@ -42,7 +87,7 @@ export default function EditArtikelTahukahAndaPage() {
   const [deskripsiHtml, setDeskripsiHtml] = useState('');
   const [gambarFileName, setGambarFileName] = useState('');
   const [gambarPreview, setGambarPreview] = useState<string | null>(null);
-  const [lampiranFileName, setLampiranFileName] = useState('');
+  const [lampiranAttachments, setLampiranAttachments] = useState<Array<{ file?: File; name: string; preview: string | null }>>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState('');
@@ -64,110 +109,11 @@ export default function EditArtikelTahukahAndaPage() {
   const [isStatusMenuOpen, setIsStatusMenuOpen] = useState(false);
   const statusMenuRef = useRef<HTMLDivElement>(null);
 
-  // Styling dropdown state
-  const [isStylingMenuOpen, setIsStylingMenuOpen] = useState(false);
-  const stylingMenuRef = useRef<HTMLDivElement>(null);
-
   // Editor and Input refs
   const editorRef = useRef<HTMLDivElement>(null);
   const gambarInputRef = useRef<HTMLInputElement>(null);
   const lampiranInputRef = useRef<HTMLInputElement>(null);
   const hasInitializedEditor = useRef(false);
-
-  // Load existing data
-  useEffect(() => {
-    if (!id) return;
-
-    const currentStored = getStoredTahukahAnda();
-    const foundStored = currentStored.find((m) => m.id === id);
-
-    if (foundStored) {
-      setJudul(foundStored.title || '');
-      if (foundStored.publishedAt) {
-        setTanggal(new Date(foundStored.publishedAt));
-        setViewDate(new Date(foundStored.publishedAt));
-      }
-      setStatus(foundStored.status === 'Menunggu' ? 'Menunggu' : 'Terbit');
-      setDeskripsiHtml(foundStored.content || foundStored.excerpt || '');
-      if (editorRef.current) {
-        editorRef.current.innerHTML = foundStored.content || foundStored.excerpt || '';
-      }
-      if (foundStored.coverImage) {
-        setGambarPreview(foundStored.coverImage);
-        setGambarFileName(foundStored.coverImage.split('/').pop() || 'sampul.jpg');
-      }
-      setIsLoading(false);
-      return;
-    }
-
-    // Try API fetch or fallback to mock
-    fetch(`/api/employee-posts/${id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.data) {
-          const item = data.data;
-          setJudul(item.title || '');
-          if (item.publishedAt) {
-            setTanggal(new Date(item.publishedAt));
-            setViewDate(new Date(item.publishedAt));
-          }
-          setStatus(item.status === 'MENUNGGU' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit');
-          setDeskripsiHtml(item.body || item.content || '');
-          if (editorRef.current) {
-            editorRef.current.innerHTML = item.body || item.content || '';
-          }
-          if (item.coverImage) {
-            setGambarPreview(item.coverImage);
-            setGambarFileName(item.coverImage.split('/').pop() || 'sampul.jpg');
-          }
-        } else {
-          const matchedMock =
-            STITCH_MOCK_TAHUKAH_ANDA_9.find((m) => m.id === id || m.title.toLowerCase().includes(id.toLowerCase())) ||
-            DEFAULT_STITCH_TAHUKAH_ANDA_DETAIL;
-          setJudul(matchedMock.title || '');
-          if (matchedMock.publishedAt) {
-            setTanggal(new Date(matchedMock.publishedAt));
-            setViewDate(new Date(matchedMock.publishedAt));
-          }
-          setStatus(matchedMock.status === 'Menunggu' ? 'Menunggu' : 'Terbit');
-          setDeskripsiHtml(matchedMock.content || '');
-          if (editorRef.current) {
-            editorRef.current.innerHTML = matchedMock.content || '';
-          }
-          if (matchedMock.coverImage) {
-            setGambarPreview(matchedMock.coverImage);
-            setGambarFileName(matchedMock.coverImage.split('/').pop() || 'sampul.jpg');
-          }
-        }
-        setIsLoading(false);
-      })
-      .catch(() => {
-        const matchedMock =
-          STITCH_MOCK_TAHUKAH_ANDA_9.find((m) => m.id === id) || DEFAULT_STITCH_TAHUKAH_ANDA_DETAIL;
-        setJudul(matchedMock.title || '');
-        if (matchedMock.publishedAt) {
-          setTanggal(new Date(matchedMock.publishedAt));
-          setViewDate(new Date(matchedMock.publishedAt));
-        }
-        setStatus(matchedMock.status === 'Menunggu' ? 'Menunggu' : 'Terbit');
-        setDeskripsiHtml(matchedMock.content || '');
-        if (editorRef.current) {
-          editorRef.current.innerHTML = matchedMock.content || '';
-        }
-        if (matchedMock.coverImage) {
-          setGambarPreview(matchedMock.coverImage);
-          setGambarFileName(matchedMock.coverImage.split('/').pop() || 'sampul.jpg');
-        }
-        setIsLoading(false);
-      });
-  }, [id]);
-
-  useEffect(() => {
-    if (!hasInitializedEditor.current && deskripsiHtml && editorRef.current) {
-      editorRef.current.innerHTML = deskripsiHtml;
-      hasInitializedEditor.current = true;
-    }
-  }, [deskripsiHtml]);
 
   // Check active styles under selection
   const checkActiveStyles = useCallback(() => {
@@ -203,6 +149,162 @@ export default function EditArtikelTahukahAndaPage() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Load existing data
+  useEffect(() => {
+    if (!id) return;
+
+    const currentStored = getStoredTahukahAnda();
+    const foundStored = currentStored.find((m) => m.id === id);
+
+    if (foundStored) {
+      setJudul(foundStored.title || '');
+      if (foundStored.publishedAt) {
+        const d = new Date(foundStored.publishedAt);
+        if (!isNaN(d.getTime())) {
+          setTanggal(d);
+          setViewDate(d);
+        }
+      }
+      setStatus(foundStored.status === 'Menunggu' ? 'Menunggu' : 'Terbit');
+      const content = foundStored.content || foundStored.excerpt || '';
+      setDeskripsiHtml(content);
+      if (editorRef.current) {
+        editorRef.current.innerHTML = content;
+      }
+      if (foundStored.coverImage) {
+        setGambarPreview(foundStored.coverImage);
+        setGambarFileName(foundStored.coverImage.split('/').pop() || 'sampul.jpg');
+      }
+      if (foundStored.attachments && foundStored.attachments.length > 0) {
+        setLampiranAttachments(
+          foundStored.attachments.map((att: any) => {
+            const name = att.label || att.name || (att.src ? att.src.split('/').pop() : `Lampiran ${att.id}`);
+            const preview = att.src || (name.match(/\.(jpg|jpeg|png|webp|gif)$/i) ? `/uploads/${name}` : null);
+            return {
+              name,
+              preview: preview && preview.match(/\.(jpg|jpeg|png|webp|gif)$/i) ? preview : null,
+            };
+          })
+        );
+      }
+      setIsLoading(false);
+      return;
+    }
+
+    // Try API fetch or fallback to mock
+    fetch(`/api/employee-posts/${id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          const item = data.data;
+          setJudul(item.title || '');
+          if (item.publishedAt) {
+            const d = new Date(item.publishedAt);
+            if (!isNaN(d.getTime())) {
+              setTanggal(d);
+              setViewDate(d);
+            }
+          }
+          setStatus(item.status === 'MENUNGGU' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit');
+          const content = item.body || item.content || '';
+          setDeskripsiHtml(content);
+          if (editorRef.current) {
+            editorRef.current.innerHTML = content;
+          }
+          if (item.coverImage) {
+            setGambarPreview(item.coverImage);
+            setGambarFileName(item.coverImage.split('/').pop() || 'sampul.jpg');
+          }
+          if (item.attachmentName || item.attachment) {
+            const attStr = item.attachmentName || item.attachment || '';
+            const names = attStr.split(',').map((n: string) => n.trim()).filter(Boolean);
+            setLampiranAttachments(
+              names.map((name: string) => ({
+                name,
+                preview: name.match(/\.(jpg|jpeg|png|webp|gif)$/i) ? `/uploads/${name}` : null,
+              }))
+            );
+          }
+        } else {
+          const matchedMock =
+            STITCH_MOCK_TAHUKAH_ANDA_9.find((m) => m.id === id || m.title.toLowerCase().includes(id.toLowerCase())) ||
+            DEFAULT_STITCH_TAHUKAH_ANDA_DETAIL;
+          setJudul(matchedMock.title || '');
+          if (matchedMock.publishedAt) {
+            const d = new Date(matchedMock.publishedAt);
+            if (!isNaN(d.getTime())) {
+              setTanggal(d);
+              setViewDate(d);
+            }
+          }
+          setStatus(matchedMock.status === 'Menunggu' ? 'Menunggu' : 'Terbit');
+          const content = matchedMock.content || '';
+          setDeskripsiHtml(content);
+          if (editorRef.current) {
+            editorRef.current.innerHTML = content;
+          }
+          if (matchedMock.coverImage) {
+            setGambarPreview(matchedMock.coverImage);
+            setGambarFileName(matchedMock.coverImage.split('/').pop() || 'sampul.jpg');
+          }
+          if (matchedMock.attachments && matchedMock.attachments.length > 0) {
+            setLampiranAttachments(
+              matchedMock.attachments.map((att: any) => {
+                const name = att.label || att.name || (att.src ? att.src.split('/').pop() : `Lampiran ${att.id}`);
+                const preview = att.src || (name.match(/\.(jpg|jpeg|png|webp|gif)$/i) ? `/uploads/${name}` : null);
+                return {
+                  name,
+                  preview: preview && preview.match(/\.(jpg|jpeg|png|webp|gif)$/i) ? preview : null,
+                };
+              })
+            );
+          }
+        }
+        setIsLoading(false);
+      })
+      .catch(() => {
+        const matchedMock =
+          STITCH_MOCK_TAHUKAH_ANDA_9.find((m) => m.id === id) || DEFAULT_STITCH_TAHUKAH_ANDA_DETAIL;
+        setJudul(matchedMock.title || '');
+        if (matchedMock.publishedAt) {
+          const d = new Date(matchedMock.publishedAt);
+          if (!isNaN(d.getTime())) {
+            setTanggal(d);
+            setViewDate(d);
+          }
+        }
+        setStatus(matchedMock.status === 'Menunggu' ? 'Menunggu' : 'Terbit');
+        setDeskripsiHtml(matchedMock.content || '');
+        if (editorRef.current) {
+          editorRef.current.innerHTML = matchedMock.content || '';
+        }
+        if (matchedMock.coverImage) {
+          setGambarPreview(matchedMock.coverImage);
+          setGambarFileName(matchedMock.coverImage.split('/').pop() || 'sampul.jpg');
+        }
+        if (matchedMock.attachments && matchedMock.attachments.length > 0) {
+          setLampiranAttachments(
+            matchedMock.attachments.map((att: any) => {
+              const name = att.label || att.name || (att.src ? att.src.split('/').pop() : `Lampiran ${att.id}`);
+              const preview = att.src || (name.match(/\.(jpg|jpeg|png|webp|gif)$/i) ? `/uploads/${name}` : null);
+              return {
+                name,
+                preview: preview && preview.match(/\.(jpg|jpeg|png|webp|gif)$/i) ? preview : null,
+              };
+            })
+          );
+        }
+        setIsLoading(false);
+      });
+  }, [id]);
+
+  useEffect(() => {
+    if (!hasInitializedEditor.current && deskripsiHtml && editorRef.current) {
+      editorRef.current.innerHTML = deskripsiHtml;
+      hasInitializedEditor.current = true;
+    }
+  }, [deskripsiHtml]);
 
   const formatDDMMYYYY = (date: Date) => {
     const day = String(date.getDate()).padStart(2, '0');
@@ -267,20 +369,67 @@ export default function EditArtikelTahukahAndaPage() {
     }
   };
 
-  const handleGambarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
+  const handleGambarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert(`File "${file.name}" melebihi ukuran maksimal 5MB`);
+        if (gambarInputRef.current) gambarInputRef.current.value = '';
+        return;
+      }
       setGambarFileName(file.name);
-      const url = URL.createObjectURL(file);
-      setGambarPreview(url);
+      try {
+        const compressed = await compressImage(file);
+        setGambarPreview(compressed);
+      } catch {
+        const dataUrl = await readFileAsDataUrl(file);
+        setGambarPreview(dataUrl);
+      }
+    }
+  };
+
+  const handleRemoveGambar = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setGambarFileName('');
+    setGambarPreview(null);
+    if (gambarInputRef.current) {
+      gambarInputRef.current.value = '';
     }
   };
 
   const handleLampiranFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setLampiranFileName(file.name);
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    const oversized = files.find((f) => f.size > 5 * 1024 * 1024);
+    if (oversized) {
+      alert(`File "${oversized.name}" melebihi ukuran maksimal 5MB`);
+      if (lampiranInputRef.current) lampiranInputRef.current.value = '';
+      return;
     }
+
+    if (lampiranAttachments.length + files.length > 10) {
+      alert('Maksimal 10 lampiran diperbolehkan');
+      return;
+    }
+
+    const newAttachments = files.map((file) => {
+      let preview: string | null = null;
+      if (file.type.startsWith('image/')) {
+        preview = URL.createObjectURL(file);
+      }
+      return { file, name: file.name, preview };
+    });
+
+    setLampiranAttachments([...lampiranAttachments, ...newAttachments]);
+    if (lampiranInputRef.current) {
+      lampiranInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveLampiran = (index: number) => {
+    setLampiranAttachments(lampiranAttachments.filter((_, i) => i !== index));
+    if (lampiranInputRef.current) lampiranInputRef.current.value = '';
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -293,11 +442,16 @@ export default function EditArtikelTahukahAndaPage() {
       return;
     }
 
+    if (!rawText && !htmlContent) {
+      alert('Deskripsi Artikel Tahukah Anda wajib diisi');
+      return;
+    }
+
     setIsSubmitting(true);
     const resolvedStatus = status === 'Menunggu' ? 'Menunggu' : 'Terbit';
     const fallbackImage =
       gambarPreview ||
-      'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=800&q=80';
+      '/images/logo-perpusnas.png';
 
     // Update in localStorage
     const currentStored = getStoredTahukahAnda();
@@ -311,7 +465,9 @@ export default function EditArtikelTahukahAndaPage() {
       publishedAt: tanggal.toISOString().split('T')[0],
       status: resolvedStatus,
       authorName: existingItem?.authorName || 'Ahmad Fauzi',
-      attachments: existingItem?.attachments || MOCK_TAHUKAH_ANDA_ATTACHMENTS_5,
+      attachments: lampiranAttachments.length > 0
+        ? lampiranAttachments.map((a, idx) => ({ id: idx + 1, label: a.name, src: a.preview || `/uploads/${a.name}` }))
+        : existingItem?.attachments || MOCK_TAHUKAH_ANDA_ATTACHMENTS_5,
     };
 
     if (existingItem) {
@@ -320,34 +476,41 @@ export default function EditArtikelTahukahAndaPage() {
       saveStoredTahukahAnda([updatedItem, ...currentStored]);
     }
 
-    // Try API PUT
     try {
       await fetch(`/api/employee-posts/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: judul,
+          category: 'tahukah-anda',
+          categorySlug: 'tahukah-anda',
           body: htmlContent || rawText || judul,
           coverImage: fallbackImage,
           publishedAt: tanggal.toISOString(),
           status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',
+          attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments.map((a) => a.name).join(', ') : undefined,
         }),
       });
-    } catch {
-      // LocalStorage already updated
-    }
 
-    setSuccessMessage('Artikel Tahukah Anda berhasil diperbarui!');
-    setTimeout(() => {
-      router.push(`/antar-pegawai/tahukah-anda/${id}`);
-    }, 1200);
-    setIsSubmitting(false);
+      setSuccessMessage('Perubahan Artikel Tahukah Anda berhasil disimpan!');
+      setTimeout(() => {
+        router.push(`/antar-pegawai/tahukah-anda/${id}`);
+      }, 1000);
+    } catch {
+      setSuccessMessage('Perubahan Artikel Tahukah Anda berhasil disimpan (mode lokal)!');
+      setTimeout(() => {
+        router.push(`/antar-pegawai/tahukah-anda/${id}`);
+      }, 1000);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
   if (isLoading) {
     return (
-      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 flex flex-col gap-8 bg-white min-h-[60vh] justify-center items-center">
-        <div className="w-12 h-12 border-4 border-slate-200 border-t-[#00113a] rounded-full animate-spin"></div>
-        <p className="text-[#00113a] font-bold mt-4">Memuat artikel...</p>
+      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-16 flex flex-col items-center justify-center text-[#757682]">
+        <Loader2 className="w-8 h-8 animate-spin mb-4 text-[#00113a]" />
+        <p className="text-sm font-medium">Memuat data Artikel Tahukah Anda...</p>
       </div>
     );
   }
@@ -355,7 +518,7 @@ export default function EditArtikelTahukahAndaPage() {
   return (
     <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 text-[#1a1b20]">
       {/* Breadcrumbs matching Stitch */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-[#444650] text-sm mb-8 font-normal">
+      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-[#444650] text-sm mb-8 font-normal flex-wrap">
         <Link href="/beranda" className="hover:text-[#00113a] transition-colors">
           Beranda
         </Link>
@@ -368,10 +531,10 @@ export default function EditArtikelTahukahAndaPage() {
           Tahukah Anda
         </Link>
         <ChevronRight className="w-4 h-4 text-[#757682]" />
-        <span className="text-[#1a1b20] font-medium">Edit</span>
+        <span className="text-[#1a1b20] font-medium">Edit Tahukah Anda</span>
       </nav>
 
-      {/* Page Title */}
+      {/* Page Title matching Stitch */}
       <h1 className="text-2xl sm:text-3xl lg:text-[32px] font-bold text-[#00113a] mb-10 tracking-tight">
         Edit Artikel Tahukah Anda
       </h1>
@@ -384,13 +547,13 @@ export default function EditArtikelTahukahAndaPage() {
         </div>
       )}
 
-      {/* Form Container matching Stitch & Wireframe 3 */}
+      {/* Form Container matching Stitch */}
       <div className="bg-white border border-[#c5c6d2] rounded-lg p-6 md:p-8 shadow-xs">
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-[200px_auto] gap-6 mb-8 items-start">
             {/* 1. Judul */}
             <label htmlFor="judul" className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Judul <span className="float-right hidden md:inline">:</span>
+              Judul <span className="text-red-500">*</span> <span className="float-right hidden md:inline">:</span>
             </label>
             <div>
               <input
@@ -431,13 +594,13 @@ export default function EditArtikelTahukahAndaPage() {
               {isDatePickerOpen && (
                 <div className="absolute top-14 left-0 z-50 bg-white border border-[#c5c6d2] rounded-xl shadow-2xl p-4 w-72 animate-fadeIn">
                   <div className="flex justify-between items-center mb-3">
-                    <button type="button" onClick={prevMonth} className="p-1 hover:bg-[#f4f3f9] rounded text-[#444650] cursor-pointer">
+                    <button type="button" onClick={prevMonth} className="p-1 hover:bg-[#f4f3f9] rounded text-[#444650]">
                       <ChevronLeft className="w-5 h-5" />
                     </button>
                     <span className="font-bold text-sm text-[#00113a]">
                       {monthNamesIndo[viewDate.getMonth()]} {viewDate.getFullYear()}
                     </span>
-                    <button type="button" onClick={nextMonth} className="p-1 hover:bg-[#f4f3f9] rounded text-[#444650] cursor-pointer">
+                    <button type="button" onClick={nextMonth} className="p-1 hover:bg-[#f4f3f9] rounded text-[#444650]">
                       <ChevronRight className="w-5 h-5" />
                     </button>
                   </div>
@@ -460,7 +623,7 @@ export default function EditArtikelTahukahAndaPage() {
                           type="button"
                           disabled={!item.isCurrentMonth}
                           onClick={() => selectCalendarDay(item.day)}
-                          className={`h-8 w-8 mx-auto rounded-full flex items-center justify-center font-medium transition-colors cursor-pointer ${
+                          className={`h-8 w-8 mx-auto rounded-full flex items-center justify-center font-medium transition-colors ${
                             !item.isCurrentMonth
                               ? 'text-slate-300 cursor-not-allowed'
                               : isSelected
@@ -477,7 +640,246 @@ export default function EditArtikelTahukahAndaPage() {
               )}
             </div>
 
-            {/* 3. Status Dropdown placed directly under Tanggal */}
+            {/* 3. Deskripsi */}
+            <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
+              Deskripsi <span className="text-red-500">*</span> <span className="float-right hidden md:inline">:</span>
+            </label>
+            <div className="border border-[#c5c6d2] rounded overflow-hidden">
+              {/* WYSIWYG Toolbar */}
+              <div className="bg-[#f4f3f9] border-b border-[#c5c6d2] p-2 flex gap-1 sm:gap-2 items-center text-[#757682] select-none">
+                <button
+                  type="button"
+                  aria-label="Bold"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    execFormat('bold');
+                  }}
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${
+                    activeStyles.bold ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                  }`}
+                >
+                  <Bold className="w-4 h-4" />
+                </button>
+
+                <button
+                  type="button"
+                  aria-label="Italic"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    execFormat('italic');
+                  }}
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${
+                    activeStyles.italic ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                  }`}
+                >
+                  <Italic className="w-4 h-4" />
+                </button>
+
+                <button
+                  type="button"
+                  aria-label="Underline"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    execFormat('underline');
+                  }}
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${
+                    activeStyles.underline ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                  }`}
+                >
+                  <Underline className="w-4 h-4" />
+                </button>
+
+                <div className="w-px h-4 bg-[#c5c6d2] mx-1"></div>
+
+                <button
+                  type="button"
+                  aria-label="Bullet List"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    execFormat('insertUnorderedList');
+                  }}
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${
+                    activeStyles.unorderedList ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                  }`}
+                >
+                  <List className="w-4 h-4" />
+                </button>
+
+                <button
+                  type="button"
+                  aria-label="Link"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    handleLinkInsert();
+                  }}
+                  className="p-1 hover:bg-[#e9e7ee] rounded transition-colors text-[#444650]"
+                >
+                  <Link2 className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Contenteditable Editor area */}
+              <div
+                ref={editorRef}
+                contentEditable
+                suppressContentEditableWarning
+                onKeyUp={checkActiveStyles}
+                onMouseUp={checkActiveStyles}
+                onInput={(e) => {
+                  setDeskripsiHtml(e.currentTarget.innerHTML);
+                  checkActiveStyles();
+                }}
+                data-placeholder="Tulis deskripsi artikel tahukah anda..."
+                className="w-full p-4 text-sm sm:text-base outline-none min-h-[190px] max-h-[400px] overflow-y-auto leading-relaxed bg-white text-[#1a1b20]"
+              />
+            </div>
+
+            {/* 4. Gambar Artikel Tahukah Anda */}
+            <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
+              Gambar Artikel Tahukah Anda <span className="float-right hidden md:inline">:</span>
+            </label>
+            <div className="flex flex-col gap-4">
+              <div>
+                <div className="flex">
+                  <input
+                    type="text"
+                    readOnly
+                    value={gambarFileName}
+                    placeholder="Berkas berupa .jpg/ .png"
+                    className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => gambarInputRef.current?.click()}
+                    className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer"
+                  >
+                    Upload
+                  </button>
+                  <input
+                    ref={gambarInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/jpg,image/webp"
+                    onChange={handleGambarFileChange}
+                    className="hidden"
+                    suppressHydrationWarning
+                  />
+                </div>
+                <p className="text-xs text-[#757682] mt-1.5 font-normal">File Maksimal 5MB</p>
+              </div>
+
+              {/* Dashed preview box: Gambar Preview */}
+              <div
+                onClick={() => {
+                  if (!gambarPreview) {
+                    gambarInputRef.current?.click();
+                  }
+                }}
+                className="w-full md:w-2/3 h-64 bg-[#efedf3] border-2 border-dashed border-[#c5c6d2] rounded flex items-center justify-center text-[#757682] text-sm relative group cursor-pointer hover:bg-[#e9e7ee] transition-colors overflow-hidden"
+              >
+                {gambarPreview ? (
+                  <div className="w-full h-full p-2 relative flex items-center justify-center bg-white/50">
+                    <img
+                      src={gambarPreview}
+                      alt="Pratinjau Gambar Artikel Tahukah Anda"
+                      className="max-w-full max-h-full object-contain"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveGambar}
+                      className="absolute top-2 right-2 w-7 h-7 rounded-full bg-slate-900/60 hover:bg-red-600 text-white flex items-center justify-center transition-colors cursor-pointer shadow-sm z-20"
+                      title="Hapus gambar"
+                      aria-label="Hapus gambar"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <span>Gambar Preview</span>
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/5">
+                      <ImageIcon className="w-8 h-8 text-[#757682]" />
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* 5. Lampiran */}
+            <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
+              Lampiran (Maks. 10 File) <span className="float-right hidden md:inline">:</span>
+            </label>
+            <div className="flex flex-col gap-4">
+              <div>
+                <div className="flex">
+                  <input
+                    type="text"
+                    readOnly
+                    value={lampiranAttachments.length > 0 ? `${lampiranAttachments.length} file dipilih` : ''}
+                    placeholder="Berkas berupa .jpg/ .png/ .pdf"
+                    className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => lampiranInputRef.current?.click()}
+                    disabled={lampiranAttachments.length >= 10}
+                    className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    Upload
+                  </button>
+                  <input
+                    ref={lampiranInputRef}
+                    type="file"
+                    multiple
+                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                    onChange={handleLampiranFileChange}
+                    className="hidden"
+                    suppressHydrationWarning
+                  />
+                </div>
+                <p className="text-xs text-[#757682] mt-1.5 font-normal">File Maksimal 5MB</p>
+              </div>
+
+              {/* Previews */}
+              {lampiranAttachments.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 w-full">
+                  {lampiranAttachments.map((att, idx) => (
+                    <div
+                      key={idx}
+                      className="relative group bg-[#e9e7ee] border border-[#c5c6d2] rounded-md overflow-hidden aspect-square flex flex-col items-center justify-center"
+                    >
+                      {att.preview ? (
+                        <img
+                          src={att.preview}
+                          alt={att.name}
+                          className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                        />
+                      ) : (
+                        <div className="flex flex-col items-center gap-2 p-2">
+                          <FileText className="w-8 h-8 text-[#00113a]" />
+                          <span className="text-[10px] font-bold text-center break-all line-clamp-2 text-[#00113a]">
+                            {att.name}
+                          </span>
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveLampiran(idx)}
+                        className="absolute top-1 right-1 bg-black/60 hover:bg-black text-white p-1 rounded-full transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                      {att.preview && (
+                        <span className="absolute bottom-0 w-full bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center">
+                          {att.name}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* 6. Status Dropdown placed under Lampiran */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
               Status <span className="float-right hidden md:inline">:</span>
             </label>
@@ -525,207 +927,6 @@ export default function EditArtikelTahukahAndaPage() {
                   </button>
                 </div>
               )}
-            </div>
-
-            {/* 4. Deskripsi */}
-            <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Deskripsi <span className="float-right hidden md:inline">:</span>
-            </label>
-            <div className="border border-[#c5c6d2] rounded overflow-hidden">
-              {/* WYSIWYG Toolbar matching Wireframe 3 */}
-              <div className="bg-[#f4f3f9] border-b border-[#c5c6d2] p-2 flex gap-1 sm:gap-2 items-center text-[#757682] select-none">
-                {/* Bold */}
-                <button
-                  type="button"
-                  aria-label="Bold"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    execFormat('bold');
-                  }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${
-                    activeStyles.bold ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                  }`}
-                >
-                  <Bold className="w-4 h-4" />
-                </button>
-
-                {/* Italic */}
-                <button
-                  type="button"
-                  aria-label="Italic"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    execFormat('italic');
-                  }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${
-                    activeStyles.italic ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                  }`}
-                >
-                  <Italic className="w-4 h-4" />
-                </button>
-
-                {/* Underline */}
-                <button
-                  type="button"
-                  aria-label="Underline"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    execFormat('underline');
-                  }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${
-                    activeStyles.underline ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                  }`}
-                >
-                  <Underline className="w-4 h-4" />
-                </button>
-
-                <div className="w-px h-4 bg-[#c5c6d2] mx-1"></div>
-
-                {/* Bullet List */}
-                <button
-                  type="button"
-                  aria-label="Bullet List"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    execFormat('insertUnorderedList');
-                  }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${
-                    activeStyles.unorderedList ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                  }`}
-                >
-                  <List className="w-4 h-4" />
-                </button>
-
-                {/* Link */}
-                <button
-                  type="button"
-                  aria-label="Link"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    handleLinkInsert();
-                  }}
-                  className="p-1 hover:bg-[#e9e7ee] rounded transition-colors text-[#444650] cursor-pointer"
-                >
-                  <Link2 className="w-4 h-4" />
-                </button>
-
-
-              </div>
-
-              {/* Contenteditable Editor area */}
-              <div
-                ref={editorRef}
-                contentEditable
-                suppressContentEditableWarning
-                onKeyUp={checkActiveStyles}
-                onMouseUp={checkActiveStyles}
-                onInput={(e) => {
-                  setDeskripsiHtml(e.currentTarget.innerHTML);
-                  checkActiveStyles();
-                }}
-                data-placeholder="Tulis deskripsi.."
-                className="w-full p-4 text-sm sm:text-base outline-none min-h-[190px] max-h-[400px] overflow-y-auto leading-relaxed bg-white text-[#1a1b20]"
-              />
-            </div>
-
-            {/* 5. Gambar Artikel Tahukah Anda */}
-            <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Gambar Artikel Tahukah Anda <span className="float-right hidden md:inline">:</span>
-            </label>
-            <div className="flex flex-col gap-4">
-              <div className="flex">
-                <input
-                  type="text"
-                  readOnly
-                  value={gambarFileName}
-                  placeholder="Nama File.jpg/png"
-                  className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
-                />
-                <button
-                  type="button"
-                  onClick={() => gambarInputRef.current?.click()}
-                  className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer"
-                >
-                  Upload
-                </button>
-                <input
-                  ref={gambarInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleGambarFileChange}
-                  className="hidden" suppressHydrationWarning />
-              </div>
-
-              {/* Dashed preview box: Gambar Preview */}
-              <div
-                onClick={() => gambarInputRef.current?.click()}
-                className="w-full md:w-2/3 h-64 bg-[#efedf3] border-2 border-dashed border-[#c5c6d2] rounded flex items-center justify-center text-[#757682] text-sm relative group cursor-pointer hover:bg-[#e9e7ee] transition-colors overflow-hidden"
-              >
-                {gambarPreview ? (
-                  <img
-                    src={gambarPreview}
-                    alt="Pratinjau Gambar Tahukah Anda"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <>
-                    <span>Gambar Preview</span>
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/5">
-                      <ImageIcon className="w-8 h-8 text-[#757682]" />
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* 6. Lampiran */}
-            <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Lampiran <span className="float-right hidden md:inline">:</span>
-            </label>
-            <div className="flex flex-col gap-4">
-              <div className="flex">
-                <input
-                  type="text"
-                  readOnly
-                  value={lampiranFileName}
-                  placeholder="Nama File.pdf/doc"
-                  className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
-                />
-                <button
-                  type="button"
-                  onClick={() => lampiranInputRef.current?.click()}
-                  className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer"
-                >
-                  Upload
-                </button>
-                <input
-                  ref={lampiranInputRef}
-                  type="file"
-                  accept=".pdf,.doc,.docx,.jpg,.png"
-                  onChange={handleLampiranFileChange}
-                  className="hidden" suppressHydrationWarning />
-              </div>
-
-              {/* Dashed preview box: File Preview */}
-              <div
-                onClick={() => lampiranInputRef.current?.click()}
-                className="w-full md:w-2/3 h-64 bg-[#efedf3] border-2 border-dashed border-[#c5c6d2] rounded flex items-center justify-center text-[#757682] text-sm relative group cursor-pointer hover:bg-[#e9e7ee] transition-colors overflow-hidden"
-              >
-                {lampiranFileName ? (
-                  <div className="p-4 text-center">
-                    <Upload className="w-8 h-8 text-[#00113a] mx-auto mb-2" />
-                    <span className="font-semibold text-[#00113a] block break-all">{lampiranFileName}</span>
-                    <span className="text-xs text-emerald-600 font-medium mt-1 inline-block">Berkas Terlampir</span>
-                  </div>
-                ) : (
-                  <>
-                    <span>File Preview</span>
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/5">
-                      <Upload className="w-8 h-8 text-[#757682]" />
-                    </div>
-                  </>
-                )}
-              </div>
             </div>
           </div>
 

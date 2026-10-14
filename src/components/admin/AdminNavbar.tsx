@@ -152,7 +152,7 @@ export function AdminNavbar({ onToggleSidebar }: { onToggleSidebar?: () => void 
             </button>
 
             {activeDropdown === 'kabar' && (
-              <div className="absolute top-full left-0 mt-1 w-64 rounded-xl bg-white p-2 shadow-xl border border-slate-200 animate-in fade-in slide-in-from-top-1 z-50">
+              <div className="absolute top-full left-0 mt-0 w-max min-w-[180px] rounded-xl bg-white p-2 shadow-xl border border-slate-100 animate-fadeIn z-50">
                 <Link
                   href="/kabar-kedinasan/berita"
                   onClick={() => setActiveDropdown(null)}
@@ -212,7 +212,7 @@ export function AdminNavbar({ onToggleSidebar }: { onToggleSidebar?: () => void 
             </button>
 
             {activeDropdown === 'antar' && (
-              <div className="absolute top-full left-0 mt-1 w-64 rounded-xl bg-white p-2 shadow-xl border border-slate-200 animate-in fade-in slide-in-from-top-1 z-50 max-h-[380px] overflow-y-auto">
+              <div className="absolute top-full left-0 mt-0 w-max min-w-[180px] rounded-xl bg-white p-2 shadow-xl border border-slate-100 animate-fadeIn z-50 max-h-[380px] overflow-y-auto">
                 {[
                   { label: 'Daftar Pegawai', href: '/antar-pegawai/daftar-pegawai', desc: 'Direktori data & kontak pegawai' },
                   { label: 'Coretan Opini', href: '/antar-pegawai/opini', desc: 'Gagasan & pemikiran pegawai' },
@@ -272,7 +272,7 @@ export function AdminNavbar({ onToggleSidebar }: { onToggleSidebar?: () => void 
             </button>
 
             {activeDropdown === 'admin' && (
-              <div className="absolute top-full right-0 lg:left-0 mt-1 w-52 rounded-2xl bg-white p-2 shadow-2xl border border-slate-200 animate-in fade-in slide-in-from-top-1 z-50">
+              <div className="absolute top-full right-0 lg:left-0 mt-0 w-max min-w-[180px] rounded-xl bg-white p-2 shadow-xl border border-slate-100 animate-fadeIn z-50">
                 <div className="py-1 space-y-0.5">
                   {ADMIN_MENU_ITEMS.map((item) => {
                     const isActive = pathname === item.href || pathname.startsWith(item.href);
@@ -283,13 +283,13 @@ export function AdminNavbar({ onToggleSidebar }: { onToggleSidebar?: () => void 
                         href={item.href}
                         onClick={() => setActiveDropdown(null)}
                         className={cn(
-                          'block p-2.5 rounded-xl transition-colors text-left',
+                          'block p-2 rounded-lg transition-colors text-left',
                           isActive
-                            ? 'bg-[#00113a]/5 text-[#00113a] font-bold'
+                            ? 'bg-[#00113a]/5 text-[#00113a]'
                             : 'text-slate-700 hover:bg-slate-50 hover:text-[#00113a]'
                         )}
                       >
-                        <p className={cn('text-xs leading-tight', isActive ? 'font-bold text-[#00113a]' : 'font-semibold text-slate-800')}>
+                        <p className="text-xs font-bold">
                           {item.label}
                         </p>
                       </Link>

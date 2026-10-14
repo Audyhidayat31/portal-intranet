@@ -90,7 +90,7 @@ export default function DaftarTahukahAndaPage() {
           content: item.body || '',
           coverImage:
             item.coverImage ||
-            'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=800&q=80',
+            '/images/logo-perpusnas.png',
           publishedAt: item.createdAt || new Date().toISOString(),
           status: item.status === 'MENUNGGU' ? 'Menunggu' : 'Terbit',
           authorName: item.author?.name || 'Ahmad Fauzi',

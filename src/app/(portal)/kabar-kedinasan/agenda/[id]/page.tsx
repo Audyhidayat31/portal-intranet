@@ -196,7 +196,7 @@ export default function DetailAgendaKegiatanPage() {
                       label: names[i] || `Lampiran ${i + 1}`
                     }));
                   } catch {
-                    if (agendaItem.attachmentUrl.startsWith('data:image') || agendaItem.attachmentUrl.startsWith('blob:')) {
+                    if (agendaItem.attachmentUrl.startsWith('data:') || agendaItem.attachmentUrl.startsWith('blob:') || agendaItem.attachmentUrl.startsWith('/') || agendaItem.attachmentUrl.startsWith('http')) {
                       realAttachments = [{ src: agendaItem.attachmentUrl, label: agendaItem.attachmentName || 'Lampiran 1' }];
                     }
                   }
@@ -208,13 +208,26 @@ export default function DetailAgendaKegiatanPage() {
                   <button
                     key={idx}
                     type="button"
-                    onClick={() => setPreviewImage(att.src)}
+                    onClick={() => {
+                      if (!att.src) return;
+                      if (att.src.startsWith('data:image') || (!att.src.includes('pdf') && !att.label.includes('pdf') && !att.src.startsWith('data:application'))) {
+                        setPreviewImage(att.src);
+                      } else {
+                        const link = document.createElement('a');
+                        link.href = att.src;
+                        link.download = att.label || 'lampiran';
+                        link.target = '_blank';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      }
+                    }}
                     className="aspect-square bg-[#e2e3ea] hover:bg-[#d8d9e2] border border-[#c5c6d2] rounded-md flex flex-col items-center justify-center text-xs text-[#757682] hover:text-[#00113a] font-medium transition-all group shadow-2xs cursor-pointer overflow-hidden p-2"
                   >
-                    {att.src && !att.src.includes('pdf') && !att.label.includes('pdf') ? (
+                    {att.src && !att.src.includes('pdf') && !att.label.includes('pdf') && !att.src.startsWith('data:application') ? (
                       <img src={att.src} alt={att.label} className="w-full h-full object-cover mb-1 opacity-70 group-hover:opacity-100 transition-opacity" />
                     ) : (
-                      <div className="flex-1 flex items-center justify-center">📄</div>
+                      <div className="flex-1 flex items-center justify-center text-xl">📄</div>
                     )}
                     <span className="text-[10px] font-medium text-[#757682] group-hover:text-[#1a1b20] transition-colors truncate w-full text-center">
                       {att.label}

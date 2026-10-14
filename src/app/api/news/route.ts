@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
         slug,
         excerpt: excerpt || content.slice(0, 150),
         body: content,
-        coverImage: coverImage || 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80',
+        coverImage: coverImage || '/images/logo-perpusnas.png',
         type: 'NEWS',
         status: postStatus,
         authorId: authorId,

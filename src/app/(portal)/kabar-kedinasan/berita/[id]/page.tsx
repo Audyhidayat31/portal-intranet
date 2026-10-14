@@ -274,13 +274,23 @@ export default function DetailBeritaPage() {
             {/* Image and Metadata Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
               {/* Featured Image (Left side, takes up 2 columns on lg) */}
-              <div className="lg:col-span-2 w-full aspect-video bg-[#e3e2e8] border border-[#c5c6d2] rounded-lg overflow-hidden flex items-center justify-center text-[#444650] shadow-xs relative group h-full">
+              <div className="lg:col-span-2 w-full aspect-video bg-[#f4f5f8] border border-[#c5c6d2] rounded-lg overflow-hidden flex items-center justify-center text-[#444650] shadow-xs relative group h-full">
                 {news?.coverImage ? (
-                  <img
-                    src={news.coverImage}
-                    alt={news.title}
-                    className="w-full h-full object-cover"
-                  />
+                  news.coverImage.includes('logo-perpusnas') ? (
+                    <div className="w-full h-full flex items-center justify-center p-12 bg-white/80">
+                      <img
+                        src={news.coverImage}
+                        alt={news.title}
+                        className="max-h-full max-w-[65%] object-contain drop-shadow-sm"
+                      />
+                    </div>
+                  ) : (
+                    <img
+                      src={news.coverImage}
+                      alt={news.title}
+                      className="w-full h-full object-cover"
+                    />
+                  )
                 ) : (
                   <div className="flex flex-col items-center gap-2">
                     <ImageIcon className="w-12 h-12 text-[#757682]" />
@@ -360,10 +370,10 @@ export default function DetailBeritaPage() {
                           alt={photo.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
-                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
-                          <p className="text-xs text-white font-medium line-clamp-2 drop-shadow">
-                            {photo.title}
-                          </p>
+                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-3">
+                          <span className="text-xs text-white font-medium bg-black/50 px-2.5 py-1 rounded-full backdrop-blur-xs">
+                            Lihat Lampiran
+                          </span>
                         </div>
                       </div>
                     ))}

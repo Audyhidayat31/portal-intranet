@@ -12,6 +12,8 @@ export interface FigureItem {
   isSpotlight?: boolean;
   achievements?: string[];
   careerHistory?: { year: string; role: string }[];
+  attachments?: Array<{ id: number; label: string; src: string }>;
+  attachmentName?: string;
 }
 
 export const STITCH_MOCK_FIGURES_6: FigureItem[] = [
@@ -27,7 +29,7 @@ export const STITCH_MOCK_FIGURES_6: FigureItem[] = [
 Dengan ketekunan tinggi, beliau berhasil menginisiasi laboratorium digitalisasi manuskrip modern di lingkungan Perpustakaan Nasional RI, menyelamatkan puluhan ribu halaman naskah bersejarah dari kerusakan iklim tropis.
 
 Di bawah bimbingannya, pustakawan-pustakawan muda dilatih teknik filologi, kodikologi, dan penanganan fisik manuskrip langka. Dedikasi tanpa henti ini mengantarkan beliau menerima berbagai anugerah kepustakawanan tingkat nasional dan internasional.`,
-    photoUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80',
+    photoUrl: '/images/logo-perpusnas.png',
     publishedAt: '2026-08-19',
     status: 'Terbit',
     isSpotlight: true,
@@ -54,7 +56,7 @@ Di bawah bimbingannya, pustakawan-pustakawan muda dilatih teknik filologi, kodik
 Beliau memimpin proyek integrasi katalog induk nasional dan layanan akses repositori digital terdistribusi, memungkinkan pemustaka di seluruh pelosok mengakses koleksi ilmiah secara instan dan andal.
 
 Prinsip open-source dan kolaborasi antarpengembang menjadi pilar penting yang terus ia tularkan kepada para pranata komputer di lingkungan Perpusnas RI.`,
-    photoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80',
+    photoUrl: '/images/logo-perpusnas.png',
     publishedAt: '2026-08-19',
     status: 'Terbit',
     isSpotlight: true,
@@ -79,7 +81,7 @@ Prinsip open-source dan kolaborasi antarpengembang menjadi pilar penting yang te
     fullStory: `Drs. Supriyanto, M.Hum. mendedikasikan kariernya dalam mengidentifikasi, mengkaji, dan melestarikan karya cetak dan karya rekam bangsa Indonesia. Kejelian beliau dalam menelusuri penerbitan langka telah memperkaya khazanah deposit nasional dengan ribuan dokumen penting.
 
 Ia aktif memberikan edukasi tentang arti penting Undang-Undang Serah Simpan Karya Cetak dan Karya Rekam kepada asosiasi penerbit, universitas, dan produser media independen di seluruh tanah air.`,
-    photoUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80',
+    photoUrl: '/images/logo-perpusnas.png',
     publishedAt: '2026-08-19',
     status: 'Menunggu',
     achievements: [
@@ -101,7 +103,7 @@ Ia aktif memberikan edukasi tentang arti penting Undang-Undang Serah Simpan Kary
     fullStory: `Prof. Dr. Sulistyo Basuki merupakan mahaguru kepustakawanan Indonesia yang telah meletakkan landasan teoritis dan praktis ilmu perpustakaan dan informasi. Karya tulis, buku ajar, dan kajian ilmiah beliau menjadi rujukan wajib di seluruh program studi perpustakaan di Indonesia.
 
 Melalui kemitraan erat dengan Perpustakaan Nasional RI, beliau tiada henti mendorong standardisasi kompetensi profesi pustakawan Indonesia agar berdaya saing global.`,
-    photoUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=800&q=80',
+    photoUrl: '/images/logo-perpusnas.png',
     publishedAt: '2026-08-19',
     status: 'Menunggu',
     achievements: [
@@ -123,7 +125,7 @@ Melalui kemitraan erat dengan Perpustakaan Nasional RI, beliau tiada henti mendo
     fullStory: `Dr. Adin Bondar, M.Si. memimpin berbagai terobosan strategis dalam penguatan budaya literasi masyarakat, khususnya di daerah 3T (Tertinggal, Terdepan, dan Terluar). Pendekatan humanis dan inovatif yang diusungnya menekankan peran perpustakaan sebagai pengungkit kesejahteraan masyarakat melalui kecakapan hidup.
 
 Sinergi dengan pemerintah daerah, komunitas taman baca masyarakat (TBM), dan sektor swasta terus dikembangkan demi mewujudkan kedaulatan literasi di seluruh penjuru Indonesia.`,
-    photoUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=800&q=80',
+    photoUrl: '/images/logo-perpusnas.png',
     publishedAt: '2026-08-19',
     status: 'Terbit',
     achievements: [
@@ -145,7 +147,7 @@ Sinergi dengan pemerintah daerah, komunitas taman baca masyarakat (TBM), dan sek
     fullStory: `Nurcahyono, S.S., M.Si. aktif merancang program literasi digital dan festival literasi pemuda yang menjangkau ribuan sekolah dan madrasah di Indonesia. Kemampuannya mengemas program membaca dengan format multimedia modern berhasil menarik minat generasi Z untuk mencintai buku.
 
 Beliau juga memelopori pojok baca ramah anak berbasis kearifan lokal di berbagai perpustakaan daerah dan komunitas belajar masyarakat.`,
-    photoUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=80',
+    photoUrl: '/images/logo-perpusnas.png',
     publishedAt: '2026-08-19',
     status: 'Terbit',
     achievements: [
