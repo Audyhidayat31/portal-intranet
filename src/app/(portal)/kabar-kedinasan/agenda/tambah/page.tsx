@@ -23,6 +23,52 @@ import {
   CheckCircle,
 } from 'lucide-react';
 
+const compressImage = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 1200;
+        const MAX_HEIGHT = 1200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.7));
+      };
+      img.onerror = () => resolve(event.target?.result as string);
+    };
+    reader.onerror = (error) => reject(error);
+  });
+};
+
+const readFileAsDataUrl = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (err) => reject(err);
+    reader.readAsDataURL(file);
+  });
+};
+
 export default function TambahAgendaPage() {
   const router = useRouter();
 
@@ -172,12 +218,31 @@ export default function TambahAgendaPage() {
     }
   };
 
-  const handleGambarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleGambarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Ukuran file gambar maksimal 5MB');
+        if (gambarInputRef.current) gambarInputRef.current.value = '';
+        return;
+      }
       setGambarFileName(file.name);
-      const url = URL.createObjectURL(file);
-      setGambarPreview(url);
+      try {
+        const compressed = await compressImage(file);
+        setGambarPreview(compressed);
+      } catch {
+        const dataUrl = await readFileAsDataUrl(file);
+        setGambarPreview(dataUrl);
+      }
+    }
+  };
+
+  const handleRemoveGambar = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setGambarFileName('');
+    setGambarPreview(null);
+    if (gambarInputRef.current) {
+      gambarInputRef.current.value = '';
     }
   };
 
@@ -185,26 +250,32 @@ export default function TambahAgendaPage() {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
-    if (lampiranAttachments.length + files.length > 10) {
-      alert('Maksimal 10 lampiran diperbolehkan');
+    const file = files[0];
+    if (file.size > 50 * 1024 * 1024) {
+      alert('Ukuran file lampiran maksimal 50MB');
+      if (lampiranInputRef.current) lampiranInputRef.current.value = '';
       return;
     }
 
-    const newAttachments = await Promise.all(
-      files.map(async (file) => {
-        let preview = null;
-        if (file.type.startsWith('image/')) {
-          preview = URL.createObjectURL(file);
-        }
-        return {
+    try {
+      let preview: string | null = null;
+      if (file.type.startsWith('image/')) {
+        preview = await compressImage(file);
+      } else {
+        preview = await readFileAsDataUrl(file);
+      }
+
+      setLampiranAttachments([
+        {
           file,
           name: file.name,
           preview,
-        };
-      })
-    );
+        },
+      ]);
+    } catch (err) {
+      console.error('Failed to read attachment file', err);
+    }
 
-    setLampiranAttachments([...lampiranAttachments, ...newAttachments]);
     if (lampiranInputRef.current) {
       lampiranInputRef.current.value = '';
     }
@@ -239,11 +310,11 @@ export default function TambahAgendaPage() {
           title: judul,
           excerpt: rawText?.slice(0, 140) || judul,
           content: htmlContent || rawText || judul,
-          coverImage: gambarPreview || 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80',
+          coverImage: gambarPreview || '/images/logo-perpusnas.png',
           eventStartDate: tanggal.toISOString(),
           status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',
-          attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments.map(a => a.name).join('|||') : null,
-          attachmentUrl: lampiranAttachments.length > 0 ? JSON.stringify(lampiranAttachments.map(a => a.preview || '')) : null,
+          attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments[0].name : null,
+          attachmentUrl: lampiranAttachments.length > 0 ? lampiranAttachments[0].preview : null,
         }),
       });
 
@@ -299,7 +370,7 @@ export default function TambahAgendaPage() {
           <div className="grid grid-cols-1 md:grid-cols-[200px_auto] gap-6 mb-8 items-start">
             {/* 1. Judul */}
             <label htmlFor="judul" className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Judul <span className="float-right hidden md:inline">:</span>
+              Judul <span className="text-red-500">*</span> <span className="float-right hidden md:inline">:</span>
             </label>
             <div>
               <input
@@ -390,7 +461,7 @@ export default function TambahAgendaPage() {
 
             {/* 4. Deskripsi */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Deskripsi <span className="float-right hidden md:inline">:</span>
+              Deskripsi <span className="text-red-500">*</span> <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="border border-[#c5c6d2] rounded overflow-hidden">
               {/* WYSIWYG Toolbar matching Coretan Opini Tambah */}
@@ -494,27 +565,30 @@ export default function TambahAgendaPage() {
               Gambar Agenda Kegiatan <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="flex flex-col gap-4">
-              <div className="flex">
-                <input suppressHydrationWarning
-                  type="text"
-                  readOnly
-                  value={gambarFileName}
-                  placeholder="Berkas berupa .jpg/ .png"
-                  className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
-                />
-                <button
-                  type="button"
-                  onClick={() => gambarInputRef.current?.click()}
-                  className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer"
-                >
-                  Upload
-                </button>
-                <input suppressHydrationWarning
-                  ref={gambarInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleGambarFileChange}
-                  className="hidden" />
+              <div>
+                <div className="flex">
+                  <input suppressHydrationWarning
+                    type="text"
+                    readOnly
+                    value={gambarFileName}
+                    placeholder="Berkas berupa .jpg/ .png"
+                    className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => gambarInputRef.current?.click()}
+                    className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer"
+                  >
+                    Upload
+                  </button>
+                  <input suppressHydrationWarning
+                    ref={gambarInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleGambarFileChange}
+                    className="hidden" />
+                </div>
+                <p className="text-xs text-[#757682] mt-1.5 font-normal">File Maksimal 5MB</p>
               </div>
 
               {/* Dashed preview box: Gambar Preview */}
@@ -532,12 +606,21 @@ export default function TambahAgendaPage() {
                   <div className="w-full h-full p-2 relative flex items-center justify-center bg-white/50">
                     <img
                       src={gambarPreview}
-                      alt="Pratinjau Gambar Berita"
+                      alt="Pratinjau Gambar Agenda"
                       className="max-w-full max-h-full object-contain"
                     />
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 text-white font-medium backdrop-blur-sm">
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 text-white font-medium backdrop-blur-sm pointer-events-none">
                       Klik untuk memperbesar
                     </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveGambar}
+                      className="absolute top-2 right-2 w-7 h-7 rounded-full bg-slate-900/60 hover:bg-red-600 text-white flex items-center justify-center transition-colors cursor-pointer shadow-sm z-20"
+                      title="Hapus gambar agenda kegiatan"
+                      aria-label="Hapus gambar agenda kegiatan"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
                 ) : (
                   <>
@@ -552,31 +635,33 @@ export default function TambahAgendaPage() {
 
             {/* 6. Lampiran */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Lampiran (Maks. 10 File) <span className="float-right hidden md:inline">:</span>
+              Lampiran <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="flex flex-col gap-4">
-              <div className="flex">
-                <input suppressHydrationWarning
-                  type="text"
-                  readOnly
-                  value={lampiranAttachments.length > 0 ? `${lampiranAttachments.length} file dipilih` : ''}
-                  placeholder="Berkas berupa .jpg/ .png"
-                  className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
-                />
-                <button
-                  type="button"
-                  onClick={() => lampiranInputRef.current?.click()}
-                  disabled={lampiranAttachments.length >= 10}
-                  className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer disabled:opacity-50"
-                >
-                  Upload
-                </button>
-                <input suppressHydrationWarning
-                  ref={lampiranInputRef}
-                  type="file"
-                  multiple
-                  onChange={handleLampiranFileChange}
-                  className="hidden" />
+              <div>
+                <div className="flex">
+                  <input suppressHydrationWarning
+                    type="text"
+                    readOnly
+                    value={lampiranAttachments.length > 0 ? lampiranAttachments[0].name : ''}
+                    placeholder="Berkas berupa .jpg/ .png/ .pdf"
+                    className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => lampiranInputRef.current?.click()}
+                    disabled={lampiranAttachments.length >= 1}
+                    className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    Upload
+                  </button>
+                  <input suppressHydrationWarning
+                    ref={lampiranInputRef}
+                    type="file"
+                    onChange={handleLampiranFileChange}
+                    className="hidden" />
+                </div>
+                <p className="text-xs text-[#757682] mt-1.5 font-normal">File Maksimal 50MB</p>
               </div>
 
               {/* Previews */}

@@ -55,15 +55,15 @@ export async function GET() {
           avatarUrl: true,
         },
       }),
-      prisma.user.count({ 
-        where: { 
+      prisma.user.count({
+        where: {
           status: 'ACTIVE',
           role: {
             name: {
               not: 'ADMINISTRATOR'
             }
           }
-        } 
+        }
       }),
       prisma.employeePost.count({ where: { status: { in: ['TERBIT', 'PUBLISHED'] } } }),
       prisma.content.count({ where: { type: 'NEWS', status: { in: ['TERBIT', 'PUBLISHED', 'MENUNGGU'] } } }).catch(() => 0),
@@ -135,25 +135,25 @@ export async function GET() {
         latestPosts,
         kalimatBijak: latestKalimatBijak
           ? {
-              id: latestKalimatBijak.id,
-              title: latestKalimatBijak.title,
-              quote: latestKalimatBijak.body || latestKalimatBijak.title,
-              figure: latestKalimatBijak.title || 'Tokoh Bangsa',
-              author: latestKalimatBijak.author?.name || 'Ahmad Fauzi, S.Kom.',
-            }
+            id: latestKalimatBijak.id,
+            title: latestKalimatBijak.title,
+            quote: latestKalimatBijak.body || latestKalimatBijak.title,
+            figure: latestKalimatBijak.title || 'Tokoh Bangsa',
+            author: latestKalimatBijak.author?.name || 'Ahmad Fauzi, S.Kom.',
+          }
           : null,
         spotlightFigure: spotlightFigure
           ? {
-              ...spotlightFigure,
-              title: spotlightFigure.position
-                ? `${spotlightFigure.name.toUpperCase()} : ${spotlightFigure.position.toUpperCase()}`
-                : spotlightFigure.name.toUpperCase(),
-              bio:
-                spotlightFigure.fullStory ||
-                spotlightFigure.quote ||
-                '',
-              avatarUrl: spotlightFigure.photoUrl || null,
-            }
+            ...spotlightFigure,
+            title: spotlightFigure.position
+              ? `${spotlightFigure.name.toUpperCase()} : ${spotlightFigure.position.toUpperCase()}`
+              : spotlightFigure.name.toUpperCase(),
+            bio:
+              spotlightFigure.fullStory ||
+              spotlightFigure.quote ||
+              '',
+            avatarUrl: spotlightFigure.photoUrl || null,
+          }
           : null,
         birthdaysThisMonth,
         stats: {

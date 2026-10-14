@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
         unitKerja: unitKerja || 'Perpustakaan Nasional RI',
         quote: quote || (descContent.length > 120 ? descContent.slice(0, 120) + '...' : descContent),
         fullStory: descContent,
-        photoUrl: photoUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&auto=format&fit=crop',
+        photoUrl: photoUrl || '/images/logo-perpusnas.png',
         isSpotlight: Boolean(isSpotlight),
       },
     });

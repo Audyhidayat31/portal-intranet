@@ -10,7 +10,7 @@ function findMockNews(id: string) {
 function formatMockNews(item: any) {
   return {
     ...item,
-    coverImage: item.coverImage || 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80',
+    coverImage: item.coverImage || '/images/logo-perpusnas.png',
     content: item.body || item.content || item.excerpt,
     body: item.body || item.content || item.excerpt,
   };

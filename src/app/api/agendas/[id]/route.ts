@@ -87,7 +87,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { title, content, body: contentBody, eventLocation, eventStartDate, status } = body;
+    const { title, content, body: contentBody, eventLocation, eventStartDate, status, coverImage, attachmentName, attachmentUrl } = body;
 
     try {
       const existing = await prisma.content.findFirst({
@@ -106,6 +106,9 @@ export async function PUT(
             excerpt: content || contentBody ? (content || contentBody).slice(0, 150) : existing.excerpt,
             eventLocation: eventLocation || existing.eventLocation,
             eventStartDate: eventStartDate ? new Date(eventStartDate) : existing.eventStartDate,
+            ...(coverImage !== undefined && { coverImage }),
+            ...(attachmentName !== undefined && { attachmentName }),
+            ...(attachmentUrl !== undefined && { attachmentUrl }),
             status:
               status !== undefined
                 ? status === 'Menunggu' || status === 'MENUNGGU'
@@ -134,6 +137,9 @@ export async function PUT(
             body: content || contentBody || '',
             excerpt: (content || contentBody || '').slice(0, 150),
             type: 'AGENDA',
+            coverImage: coverImage || null,
+            attachmentName: attachmentName || null,
+            attachmentUrl: attachmentUrl || null,
             status: status === 'Menunggu' || status === 'MENUNGGU' ? 'MENUNGGU' : 'TERBIT',
             eventLocation: eventLocation || 'Gedung Perpustakaan Nasional RI',
             eventStartDate: eventStartDate ? new Date(eventStartDate) : new Date(),
@@ -155,7 +161,7 @@ export async function PUT(
     return NextResponse.json({
       success: true,
       message: 'Agenda kegiatan berhasil diperbarui',
-      data: { id, title, body: content || contentBody, eventLocation, eventStartDate, status },
+      data: { id, title, body: content || contentBody, eventLocation, eventStartDate, status, coverImage, attachmentName, attachmentUrl },
     });
   } catch (error) {
     console.error('Error updating agenda:', error);

@@ -376,7 +376,7 @@ export default function TambahPengumumanPage() {
                 htmlFor="judul"
                 className="font-bold text-sm text-[#1a1b20] flex items-center h-10 md:col-span-1"
               >
-                <span>Judul</span>
+                <span>Judul <span className="text-red-500">*</span></span>
                 <span className="ml-auto pr-4 hidden md:inline">:</span>
               </label>
               <div className="md:col-span-3">
@@ -519,66 +519,13 @@ export default function TambahPengumumanPage() {
               </div>
             </div>
 
-            {/* Field: Status */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4 items-center">
-              <label
-                htmlFor="status"
-                className="font-bold text-sm text-[#1a1b20] flex items-center h-10 md:col-span-1"
-              >
-                <span>Status</span>
-                <span className="ml-auto pr-4 hidden md:inline">:</span>
-              </label>
-              <div className="md:col-span-3 relative w-full md:w-56" ref={statusMenuRef}>
-                <button
-                  type="button"
-                  onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
-                  className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
-                    }`}
-                >
-                  <span className="truncate">{status || 'Jenis Status'}</span>
-                  <ChevronDown className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''}`} />
-                </button>
-
-                {isStatusMenuOpen && (
-                  <div className="absolute top-full left-0 z-50 w-full bg-white border border-[#c5c6d2] border-t-0 rounded-b-md shadow-lg py-1 animate-fadeIn">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setStatus('Terbit');
-                        setIsStatusMenuOpen(false);
-                      }}
-                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Terbit'
-                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
-                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                        }`}
-                    >
-                      Terbit
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setStatus('Menunggu');
-                        setIsStatusMenuOpen(false);
-                      }}
-                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Menunggu'
-                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
-                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                        }`}
-                    >
-                      Menunggu
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-
             {/* Field: Deskripsi with Direct WYSIWYG Editing */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4 items-start">
               <label
                 htmlFor="deskripsi"
                 className="font-bold text-sm text-[#1a1b20] pt-2 md:col-span-1 flex items-start"
               >
-                <span>Deskripsi</span>
+                <span>Deskripsi <span className="text-red-500">*</span></span>
                 <span className="ml-auto pr-4 hidden md:inline">:</span>
               </label>
               <div className="md:col-span-3 border border-[#c5c6d2] rounded overflow-hidden shadow-xs">
@@ -765,6 +712,59 @@ export default function TambahPengumumanPage() {
                         )}
                       </div>
                     ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Field: Status */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4 items-center">
+              <label
+                htmlFor="status"
+                className="font-bold text-sm text-[#1a1b20] flex items-center h-10 md:col-span-1"
+              >
+                <span>Status</span>
+                <span className="ml-auto pr-4 hidden md:inline">:</span>
+              </label>
+              <div className="md:col-span-3 relative w-full md:w-56" ref={statusMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
+                  className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
+                    }`}
+                >
+                  <span className="truncate">{status || 'Jenis Status'}</span>
+                  <ChevronDown className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isStatusMenuOpen && (
+                  <div className="absolute top-full left-0 z-50 w-full bg-white border border-[#c5c6d2] border-t-0 rounded-b-md shadow-lg py-1 animate-fadeIn">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStatus('Terbit');
+                        setIsStatusMenuOpen(false);
+                      }}
+                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Terbit'
+                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                        }`}
+                    >
+                      Terbit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStatus('Menunggu');
+                        setIsStatusMenuOpen(false);
+                      }}
+                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Menunggu'
+                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                        }`}
+                    >
+                      Menunggu
+                    </button>
                   </div>
                 )}
               </div>

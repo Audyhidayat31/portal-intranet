@@ -211,6 +211,11 @@ export default function TambahBeritaPage() {
   const handleGambarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Ukuran file maksimal 5MB');
+        if (gambarInputRef.current) gambarInputRef.current.value = '';
+        return;
+      }
       setGambarFileName(file.name);
       try {
         const compressed = await compressImage(file);
@@ -221,9 +226,25 @@ export default function TambahBeritaPage() {
     }
   };
 
+  const handleRemoveGambar = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setGambarFileName('');
+    setGambarPreview(null);
+    if (gambarInputRef.current) {
+      gambarInputRef.current.value = '';
+    }
+  };
+
   const handleLampiranFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
+
+    const oversized = files.find(f => f.size > 5 * 1024 * 1024);
+    if (oversized) {
+      alert(`File "${oversized.name}" melebihi ukuran maksimal 5MB`);
+      if (lampiranInputRef.current) lampiranInputRef.current.value = '';
+      return;
+    }
 
     if (lampiranAttachments.length + files.length > 10) {
       alert('Maksimal 10 lampiran diperbolehkan');
@@ -266,6 +287,11 @@ export default function TambahBeritaPage() {
       return;
     }
 
+    if (!rawText && !htmlContent) {
+      alert('Deskripsi Berita wajib diisi');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const res = await fetch('/api/news', {
@@ -278,7 +304,7 @@ export default function TambahBeritaPage() {
           content: htmlContent || rawText || judul,
           coverImage:
             gambarPreview ||
-            'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80',
+            '/images/logo-perpusnas.png',
           publishedAt: tanggal.toISOString(),
           status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',
           attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments.map(a => a.name).join('|||') : null,
@@ -343,7 +369,7 @@ export default function TambahBeritaPage() {
           <div className="grid grid-cols-1 md:grid-cols-[200px_auto] gap-6 mb-8 items-start">
             {/* 1. Judul */}
             <label htmlFor="judul" className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Judul <span className="float-right hidden md:inline">:</span>
+              Judul <span className="text-red-500">*</span> <span className="float-right hidden md:inline">:</span>
             </label>
             <div>
               <input suppressHydrationWarning
@@ -445,7 +471,7 @@ export default function TambahBeritaPage() {
 
             {/* 4. Deskripsi with WYSIWYG Editor */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Deskripsi <span className="float-right hidden md:inline">:</span>
+              Deskripsi <span className="text-red-500">*</span> <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="border border-[#c5c6d2] rounded overflow-hidden">
               {/* WYSIWYG Toolbar */}
@@ -545,27 +571,30 @@ export default function TambahBeritaPage() {
               Gambar Berita <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="flex flex-col gap-4">
-              <div className="flex">
-                <input suppressHydrationWarning
-                  type="text"
-                  readOnly
-                  value={gambarFileName}
-                  placeholder="Berkas berupa .jpg/ .png"
-                  className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
-                />
-                <button
-                  type="button"
-                  onClick={() => gambarInputRef.current?.click()}
-                  className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer"
-                >
-                  Upload
-                </button>
-                <input suppressHydrationWarning
-                  ref={gambarInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleGambarFileChange}
-                  className="hidden"  />
+              <div>
+                <div className="flex">
+                  <input suppressHydrationWarning
+                    type="text"
+                    readOnly
+                    value={gambarFileName}
+                    placeholder="Berkas berupa .jpg/ .png"
+                    className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => gambarInputRef.current?.click()}
+                    className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer"
+                  >
+                    Upload
+                  </button>
+                  <input suppressHydrationWarning
+                    ref={gambarInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleGambarFileChange}
+                    className="hidden"  />
+                </div>
+                <p className="text-xs text-[#757682] mt-1.5 font-normal">File Maksimal 5MB</p>
               </div>
 
               {/* Dashed preview box: Gambar Preview */}
@@ -586,9 +615,18 @@ export default function TambahBeritaPage() {
                       alt="Pratinjau Gambar Berita"
                       className="max-w-full max-h-full object-contain"
                     />
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 text-white font-medium backdrop-blur-sm">
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 text-white font-medium backdrop-blur-sm pointer-events-none">
                       Klik untuk memperbesar
                     </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveGambar}
+                      className="absolute top-2 right-2 w-7 h-7 rounded-full bg-slate-900/60 hover:bg-red-600 text-white flex items-center justify-center transition-colors cursor-pointer shadow-sm z-20"
+                      title="Hapus gambar berita"
+                      aria-label="Hapus gambar berita"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
                 ) : (
                   <>
@@ -606,28 +644,31 @@ export default function TambahBeritaPage() {
               Lampiran (Maks. 10 File) <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="flex flex-col gap-4">
-              <div className="flex">
-                <input suppressHydrationWarning
-                  type="text"
-                  readOnly
-                  value={lampiranAttachments.length > 0 ? `${lampiranAttachments.length} file dipilih` : ''}
-                  placeholder="Berkas berupa .jpg/ .png"
-                  className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
-                />
-                <button
-                  type="button"
-                  onClick={() => lampiranInputRef.current?.click()}
-                  disabled={lampiranAttachments.length >= 10}
-                  className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer disabled:opacity-50"
-                >
-                  Upload
-                </button>
-                <input suppressHydrationWarning
-                  ref={lampiranInputRef}
-                  type="file"
-                  multiple
-                  onChange={handleLampiranFileChange}
-                  className="hidden"  />
+              <div>
+                <div className="flex">
+                  <input suppressHydrationWarning
+                    type="text"
+                    readOnly
+                    value={lampiranAttachments.length > 0 ? `${lampiranAttachments.length} file dipilih` : ''}
+                    placeholder="Berkas berupa .jpg/ .png"
+                    className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => lampiranInputRef.current?.click()}
+                    disabled={lampiranAttachments.length >= 10}
+                    className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    Upload
+                  </button>
+                  <input suppressHydrationWarning
+                    ref={lampiranInputRef}
+                    type="file"
+                    multiple
+                    onChange={handleLampiranFileChange}
+                    className="hidden"  />
+                </div>
+                <p className="text-xs text-[#757682] mt-1.5 font-normal">File Maksimal 5MB</p>
               </div>
 
               {/* Previews */}
@@ -655,11 +696,7 @@ export default function TambahBeritaPage() {
                       >
                         <X className="w-3 h-3" />
                       </button>
-                      {att.preview && (
-                        <span className="absolute bottom-0 w-full bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center">
-                          {att.name}
-                        </span>
-                      )}
+
                     </div>
                   ))}
                 </div>

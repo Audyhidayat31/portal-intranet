@@ -148,27 +148,28 @@ export default function EditLaporanPerjalananPage() {
         }
         setIsLoading(false);
       })
-      .catch(() => {
-        const matchedMock =
-          STITCH_MOCK_BUSINESS_TRIPS_5.find((m) => m.id === id || m.title.toLowerCase().includes(id.toLowerCase())) ||
-          STITCH_MOCK_BUSINESS_TRIPS_5[0];
-        setKeperluan(matchedMock.title || '');
-        if (matchedMock.publishedAt) {
-          const d = new Date(matchedMock.publishedAt);
-          if (!isNaN(d.getTime())) {
-            setTanggalMulai(d);
-            setTanggalSelesai(d);
-            setViewDate(d);
+      .catch((err) => {
+        console.error('Error fetching business trip in edit page:', err);
+        const matchedMock = STITCH_MOCK_BUSINESS_TRIPS_5.find((m) => m.id === id);
+        if (matchedMock) {
+          setKeperluan(matchedMock.title || '');
+          if (matchedMock.publishedAt) {
+            const d = new Date(matchedMock.publishedAt);
+            if (!isNaN(d.getTime())) {
+              setTanggalMulai(d);
+              setTanggalSelesai(d);
+              setViewDate(d);
+            }
           }
+          setNamaLengkap('Ahmad Fauzi');
+          const cityMatch = LIST_KOTA.find((k) => (matchedMock.destinationCity || '').includes(k));
+          if (cityMatch) setKotaTujuan(cityMatch);
+          setUraianHtml(matchedMock.content || matchedMock.body || '');
+          if (editorRef.current) {
+            editorRef.current.innerHTML = matchedMock.content || matchedMock.body || '';
+          }
+          setStatus((matchedMock as any).status === 'Menunggu' ? 'Menunggu' : 'Terbit');
         }
-        setNamaLengkap('Ahmad Fauzi');
-        const cityMatch = LIST_KOTA.find((k) => (matchedMock.destinationCity || '').includes(k));
-        if (cityMatch) setKotaTujuan(cityMatch);
-        setUraianHtml(matchedMock.content || matchedMock.body || '');
-        if (editorRef.current) {
-          editorRef.current.innerHTML = matchedMock.content || matchedMock.body || '';
-        }
-        setStatus((matchedMock as any).status === 'Menunggu' ? 'Menunggu' : 'Terbit');
         setIsLoading(false);
       });
   }, [id]);
@@ -305,8 +306,32 @@ export default function EditLaporanPerjalananPage() {
     const rawText = editorRef.current?.innerText?.trim() || '';
     const htmlContent = editorRef.current?.innerHTML?.trim() || '';
 
-    if (!keperluan.trim() || !rawText) {
-      alert('Keperluan dan Uraian laporan dinas wajib diisi.');
+    if (!keperluan.trim()) {
+      alert('Silakan isi Keperluan');
+      return;
+    }
+    if (!tanggalMulai) {
+      alert('Silakan pilih Tanggal Mulai');
+      return;
+    }
+    if (!tanggalSelesai) {
+      alert('Silakan pilih Durasi Penugasan');
+      return;
+    }
+    if (!namaLengkap.trim()) {
+      alert('Silakan isi Nama');
+      return;
+    }
+    if (!kotaTujuan.trim()) {
+      alert('Silakan pilih Kota/Kab Tujuan');
+      return;
+    }
+    if (!negaraTujuan.trim()) {
+      alert('Silakan pilih Negara Tujuan');
+      return;
+    }
+    if (!rawText && !htmlContent) {
+      alert('Silakan isi Uraian hasil kegiatan perjalanan dinas');
       return;
     }
 
@@ -328,6 +353,7 @@ export default function EditLaporanPerjalananPage() {
           body: htmlContent || rawText,
           content: htmlContent || rawText,
           publishedAt: tanggalMulai.toISOString(),
+          authorName: namaLengkap,
           status: status || 'Terbit',
         }),
       });
@@ -388,7 +414,7 @@ export default function EditLaporanPerjalananPage() {
                 htmlFor="keperluan"
                 className="font-bold text-sm text-[#1a1b20] flex items-center h-10 md:col-span-1"
               >
-                <span>Keperluan</span>
+                <span>Keperluan <span className="text-red-500">*</span></span>
                 <span className="ml-auto pr-4 hidden md:inline">:</span>
               </label>
               <div className="md:col-span-3">
@@ -409,7 +435,7 @@ export default function EditLaporanPerjalananPage() {
               <label
                 className="font-bold text-sm text-[#1a1b20] flex items-center h-10 md:col-span-1"
               >
-                <span>Tanggal Mulai</span>
+                <span>Tanggal Mulai <span className="text-red-500">*</span></span>
                 <span className="ml-auto pr-4 hidden md:inline">:</span>
               </label>
               <div className="md:col-span-3 flex flex-wrap gap-4 items-center relative" ref={datePickerRef1}>
@@ -487,12 +513,12 @@ export default function EditLaporanPerjalananPage() {
               </div>
             </div>
 
-            {/* Field: Tanggal Selesai */}
+            {/* Field: Durasi Penugasan */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4 items-start relative">
               <label
                 className="font-bold text-sm text-[#1a1b20] flex items-center h-10 md:col-span-1"
               >
-                <span>Tanggal Selesai</span>
+                <span>Durasi Penugasan <span className="text-red-500">*</span></span>
                 <span className="ml-auto pr-4 hidden md:inline">:</span>
               </label>
               <div className="md:col-span-3 flex flex-wrap gap-4 items-center relative" ref={datePickerRef2}>
@@ -576,13 +602,14 @@ export default function EditLaporanPerjalananPage() {
                 htmlFor="nama"
                 className="font-bold text-sm text-[#1a1b20] flex items-center h-10 md:col-span-1"
               >
-                <span>Nama</span>
+                <span>Nama <span className="text-red-500">*</span></span>
                 <span className="ml-auto pr-4 hidden md:inline">:</span>
               </label>
               <div className="md:col-span-3">
                 <input
                   id="nama"
                   type="text"
+                  required
                   placeholder="Nama Lengkap"
                   value={namaLengkap}
                   onChange={(e) => setNamaLengkap(e.target.value)}
@@ -596,11 +623,12 @@ export default function EditLaporanPerjalananPage() {
               <label
                 className="font-bold text-sm text-[#1a1b20] flex items-center h-10 md:col-span-1"
               >
-                <span>Kota/Kab Tujuan</span>
+                <span>Kota/Kab Tujuan <span className="text-red-500">*</span></span>
                 <span className="ml-auto pr-4 hidden md:inline">:</span>
               </label>
               <div className="md:col-span-2 relative">
                 <select
+                  required
                   value={kotaTujuan}
                   onChange={(e) => setKotaTujuan(e.target.value)}
                   className="w-full h-10 border border-[#c5c6d2] rounded appearance-none bg-[#f4f3f9] text-[#1a1b20] px-3 text-sm focus:outline-none focus:border-[#00113a] cursor-pointer"
@@ -621,11 +649,12 @@ export default function EditLaporanPerjalananPage() {
               <label
                 className="font-bold text-sm text-[#1a1b20] flex items-center h-10 md:col-span-1"
               >
-                <span>Negara Tujuan</span>
+                <span>Negara Tujuan <span className="text-red-500">*</span></span>
                 <span className="ml-auto pr-4 hidden md:inline">:</span>
               </label>
               <div className="md:col-span-2 relative">
                 <select
+                  required
                   value={negaraTujuan}
                   onChange={(e) => setNegaraTujuan(e.target.value)}
                   className="w-full h-10 border border-[#c5c6d2] rounded appearance-none bg-[#f4f3f9] text-[#1a1b20] px-3 text-sm focus:outline-none focus:border-[#00113a] cursor-pointer"
@@ -641,65 +670,12 @@ export default function EditLaporanPerjalananPage() {
               </div>
             </div>
 
-            {/* Field: Status Dropdown */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4 items-start">
-              <label className="font-bold text-sm text-[#1a1b20] flex items-center h-10 md:col-span-1">
-                <span>Status</span>
-                <span className="ml-auto pr-4 hidden md:inline">:</span>
-              </label>
-              <div className="md:col-span-2 relative" ref={statusMenuRef}>
-                <button
-                  type="button"
-                  onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
-                  className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${
-                    isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
-                  }`}
-                >
-                  <span className="truncate">{status || 'Jenis Status'}</span>
-                  <ChevronDown className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''}`} />
-                </button>
-
-                {isStatusMenuOpen && (
-                  <div className="absolute top-full left-0 z-50 w-full bg-white border border-[#c5c6d2] border-t-0 rounded-b-md shadow-lg py-1 animate-fadeIn">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setStatus('Terbit');
-                        setIsStatusMenuOpen(false);
-                      }}
-                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                        status === 'Terbit'
-                          ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
-                          : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                      }`}
-                    >
-                      Terbit
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setStatus('Menunggu');
-                        setIsStatusMenuOpen(false);
-                      }}
-                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                        status === 'Menunggu'
-                          ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
-                          : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                      }`}
-                    >
-                      Menunggu
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-
             {/* Field: Uraian with Full WYSIWYG formatting */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4 items-start">
               <label
                 className="font-bold text-sm text-[#1a1b20] flex items-center h-10 md:col-span-1"
               >
-                <span>Uraian</span>
+                <span>Uraian <span className="text-red-500">*</span></span>
                 <span className="ml-auto pr-4 hidden md:inline">:</span>
               </label>
 
@@ -783,8 +759,6 @@ export default function EditLaporanPerjalananPage() {
                   >
                     <Link2 className="w-4 h-4" />
                   </button>
-
-
                 </div>
 
                 {/* ContentEditable Container */}
@@ -801,6 +775,59 @@ export default function EditLaporanPerjalananPage() {
                   data-placeholder="Tuliskan uraian hasil kegiatan perjalanan dinas secara lengkap..."
                   className="wysiwyg-editor p-4 text-sm sm:text-base leading-relaxed bg-white text-[#1a1b20] min-h-[200px] max-h-[420px] overflow-y-auto outline-none"
                 />
+              </div>
+            </div>
+
+            {/* Field: Status Dropdown */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4 items-center">
+              <label className="font-bold text-sm text-[#1a1b20] flex items-center h-10 md:col-span-1">
+                <span>Status</span>
+                <span className="ml-auto pr-4 hidden md:inline">:</span>
+              </label>
+              <div className="md:col-span-3 relative w-full md:w-56" ref={statusMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
+                  className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${
+                    isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
+                  }`}
+                >
+                  <span className="truncate">{status || 'Jenis Status'}</span>
+                  <ChevronDown className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isStatusMenuOpen && (
+                  <div className="absolute top-full left-0 z-50 w-full bg-white border border-[#c5c6d2] border-t-0 rounded-b-md shadow-lg py-1 animate-fadeIn">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStatus('Terbit');
+                        setIsStatusMenuOpen(false);
+                      }}
+                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
+                        status === 'Terbit'
+                          ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                          : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                      }`}
+                    >
+                      Terbit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStatus('Menunggu');
+                        setIsStatusMenuOpen(false);
+                      }}
+                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
+                        status === 'Menunggu'
+                          ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                          : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                      }`}
+                    >
+                      Menunggu
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 

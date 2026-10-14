@@ -19,6 +19,7 @@ import {
   Quote,
   ImageIcon,
   Upload,
+  X,
   CheckCircle,
 } from 'lucide-react';
 import {
@@ -28,6 +29,52 @@ import {
   STITCH_MOCK_AGENDAS_6,
   MOCK_AGENDA_ATTACHMENTS_5,
 } from '@/lib/mock-agendas';
+
+const compressImage = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 1200;
+        const MAX_HEIGHT = 1200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.7));
+      };
+      img.onerror = () => resolve(event.target?.result as string);
+    };
+    reader.onerror = (error) => reject(error);
+  });
+};
+
+const readFileAsDataUrl = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (err) => reject(err);
+    reader.readAsDataURL(file);
+  });
+};
 
 export default function EditAgendaPage() {
   const params = useParams();
@@ -42,6 +89,8 @@ export default function EditAgendaPage() {
   const [gambarFileName, setGambarFileName] = useState('');
   const [gambarPreview, setGambarPreview] = useState<string | null>(null);
   const [lampiranFileName, setLampiranFileName] = useState('');
+  const [lampiranFileUrl, setLampiranFileUrl] = useState<string | null>(null);
+  const [modalImageUrl, setModalImageUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState('');
@@ -275,19 +324,54 @@ export default function EditAgendaPage() {
     }
   };
 
-  const handleGambarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleGambarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Ukuran file gambar maksimal 5MB');
+        if (gambarInputRef.current) gambarInputRef.current.value = '';
+        return;
+      }
       setGambarFileName(file.name);
-      const url = URL.createObjectURL(file);
-      setGambarPreview(url);
+      try {
+        const compressed = await compressImage(file);
+        setGambarPreview(compressed);
+      } catch {
+        const dataUrl = await readFileAsDataUrl(file);
+        setGambarPreview(dataUrl);
+      }
     }
   };
 
-  const handleLampiranFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleRemoveGambar = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setGambarFileName('');
+    setGambarPreview(null);
+    if (gambarInputRef.current) {
+      gambarInputRef.current.value = '';
+    }
+  };
+
+  const handleLampiranFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      if (file.size > 50 * 1024 * 1024) {
+        alert('Ukuran file lampiran maksimal 50MB');
+        if (lampiranInputRef.current) lampiranInputRef.current.value = '';
+        return;
+      }
       setLampiranFileName(file.name);
+      try {
+        let url: string | null = null;
+        if (file.type.startsWith('image/')) {
+          url = await compressImage(file);
+        } else {
+          url = await readFileAsDataUrl(file);
+        }
+        setLampiranFileUrl(url);
+      } catch (err) {
+        console.error('Failed reading attachment', err);
+      }
     }
   };
 
@@ -301,11 +385,16 @@ export default function EditAgendaPage() {
       return;
     }
 
+    if (!rawText && !htmlContent) {
+      alert('Silakan isi uraian deskripsi agenda');
+      return;
+    }
+
     setIsSubmitting(true);
     const resolvedStatus = status === 'Menunggu' ? 'Menunggu' : 'Terbit';
     const fallbackImage =
       gambarPreview ||
-      'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80';
+      '/images/logo-perpusnas.png';
 
     // Update in localStorage
     const currentStored = getStoredAgendas();
@@ -342,6 +431,8 @@ export default function EditAgendaPage() {
           coverImage: fallbackImage,
           eventStartDate: tanggal.toISOString(),
           status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',
+          attachmentName: lampiranFileName || null,
+          attachmentUrl: lampiranFileUrl || null,
         }),
       });
     } catch {
@@ -393,7 +484,7 @@ export default function EditAgendaPage() {
           <div className="grid grid-cols-1 md:grid-cols-[200px_auto] gap-6 mb-8 items-start">
             {/* 1. Judul */}
             <label htmlFor="judul" className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Judul <span className="float-right hidden md:inline">:</span>
+              Judul <span className="text-red-500">*</span> <span className="float-right hidden md:inline">:</span>
             </label>
             <div>
               <input
@@ -532,7 +623,7 @@ export default function EditAgendaPage() {
 
             {/* 4. Deskripsi */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Deskripsi <span className="float-right hidden md:inline">:</span>
+              Deskripsi <span className="text-red-500">*</span> <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="border border-[#c5c6d2] rounded overflow-hidden">
               {/* WYSIWYG Toolbar */}
@@ -631,40 +722,63 @@ export default function EditAgendaPage() {
               Gambar Agenda Kegiatan <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="flex flex-col gap-4">
-              <div className="flex">
-                <input
-                  type="text"
-                  readOnly
-                  value={gambarFileName}
-                  placeholder="Nama File.jpg/png"
-                  className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
-                />
-                <button
-                  type="button"
-                  onClick={() => gambarInputRef.current?.click()}
-                  className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer"
-                >
-                  Upload
-                </button>
-                <input
-                  ref={gambarInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleGambarFileChange}
-                  className="hidden" suppressHydrationWarning />
+              <div>
+                <div className="flex">
+                  <input
+                    type="text"
+                    readOnly
+                    value={gambarFileName}
+                    placeholder="Nama File.jpg/png"
+                    className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => gambarInputRef.current?.click()}
+                    className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer"
+                  >
+                    Upload
+                  </button>
+                  <input
+                    ref={gambarInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleGambarFileChange}
+                    className="hidden" suppressHydrationWarning />
+                </div>
+                <p className="text-xs text-[#757682] mt-1.5 font-normal">File Maksimal 5MB</p>
               </div>
 
               {/* Dashed preview box */}
               <div
-                onClick={() => gambarInputRef.current?.click()}
+                onClick={() => {
+                  if (gambarPreview) {
+                    setModalImageUrl(gambarPreview);
+                  } else {
+                    gambarInputRef.current?.click();
+                  }
+                }}
                 className="w-full md:w-2/3 h-64 bg-[#efedf3] border-2 border-dashed border-[#c5c6d2] rounded flex items-center justify-center text-[#757682] text-sm relative group cursor-pointer hover:bg-[#e9e7ee] transition-colors overflow-hidden"
               >
                 {gambarPreview ? (
-                  <img
-                    src={gambarPreview}
-                    alt="Pratinjau Gambar Agenda"
-                    className="w-full h-full object-cover"
-                  />
+                  <div className="w-full h-full p-2 relative flex items-center justify-center bg-white/50">
+                    <img
+                      src={gambarPreview}
+                      alt="Pratinjau Gambar Agenda"
+                      className="max-w-full max-h-full object-contain"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 text-white font-medium backdrop-blur-sm pointer-events-none">
+                      Klik untuk memperbesar
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveGambar}
+                      className="absolute top-2 right-2 w-7 h-7 rounded-full bg-slate-900/60 hover:bg-red-600 text-white flex items-center justify-center transition-colors cursor-pointer shadow-sm z-20"
+                      title="Hapus gambar agenda kegiatan"
+                      aria-label="Hapus gambar agenda kegiatan"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
                 ) : (
                   <>
                     <span>Gambar Preview</span>
@@ -681,27 +795,30 @@ export default function EditAgendaPage() {
               Lampiran <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="flex flex-col gap-4">
-              <div className="flex">
-                <input
-                  type="text"
-                  readOnly
-                  value={lampiranFileName}
-                  placeholder="Nama File.pdf/doc"
-                  className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
-                />
-                <button
-                  type="button"
-                  onClick={() => lampiranInputRef.current?.click()}
-                  className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer"
-                >
-                  Upload
-                </button>
-                <input
-                  ref={lampiranInputRef}
-                  type="file"
-                  accept=".pdf,.doc,.docx,.jpg,.png"
-                  onChange={handleLampiranFileChange}
-                  className="hidden" suppressHydrationWarning />
+              <div>
+                <div className="flex">
+                  <input
+                    type="text"
+                    readOnly
+                    value={lampiranFileName}
+                    placeholder="Nama File.pdf/doc"
+                    className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => lampiranInputRef.current?.click()}
+                    className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer"
+                  >
+                    Upload
+                  </button>
+                  <input
+                    ref={lampiranInputRef}
+                    type="file"
+                    accept=".pdf,.doc,.docx,.jpg,.png"
+                    onChange={handleLampiranFileChange}
+                    className="hidden" suppressHydrationWarning />
+                </div>
+                <p className="text-xs text-[#757682] mt-1.5 font-normal">File Maksimal 50MB</p>
               </div>
 
               {/* Dashed preview box */}
@@ -745,6 +862,32 @@ export default function EditAgendaPage() {
           </div>
         </form>
       </div>
+
+      {/* Lightbox Preview Modal */}
+      {modalImageUrl && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fadeIn p-4 sm:p-8"
+          onClick={() => setModalImageUrl(null)}
+        >
+          <button
+            type="button"
+            className="absolute top-4 right-4 sm:top-8 sm:right-8 text-white/70 hover:text-white bg-black/50 hover:bg-black/80 rounded-full p-2 transition-all cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              setModalImageUrl(null);
+            }}
+          >
+            <X className="w-6 h-6 sm:w-8 sm:h-8" />
+          </button>
+
+          <img
+            src={modalImageUrl}
+            alt="Pratinjau Gambar Penuh"
+            className="max-w-full max-h-full object-contain rounded shadow-2xl cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 }

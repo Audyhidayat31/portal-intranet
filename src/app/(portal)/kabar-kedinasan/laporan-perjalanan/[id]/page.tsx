@@ -27,14 +27,8 @@ export default function DetailLaporanPerjalananPage() {
   const router = useRouter();
   const rawId = (params?.id as string) || '';
 
-  const matchedInitial = STITCH_MOCK_BUSINESS_TRIPS_5.find(
-    (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
-  );
-
-  const [report, setReport] = useState<any>(
-    matchedInitial ? { ...matchedInitial, body: matchedInitial.content || matchedInitial.body } : null
-  );
-  const [isLoading, setIsLoading] = useState(!matchedInitial);
+  const [report, setReport] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Lightbox preview for attachments
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -60,66 +54,40 @@ export default function DetailLaporanPerjalananPage() {
   useEffect(() => {
     if (!rawId) return;
 
-    if (!matchedInitial) {
-      setIsLoading(true);
-    }
+    setIsLoading(true);
     fetch(`/api/business-trips/${rawId}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data) {
-          const item = data.data;
-          setReport(item);
+          setReport(data.data);
         } else {
-          // Check if it matches our mock items
+          // Check if it matches our mock items strictly by ID
           const matchedMock = STITCH_MOCK_BUSINESS_TRIPS_5.find(
-            (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
+            (m) => m.id === rawId
           );
 
           if (matchedMock) {
-            const fullItem = {
+            setReport({
               ...matchedMock,
               body: matchedMock.content || matchedMock.body,
-            };
-            setReport(fullItem);
+            });
           } else {
-            const fallback = {
-              id: rawId,
-              title: 'Laporan Perjalanan Dinas Pelatihan Kearsipan Digital di Yogyakarta',
-              publishedAt: '2026-08-20',
-              destinationCity: 'Yogyakarta',
-              body: `Perjalanan dinas ini dilaksanakan dalam rangka mengikuti Pelatihan Kearsipan Digital Tingkat Lanjut yang diselenggarakan oleh Arsip Nasional Republik Indonesia (ANRI) cabang Yogyakarta. Pelatihan berlangsung selama tiga hari, mulai tanggal 15 hingga 17 Agustus 2026, bertempat di Hotel Tentrem, Yogyakarta.
-
-Fokus utama dari pelatihan ini adalah pada implementasi sistem pengarsipan berbasis cloud untuk institusi pemerintahan dan strategi migrasi dari arsip fisik ke format digital dengan standar keamanan tinggi. Sesi-sesi meliputi:
-• Standarisasi Metadata Arsip Digital (Pembicara: Dr. Hendrawan).
-• Keamanan Data Siber dalam Sistem Pengarsipan Terpusat.
-• Workshop Praktis: Migrasi Data Skala Besar menggunakan Sistem Manajemen Arsip Dinamis (SRIKANDI).
-
-Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedang berlangsung di Perpusnas RI. Pengetahuan yang didapat akan segera dideseminasikan kepada tim IT dan kearsipan internal dalam sesi knowledge sharing minggu depan. Diharapkan kita dapat mengadopsi beberapa protokol keamanan baru yang diperkenalkan selama pelatihan.`,
-              attachmentName: 'Laporan_Dinas_Kearsipan_Digital_Yogyakarta_2026.pdf',
-              author: {
-                name: 'Ahmad Fauzi',
-                profile: {
-                  position: 'Pustakawan Ahli Muda',
-                  unitKerja: 'Pusat Preservasi & Pengolahan Bahan Pustaka',
-                },
-              },
-            };
-            setReport(fallback);
+            setReport(null);
           }
         }
-        setIsLoading(false);
       })
       .catch(() => {
         const matchedMock = STITCH_MOCK_BUSINESS_TRIPS_5.find((m) => m.id === rawId);
         if (matchedMock) {
           setReport(matchedMock);
         } else {
-          setReport(STITCH_MOCK_BUSINESS_TRIPS_5[0]);
+          setReport(null);
         }
+      })
+      .finally(() => {
         setIsLoading(false);
       });
   }, [rawId]);
-
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -150,6 +118,21 @@ Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedan
             </div>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (!report) {
+    return (
+      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 bg-white min-h-[calc(100vh-80px)] flex flex-col justify-center items-center text-center">
+        <h2 className="text-2xl font-bold text-[#00113a] mb-2">Laporan Tidak Ditemukan</h2>
+        <p className="text-sm text-[#757682] mb-6">Laporan perjalanan dinas yang Anda cari tidak tersedia atau telah dihapus.</p>
+        <Link
+          href="/kabar-kedinasan/laporan-perjalanan"
+          className="bg-[#00113a] text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-[#2a4386] transition-colors"
+        >
+          Kembali ke Daftar Laporan
+        </Link>
       </div>
     );
   }
@@ -212,51 +195,75 @@ Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedan
           </header>
 
           {/* Content Description matching Stitch */}
-          <div className="prose max-w-none text-base sm:text-lg text-[#444650] mb-12 min-h-[300px] leading-relaxed whitespace-pre-line space-y-4">
-            {report?.body || report?.content || report?.excerpt}
-          </div>
-
-          {/* Attachments Section (5 Images Grid) matching Stitch */}
-          <div className="border-t border-[#c5c6d2] pt-8 mb-12">
-            <h3 className="font-bold text-xs text-[#444650] uppercase tracking-wider mb-4">
-              Lampiran
-            </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-              {MOCK_ATTACHMENTS.map((item) => (
-                <div
-                  key={item.id}
-                  onClick={() => setPreviewImage(item.src)}
-                  className="aspect-square bg-[#e3e2e8] border border-[#c5c6d2] rounded flex items-center justify-center text-[#444650] text-xs hover:bg-[#efedf3] transition-colors cursor-pointer relative overflow-hidden group shadow-2xs"
-                >
-                  <img
-                    src={item.src}
-                    alt={item.label}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                  />
-                  <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold">
-                    Lihat Foto
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {report?.attachmentName && (
-              <div className="mt-6 p-4 bg-[#f4f3f9] border border-[#c5c6d2] rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <div className="flex items-center gap-2 text-sm font-semibold text-[#00113a] truncate max-w-md">
-                  <FileText className="w-5 h-5 text-[#00113a] shrink-0" />
-                  <span className="truncate">{report.attachmentName}</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => alert(`Mengunduh berkas laporan: ${report.attachmentName}`)}
-                  className="bg-[#00113a] hover:bg-[#2a4386] text-white text-xs font-bold px-4 py-2 rounded transition-colors flex items-center gap-1.5 shrink-0 shadow-xs"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Unduh Dokumen</span>
-                </button>
-              </div>
+          <div className="prose max-w-none text-base sm:text-lg text-[#444650] mb-12 min-h-[160px] leading-relaxed space-y-4">
+            {report?.body && (report.body.includes('<p>') || report.body.includes('<div>') || report.body.includes('<br>') || report.body.includes('<strong>') || report.body.includes('<b>')) ? (
+              <div dangerouslySetInnerHTML={{ __html: report.body }} />
+            ) : (
+              <div className="whitespace-pre-line">{report?.body || report?.content || report?.excerpt}</div>
             )}
           </div>
+
+          {/* Attachments Section */}
+          {((report?.id?.startsWith('trip-') && MOCK_ATTACHMENTS.length > 0) || report?.coverImage || report?.attachmentName) && (
+            <div className="border-t border-[#c5c6d2] pt-8 mb-12">
+              <h3 className="font-bold text-xs text-[#444650] uppercase tracking-wider mb-4">
+                Lampiran
+              </h3>
+
+              {report?.coverImage && (
+                <div className="mb-6 max-w-md">
+                  <div
+                    onClick={() => setPreviewImage(report.coverImage)}
+                    className="aspect-video bg-[#e3e2e8] border border-[#c5c6d2] rounded overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                  >
+                    <img
+                      src={report.coverImage}
+                      alt="Lampiran Kegiatan"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {report?.id?.startsWith('trip-') && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                  {MOCK_ATTACHMENTS.map((item) => (
+                    <div
+                      key={item.id}
+                      onClick={() => setPreviewImage(item.src)}
+                      className="aspect-square bg-[#e3e2e8] border border-[#c5c6d2] rounded flex items-center justify-center text-[#444650] text-xs hover:bg-[#efedf3] transition-colors cursor-pointer relative overflow-hidden group shadow-2xs"
+                    >
+                      <img
+                        src={item.src}
+                        alt={item.label}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      />
+                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold">
+                        Lihat Foto
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {report?.attachmentName && (
+                <div className="mt-6 p-4 bg-[#f4f3f9] border border-[#c5c6d2] rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-[#00113a] truncate max-w-md">
+                    <FileText className="w-5 h-5 text-[#00113a] shrink-0" />
+                    <span className="truncate">{report.attachmentName}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => alert(`Mengunduh berkas laporan: ${report.attachmentName}`)}
+                    className="bg-[#00113a] hover:bg-[#2a4386] text-white text-xs font-bold px-4 py-2 rounded transition-colors flex items-center gap-1.5 shrink-0 shadow-xs"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Unduh Dokumen</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Footer Meta & Actions matching Stitch */}
           <footer className="flex flex-col md:flex-row justify-between items-start md:items-end border-t border-[#c5c6d2] pt-6 gap-6">

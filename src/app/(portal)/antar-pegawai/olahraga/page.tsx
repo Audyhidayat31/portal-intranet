@@ -90,7 +90,7 @@ export default function DaftarOlahragaPage() {
           content: item.body || '',
           coverImage:
             item.coverImage ||
-            'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=800&q=80',
+            '/images/logo-perpusnas.png',
           publishedAt: item.createdAt || new Date().toISOString(),
           status: item.status === 'MENUNGGU' ? 'Menunggu' : 'Terbit',
           authorName: item.author?.name || 'Ahmad Fauzi',

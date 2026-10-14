@@ -222,7 +222,10 @@ export default function PengumumanPage() {
 
   const handleUpdateAnnouncement = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedAnnouncement || !editTitle.trim()) return;
+    if (!selectedAnnouncement || !editTitle.trim() || !editContent.trim()) {
+      alert('Judul dan Deskripsi pengumuman wajib diisi.');
+      return;
+    }
 
     setIsUpdating(true);
     try {
@@ -684,7 +687,7 @@ export default function PengumumanPage() {
             <form onSubmit={handleUpdateAnnouncement} className="space-y-4 mt-4">
               <div>
                 <label className="block text-xs font-bold text-[#1a1b20] mb-1.5">
-                  Judul Pengumuman
+                  Judul Pengumuman <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -695,49 +698,9 @@ export default function PengumumanPage() {
                 />
               </div>
 
-              {/* Status Edit Dropdown */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4 items-center mb-4">
-                <label className="font-bold text-xs md:text-sm text-[#1a1b20] flex items-center h-10 md:col-span-1">
-                  <span>Status</span>
-                  <span className="ml-auto pr-4 hidden md:inline">:</span>
-                </label>
-                <div className="md:col-span-3 relative w-full md:w-56" ref={editStatusMenuRef}>
-                  <button
-                    type="button"
-                    onClick={() => setIsEditStatusMenuOpen(!isEditStatusMenuOpen)}
-                    className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${isEditStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
-                      }`}
-                  >
-                    <span className="truncate">{editStatus || 'Jenis Status'}</span>
-                    <ChevronDown className={`w-4 h-4 text-white transition-transform ${isEditStatusMenuOpen ? 'rotate-180' : ''}`} />
-                  </button>
-
-                  {isEditStatusMenuOpen && (
-                    <div className="absolute top-full left-0 w-full bg-white border border-[#c5c6d2] rounded-b-md shadow-lg z-50 overflow-hidden">
-                      <div className="flex flex-col text-sm text-[#1a1b20]">
-                        <button
-                          type="button"
-                          onClick={() => { setEditStatus('Terbit'); setIsEditStatusMenuOpen(false); }}
-                          className={`text-left px-4 py-2.5 hover:bg-[#efedf3] transition-colors ${editStatus === 'Terbit' ? 'bg-[#efedf3] font-bold' : ''}`}
-                        >
-                          Terbit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => { setEditStatus('Menunggu'); setIsEditStatusMenuOpen(false); }}
-                          className={`text-left px-4 py-2.5 hover:bg-[#efedf3] transition-colors ${editStatus === 'Menunggu' ? 'bg-[#efedf3] font-bold' : ''}`}
-                        >
-                          Menunggu
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
               <div>
                 <label className="block text-xs font-bold text-[#1a1b20] mb-1.5">
-                  Uraian / Isi Pengumuman
+                  Deskripsi <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   rows={6}
@@ -806,6 +769,46 @@ export default function PengumumanPage() {
                           )}
                         </div>
                       ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Status Edit Dropdown */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4 items-center">
+                <label className="font-bold text-xs md:text-sm text-[#1a1b20] flex items-center h-10 md:col-span-1">
+                  <span>Status</span>
+                  <span className="ml-auto pr-4 hidden md:inline">:</span>
+                </label>
+                <div className="md:col-span-3 relative w-full md:w-56" ref={editStatusMenuRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditStatusMenuOpen(!isEditStatusMenuOpen)}
+                    className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${isEditStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
+                      }`}
+                  >
+                    <span className="truncate">{editStatus || 'Jenis Status'}</span>
+                    <ChevronDown className={`w-4 h-4 text-white transition-transform ${isEditStatusMenuOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {isEditStatusMenuOpen && (
+                    <div className="absolute top-full left-0 w-full bg-white border border-[#c5c6d2] rounded-b-md shadow-lg z-50 overflow-hidden">
+                      <div className="flex flex-col text-sm text-[#1a1b20]">
+                        <button
+                          type="button"
+                          onClick={() => { setEditStatus('Terbit'); setIsEditStatusMenuOpen(false); }}
+                          className={`text-left px-4 py-2.5 hover:bg-[#efedf3] transition-colors ${editStatus === 'Terbit' ? 'bg-[#efedf3] font-bold' : ''}`}
+                        >
+                          Terbit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setEditStatus('Menunggu'); setIsEditStatusMenuOpen(false); }}
+                          className={`text-left px-4 py-2.5 hover:bg-[#efedf3] transition-colors ${editStatus === 'Menunggu' ? 'bg-[#efedf3] font-bold' : ''}`}
+                        >
+                          Menunggu
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>

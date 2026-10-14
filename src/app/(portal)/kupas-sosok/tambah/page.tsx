@@ -20,7 +20,14 @@ import {
   ImageIcon,
   Upload,
   CheckCircle,
+  FileText,
+  X,
 } from 'lucide-react';
+import {
+  getStoredFigures,
+  saveStoredFigures,
+  FigureItem,
+} from '@/lib/mock-kupas-sosok';
 
 export default function TambahKupasSosokPage() {
   const router = useRouter();
@@ -34,7 +41,7 @@ export default function TambahKupasSosokPage() {
   const [deskripsiHtml, setDeskripsiHtml] = useState('');
   const [gambarFileName, setGambarFileName] = useState('');
   const [gambarPreview, setGambarPreview] = useState<string | null>(null);
-  const [lampiranFileName, setLampiranFileName] = useState('');
+  const [lampiranAttachments, setLampiranAttachments] = useState<Array<{ file?: File; name: string; preview: string | null }>>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -195,25 +202,95 @@ export default function TambahKupasSosokPage() {
     }
   };
 
-  const handleLampiranFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setLampiranFileName(file.name);
+  const handleRemoveGambar = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setGambarFileName('');
+    setGambarPreview(null);
+    if (gambarInputRef.current) {
+      gambarInputRef.current.value = '';
     }
+  };
+
+  const handleLampiranFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    const oversized = files.find((f) => f.size > 5 * 1024 * 1024);
+    if (oversized) {
+      alert(`File "${oversized.name}" melebihi ukuran maksimal 5MB`);
+      if (lampiranInputRef.current) lampiranInputRef.current.value = '';
+      return;
+    }
+
+    if (lampiranAttachments.length + files.length > 10) {
+      alert('Maksimal 10 lampiran diperbolehkan');
+      return;
+    }
+
+    const newAttachments = files.map((file) => {
+      let preview: string | null = null;
+      if (file.type.startsWith('image/')) {
+        preview = URL.createObjectURL(file);
+      }
+      return { file, name: file.name, preview };
+    });
+
+    setLampiranAttachments([...lampiranAttachments, ...newAttachments]);
+    if (lampiranInputRef.current) {
+      lampiranInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveLampiran = (index: number) => {
+    setLampiranAttachments(lampiranAttachments.filter((_, i) => i !== index));
+    if (lampiranInputRef.current) lampiranInputRef.current.value = '';
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nama.trim()) {
-      alert('Nama sosok wajib diisi');
+      alert('Nama judul Kupas Sosok wajib diisi');
+      return;
+    }
+
+    if (!jabatan.trim()) {
+      alert('Jabatan wajib diisi');
+      return;
+    }
+
+    if (!unitKerja.trim()) {
+      alert('Unit Kerja wajib diisi');
+      return;
+    }
+
+    const storyContent = deskripsiHtml.trim();
+    const plainStory = editorRef.current?.innerText?.trim() || '';
+
+    if (!storyContent && !plainStory) {
+      alert('Kisah & Perjalanan wajib diisi');
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const storyContent = deskripsiHtml || (editorRef.current?.innerHTML || '');
-      const plainStory = editorRef.current?.innerText || nama;
+
+      const newItem: FigureItem = {
+        id: `fig-${Date.now()}`,
+        name: nama,
+        slug: nama.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || `sosok-${Date.now()}`,
+        position: jabatan || 'Pustakawan & Insan Berprestasi',
+        unitKerja: unitKerja || 'Perpustakaan Nasional RI',
+        quote: 'Mendedikasikan karya untuk kemajuan literasi bangsa.',
+        fullStory: storyContent || plainStory,
+        photoUrl: gambarPreview || '/images/logo-perpusnas.png',
+        publishedAt: tanggal.toISOString().split('T')[0],
+        status: (status === 'Menunggu' ? 'Menunggu' : 'Terbit') as 'Terbit' | 'Menunggu',
+        attachments: lampiranAttachments.map((a, idx) => ({ id: idx + 1, label: a.name, src: a.preview || `/uploads/${a.name}` })),
+        attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments.map((a) => a.name).join(', ') : undefined,
+      };
+      const stored = getStoredFigures();
+      saveStoredFigures([newItem, ...stored]);
 
       const res = await fetch('/api/figure-profiles', {
         method: 'POST',
@@ -226,6 +303,7 @@ export default function TambahKupasSosokPage() {
           fullStory: plainStory,
           photoUrl: gambarPreview || '',
           isSpotlight: false,
+          attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments.map((a) => a.name).join(', ') : undefined,
         }),
       });
 
@@ -285,7 +363,7 @@ export default function TambahKupasSosokPage() {
             <div className="grid grid-cols-1 md:grid-cols-[200px_auto] gap-6 mb-8 items-start">
               {/* 1. Nama Sosok / Judul */}
               <label htmlFor="nama" className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-                Judul <span className="float-right hidden md:inline">:</span>
+                Judul <span className="text-red-500">*</span> <span className="float-right hidden md:inline">:</span>
               </label>
               <div>
                 <input
@@ -371,61 +449,15 @@ export default function TambahKupasSosokPage() {
                 )}
               </div>
 
-              {/* 3. Status Dropdown matching Stitch */}
-              <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-                Status <span className="float-right hidden md:inline">:</span>
-              </label>
-              <div className="relative w-full md:w-56" ref={statusMenuRef}>
-                <button
-                  type="button"
-                  onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
-                  className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
-                    }`}
-                >
-                  <span className="truncate">{status || 'Jenis Status'}</span>
-                  <ChevronDown className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''}`} />
-                </button>
-
-                {isStatusMenuOpen && (
-                  <div className="absolute top-full left-0 z-50 w-full bg-white border border-[#c5c6d2] border-t-0 rounded-b-md shadow-lg py-1 animate-fadeIn">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setStatus('Terbit');
-                        setIsStatusMenuOpen(false);
-                      }}
-                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Terbit'
-                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
-                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                        }`}
-                    >
-                      Terbit
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setStatus('Menunggu');
-                        setIsStatusMenuOpen(false);
-                      }}
-                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Menunggu'
-                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
-                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                        }`}
-                    >
-                      Menunggu
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* 4. Jabatan & Unit Kerja */}
+              {/* 3. Jabatan & Unit Kerja */}
               <label htmlFor="jabatan" className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-                Jabatan & Unit Kerja <span className="float-right hidden md:inline">:</span>
+                Jabatan & Unit Kerja <span className="text-red-500">*</span> <span className="float-right hidden md:inline">:</span>
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <input
                   id="jabatan"
                   type="text"
+                  required
                   value={jabatan}
                   onChange={(e) => setJabatan(e.target.value)}
                   placeholder="Contoh: Pustakawan Ahli Utama"
@@ -434,6 +466,7 @@ export default function TambahKupasSosokPage() {
                 <input
                   id="unitKerja"
                   type="text"
+                  required
                   value={unitKerja}
                   onChange={(e) => setUnitKerja(e.target.value)}
                   placeholder="Contoh: Deputi Pengembangan Bahan Pustaka"
@@ -443,7 +476,7 @@ export default function TambahKupasSosokPage() {
 
               {/* 5. Deskripsi / Kisah Lengkap */}
               <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-                Kisah & Perjalanan <span className="float-right hidden md:inline">:</span>
+                Kisah & Perjalanan <span className="text-red-500">*</span> <span className="float-right hidden md:inline">:</span>
               </label>
               <div className="border border-[#c5c6d2] rounded overflow-hidden">
                 {/* WYSIWYG Toolbar matching Stitch */}
@@ -568,15 +601,30 @@ export default function TambahKupasSosokPage() {
 
                 {/* Dashed preview box: Gambar Preview */}
                 <div
-                  onClick={() => gambarInputRef.current?.click()}
+                  onClick={() => {
+                    if (!gambarPreview) {
+                      gambarInputRef.current?.click();
+                    }
+                  }}
                   className="w-full md:w-2/3 h-64 bg-[#efedf3] border-2 border-dashed border-[#c5c6d2] rounded flex items-center justify-center text-[#757682] text-sm relative group cursor-pointer hover:bg-[#e9e7ee] transition-colors overflow-hidden"
                 >
                   {gambarPreview ? (
-                    <img
-                      src={gambarPreview}
-                      alt="Pratinjau Foto"
-                      className="w-full h-full object-cover"
-                    />
+                    <div className="w-full h-full p-2 relative flex items-center justify-center bg-white/50">
+                      <img
+                        src={gambarPreview}
+                        alt="Pratinjau Foto"
+                        className="max-w-full max-h-full object-contain"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleRemoveGambar}
+                        className="absolute top-2 right-2 w-7 h-7 rounded-full bg-slate-900/60 hover:bg-red-600 text-white flex items-center justify-center transition-colors cursor-pointer shadow-sm z-20"
+                        title="Hapus gambar"
+                        aria-label="Hapus gambar"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
                   ) : (
                     <>
                       <span>Gambar Preview</span>
@@ -588,54 +636,126 @@ export default function TambahKupasSosokPage() {
                 </div>
               </div>
 
-              {/* 8. Lampiran */}
+              {/* Lampiran */}
               <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-                Lampiran Berkas <span className="float-right hidden md:inline">:</span>
+                Lampiran Berkas (Maks. 10 File) <span className="float-right hidden md:inline">:</span>
               </label>
               <div className="flex flex-col gap-4">
-                <div className="flex">
-                  <input
-                    type="text"
-                    readOnly
-                    value={lampiranFileName}
-                    placeholder="Nama File.pdf/doc"
-                    className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => lampiranInputRef.current?.click()}
-                    className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer"
-                  >
-                    Upload
-                  </button>
-                  <input
-                    ref={lampiranInputRef}
-                    type="file"
-                    accept=".pdf,.doc,.docx,.jpg,.png"
-                    onChange={handleLampiranFileChange}
-                    className="hidden" suppressHydrationWarning />
+                <div>
+                  <div className="flex">
+                    <input
+                      type="text"
+                      readOnly
+                      value={lampiranAttachments.length > 0 ? `${lampiranAttachments.length} file dipilih` : ''}
+                      placeholder="Berkas berupa .jpg/ .png/ .pdf"
+                      className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => lampiranInputRef.current?.click()}
+                      disabled={lampiranAttachments.length >= 10}
+                      className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer disabled:opacity-50"
+                    >
+                      Upload
+                    </button>
+                    <input
+                      ref={lampiranInputRef}
+                      type="file"
+                      multiple
+                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                      onChange={handleLampiranFileChange}
+                      className="hidden"
+                      suppressHydrationWarning
+                    />
+                  </div>
+                  <p className="text-xs text-[#757682] mt-1.5 font-normal">File Maksimal 5MB</p>
                 </div>
 
-                {/* Dashed preview box: File Preview */}
-                <div
-                  onClick={() => lampiranInputRef.current?.click()}
-                  className="w-full md:w-2/3 h-64 bg-[#efedf3] border-2 border-dashed border-[#c5c6d2] rounded flex items-center justify-center text-[#757682] text-sm relative group cursor-pointer hover:bg-[#e9e7ee] transition-colors overflow-hidden"
-                >
-                  {lampiranFileName ? (
-                    <div className="p-4 text-center">
-                      <Upload className="w-8 h-8 text-[#00113a] mx-auto mb-2" />
-                      <span className="font-semibold text-[#00113a] block break-all">{lampiranFileName}</span>
-                      <span className="text-xs text-emerald-600 font-medium mt-1 inline-block">Berkas Terlampir</span>
-                    </div>
-                  ) : (
-                    <>
-                      <span>File Preview</span>
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/5">
-                        <Upload className="w-8 h-8 text-[#757682]" />
+                {/* Previews */}
+                {lampiranAttachments.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 w-full">
+                    {lampiranAttachments.map((att, idx) => (
+                      <div
+                        key={idx}
+                        className="relative group bg-[#e9e7ee] border border-[#c5c6d2] rounded-md overflow-hidden aspect-square flex flex-col items-center justify-center"
+                      >
+                        {att.preview ? (
+                          <img
+                            src={att.preview}
+                            alt={att.name}
+                            className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                          />
+                        ) : (
+                          <div className="flex flex-col items-center gap-2 p-2">
+                            <FileText className="w-8 h-8 text-[#00113a]" />
+                            <span className="text-[10px] font-bold text-center break-all line-clamp-2 text-[#00113a]">
+                              {att.name}
+                            </span>
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveLampiran(idx)}
+                          className="absolute top-1 right-1 bg-black/60 hover:bg-black text-white p-1 rounded-full transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                        {att.preview && (
+                          <span className="absolute bottom-0 w-full bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center">
+                            {att.name}
+                          </span>
+                        )}
                       </div>
-                    </>
-                  )}
-                </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Status Dropdown diletakkan di paling bawah */}
+              <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
+                Status <span className="float-right hidden md:inline">:</span>
+              </label>
+              <div className="relative w-full md:w-56" ref={statusMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
+                  className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
+                    }`}
+                >
+                  <span className="truncate">{status || 'Jenis Status'}</span>
+                  <ChevronDown className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isStatusMenuOpen && (
+                  <div className="absolute top-full left-0 z-50 w-full bg-white border border-[#c5c6d2] border-t-0 rounded-b-md shadow-lg py-1 animate-fadeIn">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStatus('Terbit');
+                        setIsStatusMenuOpen(false);
+                      }}
+                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Terbit'
+                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                        }`}
+                    >
+                      Terbit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStatus('Menunggu');
+                        setIsStatusMenuOpen(false);
+                      }}
+                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Menunggu'
+                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                        }`}
+                    >
+                      Menunggu
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 

@@ -14,27 +14,27 @@ export const MOCK_OLAHRAGA_ATTACHMENTS_5 = [
   {
     id: 1,
     label: 'Gambar',
-    src: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=800&q=80',
+    src: '/images/logo-perpusnas.png',
   },
   {
     id: 2,
     label: 'Gambar',
-    src: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=800&q=80',
+    src: '/images/logo-perpusnas.png',
   },
   {
     id: 3,
     label: 'Gambar',
-    src: 'https://images.unsplash.com/photo-1526676037777-05a232554f77?auto=format&fit=crop&w=800&q=80',
+    src: '/images/logo-perpusnas.png',
   },
   {
     id: 4,
     label: 'Gambar',
-    src: 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?auto=format&fit=crop&w=800&q=80',
+    src: '/images/logo-perpusnas.png',
   },
   {
     id: 5,
     label: 'Gambar',
-    src: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80',
+    src: '/images/logo-perpusnas.png',
   },
 ];
 
@@ -50,7 +50,7 @@ Komunitas Olahraga Perpustakaan Nasional RI menyelenggarakan rangkaian kegiatan 
 
 Partisipasi aktif dari pimpinan, pejabat fungsional pustakawan, hingga staf pelaksana membuktikan antusiasme tinggi keluarga besar Perpusnas dalam mengimbangi produktivitas kerja dengan pola hidup sehat. Pameran dokumentasi kegiatan dan penyerahan piala bergilir turut memeriahkan seremoni penutupan.`,
   coverImage:
-    'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=800&q=80',
+    '/images/logo-perpusnas.png',
   publishedAt: '2026-08-20',
   status: 'Terbit',
   authorName: 'Ahmad Fauzi',

@@ -20,7 +20,55 @@ import {
   ImageIcon,
   Upload,
   CheckCircle,
+  FileText,
+  X,
 } from 'lucide-react';
+
+const compressImage = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 1200;
+        const MAX_HEIGHT = 1200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            height *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.8));
+      };
+      img.onerror = (error) => reject(error);
+    };
+    reader.onerror = (error) => reject(error);
+  });
+};
+
+const readFileAsDataUrl = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
 
 export default function TambahTipsGayaHidupPage() {
   const router = useRouter();
@@ -32,7 +80,7 @@ export default function TambahTipsGayaHidupPage() {
   const [deskripsiHtml, setDeskripsiHtml] = useState('');
   const [gambarFileName, setGambarFileName] = useState('');
   const [gambarPreview, setGambarPreview] = useState<string | null>(null);
-  const [lampiranFileName, setLampiranFileName] = useState('');
+  const [lampiranAttachments, setLampiranAttachments] = useState<Array<{ file?: File; name: string; preview: string | null }>>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -95,6 +143,12 @@ export default function TambahTipsGayaHidupPage() {
         !statusMenuRef.current.contains(event.target as Node)
       ) {
         setIsStatusMenuOpen(false);
+      }
+      if (
+        stylingMenuRef.current &&
+        !stylingMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsStylingMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -164,20 +218,67 @@ export default function TambahTipsGayaHidupPage() {
     }
   };
 
-  const handleGambarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
+  const handleGambarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert(`File "${file.name}" melebihi ukuran maksimal 5MB`);
+        if (gambarInputRef.current) gambarInputRef.current.value = '';
+        return;
+      }
       setGambarFileName(file.name);
-      const url = URL.createObjectURL(file);
-      setGambarPreview(url);
+      try {
+        const compressed = await compressImage(file);
+        setGambarPreview(compressed);
+      } catch {
+        const dataUrl = await readFileAsDataUrl(file);
+        setGambarPreview(dataUrl);
+      }
+    }
+  };
+
+  const handleRemoveGambar = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setGambarFileName('');
+    setGambarPreview(null);
+    if (gambarInputRef.current) {
+      gambarInputRef.current.value = '';
     }
   };
 
   const handleLampiranFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setLampiranFileName(file.name);
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    const oversized = files.find((f) => f.size > 5 * 1024 * 1024);
+    if (oversized) {
+      alert(`File "${oversized.name}" melebihi ukuran maksimal 5MB`);
+      if (lampiranInputRef.current) lampiranInputRef.current.value = '';
+      return;
     }
+
+    if (lampiranAttachments.length + files.length > 10) {
+      alert('Maksimal 10 lampiran diperbolehkan');
+      return;
+    }
+
+    const newAttachments = files.map((file) => {
+      let preview: string | null = null;
+      if (file.type.startsWith('image/')) {
+        preview = URL.createObjectURL(file);
+      }
+      return { file, name: file.name, preview };
+    });
+
+    setLampiranAttachments([...lampiranAttachments, ...newAttachments]);
+    if (lampiranInputRef.current) {
+      lampiranInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveLampiran = (index: number) => {
+    setLampiranAttachments(lampiranAttachments.filter((_, i) => i !== index));
+    if (lampiranInputRef.current) lampiranInputRef.current.value = '';
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -186,7 +287,12 @@ export default function TambahTipsGayaHidupPage() {
     const htmlContent = deskripsiHtml.trim();
 
     if (!judul.trim()) {
-      alert('Judul Tips dan Gaya Hidup wajib diisi');
+      alert('Nama judul Tips dan Gaya Hidup wajib diisi');
+      return;
+    }
+
+    if (!rawText && !htmlContent) {
+      alert('Deskripsi Tips dan Gaya Hidup wajib diisi');
       return;
     }
 
@@ -203,7 +309,7 @@ export default function TambahTipsGayaHidupPage() {
           coverImage: gambarPreview || '/images/tips-gaya-hidup/card-1.jpg',
           publishedAt: tanggal.toISOString(),
           status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',
-          attachmentName: lampiranFileName || null,
+          attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments.map((a) => a.name).join(', ') : undefined,
         }),
       });
 
@@ -259,7 +365,7 @@ export default function TambahTipsGayaHidupPage() {
           <div className="grid grid-cols-1 md:grid-cols-[200px_auto] gap-6 mb-8 items-start">
             {/* 1. Judul */}
             <label htmlFor="judul" className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Judul <span className="float-right hidden md:inline">:</span>
+              Judul <span className="text-red-500">*</span> <span className="float-right hidden md:inline">:</span>
             </label>
             <div>
               <input
@@ -329,12 +435,13 @@ export default function TambahTipsGayaHidupPage() {
                           type="button"
                           disabled={!item.isCurrentMonth}
                           onClick={() => selectCalendarDay(item.day)}
-                          className={`h-8 w-8 mx-auto rounded-full flex items-center justify-center font-medium transition-colors ${!item.isCurrentMonth
+                          className={`h-8 w-8 mx-auto rounded-full flex items-center justify-center font-medium transition-colors ${
+                            !item.isCurrentMonth
                               ? 'text-slate-300 cursor-not-allowed'
                               : isSelected
-                                ? 'bg-[#00113a] text-white font-bold shadow-xs'
-                                : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                            }`}
+                              ? 'bg-[#00113a] text-white font-bold shadow-xs'
+                              : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                          }`}
                         >
                           {item.day}
                         </button>
@@ -345,59 +452,9 @@ export default function TambahTipsGayaHidupPage() {
               )}
             </div>
 
-            {/* 3. Status Dropdown matching Image 3 */}
+            {/* 3. Deskripsi */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Status <span className="float-right hidden md:inline">:</span>
-            </label>
-            <div className="relative w-full md:w-56" ref={statusMenuRef}>
-              <button
-                type="button"
-                onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
-                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${
-                  isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
-                }`}
-              >
-                <span className="truncate">{status || 'Jenis Status'}</span>
-                <ChevronDown className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {isStatusMenuOpen && (
-                <div className="absolute top-full left-0 z-50 w-full bg-white border border-[#c5c6d2] border-t-0 rounded-b-md shadow-lg py-1 animate-fadeIn">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStatus('Terbit');
-                      setIsStatusMenuOpen(false);
-                    }}
-                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                      status === 'Terbit'
-                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
-                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                    }`}
-                  >
-                    Terbit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStatus('Menunggu');
-                      setIsStatusMenuOpen(false);
-                    }}
-                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                      status === 'Menunggu'
-                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
-                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                    }`}
-                  >
-                    Menunggu
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* 4. Deskripsi */}
-            <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Deskripsi <span className="float-right hidden md:inline">:</span>
+              Deskripsi <span className="text-red-500">*</span> <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="border border-[#c5c6d2] rounded overflow-hidden">
               {/* WYSIWYG Toolbar */}
@@ -409,8 +466,9 @@ export default function TambahTipsGayaHidupPage() {
                     e.preventDefault();
                     execFormat('bold');
                   }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${activeStyles.bold ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                    }`}
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${
+                    activeStyles.bold ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                  }`}
                 >
                   <Bold className="w-4 h-4" />
                 </button>
@@ -422,8 +480,9 @@ export default function TambahTipsGayaHidupPage() {
                     e.preventDefault();
                     execFormat('italic');
                   }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${activeStyles.italic ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                    }`}
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${
+                    activeStyles.italic ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                  }`}
                 >
                   <Italic className="w-4 h-4" />
                 </button>
@@ -435,8 +494,9 @@ export default function TambahTipsGayaHidupPage() {
                     e.preventDefault();
                     execFormat('underline');
                   }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${activeStyles.underline ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                    }`}
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${
+                    activeStyles.underline ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                  }`}
                 >
                   <Underline className="w-4 h-4" />
                 </button>
@@ -450,8 +510,9 @@ export default function TambahTipsGayaHidupPage() {
                     e.preventDefault();
                     execFormat('insertUnorderedList');
                   }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${activeStyles.unorderedList ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                    }`}
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors ${
+                    activeStyles.unorderedList ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                  }`}
                 >
                   <List className="w-4 h-4" />
                 </button>
@@ -546,7 +607,7 @@ export default function TambahTipsGayaHidupPage() {
                 }}
                 data-placeholder="Tulis deskripsi.."
                 className="w-full p-4 text-sm sm:text-base outline-none min-h-[190px] max-h-[400px] overflow-y-auto leading-relaxed bg-white text-[#1a1b20]"
-              ></div>
+              />
             </div>
 
             {/* 4. Gambar Tips dan Gaya Hidup */}
@@ -554,40 +615,60 @@ export default function TambahTipsGayaHidupPage() {
               Gambar Tips dan Gaya Hidup <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="flex flex-col gap-4">
-              <div className="flex">
-                <input
-                  type="text"
-                  readOnly
-                  value={gambarFileName}
-                  placeholder="Nama File.jpg/png"
-                  className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
-                />
-                <button
-                  type="button"
-                  onClick={() => gambarInputRef.current?.click()}
-                  className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer"
-                >
-                  Upload
-                </button>
-                <input
-                  ref={gambarInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleGambarFileChange}
-                  className="hidden" suppressHydrationWarning />
+              <div>
+                <div className="flex">
+                  <input
+                    type="text"
+                    readOnly
+                    value={gambarFileName}
+                    placeholder="Berkas berupa .jpg/ .png"
+                    className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => gambarInputRef.current?.click()}
+                    className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer"
+                  >
+                    Upload
+                  </button>
+                  <input
+                    ref={gambarInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/jpg,image/webp"
+                    onChange={handleGambarFileChange}
+                    className="hidden"
+                    suppressHydrationWarning
+                  />
+                </div>
+                <p className="text-xs text-[#757682] mt-1.5 font-normal">File Maksimal 5MB</p>
               </div>
 
               {/* Dashed preview box: Gambar Preview */}
               <div
-                onClick={() => gambarInputRef.current?.click()}
+                onClick={() => {
+                  if (!gambarPreview) {
+                    gambarInputRef.current?.click();
+                  }
+                }}
                 className="w-full md:w-2/3 h-64 bg-[#efedf3] border-2 border-dashed border-[#c5c6d2] rounded flex items-center justify-center text-[#757682] text-sm relative group cursor-pointer hover:bg-[#e9e7ee] transition-colors overflow-hidden"
               >
                 {gambarPreview ? (
-                  <img
-                    src={gambarPreview}
-                    alt="Pratinjau Gambar"
-                    className="w-full h-full object-cover"
-                  />
+                  <div className="w-full h-full p-2 relative flex items-center justify-center bg-white/50">
+                    <img
+                      src={gambarPreview}
+                      alt="Pratinjau Gambar"
+                      className="max-w-full max-h-full object-contain"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveGambar}
+                      className="absolute top-2 right-2 w-7 h-7 rounded-full bg-slate-900/60 hover:bg-red-600 text-white flex items-center justify-center transition-colors cursor-pointer shadow-sm z-20"
+                      title="Hapus gambar"
+                      aria-label="Hapus gambar"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
                 ) : (
                   <>
                     <span>Gambar Preview</span>
@@ -601,56 +682,131 @@ export default function TambahTipsGayaHidupPage() {
 
             {/* 5. Lampiran */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Lampiran <span className="float-right hidden md:inline">:</span>
+              Lampiran (Maks. 10 File) <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="flex flex-col gap-4">
-              <div className="flex">
-                <input
-                  type="text"
-                  readOnly
-                  value={lampiranFileName}
-                  placeholder="Nama File.pdf/doc"
-                  className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
-                />
-                <button
-                  type="button"
-                  onClick={() => lampiranInputRef.current?.click()}
-                  className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer"
-                >
-                  Upload
-                </button>
-                <input
-                  ref={lampiranInputRef}
-                  type="file"
-                  accept=".pdf,.doc,.docx,.jpg,.png"
-                  onChange={handleLampiranFileChange}
-                  className="hidden" suppressHydrationWarning />
+              <div>
+                <div className="flex">
+                  <input
+                    type="text"
+                    readOnly
+                    value={lampiranAttachments.length > 0 ? `${lampiranAttachments.length} file dipilih` : ''}
+                    placeholder="Berkas berupa .jpg/ .png/ .pdf"
+                    className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => lampiranInputRef.current?.click()}
+                    disabled={lampiranAttachments.length >= 10}
+                    className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    Upload
+                  </button>
+                  <input
+                    ref={lampiranInputRef}
+                    type="file"
+                    multiple
+                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                    onChange={handleLampiranFileChange}
+                    className="hidden"
+                    suppressHydrationWarning
+                  />
+                </div>
+                <p className="text-xs text-[#757682] mt-1.5 font-normal">File Maksimal 5MB</p>
               </div>
 
-              {/* Dashed preview box: File Preview */}
-              <div
-                onClick={() => lampiranInputRef.current?.click()}
-                className="w-full md:w-2/3 h-64 bg-[#efedf3] border-2 border-dashed border-[#c5c6d2] rounded flex items-center justify-center text-[#757682] text-sm relative group cursor-pointer hover:bg-[#e9e7ee] transition-colors overflow-hidden"
-              >
-                {lampiranFileName ? (
-                  <div className="p-4 text-center">
-                    <Upload className="w-8 h-8 text-[#00113a] mx-auto mb-2" />
-                    <span className="font-semibold text-[#00113a] block break-all">{lampiranFileName}</span>
-                    <span className="text-xs text-emerald-600 font-medium mt-1 inline-block">Berkas Terlampir</span>
-                  </div>
-                ) : (
-                  <>
-                    <span>File Preview</span>
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/5">
-                      <Upload className="w-8 h-8 text-[#757682]" />
+              {/* Previews */}
+              {lampiranAttachments.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 w-full">
+                  {lampiranAttachments.map((att, idx) => (
+                    <div
+                      key={idx}
+                      className="relative group bg-[#e9e7ee] border border-[#c5c6d2] rounded-md overflow-hidden aspect-square flex flex-col items-center justify-center"
+                    >
+                      {att.preview ? (
+                        <img
+                          src={att.preview}
+                          alt={att.name}
+                          className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                        />
+                      ) : (
+                        <div className="flex flex-col items-center gap-2 p-2">
+                          <FileText className="w-8 h-8 text-[#00113a]" />
+                          <span className="text-[10px] font-bold text-center break-all line-clamp-2 text-[#00113a]">
+                            {att.name}
+                          </span>
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveLampiran(idx)}
+                        className="absolute top-1 right-1 bg-black/60 hover:bg-black text-white p-1 rounded-full transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                      {att.preview && (
+                        <span className="absolute bottom-0 w-full bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center">
+                          {att.name}
+                        </span>
+                      )}
                     </div>
-                  </>
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* 6. Status Dropdown (dipindahkan ke bawah) */}
+            <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
+              Status <span className="float-right hidden md:inline">:</span>
+            </label>
+            <div className="relative w-full md:w-56" ref={statusMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
+                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${
+                  isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
+                }`}
+              >
+                <span className="truncate">{status || 'Jenis Status'}</span>
+                <ChevronDown className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isStatusMenuOpen && (
+                <div className="absolute top-full left-0 z-50 w-full bg-white border border-[#c5c6d2] border-t-0 rounded-b-md shadow-lg py-1 animate-fadeIn">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatus('Terbit');
+                      setIsStatusMenuOpen(false);
+                    }}
+                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
+                      status === 'Terbit'
+                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                    }`}
+                  >
+                    Terbit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatus('Menunggu');
+                      setIsStatusMenuOpen(false);
+                    }}
+                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
+                      status === 'Menunggu'
+                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                    }`}
+                  >
+                    Menunggu
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Form Actions */}
+          {/* Form Actions matching Stitch */}
           <div className="flex gap-4 pt-6 mt-8 border-t border-[#c5c6d2]">
             <button
               type="submit"
@@ -671,4 +827,3 @@ export default function TambahTipsGayaHidupPage() {
     </div>
   );
 }
-

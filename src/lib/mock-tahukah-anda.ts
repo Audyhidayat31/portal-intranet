@@ -14,27 +14,27 @@ export const MOCK_TAHUKAH_ANDA_ATTACHMENTS_5 = [
   {
     id: 1,
     label: 'Gambar',
-    src: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=800&q=80',
+    src: '/images/logo-perpusnas.png',
   },
   {
     id: 2,
     label: 'Gambar',
-    src: 'https://images.unsplash.com/photo-1507842229451-7f01be7fe7ab?auto=format&fit=crop&w=800&q=80',
+    src: '/images/logo-perpusnas.png',
   },
   {
     id: 3,
     label: 'Gambar',
-    src: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=800&q=80',
+    src: '/images/logo-perpusnas.png',
   },
   {
     id: 4,
     label: 'Gambar',
-    src: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=800&q=80',
+    src: '/images/logo-perpusnas.png',
   },
   {
     id: 5,
     label: 'Gambar',
-    src: 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=800&q=80',
+    src: '/images/logo-perpusnas.png',
   },
 ];
 
@@ -50,7 +50,7 @@ Tahukah Anda bahwa Perpustakaan Nasional Republik Indonesia memiliki gedung fasi
 
 Selain itu, naskah kuno La Galigo yang diakui UNESCO sebagai Memory of the World juga dirawat dan dilestarikan menggunakan teknologi preservasi mutakhir oleh para pustakawan dan kurator ahli Perpusnas RI. Upaya ini memastikan warisan intelektual bangsa tetap terjaga bagi generasi mendatang.`,
   coverImage:
-    'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=800&q=80',
+    '/images/logo-perpusnas.png',
   publishedAt: '2026-08-20',
   status: 'Terbit',
   authorName: 'Ahmad Fauzi',

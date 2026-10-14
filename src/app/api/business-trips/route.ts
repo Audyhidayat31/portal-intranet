@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
 
     const where: any = {
       type: 'BUSINESS_TRIP',
-      status: 'TERBIT',
+      status: { in: ['TERBIT', 'PUBLISHED', 'MENUNGGU', 'Menunggu', 'DRAFT'] },
     };
 
     if (search) {
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, excerpt, content, destinationCity, attachmentName, publishedAt, status } = body;
+    const { title, excerpt, content, destinationCity, attachmentName, publishedAt, status, authorName, nama } = body;
 
     if (!title || !content) {
       return NextResponse.json(
@@ -63,6 +63,17 @@ export async function POST(request: NextRequest) {
         { success: false, message: 'User tidak ditemukan' },
         { status: 400 }
       );
+    }
+
+    const authorNameValue = authorName || nama;
+    let authorId = defaultUser.id;
+    if (authorNameValue) {
+      const matchedUser = await prisma.user.findFirst({
+        where: { name: { contains: authorNameValue } },
+      });
+      if (matchedUser) {
+        authorId = matchedUser.id;
+      }
     }
 
     const slug = `${title
@@ -82,7 +93,7 @@ export async function POST(request: NextRequest) {
         status: tripStatus,
         destinationCity: destinationCity || 'Nasional',
         attachmentName: attachmentName || null,
-        authorId: defaultUser.id,
+        authorId,
         publishedAt: publishedAt ? new Date(publishedAt) : new Date(),
       },
     });

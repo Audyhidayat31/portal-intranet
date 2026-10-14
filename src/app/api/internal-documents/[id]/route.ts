@@ -103,7 +103,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { title, keterangan, attachmentName, status } = body;
+    const { title, keterangan, attachmentName, status, categoryName, documentNumber, publishedAt } = body;
 
     try {
       const existing = await prisma.content.findFirst({
@@ -113,13 +113,39 @@ export async function PUT(
       });
 
       if (existing) {
+        let categoryId = existing.categoryId;
+        if (categoryName) {
+          const catSlug = categoryName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          let cat = await prisma.category.findFirst({
+            where: { name: categoryName },
+          });
+          if (!cat) {
+            cat = await prisma.category.create({
+              data: {
+                name: categoryName,
+                slug: catSlug,
+                group: 'KABAR_KEDINASAN',
+                description: `Kategori dokumen: ${categoryName}`,
+              },
+            });
+          }
+          categoryId = cat.id;
+        }
+
+        const formattedKeterangan = documentNumber
+          ? `[${documentNumber}] ${keterangan || ''}`
+          : keterangan;
+
         const updated = await prisma.content.update({
           where: { id: existing.id },
           data: {
             title: title !== undefined ? title : existing.title,
             excerpt: keterangan !== undefined ? keterangan : existing.excerpt,
-            body: keterangan !== undefined ? keterangan : existing.body,
+            body: formattedKeterangan !== undefined ? formattedKeterangan : existing.body,
             attachmentName: attachmentName !== undefined ? attachmentName : existing.attachmentName,
+            publishedAt: publishedAt ? new Date(publishedAt) : existing.publishedAt,
+            categoryId,
+            source: documentNumber !== undefined ? documentNumber : existing.source,
             status:
               status !== undefined
                 ? status === 'Menunggu' || status === 'MENUNGGU'
