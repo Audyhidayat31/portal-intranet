@@ -142,6 +142,26 @@ export default function KaryaAkademikPage() {
     setCurrentPage(1);
   };
 
+  const isUserAdmin = (user: any) => {
+    if (!user) return false;
+    const roleName = typeof user.role === 'string' ? user.role : user.role?.name;
+    const r = roleName?.toUpperCase();
+    return r === 'ADMINISTRATOR' || r === 'ADMIN';
+  };
+
+  const canViewItem = (item: any, user: any) => {
+    const isWaiting = item.status === 'Menunggu' || item.status === 'MENUNGGU' || item.status === 'DRAFT';
+    if (!isWaiting) return true;
+    if (!user) return false;
+    if (isUserAdmin(user)) return true;
+    const authorName = item.authorName || item.author?.name;
+    const authorId = item.authorId || item.userId;
+    return Boolean(
+      (authorName && authorName === user.name) ||
+      (authorId && (authorId === user.id || authorId === user.userId))
+    );
+  };
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     fetchKaryaAkademik(searchQuery);
@@ -149,7 +169,7 @@ export default function KaryaAkademikPage() {
 
   const totalPages = Math.max(1, Math.ceil(filteredItems.length / itemsPerPage));
   const startIndex = ((currentPage - 1) % totalPages) * itemsPerPage;
-  const currentCards = filteredItems.filter(item => filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id))).slice(startIndex, startIndex + itemsPerPage);
+  const currentCards = filteredItems.filter(item => canViewItem(item, currentUser) && (filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id)))).slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 bg-white text-[#191c1d] min-h-[calc(100vh-80px)] flex flex-col justify-between">

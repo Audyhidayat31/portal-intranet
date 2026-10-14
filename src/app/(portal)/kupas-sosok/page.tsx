@@ -105,8 +105,14 @@ export default function KupasSosokPage() {
     const isPublished = item.status === 'Terbit' || item.status === 'TERBIT' || (!item.status);
     if (isPublished) return true;
     if (!currentUser) return false;
-    if (currentUser.role === 'admin') return true;
-    return currentUser.name === (item.authorName || item.author?.name);
+    const roleName = typeof currentUser.role === 'string' ? currentUser.role : currentUser.role?.name;
+    if (roleName?.toUpperCase() === 'ADMINISTRATOR' || roleName?.toUpperCase() === 'ADMIN') return true;
+    const authorName = item.authorName || item.author?.name;
+    const authorId = item.authorId || item.userId;
+    return Boolean(
+      (authorName && authorName === currentUser.name) ||
+      (authorId && (authorId === currentUser.id || authorId === currentUser.userId))
+    );
   });
   const totalPages = Math.ceil(visibleFigures.length / ITEMS_PER_PAGE) || 1;
   const paginatedList = visibleFigures.filter(item => filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id))).slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);

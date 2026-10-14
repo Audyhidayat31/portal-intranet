@@ -110,6 +110,26 @@ export default function KabarKeluargaPage() {
     fetchKabarKeluarga('');
   }, []);
 
+  const isUserAdmin = (user: any) => {
+    if (!user) return false;
+    const roleName = typeof user.role === 'string' ? user.role : user.role?.name;
+    const r = roleName?.toUpperCase();
+    return r === 'ADMINISTRATOR' || r === 'ADMIN';
+  };
+
+  const canViewItem = (item: any, user: any) => {
+    const isWaiting = item.status === 'Menunggu' || item.status === 'MENUNGGU' || item.status === 'DRAFT';
+    if (!isWaiting) return true;
+    if (!user) return false;
+    if (isUserAdmin(user)) return true;
+    const authorName = item.authorName || item.author?.name;
+    const authorId = item.authorId || item.userId;
+    return Boolean(
+      (authorName && authorName === user.name) ||
+      (authorId && (authorId === user.id || authorId === user.userId))
+    );
+  };
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     fetchKabarKeluarga(searchQuery);
@@ -245,7 +265,7 @@ export default function KabarKeluargaPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {currentCards.filter(item => filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id))).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
+            {currentCards.filter(item => canViewItem(item, currentUser) && (filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id)))).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
               const displayDate = item.publishedAt ? formatDate(item.publishedAt) : '19 Agustus 2026';
 
               return (

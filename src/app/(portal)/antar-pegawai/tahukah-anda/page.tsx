@@ -99,12 +99,12 @@ export default function DaftarTahukahAndaPage() {
         // Pool together local stored items, API items, and base mock 9 items
         const combinedPool = [...formattedApiItems];
         for (const item of localStored) {
-          if (!combinedPool.some((c) => c.id === item.id)) {
+          if (!combinedPool.some((c) => c.id === item.id || (c.title && item.title && c.title.trim().toLowerCase() === item.title.trim().toLowerCase()))) {
             combinedPool.push(item);
           }
         }
         for (const item of STITCH_MOCK_TAHUKAH_ANDA_9) {
-          if (!combinedPool.some((c) => c.id === item.id)) {
+          if (!combinedPool.some((c) => c.id === item.id || (c.title && item.title && c.title.trim().toLowerCase() === item.title.trim().toLowerCase()))) {
             combinedPool.push(item);
           }
         }
@@ -144,6 +144,26 @@ export default function DaftarTahukahAndaPage() {
   useEffect(() => {
     fetchTahukahAnda();
   }, []);
+
+  const isUserAdmin = (user: any) => {
+    if (!user) return false;
+    const roleName = typeof user.role === 'string' ? user.role : user.role?.name;
+    const r = roleName?.toUpperCase();
+    return r === 'ADMINISTRATOR' || r === 'ADMIN';
+  };
+
+  const canViewItem = (item: any, user: any) => {
+    const isWaiting = item.status === 'Menunggu' || item.status === 'MENUNGGU' || item.status === 'DRAFT';
+    if (!isWaiting) return true;
+    if (!user) return false;
+    if (isUserAdmin(user)) return true;
+    const authorName = item.authorName || item.author?.name;
+    const authorId = item.authorId || item.userId;
+    return Boolean(
+      (authorName && authorName === user.name) ||
+      (authorId && (authorId === user.id || authorId === user.userId))
+    );
+  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -304,7 +324,7 @@ export default function DaftarTahukahAndaPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {itemList.filter(item => filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id))).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
+            {itemList.filter(item => canViewItem(item, currentUser) && (filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id)))).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
               const displayDate = item.publishedAt ? formatDate(item.publishedAt) : '19 Agustus 2026';
 
               return (
