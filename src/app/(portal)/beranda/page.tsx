@@ -33,7 +33,7 @@ export default function BerandaPage() {
           let summaryData = homeRes.data;
           // Prioritaskan figure aktif dari tabel profil_tokoh jika ada
           if (figureRes?.success && Array.isArray(figureRes.data) && figureRes.data.length > 0) {
-            const spotlight = figureRes.data.find((f) => f.isSpotlight) || figureRes.data[0];
+            const spotlight = figureRes.data.find((f: any) => f.isSpotlight) || figureRes.data[0];
             if (spotlight) {
               summaryData = {
                 ...summaryData,

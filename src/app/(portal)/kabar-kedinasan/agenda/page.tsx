@@ -221,9 +221,9 @@ export default function AgendaKegiatanPage() {
           const visibleAgendas = agendas.filter((item) => {
             const isPublished = item.status === 'Terbit' || (item.status as any) === 'TERBIT';
             if (isPublished) return true;
-            if (!currentUser) return false;
-            if (currentUser.role === 'admin') return true;
-            return currentUser.name === item.authorName;
+            const roleName = typeof currentUser.role === 'string' ? currentUser.role : currentUser.role?.name;
+            if (roleName?.toUpperCase() === 'ADMINISTRATOR' || roleName?.toUpperCase() === 'ADMIN') return true;
+            return Boolean(currentUser.name === item.authorName || (item as any).authorId === currentUser.id);
           });
 
           if (visibleAgendas.length === 0) {

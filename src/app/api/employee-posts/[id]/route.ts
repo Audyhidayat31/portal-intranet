@@ -105,6 +105,26 @@ export async function GET(
       });
 
       if (item) {
+        const isWaiting =
+          item.status === 'MENUNGGU' ||
+          item.status === 'Menunggu' ||
+          item.status === 'DRAFT';
+
+        if (isWaiting) {
+          const user = await getCurrentUser();
+          const isAdmin =
+            user?.role?.toUpperCase() === 'ADMINISTRATOR' ||
+            user?.role?.toUpperCase() === 'ADMIN';
+          const isAuthor = Boolean(user?.userId && item.authorId === user.userId);
+
+          if (!isAdmin && !isAuthor) {
+            return NextResponse.json(
+              { success: false, message: 'Anda tidak memiliki hak akses untuk melihat postingan ini' },
+              { status: 403 }
+            );
+          }
+        }
+
         let editorName = null;
         try {
           const lastLog = await prisma.activityLog.findFirst({
@@ -136,6 +156,26 @@ export async function GET(
     // Fallback to mock data
     const mock = findMockPost(id);
     if (mock) {
+      const isWaiting =
+        mock.status === 'Menunggu' ||
+        mock.status === 'MENUNGGU' ||
+        mock.status === 'DRAFT';
+
+      if (isWaiting) {
+        const user = await getCurrentUser();
+        const isAdmin =
+          user?.role?.toUpperCase() === 'ADMINISTRATOR' ||
+          user?.role?.toUpperCase() === 'ADMIN';
+        const isAuthor = Boolean(user?.name && mock.authorName === user.name);
+
+        if (!isAdmin && !isAuthor) {
+          return NextResponse.json(
+            { success: false, message: 'Anda tidak memiliki hak akses untuk melihat postingan ini' },
+            { status: 403 }
+          );
+        }
+      }
+
       return NextResponse.json({ success: true, data: formatMockItem(mock) });
     }
 

@@ -20,32 +20,54 @@ export async function GET(request: NextRequest) {
 
     const where: any = {};
 
-    if (statusParam) {
-      where.status = statusParam;
-    }
+    const user = await getCurrentUser();
+    const isAdmin =
+      user?.role?.toUpperCase() === 'ADMINISTRATOR' ||
+      user?.role?.toUpperCase() === 'ADMIN';
 
     if (category && category !== 'all') {
       where.categorySlug = category;
     }
 
+    if (isAdmin) {
+      if (statusParam) {
+        where.status = statusParam;
+      }
+    } else if (user?.userId) {
+      if (statusParam === 'MENUNGGU' || statusParam === 'Menunggu') {
+        where.status = { in: ['MENUNGGU', 'Menunggu'] };
+        where.authorId = user.userId;
+      } else if (statusParam === 'TERBIT' || statusParam === 'Terbit') {
+        where.status = { in: ['TERBIT', 'PUBLISHED'] };
+      } else {
+        where.AND = [
+          {
+            OR: [
+              { status: { in: ['TERBIT', 'PUBLISHED'] } },
+              {
+                AND: [
+                  { status: { in: ['MENUNGGU', 'Menunggu', 'DRAFT'] } },
+                  { authorId: user.userId },
+                ],
+              },
+            ],
+          },
+        ];
+      }
+    } else {
+      where.status = { in: ['TERBIT', 'PUBLISHED'] };
+    }
+
     if (search) {
-      where.OR = [
+      const searchCondition = [
         { title: { contains: search } },
         { body: { contains: search } },
       ];
-    }
-
-    const user = await getCurrentUser();
-    if (user?.role !== 'ADMINISTRATOR') {
-      where.AND = [
-        {
-          OR: [
-            { status: 'TERBIT' },
-            { status: 'PUBLISHED' },
-            { authorId: user?.userId || 'not-logged-in' }
-          ]
-        }
-      ];
+      if (where.AND) {
+        where.AND.push({ OR: searchCondition });
+      } else {
+        where.OR = searchCondition;
+      }
     }
 
     const posts = await prisma.employeePost.findMany({

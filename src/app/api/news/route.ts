@@ -9,24 +9,59 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || '10', 10);
     const skip = (page - 1) * limit;
-
     const statusParam = searchParams.get('status');
+
+    const session = await getCurrentUser();
+    const isAdmin =
+      session?.role?.toUpperCase() === 'ADMINISTRATOR' ||
+      session?.role?.toUpperCase() === 'ADMIN';
+
     const where: any = {
       type: 'NEWS',
+      AND: [],
     };
 
-    if (statusParam) {
-      where.status = statusParam;
+    if (isAdmin) {
+      if (statusParam) {
+        where.status = statusParam;
+      } else {
+        where.status = { in: ['TERBIT', 'PUBLISHED', 'MENUNGGU'] };
+      }
+    } else if (session?.userId) {
+      if (statusParam === 'MENUNGGU' || statusParam === 'Menunggu') {
+        where.status = { in: ['MENUNGGU', 'Menunggu'] };
+        where.authorId = session.userId;
+      } else if (statusParam === 'TERBIT' || statusParam === 'Terbit') {
+        where.status = { in: ['TERBIT', 'PUBLISHED'] };
+      } else {
+        where.AND.push({
+          OR: [
+            { status: { in: ['TERBIT', 'PUBLISHED'] } },
+            {
+              AND: [
+                { status: { in: ['MENUNGGU', 'Menunggu'] } },
+                { authorId: session.userId },
+              ],
+            },
+          ],
+        });
+      }
     } else {
-      where.status = { in: ['TERBIT', 'MENUNGGU'] };
+      where.status = { in: ['TERBIT', 'PUBLISHED'] };
     }
 
     if (search) {
-      where.OR = [
-        { title: { contains: search } },
-        { body: { contains: search } },
-        { excerpt: { contains: search } },
-      ];
+      where.AND.push({
+        OR: [
+          { title: { contains: search } },
+          { body: { contains: search } },
+          { excerpt: { contains: search } },
+        ],
+      });
+    }
+
+    if (where.AND.length === 0) {
+      delete where.AND;
     }
 
     const [items, total] = await Promise.all([
@@ -53,9 +88,9 @@ export async function GET(request: NextRequest) {
         totalPages: Math.ceil(total / limit),
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching news:', error);
-    return NextResponse.json({ success: false, message: 'Gagal memuat data berita' }, { status: 500 });
+    return NextResponse.json({ success: false, message: 'Gagal memuat data berita', error: error?.message || String(error) }, { status: 500 });
   }
 }
 

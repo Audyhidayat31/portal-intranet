@@ -50,6 +50,26 @@ export async function GET(
       });
 
       if (item) {
+        const isWaiting =
+          item.status === 'MENUNGGU' ||
+          item.status === 'Menunggu' ||
+          item.status === 'DRAFT';
+
+        if (isWaiting) {
+          const session = await getCurrentUser();
+          const isAdmin =
+            session?.role?.toUpperCase() === 'ADMINISTRATOR' ||
+            session?.role?.toUpperCase() === 'ADMIN';
+          const isAuthor = Boolean(session?.userId && item.authorId === session.userId);
+
+          if (!isAdmin && !isAuthor) {
+            return NextResponse.json(
+              { success: false, message: 'Anda tidak memiliki hak akses untuk melihat berita ini' },
+              { status: 403 }
+            );
+          }
+        }
+
         const mappedItem = {
           id: item.id,
           title: item.title,
@@ -80,6 +100,26 @@ export async function GET(
 
     const mock = findMockNews(id);
     if (mock) {
+      const isWaiting =
+        mock.status === 'Menunggu' ||
+        (mock.status as string) === 'MENUNGGU' ||
+        (mock as any).status === 'DRAFT';
+
+      if (isWaiting) {
+        const session = await getCurrentUser();
+        const isAdmin =
+          session?.role?.toUpperCase() === 'ADMINISTRATOR' ||
+          session?.role?.toUpperCase() === 'ADMIN';
+        const isAuthor = Boolean(session?.name && mock.authorName === session.name);
+
+        if (!isAdmin && !isAuthor) {
+          return NextResponse.json(
+            { success: false, message: 'Anda tidak memiliki hak akses untuk melihat berita ini' },
+            { status: 403 }
+          );
+        }
+      }
+
       return NextResponse.json({ success: true, data: formatMockNews(mock) });
     }
 

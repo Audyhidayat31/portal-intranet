@@ -252,6 +252,12 @@ export default function EditKalimatBijakPage() {
       return;
     }
 
+    const rawContent = editorRef.current?.innerText?.trim() || deskripsiHtml.replace(/<[^>]*>/g, '').trim();
+    if (!rawContent) {
+      alert('Deskripsi kalimat bijak wajib diisi');
+      return;
+    }
+
     setIsSubmitting(true);
     const activeEditorName = currentUser?.name || currentUser?.fullName || 'Ahmad Fauzi, S.Kom.';
     if (typeof window !== 'undefined') {
@@ -334,7 +340,7 @@ export default function EditKalimatBijakPage() {
           <div className="grid grid-cols-1 md:grid-cols-[200px_auto] gap-6 mb-8 items-start">
             {/* 1. Judul */}
             <label htmlFor="judul" className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Judul <span className="float-right hidden md:inline">:</span>
+              Judul <span className="text-red-500">*</span> <span className="float-right hidden md:inline">:</span>
             </label>
             <div>
               <input
@@ -425,7 +431,7 @@ export default function EditKalimatBijakPage() {
 
             {/* 3. Deskripsi */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Deskripsi <span className="float-right hidden md:inline">:</span>
+              Deskripsi <span className="text-red-500">*</span> <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="border border-[#c5c6d2] rounded overflow-hidden">
               {/* WYSIWYG Toolbar */}

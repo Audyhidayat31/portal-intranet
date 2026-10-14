@@ -252,7 +252,7 @@ export default function TambahKalimatBijakPage() {
           <div className="grid grid-cols-1 md:grid-cols-[200px_auto] gap-6 mb-8 items-start">
             {/* 1. Judul matching Coretan Opini */}
             <label htmlFor="judul" className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Judul <span className="float-right hidden md:inline">:</span>
+              Judul <span className="text-red-500">*</span> <span className="float-right hidden md:inline">:</span>
             </label>
             <div>
               <input
@@ -337,59 +337,9 @@ export default function TambahKalimatBijakPage() {
               )}
             </div>
 
-            {/* 3. Status Dropdown matching Coretan Opini (directly below Tanggal) */}
+            {/* 3. Deskripsi */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Status <span className="float-right hidden md:inline">:</span>
-            </label>
-            <div className="relative w-full md:w-56" ref={statusMenuRef}>
-              <button
-                type="button"
-                onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
-                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${
-                  isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
-                }`}
-              >
-                <span className="truncate">{status || 'Jenis Status'}</span>
-                <ChevronDown className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {isStatusMenuOpen && (
-                <div className="absolute top-full left-0 z-50 w-full bg-white border border-[#c5c6d2] border-t-0 rounded-b-md shadow-lg py-1 animate-fadeIn">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStatus('Terbit');
-                      setIsStatusMenuOpen(false);
-                    }}
-                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                      status === 'Terbit'
-                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
-                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                    }`}
-                  >
-                    Terbit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStatus('Menunggu');
-                      setIsStatusMenuOpen(false);
-                    }}
-                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                      status === 'Menunggu'
-                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
-                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                    }`}
-                  >
-                    Menunggu
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* 4. Deskripsi matching Coretan Opini */}
-            <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Deskripsi <span className="float-right hidden md:inline">:</span>
+              Deskripsi <span className="text-red-500">*</span> <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="border border-[#c5c6d2] rounded overflow-hidden">
               {/* WYSIWYG Toolbar matching Coretan Opini */}
@@ -486,6 +436,56 @@ export default function TambahKalimatBijakPage() {
                 data-placeholder="Tulis kutipan atau deskripsi kalimat bijak..."
                 className="w-full p-4 text-sm sm:text-base outline-none min-h-[190px] max-h-[400px] overflow-y-auto leading-relaxed bg-white text-[#1a1b20]"
               />
+            </div>
+
+            {/* 4. Status Dropdown */}
+            <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
+              Status <span className="float-right hidden md:inline">:</span>
+            </label>
+            <div className="relative w-full md:w-56" ref={statusMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
+                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${
+                  isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
+                }`}
+              >
+                <span className="truncate">{status || 'Jenis Status'}</span>
+                <ChevronDown className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isStatusMenuOpen && (
+                <div className="absolute top-full left-0 z-50 w-full bg-white border border-[#c5c6d2] border-t-0 rounded-b-md shadow-lg py-1 animate-fadeIn">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatus('Terbit');
+                      setIsStatusMenuOpen(false);
+                    }}
+                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
+                      status === 'Terbit'
+                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                    }`}
+                  >
+                    Terbit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatus('Menunggu');
+                      setIsStatusMenuOpen(false);
+                    }}
+                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
+                      status === 'Menunggu'
+                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                    }`}
+                  >
+                    Menunggu
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 

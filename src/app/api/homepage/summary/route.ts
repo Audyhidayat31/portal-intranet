@@ -1,8 +1,48 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function GET() {
   try {
+    const user = await getCurrentUser();
+    const isAdmin =
+      user?.role?.toUpperCase() === 'ADMINISTRATOR' ||
+      user?.role?.toUpperCase() === 'ADMIN';
+
+    let newsWhere: any = { type: 'NEWS' };
+    if (isAdmin) {
+      newsWhere.status = { in: ['TERBIT', 'PUBLISHED', 'MENUNGGU'] };
+    } else if (user?.userId) {
+      newsWhere.OR = [
+        { status: { in: ['TERBIT', 'PUBLISHED'] } },
+        {
+          AND: [
+            { status: { in: ['MENUNGGU', 'Menunggu'] } },
+            { authorId: user.userId },
+          ],
+        },
+      ];
+    } else {
+      newsWhere.status = { in: ['TERBIT', 'PUBLISHED'] };
+    }
+
+    let postsWhere: any = {};
+    if (isAdmin) {
+      postsWhere.status = { in: ['TERBIT', 'PUBLISHED', 'MENUNGGU'] };
+    } else if (user?.userId) {
+      postsWhere.OR = [
+        { status: { in: ['TERBIT', 'PUBLISHED'] } },
+        {
+          AND: [
+            { status: { in: ['MENUNGGU', 'Menunggu'] } },
+            { authorId: user.userId },
+          ],
+        },
+      ];
+    } else {
+      postsWhere.status = { in: ['TERBIT', 'PUBLISHED'] };
+    }
+
     const [
       setting,
       latestNews,
@@ -19,11 +59,11 @@ export async function GET() {
       latestKalimatBijak,
     ] = await Promise.all([
       prisma.homepageSetting.findFirst(),
-      prisma.berita.findMany({
-        where: { status: { in: ['TERBIT', 'PUBLISHED'] } },
-        orderBy: [{ disematkan: 'desc' }, { tanggalTerbit: 'desc' }],
+      prisma.content.findMany({
+        where: newsWhere,
+        orderBy: [{ isPinned: 'desc' }, { publishedAt: 'desc' }],
         take: 4,
-        include: { penulis: { select: { name: true } } },
+        include: { author: { select: { name: true, profile: { select: { avatarUrl: true, unitKerja: true } } } } },
       }),
       prisma.pengumuman.findMany({
         where: { status: { in: ['TERBIT', 'PUBLISHED'] } },
@@ -35,9 +75,9 @@ export async function GET() {
         orderBy: { tanggalMulai: 'asc' },
         take: 4,
       }),
-      // For "latest posts" on homepage, we can query from a generic table or just mix and match
+      // For "latest posts" on homepage
       prisma.employeePost.findMany({
-        where: { status: { in: ['TERBIT', 'PUBLISHED'] } },
+        where: postsWhere,
         orderBy: { createdAt: 'desc' },
         take: 9,
         include: { author: { select: { name: true, profile: { select: { avatarUrl: true, unitKerja: true } } } } },
@@ -65,14 +105,14 @@ export async function GET() {
           }
         }
       }),
-      prisma.employeePost.count({ where: { status: { in: ['TERBIT', 'PUBLISHED'] } } }),
-      prisma.content.count({ where: { type: 'NEWS', status: { in: ['TERBIT', 'PUBLISHED', 'MENUNGGU'] } } }).catch(() => 0),
-      prisma.employeePost.count({ where: { categorySlug: 'opini', status: { in: ['TERBIT', 'PUBLISHED'] } } }).catch(() => 0),
-      prisma.employeePost.count({ where: { categorySlug: 'tips-gaya-hidup', status: { in: ['TERBIT', 'PUBLISHED'] } } }).catch(() => 0),
+      prisma.employeePost.count({ where: postsWhere }),
+      prisma.content.count({ where: newsWhere }).catch(() => 0),
+      prisma.employeePost.count({ where: { categorySlug: 'opini', ...postsWhere } }).catch(() => 0),
+      prisma.employeePost.count({ where: { categorySlug: 'tips-gaya-hidup', ...postsWhere } }).catch(() => 0),
       prisma.employeePost.findFirst({
         where: {
           categorySlug: 'kalimat-bijak',
-          status: { in: ['TERBIT', 'PUBLISHED'] },
+          ...postsWhere,
         },
         orderBy: { createdAt: 'desc' },
         include: { author: { select: { name: true } } },
@@ -87,15 +127,17 @@ export async function GET() {
       return bDate.getMonth() === currentMonth;
     }).slice(0, 5);
 
-    // Map Berita to News format
+    // Map Content to News format
     const mappedNews = latestNews.map(item => ({
       id: item.id,
       slug: item.slug,
-      title: item.judul,
-      excerpt: item.ringkasan,
-      coverImage: item.gambarSampul,
-      publishedAt: item.tanggalTerbit,
-      author: item.penulis ? { name: item.penulis.name } : { name: item.namaPenulis },
+      title: item.title,
+      excerpt: item.excerpt || (item.body ? item.body.slice(0, 110) + '...' : ''),
+      content: item.body || item.excerpt || '',
+      coverImage: item.coverImage && !item.coverImage.includes('berita-arsip.webp') ? item.coverImage : '/images/logo-perpusnas.png',
+      publishedAt: item.publishedAt,
+      status: item.status === 'MENUNGGU' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit',
+      author: item.author ? { name: item.author.name } : { name: 'Humas Perpusnas' },
     }));
 
     // Map Pengumuman to Announcement format

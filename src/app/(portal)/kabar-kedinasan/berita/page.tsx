@@ -165,6 +165,40 @@ export default function BeritaPage() {
     fetchNews(searchQuery);
   };
 
+  const isUserAdmin = (user: any) => {
+    if (!user) return false;
+    const roleName = typeof user.role === 'string' ? user.role : user.role?.name;
+    const r = roleName?.toUpperCase();
+    return r === 'ADMINISTRATOR' || r === 'ADMIN';
+  };
+
+  const canViewItem = (item: any, user: any) => {
+    const isWaiting = item.status === 'Menunggu' || item.status === 'MENUNGGU' || item.status === 'DRAFT';
+    if (!isWaiting) return true;
+    if (!user) return false;
+    if (isUserAdmin(user)) return true;
+    const authorName = item.authorName || (item as any).author?.name;
+    const authorId = (item as any).authorId || (item as any).userId;
+    return (
+      (authorName && authorName === user.name) ||
+      (authorId && (authorId === user.id || authorId === user.userId))
+    );
+  };
+
+  const filteredNews = newsList.filter((item) => {
+    if (!canViewItem(item, currentUser)) return false;
+    if (filterAuthor === 'me') {
+      if (!currentUser) return false;
+      const authorName = item.authorName || (item as any).author?.name;
+      return (
+        authorName === currentUser.name ||
+        (item as any).name === currentUser.name ||
+        (item as any).authorId === currentUser.id
+      );
+    }
+    return true;
+  });
+
   return (
     <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 bg-white text-[#1a1b20] min-h-[calc(100vh-80px)] flex flex-col justify-between">
       <div>
@@ -289,31 +323,18 @@ export default function BeritaPage() {
               <div key={n} className="border border-[#c5c6d2] rounded-xl overflow-hidden bg-white animate-pulse h-96" />
             ))}
           </div>
-        ) : (() => {
-          const visibleNews = newsList.filter((item) => {
-            const isPublished = item.status === 'Terbit' || (item.status as any) === 'TERBIT';
-            if (isPublished) return true;
-            if (!currentUser) return false;
-            if (currentUser.role === 'admin') return true;
-            return currentUser.name === item.authorName;
-          });
-
-          if (visibleNews.length === 0) {
-            return (
-              <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
-                <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Berita Ditemukan</h2>
-                <p className="text-sm text-[#444650]">
-                  Silakan coba kata kunci pencarian lain atau tambahkan berita baru.
-                </p>
-              </div>
-            );
-          }
-
-          return (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-              {visibleNews.filter(item => filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id))).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
-                const displayDate = item.publishedAt ? formatDate(item.publishedAt) : '19 Agustus 2026';
-                const isPublished = item.status === 'Terbit' || (item.status as any) === 'TERBIT' || !item.status;
+        ) : filteredNews.length === 0 ? (
+          <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
+            <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Berita Ditemukan</h2>
+            <p className="text-sm text-[#444650]">
+              Silakan coba kata kunci pencarian lain atau tambahkan berita baru.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            {filteredNews.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
+              const displayDate = item.publishedAt ? formatDate(item.publishedAt) : '19 Agustus 2026';
+              const isPublished = item.status === 'Terbit' || (item.status as any) === 'TERBIT' || !item.status;
 
               return (
                 <article
@@ -384,14 +405,13 @@ export default function BeritaPage() {
               );
             })}
           </div>
-          );
-        })()}
+        )}
       </div>
 
       {/* Pagination Controls matching Opini */}
       <Pagination 
           currentPage={currentPage}
-          totalItems={newsList.length}
+          totalItems={filteredNews.length}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
         />
