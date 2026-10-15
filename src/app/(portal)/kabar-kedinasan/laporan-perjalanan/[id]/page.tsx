@@ -188,7 +188,7 @@ export default function DetailLaporanPerjalananPage() {
                 Tanggal
               </span>
               <span className="text-sm sm:text-base text-[#1a1b20] font-medium">
-                {report?.publishedAt ? formatDate(report.publishedAt) : '19 Agustus 2026'}
+                {report?.publishedAt || report?.createdAt ? formatDate(report.publishedAt || report.createdAt) : formatDate(new Date())}
                 {report?.destinationCity && ` • ${report.destinationCity}`}
               </span>
             </div>
@@ -276,7 +276,7 @@ export default function DetailLaporanPerjalananPage() {
                   {report?.author?.name || report?.authorName || 'Administrator Perpusnas'}
                 </div>
                 <div className="text-xs text-[#757682] mt-0.5">
-                  {report?.publishedAt ? formatDate(report.publishedAt) : '19 Agustus 2026'}
+                  {report?.publishedAt || report?.createdAt ? formatDate(report.publishedAt || report.createdAt) : formatDate(new Date())}
                 </div>
                 <div className="text-xs text-[#757682] mt-0.5">
                   Status: {(report?.status === 'MENUNGGU' || report?.status === 'Menunggu' || report?.status === 'DRAFT') ? 'Menunggu' : 'Terbit'}

@@ -144,6 +144,7 @@ export async function GET(
           success: true,
           data: {
             ...item,
+            publishedAt: item.createdAt,
             editor: editorName ? { name: editorName } : null,
             editorName: editorName || null,
           },
@@ -199,7 +200,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { title, body: contentBody, coverImage, status } = body;
+    const { title, body: contentBody, coverImage, status, publishedAt, createdAt } = body;
     const user = await getCurrentUser();
     const currentUserName = user?.name || body.editorName || null;
 
@@ -227,6 +228,7 @@ export async function PUT(
                 ? 'MENUNGGU'
                 : 'TERBIT'
               : existing.status,
+          ...(publishedAt ? { createdAt: new Date(publishedAt) } : (createdAt ? { createdAt: new Date(createdAt) } : {})),
         },
       });
 

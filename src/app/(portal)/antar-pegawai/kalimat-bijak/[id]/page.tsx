@@ -119,8 +119,9 @@ export default function DetailKalimatBijakPage() {
   }
 
   const displayQuote = item.quote || item.content || item.title || 'Deskripsi Kutipan Kalimat Bijak';
-  const displayAuthor = item.authorName || 'Ahmad Fauzi';
-  const displayDate = item.publishedAt || '20 Agustus 2026';
+  const displayAuthor = item.authorName || (item as any).author?.name || 'Pegawai Perpusnas';
+  const rawDate = item.publishedAt || (item as any).createdAt;
+  const displayDate = rawDate ? formatDate(rawDate) : formatDate(new Date());
 
   const figureSource = item.figure || item.title || '';
 
@@ -181,7 +182,7 @@ export default function DetailKalimatBijakPage() {
                 {displayAuthor}
               </p>
               <p className="font-medium text-[#757682]">
-                {displayDate.includes('-') && displayDate.length === 10 ? '20 Agustus 2026' : (item?.publishedAt ? formatDate(item.publishedAt) : displayDate)}
+                {displayDate}
               </p>
               <p className="font-medium text-[#757682]">
                 Status: {(item as any)?.status === 'MENUNGGU' || (item as any)?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}

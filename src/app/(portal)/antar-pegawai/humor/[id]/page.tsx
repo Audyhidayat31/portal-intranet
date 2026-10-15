@@ -126,11 +126,12 @@ Ternyata buku itu bukan peninggalan bersejarah, melainkan buku catatan milik Pak
   const displayTitle =
     item?.title || 'Kisah Buku yang Tertinggal di Rak 13';
 
-  const displayDate = item?.publishedAt
-    ? item.publishedAt.includes('-')
-      ? formatDate(item.publishedAt)
-      : item.publishedAt
-    : '20 Agustus 2026';
+  const rawDate = item?.publishedAt || item?.createdAt;
+  const displayDate = rawDate ? formatDate(rawDate) : formatDate(new Date());
+
+
+
+
 
   const displayContent =
     item?.body ||

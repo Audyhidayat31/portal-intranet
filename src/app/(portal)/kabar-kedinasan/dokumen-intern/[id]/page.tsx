@@ -203,7 +203,7 @@ Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedan
               <p className="text-sm sm:text-base font-semibold text-[#1a1b20]">
                 {documentItem?.publishedAt
                   ? formatDate(documentItem.publishedAt)
-                  : '20 Agustus 2026'}
+                  : formatDate(new Date())}
               </p>
             </div>
           </div>
@@ -270,7 +270,7 @@ Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedan
               <p className="font-medium text-[#757682]">
                 {documentItem?.publishedAt
                   ? formatDate(documentItem.publishedAt)
-                  : '20 Agustus 2026'}
+                  : formatDate(new Date())}
               </p>
               <p className="font-medium text-[#757682]">
                 Status: {documentItem?.status === 'MENUNGGU' || documentItem?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}

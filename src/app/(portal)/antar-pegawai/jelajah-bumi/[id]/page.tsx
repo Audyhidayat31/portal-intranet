@@ -132,11 +132,12 @@ export default function DetailJelajahBumiPage() {
     item?.title ||
     'Penerbitan Buku Karya Sastra Prof. .... Berlangsung di Perpustakaan Nasional Republik Indonesia';
 
-  const displayDate = item?.publishedAt
-    ? item.publishedAt.includes('-')
-      ? formatDate(item.publishedAt)
-      : item.publishedAt
-    : '20 Agustus 2026';
+  const rawDate = item?.publishedAt || item?.createdAt;
+  const displayDate = rawDate
+    ? formatDate(rawDate)
+
+
+    : formatDate(new Date());
 
   const displayContent =
     item?.body ||

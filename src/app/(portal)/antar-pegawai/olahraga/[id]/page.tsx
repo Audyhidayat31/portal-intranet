@@ -125,11 +125,12 @@ export default function DetailOlahragaPage() {
     olahragaItem?.title ||
     DEFAULT_STITCH_OLAHRAGA_DETAIL.title;
 
-  const displayDate = olahragaItem?.publishedAt
-    ? formatDate(olahragaItem.publishedAt)
-    : '20 Agustus 2026';
+  const rawDate = olahragaItem?.publishedAt || olahragaItem?.createdAt;
+  const displayDate = rawDate
+    ? formatDate(rawDate)
+    : formatDate(new Date());
 
-  const displayAuthor = olahragaItem?.authorName || olahragaItem?.author?.name || 'Ahmad Fauzi';
+  const displayAuthor = olahragaItem?.authorName || olahragaItem?.author?.name || 'Pegawai Perpusnas';
 
   const displayContent =
     olahragaItem?.body ||

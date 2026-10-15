@@ -125,11 +125,12 @@ export default function DetailTahukahAndaPage() {
     tahukahItem?.title ||
     DEFAULT_STITCH_TAHUKAH_ANDA_DETAIL.title;
 
-  const displayDate = tahukahItem?.publishedAt
-    ? formatDate(tahukahItem.publishedAt)
-    : '20 Agustus 2026';
+  const rawDate = tahukahItem?.publishedAt || tahukahItem?.createdAt;
+  const displayDate = rawDate
+    ? formatDate(rawDate)
+    : formatDate(new Date());
 
-  const displayAuthor = tahukahItem?.authorName || tahukahItem?.author?.name || 'Ahmad Fauzi';
+  const displayAuthor = tahukahItem?.authorName || tahukahItem?.author?.name || 'Pegawai Perpusnas';
 
   const displayContent =
     tahukahItem?.body ||

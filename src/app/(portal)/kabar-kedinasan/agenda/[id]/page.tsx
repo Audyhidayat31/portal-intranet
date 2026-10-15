@@ -82,7 +82,7 @@ export default function DetailAgendaKegiatanPage() {
 
   const displayTitle = agendaItem?.title || 'Agenda Kegiatan';
 
-  const displayDate = agendaItem?.publishedAt ? formatDate(agendaItem.publishedAt) : '-';
+  const displayDate = (agendaItem?.publishedAt || agendaItem?.createdAt) ? formatDate(agendaItem.publishedAt || agendaItem.createdAt) : formatDate(new Date());
 
   const displayContent = agendaItem?.body || agendaItem?.content || '-';
 
