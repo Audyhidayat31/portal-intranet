@@ -7,6 +7,8 @@ export interface OpiniItem {
   publishedAt: string;
   status: 'Terbit' | 'Menunggu';
   authorName?: string;
+  authorId?: string;
+  author?: any;
 }
 
 export const STITCH_MOCK_OPINI_6: OpiniItem[] = [

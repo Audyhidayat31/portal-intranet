@@ -9,6 +9,8 @@ const postSchema = z.object({
   body: z.string().min(10, 'Isi postingan minimal 10 karakter'),
   coverImage: z.string().optional(),
   status: z.string().optional(),
+  publishedAt: z.string().optional(),
+  createdAt: z.string().optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -121,6 +123,7 @@ export async function GET(request: NextRequest) {
         const editorName = editorMap.get(p.id) || null;
         return {
           ...p,
+          publishedAt: p.createdAt,
           editor: editorName ? { name: editorName } : null,
           editorName,
         };
@@ -155,10 +158,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, message: result.error.errors[0].message }, { status: 400 });
     }
 
-    const { title, categorySlug, body: contentBody, coverImage, status } = result.data;
+    const { title, categorySlug, body: contentBody, coverImage, status, publishedAt, createdAt } = result.data;
     const slug = `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}`;
 
     const postStatus = status === 'MENUNGGU' || status === 'Menunggu' ? 'MENUNGGU' : 'TERBIT';
+    const postCreatedAt = publishedAt ? new Date(publishedAt) : (createdAt ? new Date(createdAt) : new Date());
 
     const newPost = await prisma.employeePost.create({
       data: {
@@ -169,6 +173,7 @@ export async function POST(request: NextRequest) {
         coverImage: coverImage || null,
         authorId,
         status: postStatus,
+        createdAt: postCreatedAt,
       },
     });
 

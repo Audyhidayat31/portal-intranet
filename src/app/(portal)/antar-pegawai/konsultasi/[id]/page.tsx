@@ -157,7 +157,7 @@ export default function DetailKonsultasiPage() {
     const newReply: ConsultationReplyItem = {
       id: `rep-${Date.now()}`,
       authorName: replyAuthor.trim() || 'Ahmad Fauzi',
-      date: '20 Agustus 2026',
+      date: formatDate(new Date()),
       content: replyText.trim(),
     };
 
@@ -245,7 +245,7 @@ export default function DetailKonsultasiPage() {
       id: '1',
       title: 'Musim Batuk & Flu Massal Tiba: Jaga Diri dan Pertahanan Tubuh Anda',
       category: 'Kesehatan' as const,
-      date: '20 Agustus 2026',
+      date: formatDate(new Date()),
       status: 'Terbit' as const,
       description:
         'Musim peralihan cuaca seringkali membawa lonjakan kasus batuk dan flu di lingkungan kerja. Mari tingkatkan daya tahan tubuh dengan menjaga hidrasi, konsumsi vitamin C, istirahat cukup, dan mengenakan masker saat berada di ruang kerja bersama.',

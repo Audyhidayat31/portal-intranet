@@ -126,9 +126,10 @@ export default function DetailCoretanOpiniPage() {
     opiniItem?.title ||
     'Penerbitan Buku Karya Sastra Prof. .... Berlangsung di Perpustakaan Nasional Republik Indonesia';
 
-  const displayDate = opiniItem?.publishedAt
-    ? formatDate(opiniItem.publishedAt)
-    : '20 Agustus 2026';
+  const rawDate = opiniItem?.publishedAt || opiniItem?.createdAt;
+  const displayDate = rawDate
+    ? formatDate(rawDate)
+    : formatDate(new Date());
 
   const displayContent =
     opiniItem?.body ||
@@ -226,7 +227,7 @@ export default function DetailCoretanOpiniPage() {
             <div className="flex flex-row gap-6">
               <div className="text-xs text-[#757682] space-y-0.5 w-[220px]"><p className="font-semibold text-[#757682]">Dibuat oleh</p>
               <p className="font-semibold text-[#1a1b20]">
-                {opiniItem?.author?.name || opiniItem?.authorName || 'Ahmad Fauzi'}
+                {opiniItem?.author?.name || opiniItem?.authorName || 'Pegawai Perpusnas'}
               </p>
               <p className="font-medium text-[#757682]">
                 {displayDate}

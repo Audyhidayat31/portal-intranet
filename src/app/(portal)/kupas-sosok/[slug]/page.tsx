@@ -124,7 +124,7 @@ Beliau memimpin proyek integrasi katalog induk nasional dan layanan akses reposi
     ? formatDate(figureItem.publishedAt)
     : figureItem?.createdAt
       ? formatDate(figureItem.createdAt)
-      : '19 Agustus 2026';
+      : formatDate(new Date());
   const displayContent = figureItem?.fullStory || figureItem?.body || figureItem?.quote || '';
 
   // Attachments

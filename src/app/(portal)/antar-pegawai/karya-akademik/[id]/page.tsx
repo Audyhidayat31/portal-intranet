@@ -139,9 +139,10 @@ export default function DetailKaryaAkademikPage() {
   const displayTitle =
     item.title ||
     'Penerbitan Buku Karya Sastra Prof. .... Berlangsung di Perpustakaan Nasional Republik Indonesia';
-  const displayDate = item.publishedAt || '20 Agustus 2026';
+  const rawDate = item?.publishedAt || (item as any)?.createdAt;
+  const displayDate = rawDate ? formatDate(rawDate) : formatDate(new Date());
   const displayContent = item.content || item.excerpt || '';
-  const displayAuthor = item.authorName || 'Ahmad Fauzi';
+  const displayAuthor = item.authorName || (item as any)?.author?.name || 'Pegawai Perpusnas';
 
   const attachments =
     item.attachments && item.attachments.length > 0

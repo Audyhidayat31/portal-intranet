@@ -177,7 +177,7 @@ export default function DetailBeritaPage() {
   const authorName = news?.author?.name || 'Humas Perpustakaan Nasional';
   const displayDate = news?.publishedAt
     ? formatDate(news.publishedAt)
-    : '19 Agustus 2026';
+    : formatDate(new Date());
   
   const createdDate = news?.createdAt ? formatDate(news.createdAt) : displayDate;
   const updatedDate = news?.updatedAt ? formatDate(news.updatedAt) : displayDate;

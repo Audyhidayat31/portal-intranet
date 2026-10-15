@@ -119,11 +119,12 @@ export default function DetailKabarKeluargaPage() {
   const displayTitle =
     item?.title || 'Minat membaca Warga Indonesia semakin membaik';
 
-  const displayDate = item?.publishedAt
-    ? item.publishedAt.includes('-')
-      ? formatDate(item.publishedAt)
-      : item.publishedAt
-    : '19 Agustus 2026';
+  const rawDate = item?.publishedAt || item?.createdAt;
+  const displayDate = rawDate ? formatDate(rawDate) : formatDate(new Date());
+
+
+
+
 
   const displayContent =
     item?.body ||

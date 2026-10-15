@@ -9,7 +9,7 @@ import {
   ChevronDown,
   Globe,
 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { formatDate, isUserAdmin } from '@/lib/utils';
 import { STITCH_MOCK_JELAJAH_BUMI_9, JelajahBumiItem } from '@/lib/mock-jelajah-bumi';
 import { Pagination } from '@/components/ui/Pagination';
 
@@ -20,6 +20,17 @@ export default function JelajahBumiPage() {
   const [filterAuthor, setFilterAuthor] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setCurrentUser(data.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Dropdown Pagination state
   const [itemsPerPage, setItemsPerPage] = useState(9);
@@ -57,6 +68,8 @@ export default function JelajahBumiPage() {
           publishedAt: item.createdAt || '2026-08-19',
           status: item.status === 'MENUNGGU' ? 'Menunggu' : 'Terbit',
           authorName: item.author?.name || 'Pegawai Perpusnas',
+          authorId: item.authorId || item.author?.id,
+          author: item.author,
           location: 'Indonesia',
         }));
 
@@ -111,9 +124,9 @@ export default function JelajahBumiPage() {
     if (!user) return false;
     if (isUserAdmin(user)) return true;
     const authorName = item.authorName || item.author?.name;
-    const authorId = item.authorId || item.userId;
+    const authorId = item.authorId || item.userId || item.author?.id;
     return Boolean(
-      (authorName && authorName === user.name) ||
+      (authorName && user.name && authorName.trim().toLowerCase() === user.name.trim().toLowerCase()) ||
       (authorId && (authorId === user.id || authorId === user.userId))
     );
   };

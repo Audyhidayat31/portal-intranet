@@ -308,7 +308,7 @@ export default function DokumenInternPage() {
             }).filter(item => filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id))).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((doc: any) => {
               const displayDate = doc.publishedAt
                 ? formatDate(doc.publishedAt)
-                : '20 Agustus 2026';
+                : formatDate(new Date());
 
               return (
                 <div

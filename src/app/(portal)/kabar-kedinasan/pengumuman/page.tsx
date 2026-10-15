@@ -459,7 +459,7 @@ export default function PengumumanPage() {
             }).filter(item => filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id))).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
               const displayDate = item.publishedAt
                 ? formatDate(item.publishedAt)
-                : '20 AGUSTUS 2026';
+                : formatDate(new Date());
 
               return (
                 <div
@@ -547,7 +547,7 @@ export default function PengumumanPage() {
                 <p className="text-[#1a1b20] mt-0.5">
                   {selectedAnnouncement.publishedAt
                     ? formatDate(selectedAnnouncement.publishedAt)
-                    : '20 Agustus 2026'}
+                    : formatDate(new Date())}
                 </p>
               </div>
             </header>
@@ -599,7 +599,7 @@ export default function PengumumanPage() {
                   <p className="text-[#444650] mb-1">
                     {selectedAnnouncement.publishedAt
                       ? formatDate(selectedAnnouncement.publishedAt)
-                      : '20 Agustus 2026'}
+                      : formatDate(new Date())}
                   </p>
                   <p className="text-[#444650] font-medium">
                     Status: {(selectedAnnouncement.status === 'MENUNGGU' || selectedAnnouncement.status === 'Menunggu' || selectedAnnouncement.status === 'DRAFT') ? 'Menunggu' : 'Terbit'}
