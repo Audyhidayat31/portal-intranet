@@ -11,7 +11,7 @@ import {
   Download,
   ImageIcon,
 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { formatDate, canManageContent } from '@/lib/utils';
 import { STITCH_MOCK_HUMOR_9, HumorItem } from '@/lib/mock-humor';
 
 // Mock 5 attachment images matching Stitch design
@@ -255,7 +255,7 @@ Ternyata buku itu bukan peninggalan bersejarah, melainkan buku catatan milik Pak
             </div>
 
             {/* Right: Edit & Hapus Buttons matching Stitch */}
-            {currentUser && (currentUser.role === 'admin' || currentUser.name === (item?.author?.name || item?.authorName || 'Ahmad Fauzi')) && (
+            {canManageContent(currentUser, item) && (
               <div className="flex items-center gap-3 self-end sm:self-auto">
                 <Link
                   href={`/antar-pegawai/humor/${item?.id || rawId}/edit`}

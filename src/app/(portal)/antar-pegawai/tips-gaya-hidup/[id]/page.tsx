@@ -10,7 +10,7 @@ import {
   Download,
   ImageIcon,
 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { formatDate, canManageContent } from '@/lib/utils';
 import {
   STITCH_MOCK_TIPS_GAYA_HIDUP_9,
   TipsGayaHidupItem,
@@ -254,7 +254,7 @@ Mari jadikan gaya hidup sehat sebagai bagian tak terpisahkan dari dedikasi kita 
             </div>
 
             {/* Right: Edit & Hapus Buttons matching Stitch */}
-            {currentUser && (currentUser.role === 'admin' || currentUser.name === (item?.author?.name || item?.authorName || 'Ahmad Fauzi')) && (
+            {canManageContent(currentUser, item) && (
               <div className="flex items-center gap-3 self-end sm:self-auto">
                 <Link
                   href={`/antar-pegawai/tips-gaya-hidup/${rawId}/edit`}

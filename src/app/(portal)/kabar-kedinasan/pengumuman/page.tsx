@@ -16,7 +16,7 @@ import {
   Megaphone,
   ImageIcon,
 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { formatDate, isUserAdmin, canManageContent } from '@/lib/utils';
 import { Pagination } from '@/components/ui/Pagination';
 
 // Mock 5 Attachments for the Detail Modal
@@ -438,7 +438,7 @@ export default function PengumumanPage() {
           const isPublished = item.status === 'Terbit' || item.status === 'TERBIT' || (!item.status);
           if (isPublished) return true;
           if (!currentUser) return false;
-          if (currentUser.role === 'admin') return true;
+          if (isUserAdmin(currentUser)) return true;
           return currentUser.name === (item.authorName || item.author?.name);
         }).length === 0 ? (
           <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
@@ -454,7 +454,7 @@ export default function PengumumanPage() {
               const isPublished = item.status === 'Terbit' || item.status === 'TERBIT' || (!item.status);
               if (isPublished) return true;
               if (!currentUser) return false;
-              if (currentUser.role === 'admin') return true;
+              if (isUserAdmin(currentUser)) return true;
               return currentUser.name === (item.authorName || item.author?.name);
             }).filter(item => filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id))).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
               const displayDate = item.publishedAt
@@ -514,7 +514,7 @@ export default function PengumumanPage() {
           const isPublished = item.status === 'Terbit' || item.status === 'TERBIT' || (!item.status);
           if (isPublished) return true;
           if (!currentUser) return false;
-          if (currentUser.role === 'admin') return true;
+          if (isUserAdmin(currentUser)) return true;
           return currentUser.name === (item.authorName || item.author?.name);
         }).length}
         itemsPerPage={itemsPerPage}
@@ -623,7 +623,7 @@ export default function PengumumanPage() {
                 )}
               </div>
 
-              {currentUser && (currentUser.role === 'admin' || currentUser.name === (selectedAnnouncement.author?.name || selectedAnnouncement.authorName || 'Ahmad Fauzi')) && (
+              {canManageContent(currentUser, selectedAnnouncement) && (
                 <div className="flex gap-4">
                   <button
                     type="button"

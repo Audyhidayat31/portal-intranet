@@ -12,7 +12,7 @@ import {
   Download,
   ImageIcon,
 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { formatDate, canManageContent } from '@/lib/utils';
 import {
   DEFAULT_STITCH_OLAHRAGA_DETAIL,
   STITCH_MOCK_OLAHRAGA_9,
@@ -260,7 +260,7 @@ export default function DetailOlahragaPage() {
             </div>
 
             {/* Right: Edit & Hapus Buttons matching Wireframe 2 */}
-            {currentUser && (currentUser.role === 'admin' || currentUser.name === (olahragaItem?.author?.name || olahragaItem?.authorName || 'Ahmad Fauzi')) && (
+            {canManageContent(currentUser, olahragaItem) && (
               <div className="flex items-center gap-3 self-end sm:self-auto">
                 <Link
                   href={`/antar-pegawai/olahraga/${olahragaItem?.id || rawId}/edit`}

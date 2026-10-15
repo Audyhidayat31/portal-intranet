@@ -16,7 +16,7 @@ import {
   X,
   ImageIcon,
 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { formatDate, canManageContent } from '@/lib/utils';
 
 // Mock Gallery Photos Pool with authentic high-res library & Perpusnas activities
 const GALLERY_PHOTOS_PAGES: Record<number, { url: string; title: string }[]> = {
@@ -444,7 +444,7 @@ export default function DetailBeritaPage() {
             </div>
 
             {/* Action Buttons: Edit Berita & Hapus Berita matching Stitch */}
-            {currentUser && (currentUser.role === 'admin' || currentUser.name === news?.author?.name) && (
+            {canManageContent(currentUser, news) && (
               <div className="flex flex-wrap gap-4 pt-2">
                 <button
                   onClick={() => router.push(`/kabar-kedinasan/berita/${rawId}/edit`)}

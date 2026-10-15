@@ -12,7 +12,7 @@ import {
   Download,
   ImageIcon,
 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { formatDate, canManageContent } from '@/lib/utils';
 import { STITCH_MOCK_INTERNAL_DOCS_5, InternalDocument } from '@/lib/mock-internal-documents';
 
 // Mock 5 attachment images matching Stitch design
@@ -297,7 +297,7 @@ Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedan
             </div>
 
             {/* Right: Edit & Hapus Buttons matching Stitch */}
-            {currentUser && (currentUser.role === 'admin' || currentUser.name === (documentItem?.author?.name || documentItem?.authorName || 'Administrator Perpusnas')) && (
+            {canManageContent(currentUser, documentItem) && (
               <div className="flex items-center gap-3 self-end sm:self-auto">
                 <Link
                   href={`/kabar-kedinasan/dokumen-intern/${rawId}/edit`}

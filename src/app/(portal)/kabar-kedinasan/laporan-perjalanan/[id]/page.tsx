@@ -10,7 +10,7 @@ import {
   AlertTriangle,
   Download,
 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { formatDate, canManageContent } from '@/lib/utils';
 import { STITCH_MOCK_BUSINESS_TRIPS_5 } from '@/lib/mock-business-trips';
 
 // Mock attachments matching Stitch design
@@ -304,7 +304,7 @@ export default function DetailLaporanPerjalananPage() {
               )}
             </div>
 
-            {currentUser && (currentUser.role === 'admin' || currentUser.name === (report?.author?.name || report?.authorName || 'Administrator Perpusnas')) && (
+            {canManageContent(currentUser, report) && (
               <div className="flex gap-4 w-full md:w-auto">
                 <Link
                   href={`/kabar-kedinasan/laporan-perjalanan/${rawId}/edit`}

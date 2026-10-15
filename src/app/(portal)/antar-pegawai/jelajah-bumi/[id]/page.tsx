@@ -11,7 +11,7 @@ import {
   Download,
   ImageIcon,
 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { formatDate, canManageContent } from '@/lib/utils';
 import {
   STITCH_MOCK_JELAJAH_BUMI_9,
   DEFAULT_STITCH_JELAJAH_DETAIL,
@@ -266,7 +266,7 @@ Melalui karya ini diharapkan generasi muda semakin terinspirasi untuk terus berk
             </div>
 
             {/* Right: Edit & Hapus Buttons matching Stitch */}
-            {currentUser && (currentUser.role === 'admin' || currentUser.name === (item?.author?.name || item?.authorName || 'Ahmad Fauzi')) && (
+            {canManageContent(currentUser, item) && (
               <div className="flex items-center gap-3 self-end sm:self-auto">
                 <Link
                   href={`/antar-pegawai/jelajah-bumi/${item?.id || rawId}/edit`}

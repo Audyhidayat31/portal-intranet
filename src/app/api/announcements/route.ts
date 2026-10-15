@@ -14,7 +14,8 @@ export async function GET(request: NextRequest) {
       AND: [],
     };
 
-    if (session?.role === 'admin' || session?.role === 'administrator') {
+    const roleUpper = session?.role?.toUpperCase();
+    if (roleUpper === 'ADMINISTRATOR' || roleUpper === 'ADMIN') {
       where.status = { in: ['TERBIT', 'MENUNGGU', 'DRAFT'] };
     } else if (session?.userId) {
       where.AND.push({

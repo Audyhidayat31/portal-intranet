@@ -12,7 +12,7 @@ import {
   CheckCircle,
   AlertTriangle,
 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { formatDate, canManageContent } from '@/lib/utils';
 import {
   STITCH_MOCK_KARYA_AKADEMIK,
   MOCK_KARYA_AKADEMIK_ATTACHMENTS_5,
@@ -286,7 +286,7 @@ export default function DetailKaryaAkademikPage() {
             </div>
 
             {/* Right: Edit & Hapus Buttons matching Wireframe Gambar 3 & Gambar 2 */}
-            {currentUser && (currentUser.role === 'admin' || currentUser.name === (item?.authorName || (item as any)?.author?.name || displayAuthor)) && (
+            {canManageContent(currentUser, item) && (
               <div className="flex items-center gap-3 self-end sm:self-auto">
                 <Link
                   href={`/antar-pegawai/karya-akademik/${item?.id || rawId}/edit`}

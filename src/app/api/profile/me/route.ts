@@ -18,7 +18,23 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json({ success: true, data: fullUser });
+    if (!fullUser) {
+      return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
+    }
+
+    const roleName = fullUser.role?.name || user.role;
+    const isAdmin =
+      roleName?.toUpperCase() === 'ADMINISTRATOR' ||
+      roleName?.toUpperCase() === 'ADMIN';
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        ...fullUser,
+        roleName,
+        isAdmin,
+      },
+    });
   } catch (error) {
     return NextResponse.json({ success: false, message: 'Gagal memuat profil' }, { status: 500 });
   }

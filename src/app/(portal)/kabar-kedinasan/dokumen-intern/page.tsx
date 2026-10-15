@@ -16,7 +16,7 @@ import {
   FileCode,
   ChevronDown,
 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { formatDate, isUserAdmin } from '@/lib/utils';
 import {
   STITCH_MOCK_INTERNAL_DOCS_5,
   InternalDocument,
@@ -287,7 +287,7 @@ export default function DokumenInternPage() {
             const isPublished = doc.status === 'Terbit' || doc.status === 'TERBIT' || (!doc.status);
             if (isPublished) return true;
             if (!currentUser) return false;
-            if (currentUser.role === 'admin') return true;
+            if (isUserAdmin(currentUser)) return true;
             return currentUser.name === (doc.authorName || doc.author?.name);
           }).length === 0 ? (
           <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
@@ -303,7 +303,7 @@ export default function DokumenInternPage() {
               const isPublished = doc.status === 'Terbit' || doc.status === 'TERBIT' || (!doc.status);
               if (isPublished) return true;
               if (!currentUser) return false;
-              if (currentUser.role === 'admin') return true;
+              if (isUserAdmin(currentUser)) return true;
               return currentUser.name === (doc.authorName || doc.author?.name);
             }).filter(item => filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id))).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((doc: any) => {
               const displayDate = doc.publishedAt
@@ -382,7 +382,7 @@ export default function DokumenInternPage() {
             const isPublished = doc.status === 'Terbit' || doc.status === 'TERBIT' || (!doc.status);
             if (isPublished) return true;
             if (!currentUser) return false;
-            if (currentUser.role === 'admin') return true;
+            if (isUserAdmin(currentUser)) return true;
             return currentUser.name === (doc.authorName || doc.author?.name);
           }).length}
           itemsPerPage={itemsPerPage}
