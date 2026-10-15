@@ -78,3 +78,25 @@ export function formatBirthDate(birthDate: string | Date | null | undefined, nip
   return "-";
 }
 
+export function isUserAdmin(user: any): boolean {
+  if (!user) return false;
+  if (user.isAdmin === true) return true;
+  const roleName = typeof user.role === 'string' ? user.role : user.role?.name || user.roleName || user.roleString;
+  if (!roleName) return false;
+  const upper = String(roleName).toUpperCase();
+  return upper === 'ADMINISTRATOR' || upper === 'ADMIN';
+}
+
+export function canManageContent(user: any, content: any): boolean {
+  if (!user) return false;
+  if (isUserAdmin(user)) return true;
+
+  const authorId = content?.authorId || content?.penulisId || content?.author?.id;
+  const authorName = content?.authorName || content?.namaPenulis || content?.author?.name || content?.name;
+
+  if (authorId && (authorId === user.id || authorId === user.userId)) return true;
+  if (authorName && user.name && authorName.trim().toLowerCase() === user.name.trim().toLowerCase()) return true;
+
+  return false;
+}
+

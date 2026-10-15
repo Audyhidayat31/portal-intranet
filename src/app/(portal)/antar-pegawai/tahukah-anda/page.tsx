@@ -76,7 +76,12 @@ export default function DaftarTahukahAndaPage() {
     if (q.trim()) {
       setIsLoading(true);
     }
-    const localStored = getStoredTahukahAnda();
+    const localStoredRaw = getStoredTahukahAnda();
+    const localStored = localStoredRaw.filter(
+      (item) =>
+        !['tahukah-2', 'tahukah-3', 'tahukah-4', 'tahukah-5', 'tahukah-6'].includes(item.id) &&
+        !/tahukah anda #([2-6])/i.test(item.title || '')
+    );
 
     fetch(`/api/employee-posts?category=tahukah-anda&q=${encodeURIComponent(q)}`)
       .then((res) => res.json())

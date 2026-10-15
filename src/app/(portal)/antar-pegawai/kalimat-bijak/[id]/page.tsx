@@ -10,7 +10,7 @@ import {
   CheckCircle,
   AlertTriangle,
 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { formatDate, canManageContent } from '@/lib/utils';
 import {
   STITCH_MOCK_KALIMAT_BIJAK,
   KalimatBijakItem,
@@ -208,7 +208,7 @@ export default function DetailKalimatBijakPage() {
             </div>
 
             {/* Right: Edit & Hapus Buttons matching Wireframe */}
-            {currentUser && (currentUser.role === 'admin' || currentUser.name === (item?.authorName || displayAuthor)) && (
+            {canManageContent(currentUser, item) && (
               <div className="flex items-center gap-3 self-end sm:self-auto">
                 <Link
                   href={`/antar-pegawai/kalimat-bijak/${item?.id || rawId}/edit`}

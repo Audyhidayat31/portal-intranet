@@ -11,7 +11,7 @@ import {
   X,
   AlertTriangle,
 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { formatDate, canManageContent } from '@/lib/utils';
 import {
   ConsultationItem,
   ConsultationReplyItem,
@@ -366,7 +366,7 @@ export default function DetailKonsultasiPage() {
             </div>
 
             {/* Action Buttons: Edit & Hapus */}
-            {currentUser && (currentUser.role === 'admin' || currentUser.name === (currentItem.authorName || 'Ahmad Fauzi')) && (
+            {canManageContent(currentUser, currentItem) && (
               <div className="flex items-center gap-3">
                 <Link
                   href={`/antar-pegawai/konsultasi/${id}/edit`}
@@ -439,7 +439,7 @@ export default function DetailKonsultasiPage() {
                   </p>
 
                   {/* Bottom Right Actions: Edit & Hapus matching wireframe */}
-                  {currentUser && (currentUser.role === 'admin' || currentUser.name === reply.authorName) && (
+                  {canManageContent(currentUser, reply) && (
                     <div className="flex justify-end items-center gap-2 pt-1">
                       <button
                         type="button"

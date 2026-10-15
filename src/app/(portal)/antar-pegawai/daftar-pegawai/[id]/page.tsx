@@ -18,6 +18,7 @@ import {
   Upload,
 } from 'lucide-react';
 import { MockEmployee } from '@/lib/mock-employees';
+import { isUserAdmin } from '@/lib/utils';
 
 export default function LihatPegawaiPage() {
   const params = useParams();
@@ -202,7 +203,7 @@ export default function LihatPegawaiPage() {
                   </div>
 
                   {/* Blue Pencil Icon Badge (Matching Wireframe) */}
-                  {currentUser?.role === 'ADMINISTRATOR' && (
+                  {isUserAdmin(currentUser) && (
                     <button
                       type="button"
                       onClick={() => {
@@ -344,7 +345,7 @@ export default function LihatPegawaiPage() {
               </div>
 
               {/* Action Buttons: [ Edit ] Button matching wireframe */}
-              {currentUser?.role === 'ADMINISTRATOR' && (
+              {isUserAdmin(currentUser) && (
                 <div className="pt-6 flex justify-end">
                   <button
                     type="button"

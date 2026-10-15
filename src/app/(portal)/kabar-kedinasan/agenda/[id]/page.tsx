@@ -13,7 +13,7 @@ import {
   Download,
   ImageIcon,
 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { formatDate, canManageContent } from '@/lib/utils';
 import { STITCH_MOCK_AGENDAS_6, MOCK_AGENDA_ATTACHMENTS_5, AgendaItem } from '@/lib/mock-agendas';
 
 export default function DetailAgendaKegiatanPage() {
@@ -280,7 +280,7 @@ export default function DetailAgendaKegiatanPage() {
             </div>
 
             {/* Right: Edit & Hapus Buttons matching Coretan Opini Detail */}
-            {currentUser && (currentUser.role === 'admin' || currentUser.name === (agendaItem?.author?.name || agendaItem?.authorName || 'Biro Hukum & Humas Perpusnas')) && (
+            {canManageContent(currentUser, agendaItem) && (
               <div className="flex items-center gap-3 self-end sm:self-auto">
                 <Link
                   href={`/kabar-kedinasan/agenda/${rawId}/edit`}

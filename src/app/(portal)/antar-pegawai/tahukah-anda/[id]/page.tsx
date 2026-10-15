@@ -11,7 +11,7 @@ import {
   Download,
   ImageIcon,
 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { formatDate, canManageContent } from '@/lib/utils';
 import {
   DEFAULT_STITCH_TAHUKAH_ANDA_DETAIL,
   STITCH_MOCK_TAHUKAH_ANDA_9,
@@ -260,7 +260,7 @@ export default function DetailTahukahAndaPage() {
             </div>
 
             {/* Right: Edit & Hapus Buttons matching Wireframe 2 */}
-            {currentUser && (currentUser.role === 'admin' || currentUser.name === (tahukahItem?.author?.name || tahukahItem?.authorName || 'Ahmad Fauzi')) && (
+            {canManageContent(currentUser, tahukahItem) && (
               <div className="flex items-center gap-3 self-end sm:self-auto">
                 <Link
                   href={`/antar-pegawai/tahukah-anda/${rawId}/edit`}
