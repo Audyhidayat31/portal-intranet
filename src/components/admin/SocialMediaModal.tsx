@@ -322,7 +322,7 @@ export function SocialMediaModal({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-7 py-2.5 text-xs font-bold rounded-lg bg-[#5b6b82] hover:bg-[#485568] active:scale-95 text-white transition-all shadow-xs cursor-pointer disabled:opacity-50"
+              className="px-7 py-2.5 text-xs font-bold rounded-lg bg-[#00113a] hover:bg-[#2a4386] active:scale-95 text-white transition-all shadow-xs cursor-pointer disabled:opacity-50"
             >
               {isSubmitting ? 'Menyimpan...' : 'Simpan'}
             </button>
