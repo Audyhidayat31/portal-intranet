@@ -853,7 +853,7 @@ export default function AdminHomepageKelolaPage() {
       </div>
 
       {/* Toast Alert Feedback */}
-      {statusMsg && (
+      {statusMsg && activeTab !== 'beranda' && activeTab !== 'tentang' && !(activeTab === 'footer' && statusMsg.text.toLowerCase().includes('deskripsi')) && (
         <div
           className={`p-4 rounded-xl flex items-center gap-3 text-xs font-medium shadow-xs transition-all animate-fadeIn ${statusMsg.type === 'success'
             ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
@@ -927,7 +927,8 @@ export default function AdminHomepageKelolaPage() {
 
           {/* ---------------- CARD 1: DESKRIPSI FOOTER ---------------- */}
           <section className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 sm:p-7 space-y-4">
-            <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+            {/* Header Section: Judul, Subteks, dan Pop-up Alert Status Deskripsi Footer di atas garis pembatas */}
+            <div className="pb-3 border-b border-slate-100 space-y-3">
               <div>
                 <h2 className="text-base font-bold text-slate-900">
                   Deskripsi Singkat Portal
@@ -936,6 +937,23 @@ export default function AdminHomepageKelolaPage() {
                   Teks pengantar yang tampil pada kolom pertama footer portal publik.
                 </p>
               </div>
+
+              {/* Pop-up Alert Status Deskripsi Footer: Muncul di bawah teks deskripsi dan di atas garis pembatas */}
+              {statusMsg && statusMsg.text.toLowerCase().includes('deskripsi') && (
+                <div
+                  className={`p-3.5 rounded-xl flex items-center gap-2.5 text-xs font-medium shadow-xs transition-all animate-fadeIn ${statusMsg.type === 'success'
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                    : 'bg-red-50 text-red-800 border border-red-200'
+                    }`}
+                >
+                  {statusMsg.type === 'success' ? (
+                    <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                  )}
+                  <span>{statusMsg.text}</span>
+                </div>
+              )}
             </div>
 
             <div className="space-y-3 pt-1">
@@ -1505,8 +1523,9 @@ export default function AdminHomepageKelolaPage() {
         <div className="space-y-8 text-left">
           {/* ---------------- SECTION 1: BANNER ---------------- */}
           <section className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 sm:p-7 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-3">
+            {/* Header Section: Judul & Subteks di kiri, Button Tambah sejajar di kanan */}
+            <div className="pb-3 border-b border-slate-100 space-y-3">
+              <div className="flex items-center justify-between gap-4">
                 <div>
                   <h2 className="text-base font-bold text-slate-900">
                     Banner Halaman Beranda
@@ -1515,13 +1534,32 @@ export default function AdminHomepageKelolaPage() {
                     Banner slider pada halaman depan beranda intranet.
                   </p>
                 </div>
+
+                <button
+                  type="button"
+                  onClick={handleOpenAddBanner}
+                  className="inline-flex items-center gap-1.5 bg-[#007BFF] hover:bg-[#0056b3] text-white text-xs font-bold px-4 py-2 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer shrink-0"
+                >
+                  + Tambah
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={handleOpenAddBanner}
-                className="inline-flex items-center gap-1.5 bg-[#007BFF] hover:bg-[#0056b3] text-white text-xs font-bold px-4 py-2 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
-              >
-                + Tambah</button>
+
+              {/* Pop-up Alert Status Banner: Muncul di bawah baris teks & button tambah */}
+              {statusMsg && statusMsg.text.toLowerCase().includes('banner') && (
+                <div
+                  className={`p-3.5 rounded-xl flex items-center gap-2.5 text-xs font-medium shadow-xs transition-all animate-fadeIn ${statusMsg.type === 'success'
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                    : 'bg-red-50 text-red-800 border border-red-200'
+                    }`}
+                >
+                  {statusMsg.type === 'success' ? (
+                    <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                  )}
+                  <span>{statusMsg.text}</span>
+                </div>
+              )}
             </div>
 
             {/* Banner Table */}
@@ -1639,13 +1677,33 @@ export default function AdminHomepageKelolaPage() {
 
           {/* ---------------- SECTION 2: UCAPAN SELAMAT ULANG TAHUN ---------------- */}
           <section className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 sm:p-7 space-y-4">
-            <div className="pb-3 border-b border-slate-100">
-              <h2 className="text-base font-bold text-slate-900">
-                Ucapan Selamat Ulang Tahun
-              </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Pesan ucapan selamat ulang tahun untuk pegawai yang tampil pada halaman beranda intranet.
-              </p>
+            {/* Header Section: Judul, Subteks, dan Pop-up Alert Status Ucapan di atas garis pembatas */}
+            <div className="pb-3 border-b border-slate-100 space-y-3">
+              <div>
+                <h2 className="text-base font-bold text-slate-900">
+                  Ucapan Selamat Ulang Tahun
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Pesan ucapan selamat ulang tahun untuk pegawai yang tampil pada halaman beranda intranet.
+                </p>
+              </div>
+
+              {/* Pop-up Alert Status Ucapan: Muncul di bawah teks deskripsi dan di atas garis pembatas */}
+              {statusMsg && (statusMsg.text.toLowerCase().includes('ucapan') || statusMsg.text.toLowerCase().includes('ulang tahun')) && (
+                <div
+                  className={`p-3.5 rounded-xl flex items-center gap-2.5 text-xs font-medium shadow-xs transition-all animate-fadeIn ${statusMsg.type === 'success'
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                    : 'bg-red-50 text-red-800 border border-red-200'
+                    }`}
+                >
+                  {statusMsg.type === 'success' ? (
+                    <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                  )}
+                  <span>{statusMsg.text}</span>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
@@ -1735,7 +1793,8 @@ export default function AdminHomepageKelolaPage() {
       {activeTab === 'tentang' && (
         <div className="space-y-6 text-left">
           <section className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 sm:p-8 space-y-6">
-            <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+            {/* Header Section: Judul, Subteks, dan Pop-up Alert Status di atas garis pembatas */}
+            <div className="pb-3 border-b border-slate-100 space-y-3">
               <div>
                 <h2 className="text-base font-bold text-slate-900">
                   Informasi Halaman Tentang Portal
@@ -1744,6 +1803,23 @@ export default function AdminHomepageKelolaPage() {
                   Atur deskripsi platform, pedoman etika kedinasan, berkas latar belakang, dan buku panduan.
                 </p>
               </div>
+
+              {/* Pop-up Alert Status Tentang: Muncul di bawah teks deskripsi dan di atas garis pembatas */}
+              {statusMsg && (
+                <div
+                  className={`p-3.5 rounded-xl flex items-center gap-2.5 text-xs font-medium shadow-xs transition-all animate-fadeIn ${statusMsg.type === 'success'
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                    : 'bg-red-50 text-red-800 border border-red-200'
+                    }`}
+                >
+                  {statusMsg.type === 'success' ? (
+                    <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                  )}
+                  <span>{statusMsg.text}</span>
+                </div>
+              )}
             </div>
 
             {/* 1. Deskripsi */}
