@@ -331,7 +331,7 @@ export default function BerandaPage() {
               <img
                 src={spotlightFigure.avatarUrl || spotlightFigure.photoUrl}
                 alt={spotlightFigure.name || 'Tokoh Perpusnas'}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-top"
               />
             ) : (
               <User className="w-24 h-24 sm:w-28 sm:h-28 text-[#c5c6d2] stroke-[1]" />

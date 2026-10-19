@@ -201,15 +201,18 @@ export default function TambahPengumumanPage() {
       return;
     }
 
-    const newAttachments = files.map(file => {
-      let preview = null;
-      if (file.type.startsWith('image/')) {
-        preview = URL.createObjectURL(file);
-      }
-      return { file, name: file.name, preview };
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        setAttachments((prev) => [
+          ...prev,
+          { file, name: file.name, preview: dataUrl }
+        ]);
+      };
+      reader.readAsDataURL(file);
     });
 
-    setAttachments([...attachments, ...newAttachments]);
     if (attachmentInputRef.current) {
       attachmentInputRef.current.value = '';
     }
@@ -239,6 +242,7 @@ export default function TambahPengumumanPage() {
           excerpt: rawText.slice(0, 150) + (rawText.length > 150 ? '...' : ''),
           content: htmlContent || rawText,
           attachmentName: attachments.length > 0 ? attachments.map(a => a.name).join(', ') : undefined,
+          attachmentUrl: attachments.length > 0 ? JSON.stringify(attachments.map(a => a.preview || '')) : undefined,
           publishedAt: selectedDate.toISOString(),
           status,
         }),

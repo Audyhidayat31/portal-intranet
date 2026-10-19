@@ -19,14 +19,126 @@ import {
 import { formatDate, isUserAdmin, canManageContent } from '@/lib/utils';
 import { Pagination } from '@/components/ui/Pagination';
 
-// Mock 5 Attachments for the Detail Modal
-const MOCK_ATTACHMENT_IMAGES = [
-  { id: 1, label: 'Gambar', url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCahcTZj5QXSmo3tJ8Zb2Xo1X9pKfvdvRYMZA94cK-i5_dLKEHbFSmblR-2uoRzcmMXVd8Pr0Gb30rpuD95uzQCqAdS2MwCjDq2jhqoR7HDhRt9ko2-g6u0vKDepAglqA-jLL14MSv0qL9KeKZUs2or1uCde_WHnFDwhqCQgCxz0VDCutPC0W9sEljXtLYwUpDTogD_ffc4JmQ759jerILSC0Cj_f0e46NooKBIPHoIXmT2BtEmOOzI' },
-  { id: 2, label: 'Gambar', url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAEHOB7QqUcScYgUvXChP9nVr-q786x2lx8BOuh71cyFmfAyQkh2I40zYne-i-muHCks4BFJXQicurqCY-ejOWaJtwmAKyhXqVhFLj1iiAEKtAjTnBXS-OH9nSV2Ow-xBU71sx6vyUz6Zd3QI86bMBNd88JZgcnjYUgjCyn7AUY3-cD-5BHpldUaYeEgDF3H_p4drpjrzX0hwVoYEgLJgWH_gjCteVr2n3GuwShw2bRGprmWd9kp71E' },
-  { id: 3, label: 'Gambar', url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCVs8mmrPa3sdVqly6ut4qCv12iH9c_Vimok_K0v7C2uj3RMTC7sO_TvMqgHUldInW3xOGk_xu97YpdeQ4Ob3F81iN-mPJOb6JzY0tVieOHWOgvC-IOa8oRjF3SIv6GRiZeemSnRd8XgAeAdRcdfpaF04XF_I3kRRiAdo1EdTQLfsKJ1_R338NDEOCE5AdLyLmlBmM0zN4PLKfzcIKyRaHFlogpc5l9J8MvIM_fLuebs8P8tEtu6mqy' },
-  { id: 4, label: 'Gambar', url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDkcdKoK5-REl9MBRrQbPYW0kksQiURmgFsjfTaeLUi_22R_MorHPvnMqTtejb4QVSXHM3k4-97p8hPyPjOTXwIrISNNnRkXMTPEaEkqLwuTlPndmih-rPWxvArIAGMz5Clty1H129PBoYcjNONKfKbbo2ZsxtlVwL_g7hlGFQcAfD-OqatB4RmWtP1o_1_ZEIalHfp5TcYvZThq76yXdL2ITlS5YVVy5yHBEJG7Q6T-V5yvTALGwTP' },
-  { id: 5, label: 'Gambar', url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAAMzsEB9xDYlgOqRSHrkTLOUa9bZaTWA5LlNN5fXZVz7JVboMF1wjffNW4GV6RbfPN7zLuIVYF-JrBsaN7CBfBpOxMkNQIvYMLBTPh5AvFiMKZxzilZVpvWHQXKpwQ8oqYP7ryftiBHDWN1HKbC-yhW6Ux27FSQ_9PprOJRlEDYwdeics1PHFfKZNJBHWiJdH92gLs8Wjs4a1RKSH7g5GNB-agxtikww_ojgBT_cabf_qAUNFgshDQ' },
-];
+// Helper to safely convert data URL (base64) to a Blob URL
+// This completely eliminates HTTP 431 errors when opening files
+const dataUrlToBlobUrl = (dataUrl: string): string | null => {
+  try {
+    const parts = dataUrl.split(',');
+    if (parts.length < 2) return null;
+    const mimeMatch = parts[0].match(/:(.*?);/);
+    const mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+    const binaryStr = atob(parts[1]);
+    const len = binaryStr.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryStr.charCodeAt(i);
+    }
+    const blob = new Blob([bytes], { type: mime });
+    return URL.createObjectURL(blob);
+  } catch (err) {
+    console.error('Failed to convert dataUrl to Blob URL:', err);
+    return null;
+  }
+};
+
+const handleOpenFile = (rawUrl: string, fileName: string) => {
+  if (!rawUrl || rawUrl === '#' || rawUrl === '-') return;
+
+  let targetUrl = rawUrl.trim();
+  if (targetUrl.startsWith('[') && targetUrl.endsWith(']')) {
+    try {
+      const parsed = JSON.parse(targetUrl);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        targetUrl = parsed[0];
+      }
+    } catch {}
+  }
+
+  if (targetUrl.startsWith('data:')) {
+    const blobUrl = dataUrlToBlobUrl(targetUrl);
+    if (blobUrl) {
+      const win = window.open(blobUrl, '_blank');
+      if (!win || win.closed || typeof win.closed === 'undefined') {
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = fileName || 'berkas';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    } else {
+      alert('Format berkas tidak dapat diproses.');
+    }
+    return;
+  }
+
+  window.open(targetUrl, '_blank', 'noopener,noreferrer');
+};
+
+interface AnnouncementAttachmentItem {
+  id: string | number;
+  name: string;
+  url: string;
+  isImage: boolean;
+}
+
+const parseAnnouncementAttachments = (
+  attachmentName?: string | null,
+  attachmentUrl?: string | null
+): AnnouncementAttachmentItem[] => {
+  if (!attachmentName && !attachmentUrl) return [];
+
+  let urls: string[] = [];
+  if (attachmentUrl) {
+    const trimmed = attachmentUrl.trim();
+    if (trimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) urls = parsed;
+      } catch {
+        urls = [trimmed];
+      }
+    } else if (trimmed.includes('|||')) {
+      urls = trimmed.split('|||').map((s) => s.trim());
+    } else {
+      urls = [trimmed];
+    }
+  }
+
+  let names: string[] = [];
+  if (attachmentName) {
+    const trimmed = attachmentName.trim();
+    if (trimmed.includes('|||')) {
+      names = trimmed.split('|||').map((s) => s.trim()).filter(Boolean);
+    } else if (trimmed.includes(',')) {
+      names = trimmed.split(',').map((s) => s.trim()).filter(Boolean);
+    } else {
+      names = [trimmed];
+    }
+  }
+
+  const maxLen = Math.max(names.length, urls.length);
+  if (maxLen === 0) return [];
+
+  const items: AnnouncementAttachmentItem[] = [];
+  for (let i = 0; i < maxLen; i++) {
+    const u = urls[i] || (urls.length === 1 && names.length === 1 ? urls[0] : '');
+    const n = names[i] || (u.startsWith('data:') ? `lampiran-${i + 1}` : u.split('/').pop() || `lampiran-${i + 1}`);
+    const isImg =
+      u.startsWith('data:image') ||
+      /\.(png|jpe?g|webp|gif|svg)$/i.test(n) ||
+      /\.(png|jpe?g|webp|gif|svg)$/i.test(u);
+
+    items.push({
+      id: i + 1,
+      name: n,
+      url: u,
+      isImage: Boolean(isImg),
+    });
+  }
+
+  return items;
+};
 
 // 5 Mock Announcements matching Stitch
 const STITCH_MOCK_ANNOUNCEMENTS_5: any[] = [
@@ -92,22 +204,26 @@ export default function PengumumanPage() {
 
   const handleEditAttachmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (files.length > 0) {
-      if (editAttachments.length + files.length > 10) {
-        alert('Maksimal 10 lampiran diperbolehkan');
-        return;
-      }
-      const newAttachments = files.map(file => {
-        let preview = null;
-        if (file.type.startsWith('image/')) {
-          preview = URL.createObjectURL(file);
-        }
-        return { file, name: file.name, preview };
-      });
-      const updated = [...editAttachments, ...newAttachments];
-      setEditAttachments(updated);
-      setEditAttachmentName(updated.map(a => a.name).join(', '));
+    if (!files.length) return;
+
+    if (editAttachments.length + files.length > 10) {
+      alert('Maksimal 10 lampiran diperbolehkan');
+      return;
     }
+
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        setEditAttachments((prev) => {
+          const updated = [...prev, { file, name: file.name, preview: dataUrl }];
+          setEditAttachmentName(updated.map((a) => a.name).join(', '));
+          return updated;
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+
     if (e.target) e.target.value = '';
   };
 
@@ -212,11 +328,16 @@ export default function PengumumanPage() {
     setEditStatus((item.status === 'MENUNGGU' || item.status === 'Menunggu' || item.status === 'DRAFT') ? 'Menunggu' : 'Terbit');
     setEditContent(item.content || item.body || item.excerpt || '');
     setEditAttachmentName(item.attachmentName || '');
-    if (item.attachmentName) {
-      setEditAttachments([{ file: null, name: item.attachmentName, preview: null }]);
-    } else {
-      setEditAttachments([]);
-    }
+
+    const parsed = parseAnnouncementAttachments(item.attachmentName, item.attachmentUrl);
+    setEditAttachments(
+      parsed.map((p) => ({
+        file: null,
+        name: p.name,
+        preview: p.url || null,
+      }))
+    );
+
     setIsEditModalOpen(true);
   };
 
@@ -236,6 +357,7 @@ export default function PengumumanPage() {
           title: editTitle,
           content: editContent,
           attachmentName: editAttachmentName,
+          attachmentUrl: editAttachments.length > 0 ? JSON.stringify(editAttachments.map((a) => a.preview || '')) : null,
           status: editStatus === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
         }),
       });
@@ -247,6 +369,7 @@ export default function PengumumanPage() {
           content: editContent,
           body: editContent,
           attachmentName: editAttachmentName,
+          attachmentUrl: editAttachments.length > 0 ? JSON.stringify(editAttachments.map((a) => a.preview || '')) : null,
           status: editStatus === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
           updatedAt: data.data?.updatedAt || new Date().toISOString(),
           editor: currentUser,
@@ -565,30 +688,104 @@ export default function PengumumanPage() {
               </div>
             </div>
 
-            {/* Attachments Section (5 Image Placeholders matching Stitch) */}
-            {(selectedAnnouncement.attachmentName || selectedAnnouncement.attachmentUrl) && (
-              <section className="mb-8">
-                <h2 className="text-xs font-bold text-[#1a1b20] mb-3">Lampiran</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
-                  {MOCK_ATTACHMENT_IMAGES.map((att) => (
-                    <div
-                      key={att.id}
-                      onClick={() => setPreviewAttachment(att.url)}
-                      className="aspect-square bg-[#efedf3] border border-[#c5c6d2] rounded flex flex-col items-center justify-center hover:bg-[#e9e7ee] transition-colors cursor-pointer group p-2 relative overflow-hidden"
-                    >
-                      <img
-                        src={att.url}
-                        alt={`Lampiran ${att.id}`}
-                        className="w-full h-full object-cover rounded opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all"
-                      />
-                      <span className="absolute bottom-1 bg-black/60 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
-                        {att.label} {att.id}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
+            {/* Attachments Section (Render real attachments uploaded by user) */}
+            {(() => {
+              const attachments = parseAnnouncementAttachments(
+                selectedAnnouncement.attachmentName,
+                selectedAnnouncement.attachmentUrl
+              );
+              if (attachments.length === 0) return null;
+
+              return (
+                <section className="mb-8">
+                  <div className="flex items-center justify-between mb-3 border-b border-[#c5c6d2]/60 pb-2">
+                    <h2 className="text-xs font-bold text-[#1a1b20] uppercase tracking-wider">
+                      Lampiran ({attachments.length})
+                    </h2>
+                    <span className="text-[11px] font-medium text-slate-500">
+                      {attachments.some(a => Boolean(a.url && a.url !== '#' && a.url !== '-'))
+                        ? 'Klik berkas untuk melihat atau mengunduh'
+                        : 'Daftar berkas terlampir'}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    {attachments.map((att) => {
+                      const hasUrl = Boolean(att.url && att.url !== '#' && att.url !== '-');
+
+                      if (att.isImage) {
+                        return (
+                          <div
+                            key={att.id}
+                            onClick={() => {
+                              if (hasUrl) {
+                                setPreviewAttachment(att.url);
+                              }
+                            }}
+                            className={`bg-[#f8f9fc] border border-[#c5c6d2] rounded-lg p-2.5 flex items-center gap-3 transition-all shadow-2xs ${
+                              hasUrl
+                                ? 'hover:bg-[#eef2ff] hover:border-blue-400 cursor-pointer group'
+                                : 'cursor-default'
+                            }`}
+                            title={hasUrl ? `Lihat gambar: ${att.name}` : att.name}
+                          >
+                            <div className="w-12 h-12 rounded bg-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center border border-slate-300">
+                              {hasUrl ? (
+                                <img
+                                  src={att.url}
+                                  alt={att.name}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                                />
+                              ) : (
+                                <ImageIcon className="w-6 h-6 text-slate-400" />
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className={`text-xs font-semibold text-slate-800 truncate ${hasUrl ? 'group-hover:text-blue-700' : ''}`}>
+                                {att.name}
+                              </p>
+                              <span className="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[10px] font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                Gambar
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // Dokumen / PDF
+                      return (
+                        <div
+                          key={att.id}
+                          onClick={() => {
+                            if (hasUrl) {
+                              handleOpenFile(att.url, att.name);
+                            }
+                          }}
+                          className={`bg-[#f8f9fc] border border-[#c5c6d2] rounded-lg p-2.5 flex items-center gap-3 transition-all shadow-2xs ${
+                            hasUrl
+                              ? 'hover:bg-[#eef2ff] hover:border-blue-400 cursor-pointer group'
+                              : 'cursor-default'
+                          }`}
+                          title={hasUrl ? `Buka dokumen: ${att.name}` : att.name}
+                        >
+                          <div className="w-12 h-12 rounded bg-red-50 text-red-600 flex-shrink-0 flex items-center justify-center border border-red-200 group-hover:bg-red-100 transition-colors">
+                            <FileText className="w-6 h-6" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className={`text-xs font-semibold text-slate-800 truncate ${hasUrl ? 'group-hover:text-blue-700' : ''}`}>
+                              {att.name}
+                            </p>
+                            <span className="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[10px] font-medium bg-red-100 text-red-800 border border-red-200">
+                              {att.name.toLowerCase().endsWith('.pdf') ? 'PDF Dokumen' : 'Dokumen'}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              );
+            })()}
 
             {/* Footer / Meta Section matching Stitch */}
             <footer className="flex flex-col sm:flex-row justify-between items-start sm:items-end border-t border-[#c5c6d2] pt-6 gap-4">
@@ -649,19 +846,39 @@ export default function PengumumanPage() {
       {/* Lightbox Preview for Attachment Image */}
       {previewAttachment && (
         <div
-          className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn"
           onClick={() => setPreviewAttachment(null)}
         >
-          <div className="relative max-w-4xl w-full max-h-[90vh] flex items-center justify-center">
+          <div
+            className="relative max-w-4xl w-full max-h-[90vh] flex flex-col items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
             <img
               src={previewAttachment}
               alt="Lampiran Preview"
-              className="max-h-[85vh] max-w-full object-contain rounded shadow-2xl"
+              className="max-h-[80vh] max-w-full object-contain rounded-lg shadow-2xl"
             />
+            <div className="mt-3 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => handleOpenFile(previewAttachment, 'lampiran-pengumuman.jpg')}
+                className="bg-white/20 hover:bg-white text-white hover:text-slate-900 px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
+              >
+                <Download className="w-4 h-4" />
+                <span>Buka / Unduh Berkas</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewAttachment(null)}
+                className="bg-white/20 hover:bg-white text-white hover:text-slate-900 px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+              >
+                Tutup
+              </button>
+            </div>
             <button
               type="button"
               onClick={() => setPreviewAttachment(null)}
-              className="absolute top-2 right-2 sm:-top-10 sm:-right-10 bg-white/20 hover:bg-white text-white hover:text-black p-2 rounded-full transition-colors"
+              className="absolute top-2 right-2 sm:-top-10 sm:-right-10 bg-white/20 hover:bg-white text-white hover:text-black p-2 rounded-full transition-colors cursor-pointer"
             >
               <X className="w-6 h-6" />
             </button>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSessionUserFromRequest } from '@/lib/auth';
+import { logActivity } from '@/lib/audit';
 
 export async function GET(request: NextRequest) {
   try {
@@ -59,7 +60,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, excerpt, content, attachmentName, isPinned, publishedAt, status } = body;
+    const { title, excerpt, content, attachmentName, attachmentUrl, isPinned, publishedAt, status } = body;
 
     if (!title || !content) {
       return NextResponse.json(
@@ -100,10 +101,35 @@ export async function POST(request: NextRequest) {
         status: postStatus,
         isPinned: Boolean(isPinned),
         attachmentName: attachmentName || null,
+        attachmentUrl: attachmentUrl || null,
         authorId,
         publishedAt: publishedAt ? new Date(publishedAt) : new Date(),
       },
     });
+
+    try {
+      const announceDate = publishedAt ? new Date(publishedAt) : new Date();
+      await logActivity({
+        userId: authorId,
+        action: 'CREATE',
+        module: 'ANNOUNCEMENT',
+        targetId: created.id,
+        description: `Menambah Pengumuman: ${title}`,
+        details: {
+          title,
+          category: 'Pengumuman',
+          source: '-',
+          tanggal: announceDate.toISOString(),
+          attachmentUrl: attachmentUrl || null,
+          attachmentName: attachmentName || null,
+          status: postStatus === 'TERBIT' ? 'Terbit' : 'Menunggu',
+          publishedAt: announceDate.toISOString(),
+          contentExcerpt: excerpt || content.slice(0, 150),
+        },
+      });
+    } catch (logErr) {
+      console.warn('Failed to log announcement create:', logErr);
+    }
 
     return NextResponse.json({
       success: true,

@@ -112,6 +112,12 @@ export default function TambahKupasSosokPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    try {
+      localStorage.removeItem('portal_figures_data');
+    } catch {}
+  }, []);
+
   const formatDDMMYYYY = (date: Date) => {
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -253,16 +259,6 @@ export default function TambahKupasSosokPage() {
       return;
     }
 
-    if (!jabatan.trim()) {
-      alert('Jabatan wajib diisi');
-      return;
-    }
-
-    if (!unitKerja.trim()) {
-      alert('Unit Kerja wajib diisi');
-      return;
-    }
-
     const storyContent = deskripsiHtml.trim();
     const plainStory = editorRef.current?.innerText?.trim() || '';
 
@@ -275,32 +271,19 @@ export default function TambahKupasSosokPage() {
 
     try {
 
-      const newItem: FigureItem = {
-        id: `fig-${Date.now()}`,
-        name: nama,
-        slug: nama.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || `sosok-${Date.now()}`,
-        position: jabatan || 'Pustakawan & Insan Berprestasi',
-        unitKerja: unitKerja || 'Perpustakaan Nasional RI',
-        quote: 'Mendedikasikan karya untuk kemajuan literasi bangsa.',
-        fullStory: storyContent || plainStory,
-        photoUrl: gambarPreview || '/images/logo-perpusnas.png',
-        publishedAt: tanggal.toISOString().split('T')[0],
-        status: (status === 'Menunggu' ? 'Menunggu' : 'Terbit') as 'Terbit' | 'Menunggu',
-        attachments: lampiranAttachments.map((a, idx) => ({ id: idx + 1, label: a.name, src: a.preview || `/uploads/${a.name}` })),
-        attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments.map((a) => a.name).join(', ') : undefined,
-      };
-      const stored = getStoredFigures();
-      saveStoredFigures([newItem, ...stored]);
+      try {
+        localStorage.removeItem('portal_figures_data');
+      } catch {}
 
       const res = await fetch('/api/figure-profiles', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: nama,
-          position: jabatan || 'Pustakawan & Insan Berprestasi',
-          unitKerja: unitKerja || 'Perpustakaan Nasional RI',
-          quote: 'Mendedikasikan karya untuk kemajuan literasi bangsa.',
-          fullStory: plainStory,
+          position: jabatan.trim() || undefined,
+          unitKerja: unitKerja.trim() || undefined,
+          quote: plainStory.slice(0, 160).trim(),
+          fullStory: storyContent || plainStory,
           photoUrl: gambarPreview || '',
           isSpotlight: false,
           attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments.map((a) => a.name).join(', ') : undefined,
@@ -451,13 +434,12 @@ export default function TambahKupasSosokPage() {
 
               {/* 3. Jabatan & Unit Kerja */}
               <label htmlFor="jabatan" className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-                Jabatan & Unit Kerja <span className="text-red-500">*</span> <span className="float-right hidden md:inline">:</span>
+                Jabatan & Unit Kerja <span className="float-right hidden md:inline">:</span>
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <input
                   id="jabatan"
                   type="text"
-                  required
                   value={jabatan}
                   onChange={(e) => setJabatan(e.target.value)}
                   placeholder="Contoh: Pustakawan Ahli Utama"
@@ -466,7 +448,6 @@ export default function TambahKupasSosokPage() {
                 <input
                   id="unitKerja"
                   type="text"
-                  required
                   value={unitKerja}
                   onChange={(e) => setUnitKerja(e.target.value)}
                   placeholder="Contoh: Deputi Pengembangan Bahan Pustaka"
@@ -696,7 +677,7 @@ export default function TambahKupasSosokPage() {
                         <button
                           type="button"
                           onClick={() => handleRemoveLampiran(idx)}
-                          className="absolute top-1 right-1 bg-black/60 hover:bg-black text-white p-1 rounded-full transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
+                          className="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white p-1 rounded-full transition-all opacity-90 hover:opacity-100 cursor-pointer shadow-xs z-20" title="Hapus file ini" aria-label="Hapus file"
                         >
                           <X className="w-3 h-3" />
                         </button>

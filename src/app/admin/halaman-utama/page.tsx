@@ -210,6 +210,8 @@ export default function AdminHomepageKelolaPage() {
   });
   const [kontakSuccessMsg, setKontakSuccessMsg] = useState<string | null>(null);
   const [kontakErrorMsg, setKontakErrorMsg] = useState<string | null>(null);
+  const [serviceSuccessMsg, setServiceSuccessMsg] = useState<string | null>(null);
+  const [serviceErrorMsg, setServiceErrorMsg] = useState<string | null>(null);
 
   // Modals for Footer
   const [isSocialModalOpen, setIsSocialModalOpen] = useState(false);
@@ -699,11 +701,15 @@ export default function AdminHomepageKelolaPage() {
     const success = await persistFooterData({ digitalServices: updatedList });
     if (success) {
       setDigitalServiceList(updatedList);
-      showNotification(
-        'success',
-        editingService ? 'Layanan digital berhasil diperbarui!' : 'Layanan digital baru berhasil ditambahkan!'
-      );
+      const msg = editingService
+        ? 'Berhasil menyimpan data! Layanan digital telah diperbarui.'
+        : 'Berhasil menyimpan data! Layanan digital baru telah ditambahkan.';
+      setServiceSuccessMsg(msg);
+      setTimeout(() => setServiceSuccessMsg(null), 5000);
+      showNotification('success', msg);
     } else {
+      setServiceErrorMsg('Gagal menyimpan layanan digital.');
+      setTimeout(() => setServiceErrorMsg(null), 5000);
       throw new Error('Gagal menyimpan layanan digital.');
     }
   };
@@ -717,9 +723,15 @@ export default function AdminHomepageKelolaPage() {
     setServiceToDelete(null);
     if (success) {
       setDigitalServiceList(updatedList);
-      showNotification('success', 'Layanan digital berhasil dihapus.');
+      const msg = 'Berhasil menghapus data! Layanan digital telah dihapus.';
+      setServiceSuccessMsg(msg);
+      setTimeout(() => setServiceSuccessMsg(null), 5000);
+      showNotification('success', msg);
     } else {
-      showNotification('error', 'Gagal menghapus layanan digital.');
+      const msg = 'Gagal menghapus layanan digital.';
+      setServiceErrorMsg(msg);
+      setTimeout(() => setServiceErrorMsg(null), 5000);
+      showNotification('error', msg);
     }
   };
 
@@ -739,10 +751,10 @@ export default function AdminHomepageKelolaPage() {
     const success = await persistFooterData({ digitalServices: updatedList });
     if (success) {
       setDigitalServiceList(updatedList);
-      showNotification(
-        'success',
-        `Status layanan ${item.nama} diubah menjadi ${nextStatus === 'ACTIVE' || nextStatus === 'Diterbitkan' ? 'Aktif' : 'Nonaktif'}`
-      );
+      const msg = `Berhasil menyimpan data! Status layanan ${item.nama} diubah menjadi ${nextStatus === 'ACTIVE' || nextStatus === 'Diterbitkan' ? 'Aktif' : 'Nonaktif'}.`;
+      setServiceSuccessMsg(msg);
+      setTimeout(() => setServiceSuccessMsg(null), 5000);
+      showNotification('success', msg);
     }
   };
 
@@ -828,13 +840,6 @@ export default function AdminHomepageKelolaPage() {
 
   return (
     <div className="w-full max-w-[1280px] mx-auto space-y-7 text-[#1a1b20] overflow-x-hidden">
-      {/* Floating Pop up Alert Feedback (Visible at any scroll position) */}
-      {kontakSuccessMsg && (
-        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-5 py-3.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs sm:text-sm font-semibold shadow-xl animate-fadeIn">
-          <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span>{kontakSuccessMsg}</span>
-        </div>
-      )}
 
       {/* 1. BREADCRUMB, PAGE TITLE & SUBTITLE (WIREFRAME) */}
       <div className="space-y-1.5">
@@ -1156,11 +1161,26 @@ export default function AdminHomepageKelolaPage() {
                 + Tambah</button>
             </div>
 
-            {/* Layanan Digital Table Container (100% Fit, No Scrollbar) */}
+            {/* Feedback Alert tepat di bawah deskripsi layanan digital */}
+            {serviceSuccessMsg && (
+              <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold animate-fadeIn shadow-2xs">
+                <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>{serviceSuccessMsg}</span>
+              </div>
+            )}
+            {serviceErrorMsg && (
+              <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold animate-fadeIn shadow-2xs">
+                <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                <span>{serviceErrorMsg}</span>
+              </div>
+            )}
+
+            {/* Layanan Digital Table Container (Muat 5 data pertama, sisanya scrollable) */}
             <div className="border border-slate-200/80 rounded-xl overflow-hidden shadow-2xs">
-              <table className="w-full table-fixed text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-50/90 text-slate-600 border-b border-slate-200 text-[10px] font-bold uppercase tracking-wider">
+              <div className="max-h-[275px] overflow-y-auto">
+                <table className="w-full table-fixed text-left border-collapse">
+                  <thead className="sticky top-0 z-10 bg-slate-50 shadow-2xs">
+                    <tr className="bg-slate-50 text-slate-600 border-b border-slate-200 text-[10px] font-bold uppercase tracking-wider">
                     <th className="py-2 px-1 w-[4%] text-center">No</th>
                     <th className="py-2 px-2 w-[26%]">Nama Layanan</th>
                     <th className="py-2 px-2 w-[34%]">Tautan URL Layanan</th>
@@ -1286,7 +1306,8 @@ export default function AdminHomepageKelolaPage() {
                 </tbody>
               </table>
             </div>
-          </section>
+          </div>
+        </section>
 
           {/* ---------------- CARD 4: KONTAK ---------------- */}
           <section className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 sm:p-7 space-y-5">
@@ -1300,6 +1321,20 @@ export default function AdminHomepageKelolaPage() {
                 </p>
               </div>
             </div>
+
+            {/* Feedback Alert tepat di bawah teks deskripsi */}
+            {kontakSuccessMsg && (
+              <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold animate-fadeIn shadow-2xs">
+                <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>{kontakSuccessMsg}</span>
+              </div>
+            )}
+            {kontakErrorMsg && (
+              <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold animate-fadeIn shadow-2xs">
+                <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                <span>{kontakErrorMsg}</span>
+              </div>
+            )}
 
             <form onSubmit={handleSaveKontak} className="space-y-4 pt-1">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1393,20 +1428,6 @@ export default function AdminHomepageKelolaPage() {
                   />
                 </div>
               </div>
-
-              {/* Feedback Pop up matching login style */}
-              {kontakSuccessMsg && (
-                <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold animate-fadeIn shadow-2xs">
-                  <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>{kontakSuccessMsg}</span>
-                </div>
-              )}
-              {kontakErrorMsg && (
-                <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold animate-fadeIn shadow-2xs">
-                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
-                  <span>{kontakErrorMsg}</span>
-                </div>
-              )}
 
               <div className="flex justify-end pt-3 border-t border-slate-100">
                 <button
@@ -1505,112 +1526,114 @@ export default function AdminHomepageKelolaPage() {
 
             {/* Banner Table */}
             <div className="border border-slate-200/80 rounded-xl overflow-hidden shadow-2xs">
-              <table className="w-full table-fixed text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-50/90 text-slate-600 border-b border-slate-200 text-[10px] font-bold uppercase tracking-wider">
-                    <th className="py-2 px-1 w-[4%] text-center">No.</th>
-                    <th className="py-2 px-2 w-[10%]">Preview</th>
-                    <th className="py-2 px-2 w-[27%]">Headline</th>
-                    <th className="py-2 px-2 w-[26%]">Subheadline</th>
-                    <th className="py-2 px-1 w-[11%] text-center">Status</th>
-                    <th className="py-2 px-2 w-[13%] text-left">Diperbarui Oleh</th>
-                    <th className="py-2 px-1 w-[9%] text-center">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 bg-white">
-                  {banners.length === 0 ? (
-                    <tr>
-                      <td colSpan={7} className="py-8 text-center text-xs text-slate-400">
-                        Belum ada banner yang ditambahkan. Klik tombol "Tambah Banner" di atas untuk menambahkan banner baru.
-                      </td>
+              <div className="max-h-[325px] overflow-y-auto">
+                <table className="w-full table-fixed text-left border-collapse">
+                  <thead className="sticky top-0 z-10 bg-slate-50 shadow-2xs">
+                    <tr className="bg-slate-50 text-slate-600 border-b border-slate-200 text-[10px] font-bold uppercase tracking-wider">
+                      <th className="py-2.5 px-1 w-[4%] text-center">No.</th>
+                      <th className="py-2.5 px-2 w-[10%]">Preview</th>
+                      <th className="py-2.5 px-2 w-[27%]">Headline</th>
+                      <th className="py-2.5 px-2 w-[26%]">Subheadline</th>
+                      <th className="py-2.5 px-1 w-[11%] text-center">Status</th>
+                      <th className="py-2.5 px-2 w-[13%] text-left">Diperbarui Oleh</th>
+                      <th className="py-2.5 px-1 w-[9%] text-center">Aksi</th>
                     </tr>
-                  ) : (
-                    banners.map((item, idx) => (
-                      <tr key={item.id || idx} className="hover:bg-slate-50/70 transition-colors">
-                        <td className="py-2 px-1 text-center text-[11px] font-medium text-slate-400">
-                          {idx + 1}
-                        </td>
-                        <td className="py-2 px-2">
-                          <div className="w-16 h-10 rounded-md bg-slate-100 border border-slate-200 overflow-hidden relative shadow-2xs flex items-center justify-center">
-                            {item.imageUrl ? (
-                              <img src={item.imageUrl} alt={item.headline} className="w-full h-full object-cover" />
-                            ) : (
-                              <div className="text-[9px] text-slate-400 flex flex-col items-center gap-0.5">
-                                <ImageIcon className="w-3 h-3" />
-                                <span>Banner</span>
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                        <td className="py-2 px-2">
-                          <p className="text-[11px] font-bold text-slate-900 line-clamp-2 leading-snug">
-                            {item.headline}
-                          </p>
-                        </td>
-                        <td className="py-2 px-2">
-                          <p className="text-[10px] text-slate-500 line-clamp-2 leading-relaxed">
-                            {item.subheadline || '-'}
-                          </p>
-                        </td>
-                        <td className="py-2 px-1 text-center">
-                          {item.status === 'TERBIT' ? (
-                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
-                              <span className="w-1 h-1 rounded-full bg-emerald-600 shrink-0" />
-                              Terbit
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-50 text-amber-700 border border-amber-200 whitespace-nowrap">
-                              <span className="w-1 h-1 rounded-full bg-amber-600 shrink-0" />
-                              Menunggu
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-2 px-2 text-left">
-                          <span className="font-semibold text-[11px] text-slate-800 block truncate">
-                            {item.createdBy || 'Admin 1'}
-                          </span>
-                          <span className="text-[9px] text-slate-400 flex items-center gap-1 mt-0.5">
-                            <Clock className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                            <span className="truncate">{item.createdAt ? formatDate(item.createdAt) : '01/01/2026'}</span>
-                          </span>
-                        </td>
-                        <td className="py-2 px-1 text-center">
-                          <div className="inline-flex items-center justify-center gap-0.5">
-                            <button
-                              type="button"
-                              onClick={() => handleOpenEditBanner(item)}
-                              title="Edit Banner"
-                              className="p-0.5 rounded-md text-slate-500 hover:bg-amber-50 hover:text-amber-600 transition-colors cursor-pointer"
-                            >
-                              <Pencil className="w-3 h-3" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setBannerToDelete(item)}
-                              title="Hapus Banner"
-                              className="p-0.5 rounded-md text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleToggleBannerStatus(item)}
-                              title={`Ubah status menjadi ${item.status === 'TERBIT' ? 'Menunggu' : 'Terbit'}`}
-                              className={`relative inline-flex h-3.5 w-6 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${item.status === 'TERBIT' ? 'bg-emerald-600' : 'bg-slate-300'
-                                }`}
-                            >
-                              <span
-                                className={`pointer-events-none inline-block h-2.5 w-2.5 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${item.status === 'TERBIT' ? 'translate-x-[13px]' : 'translate-x-0'
-                                  }`}
-                              />
-                            </button>
-                          </div>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 bg-white">
+                    {banners.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="py-8 text-center text-xs text-slate-400">
+                          Belum ada banner yang ditambahkan. Klik tombol "Tambah Banner" di atas untuk menambahkan banner baru.
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      banners.map((item, idx) => (
+                        <tr key={item.id || idx} className="hover:bg-slate-50/70 transition-colors">
+                          <td className="py-2 px-1 text-center text-[11px] font-medium text-slate-400">
+                            {idx + 1}
+                          </td>
+                          <td className="py-2 px-2">
+                            <div className="w-16 h-10 rounded-md bg-slate-100 border border-slate-200 overflow-hidden relative shadow-2xs flex items-center justify-center">
+                              {item.imageUrl ? (
+                                <img src={item.imageUrl} alt={item.headline} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="text-[9px] text-slate-400 flex flex-col items-center gap-0.5">
+                                  <ImageIcon className="w-3 h-3" />
+                                  <span>Banner</span>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-2 px-2">
+                            <p className="text-[11px] font-bold text-slate-900 line-clamp-2 leading-snug">
+                              {item.headline}
+                            </p>
+                          </td>
+                          <td className="py-2 px-2">
+                            <p className="text-[10px] text-slate-500 line-clamp-2 leading-relaxed">
+                              {item.subheadline || '-'}
+                            </p>
+                          </td>
+                          <td className="py-2 px-1 text-center">
+                            {item.status === 'TERBIT' ? (
+                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
+                                <span className="w-1 h-1 rounded-full bg-emerald-600 shrink-0" />
+                                Terbit
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-50 text-amber-700 border border-amber-200 whitespace-nowrap">
+                                <span className="w-1 h-1 rounded-full bg-amber-600 shrink-0" />
+                                Menunggu
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-2 px-2 text-left">
+                            <span className="font-semibold text-[11px] text-slate-800 block truncate">
+                              {item.createdBy || 'Admin 1'}
+                            </span>
+                            <span className="text-[9px] text-slate-400 flex items-center gap-1 mt-0.5">
+                              <Clock className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                              <span className="truncate">{item.createdAt ? formatDate(item.createdAt) : '01/01/2026'}</span>
+                            </span>
+                          </td>
+                          <td className="py-2 px-1 text-center">
+                            <div className="inline-flex items-center justify-center gap-0.5">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenEditBanner(item)}
+                                title="Edit Banner"
+                                className="p-0.5 rounded-md text-slate-500 hover:bg-amber-50 hover:text-amber-600 transition-colors cursor-pointer"
+                              >
+                                <Pencil className="w-3 h-3" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setBannerToDelete(item)}
+                                title="Hapus Banner"
+                                className="p-0.5 rounded-md text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleToggleBannerStatus(item)}
+                                title={`Ubah status menjadi ${item.status === 'TERBIT' ? 'Menunggu' : 'Terbit'}`}
+                                className={`relative inline-flex h-3.5 w-6 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${item.status === 'TERBIT' ? 'bg-emerald-600' : 'bg-slate-300'
+                                  }`}
+                              >
+                                <span
+                                  className={`pointer-events-none inline-block h-2.5 w-2.5 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${item.status === 'TERBIT' ? 'translate-x-[13px]' : 'translate-x-0'
+                                    }`}
+                                />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </section>
 

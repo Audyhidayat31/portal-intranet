@@ -373,8 +373,8 @@ Setiap rubrik interaksi internal pegawai memiliki tabel independen yang terhubun
 ---
 
 ### D. Sub Menu Kupas Sosok & Pengaturan Beranda
-- **`kupas_sosok`**: Menampilkan profil tokoh inspiratif dengan nama tokoh dan deskripsinya.
-- **`pengaturan_beranda`**: Tabel konfigurasi dinamis untuk tata letak banner, kutipan pimpinan, dan pengumuman ticker di homepage.
+- **`profil_tokoh` / `kupas_sosok`**: Menampilkan profil tokoh dan pegawai inspiratif (memuat `nama_tokoh`, `foto_url` berformat `LONGTEXT`, `deskripsi`/`kisah & perjalanan`, atribut opsional `jabatan` & `unit_kerja`, serta jejak audit `author_name` dan `editor_name`).
+- **`pengaturan_beranda`**: Tabel konfigurasi dinamis untuk tata letak banner (kuota 5 item terlihat + scroll vertikal), media sosial, kutipan pimpinan, dan pengumuman ticker di homepage.
 
 ---
 
@@ -400,6 +400,6 @@ Setiap rubrik interaksi internal pegawai memiliki tabel independen yang terhubun
 | `tahukah_anda` | `id` | `penulis_id` $\rightarrow$ `pengguna.id` | Menu Antar Pegawai $\rightarrow$ Tahukah Anda |
 | `topik_konsultasi` | `id` | `penulis_id` $\rightarrow$ `pengguna.id` | Menu Antar Pegawai $\rightarrow$ Konsultasi |
 | `balasan_konsultasi` | `id` | `topik_id` $\rightarrow$ `topik_konsultasi.id`, `penulis_id` $\rightarrow$ `pengguna.id` | Balasan konsultasi kepegawaian/IT/kesehatan |
-| `kupas_sosok` | `id` | - | Menu Kupas Sosok (Nama Tokoh & Deskripsi) |
-| `pengaturan_beranda` | `id` | - | Menu Admin $\rightarrow$ Kelola Halaman Utama |
-| `log_aktivitas` | `id` | `user_id` $\rightarrow$ `pengguna.id` | Menu Admin $\rightarrow$ Log Aktivitas |
+| `profil_tokoh` / `kupas_sosok` | `id` | `authorId` $\rightarrow$ `pengguna.id` | Menu Kupas Sosok (Nama, Kisah & Perjalanan, Foto, Jabatan & Unit Kerja opsional) |
+| `pengaturan_beranda` | `id` | - | Menu Admin $\rightarrow$ Kelola Halaman Utama (Banner 5 baris scrollable & Medsos) |
+| `log_aktivitas` | `id` | `user_id` $\rightarrow$ `pengguna.id` | Menu Admin $\rightarrow$ Log Aktivitas Sistem |

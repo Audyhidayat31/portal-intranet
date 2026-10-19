@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { logActivity } from '@/lib/audit';
 import { MOCK_BERITA_6 } from '@/lib/mock-news';
 
 function findMockNews(id: string) {
@@ -143,7 +144,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { title, excerpt, content, coverImage, publishedAt, status, attachmentName, attachmentUrl, source } = body;
+    const { title, excerpt, content, coverImage, coverImageName, publishedAt, status, attachmentName, attachmentUrl, source } = body;
 
     try {
       const existing = await prisma.content.findFirst({
@@ -166,6 +167,103 @@ export async function PUT(
             ...(attachmentName !== undefined && { attachmentName: attachmentName }),
             ...(attachmentUrl !== undefined && { attachmentUrl: attachmentUrl }),
             ...(source !== undefined && { source: source }),
+          },
+        });
+
+        const changes: Array<{ field: string; label: string; old: any; new: any }> = [];
+        const newPostStatus =
+          status !== undefined
+            ? status === 'Menunggu' || status === 'MENUNGGU'
+              ? 'MENUNGGU'
+              : 'TERBIT'
+            : existing.status;
+
+        if (status !== undefined && newPostStatus !== existing.status) {
+          changes.push({
+            field: 'status',
+            label: 'Status Publikasi',
+            old: existing.status === 'TERBIT' ? 'Terbit' : 'Menunggu',
+            new: newPostStatus === 'TERBIT' ? 'Terbit' : 'Menunggu',
+          });
+        }
+
+        if (title !== undefined && title !== existing.title) {
+          changes.push({
+            field: 'title',
+            label: 'Judul Berita',
+            old: existing.title,
+            new: title,
+          });
+        }
+
+        if (content !== undefined && content !== existing.body) {
+          changes.push({
+            field: 'body',
+            label: 'Isi Berita',
+            old: 'Versi sebelumnya',
+            new: 'Diperbarui',
+          });
+        }
+
+        if (publishedAt) {
+          changes.push({
+            field: 'publishedAt',
+            label: 'Tanggal Terbit',
+            old: existing.publishedAt ? existing.publishedAt.toISOString() : '-',
+            new: new Date(publishedAt).toISOString(),
+          });
+        }
+
+        let logDesc = `Mengubah isi Berita: ${title || existing.title}`;
+        let logAction: 'UPDATE' | 'CHANGE_STATUS' = 'UPDATE';
+
+        const isOnlyStatusChange = changes.length === 1 && changes[0].field === 'status';
+        if (isOnlyStatusChange) {
+          logAction = 'CHANGE_STATUS';
+          logDesc = `Mengubah status Berita "${existing.title}" menjadi ${newPostStatus === 'TERBIT' ? 'Terbit' : 'Menunggu'}`;
+        } else if (changes.some((c) => c.field === 'status')) {
+          logDesc = `Mengubah isi & status Berita: ${title || existing.title}`;
+        }
+
+        const session = await getCurrentUser();
+        const actorId = session?.userId || existing.authorId;
+
+        const finalSource = source !== undefined 
+          ? (source?.trim() ? source.trim() : '-')
+          : (existing.source?.trim() ? existing.source.trim() : '-');
+
+        const activeCover = coverImage !== undefined ? coverImage : existing.coverImage;
+        let finalCoverImageName: string | undefined = undefined;
+        if (activeCover) {
+          if (coverImageName && typeof coverImageName === 'string' && coverImageName.trim()) {
+            finalCoverImageName = coverImageName.trim();
+          } else if (!activeCover.startsWith('data:')) {
+            const clean = activeCover.split('?')[0].split('#')[0];
+            const segments = clean.split('/');
+            finalCoverImageName = decodeURIComponent(segments[segments.length - 1]);
+          } else {
+            const slugName = (title || existing.title || 'sampul').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 35);
+            finalCoverImageName = `${slugName}.jpg`;
+          }
+        }
+
+        await logActivity({
+          userId: actorId,
+          action: logAction,
+          module: 'NEWS',
+          targetId: existing.id,
+          description: logDesc,
+          details: {
+            title: title || existing.title,
+            category: 'Berita',
+            source: finalSource,
+            tanggal: (publishedAt ? new Date(publishedAt) : existing.publishedAt || existing.createdAt).toISOString(),
+            coverImage: activeCover || null,
+            coverImageName: finalCoverImageName,
+            attachmentUrl: attachmentUrl || existing.attachmentUrl || null,
+            attachmentName: attachmentName || existing.attachmentName || null,
+            status: newPostStatus === 'TERBIT' ? 'Terbit' : 'Menunggu',
+            changes,
           },
         });
 
@@ -243,6 +341,31 @@ export async function DELETE(
       if (existing) {
         await prisma.content.delete({
           where: { id: existing.id },
+        });
+
+        const session = await getCurrentUser();
+        const actorId = session?.userId || existing.authorId;
+
+        await logActivity({
+          userId: actorId,
+          action: 'DELETE',
+          module: 'NEWS',
+          targetId: existing.id,
+          description: `Menghapus Berita: ${existing.title}`,
+          details: {
+            title: existing.title,
+            category: 'Berita',
+            source: existing.source?.trim() ? existing.source.trim() : '-',
+            tanggal: (existing.publishedAt || existing.createdAt).toISOString(),
+            coverImage: existing.coverImage || null,
+            coverImageName: existing.coverImage
+              ? `${existing.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 35) || 'sampul'}.jpg`
+              : undefined,
+            attachmentUrl: existing.attachmentUrl || null,
+            attachmentName: existing.attachmentName || null,
+            status: existing.status === 'TERBIT' ? 'Terbit' : 'Menunggu',
+            deletedAt: new Date().toISOString(),
+          },
         });
       }
     } catch (dbErr) {
