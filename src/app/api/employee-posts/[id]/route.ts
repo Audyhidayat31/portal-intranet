@@ -23,6 +23,32 @@ const ALL_MOCK_POSTS: any[] = [
   ...STITCH_MOCK_TAHUKAH_ANDA_9.map((m: any) => ({ ...m, categorySlug: 'tahukah-anda' })),
   ...STITCH_MOCK_TIPS_GAYA_HIDUP_9.map((m: any) => ({ ...m, categorySlug: 'tips-gaya-hidup' })),
 ];
+function getCategoryModuleAndLabel(catSlug?: string) {
+  switch (catSlug) {
+    case 'opini':
+      return { module: 'OPINION', label: 'Coretan Opini' };
+    case 'olahraga':
+      return { module: 'SPORTS', label: 'Olahraga' };
+    case 'tips-gaya-hidup':
+      return { module: 'LIFESTYLE', label: 'Tips dan Gaya Hidup' };
+    case 'jelajah-bumi':
+      return { module: 'EARTH', label: 'Jelajah Bumi' };
+    case 'tahukah-anda':
+      return { module: 'DIDYOUKNOW', label: 'Tahukah Anda' };
+    case 'karya-akademik':
+      return { module: 'ACADEMIC', label: 'Karya Akademik' };
+    case 'kabar-keluarga':
+      return { module: 'FAMILY', label: 'Kabar Keluarga' };
+    case 'humor':
+      return { module: 'HUMOR', label: 'Humor' };
+    case 'kalimat-bijak':
+      return { module: 'WISDOM', label: 'Kalimat Bijak' };
+    case 'konsultasi':
+      return { module: 'CONSULTATION', label: 'Konsultasi' };
+    default:
+      return { module: 'POSTS', label: 'Postingan Pegawai' };
+  }
+}
 
 function findMockPost(id: string) {
   const cleanId = id.toLowerCase();
@@ -232,13 +258,90 @@ export async function PUT(
         },
       });
 
-      if (user?.userId) {
+      const catInfo = getCategoryModuleAndLabel(existing.categorySlug);
+      const changes: Array<{ field: string; label: string; old: any; new: any }> = [];
+
+      const newPostStatus =
+        status !== undefined
+          ? status === 'Menunggu' || status === 'MENUNGGU'
+            ? 'MENUNGGU'
+            : 'TERBIT'
+          : existing.status;
+
+      if (status !== undefined && newPostStatus !== existing.status) {
+        changes.push({
+          field: 'status',
+          label: 'Status Publikasi',
+          old: existing.status === 'TERBIT' ? 'Terbit' : 'Menunggu',
+          new: newPostStatus === 'TERBIT' ? 'Terbit' : 'Menunggu',
+        });
+      }
+
+      if (title !== undefined && title !== existing.title) {
+        changes.push({
+          field: 'title',
+          label: 'Judul Artikel',
+          old: existing.title,
+          new: title,
+        });
+      }
+
+      if (contentBody !== undefined && contentBody !== existing.body) {
+        changes.push({
+          field: 'body',
+          label: 'Isi Artikel',
+          old: 'Versi sebelumnya',
+          new: 'Diperbarui',
+        });
+      }
+
+      if (publishedAt) {
+        changes.push({
+          field: 'publishedAt',
+          label: 'Tanggal Terbit',
+          old: existing.createdAt ? existing.createdAt.toISOString() : '-',
+          new: new Date(publishedAt).toISOString(),
+        });
+      }
+
+      let logDesc = `Mengubah isi ${catInfo.label}: ${title || existing.title}`;
+      let logAction: 'UPDATE' | 'CHANGE_STATUS' = 'UPDATE';
+
+      const isOnlyStatusChange = changes.length === 1 && changes[0].field === 'status';
+      if (isOnlyStatusChange) {
+        logAction = 'CHANGE_STATUS';
+        logDesc = `Mengubah status ${catInfo.label} "${existing.title}" menjadi ${newPostStatus === 'TERBIT' ? 'Terbit' : 'Menunggu'}`;
+      } else if (changes.some((c) => c.field === 'status')) {
+        logDesc = `Mengubah isi & status ${catInfo.label}: ${title || existing.title}`;
+      }
+
+      let actorId = user?.userId;
+      if (!actorId) {
+        const defaultUser = await prisma.user.findFirst();
+        actorId = defaultUser?.id;
+      }
+
+      if (actorId) {
         await logActivity({
-          userId: user.userId,
-          action: 'UPDATE',
-          module: 'POSTS',
+          userId: actorId,
+          action: logAction,
+          module: catInfo.module,
           targetId: existing.id,
-          description: `Memperbarui postingan pegawai: ${existing.title}`,
+          description: logDesc,
+          details: {
+            title: title || existing.title,
+            category: catInfo.label,
+            source: '-',
+            tanggal: (existing.createdAt || new Date()).toISOString(),
+            coverImage: (coverImage !== undefined ? coverImage : existing.coverImage) || null,
+            coverImageName: (coverImage !== undefined ? coverImage : existing.coverImage)
+              ? `${(title || existing.title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 35) || 'postingan'}.jpg`
+              : undefined,
+            attachmentUrl: null,
+            attachmentName: null,
+            status: (newPostStatus || existing.status) === 'TERBIT' ? 'Terbit' : 'Menunggu',
+            changes,
+          },
         });
       }
 
@@ -344,8 +447,34 @@ export async function DELETE(
       });
 
       if (existing) {
+        const catInfo = getCategoryModuleAndLabel(existing.categorySlug);
         await prisma.employeePost.delete({
           where: { id: existing.id },
+        });
+
+        const currentUser = await getCurrentUser();
+        const actorId = currentUser?.userId || existing.authorId;
+
+        await logActivity({
+          userId: actorId,
+          action: 'DELETE',
+          module: catInfo.module,
+          targetId: existing.id,
+          description: `Menghapus ${catInfo.label}: ${existing.title}`,
+          details: {
+            title: existing.title,
+            category: catInfo.label,
+            source: '-',
+            tanggal: (existing.createdAt || new Date()).toISOString(),
+            coverImage: existing.coverImage || null,
+            coverImageName: existing.coverImage
+              ? `${existing.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 35) || 'postingan'}.jpg`
+              : undefined,
+            attachmentUrl: null,
+            attachmentName: null,
+            status: existing.status === 'TERBIT' ? 'Terbit' : 'Menunggu',
+            deletedAt: new Date().toISOString(),
+          },
         });
       }
     } catch (dbErr) {

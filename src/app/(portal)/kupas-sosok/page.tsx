@@ -60,6 +60,12 @@ export default function KupasSosokPage() {
           isSpotlight: item.isSpotlight,
         }));
 
+        formattedApiItems.sort((a, b) => {
+          const timeA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
+          const timeB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
+          return timeB - timeA;
+        });
+
         if (q.trim()) {
           const filtered = formattedApiItems.filter(
             (item) =>
@@ -253,13 +259,33 @@ export default function KupasSosokPage() {
                   className="bg-white border border-[#c5c6d2] rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-300 group"
                 >
                   {/* Card Cover Image / Profile Icon */}
-                  <div className="w-full h-48 border-b border-[#c5c6d2] overflow-hidden relative shrink-0 bg-gradient-to-b from-[#f8f9fa] to-[#eaedf3] flex items-center justify-center">
+                  <div className="w-full h-56 border-b border-[#c5c6d2] overflow-hidden relative shrink-0 bg-[#f8f9fa] flex items-center justify-center">
                     {item.photoUrl && !item.photoUrl.includes('unsplash.com') ? (
-                      <img
-                        src={item.photoUrl}
-                        alt={item.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
+                      item.photoUrl.includes('logo-perpusnas') ? (
+                        <div className="w-full h-full flex items-center justify-center p-8 bg-white/60">
+                          <img
+                            src={item.photoUrl}
+                            alt={item.name}
+                            className="max-h-full max-w-[70%] object-contain group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-full h-full relative overflow-hidden bg-slate-900/5 flex items-center justify-center">
+                          {/* Ambient blurred backdrop for seamless edge framing */}
+                          <img
+                            src={item.photoUrl}
+                            alt=""
+                            aria-hidden="true"
+                            className="absolute inset-0 w-full h-full object-cover blur-md opacity-25 scale-110 pointer-events-none"
+                          />
+                          {/* Main focused image, completely fitted without head/eyes cropped off */}
+                          <img
+                            src={item.photoUrl}
+                            alt={item.name}
+                            className="relative z-10 max-w-full max-h-full object-contain p-2 group-hover:scale-105 transition-transform duration-500 drop-shadow-xs"
+                          />
+                        </div>
+                      )
                     ) : (
                       <div className="w-24 h-24 rounded-full bg-white border-2 border-[#d5d7e2] shadow-xs flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
                         <User className="w-12 h-12 text-[#00113a]/50 stroke-[1.5]" />
@@ -291,7 +317,7 @@ export default function KupasSosokPage() {
 
                       {/* Card Excerpt */}
                       <p className="text-sm text-[#444650] mb-6 line-clamp-3 leading-relaxed flex-grow">
-                        {item.quote || item.position}
+                        {((item.fullStory || item.quote || item.position || '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim()) || '-'}
                       </p>
                     </div>
 

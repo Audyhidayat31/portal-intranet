@@ -380,6 +380,7 @@ export default function EditBeritaPage() {
           body: htmlContent || rawText || judul,
           content: htmlContent || rawText || judul,
           coverImage: resolvedCoverImage,
+          coverImageName: gambarFileName || null,
           publishedAt: tanggal.toISOString(),
           status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',
           source: sumber,

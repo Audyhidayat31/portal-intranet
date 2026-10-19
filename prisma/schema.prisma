@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -209,13 +208,17 @@ model FigureProfile {
   slug          String   @unique
   position      String?  // e.g. Pustakawan Ahli Utama
   unitKerja     String?  // e.g. Deputi Bidang Pengembangan Bahan Pustaka
-  quote         String?  @db.Text // Kutipan inspiratif
+  quote         String?  @db.LongText // Kutipan inspiratif
   fullStory     String?  @db.LongText // Cerita perjalanan dan kontribusi
   deskripsi     String?  @db.LongText // Deskripsi tokoh
-  photoUrl      String?  @db.Text
-  achievements  String?  @db.Text // JSON string or structured text of achievements
-  careerHistory String?  @db.Text // Riwayat karier & jabatan penting
+  photoUrl      String?  @db.LongText
+  achievements  String?  @db.LongText // JSON string or structured text of achievements
+  careerHistory String?  @db.LongText // Riwayat karier & jabatan penting
   isSpotlight   Boolean  @default(false)
+  authorId      String?
+  authorName    String?
+  editorId      String?
+  editorName    String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -244,7 +247,7 @@ model ActivityLog {
   action      String // LOGIN, LOGOUT, CREATE, UPDATE, DELETE, CHANGE_ROLE, CHANGE_STATUS
   module      String // AUTH, USERS, ROLES, HOMEPAGE, NEWS, ANNOUNCEMENTS, AGENDAS, DOCUMENTS, POSTS, FIGURE, PERMISSIONS
   targetId    String?
-  description String   @db.Text
+  description String   @db.LongText
   ipAddress   String?  @default("127.0.0.1")
   userAgent   String?  @db.Text
   createdAt   DateTime @default(now())

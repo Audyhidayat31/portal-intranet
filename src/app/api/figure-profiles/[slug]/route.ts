@@ -40,7 +40,41 @@ export async function GET(
       }
 
       if (figure) {
-        return NextResponse.json({ success: true, data: figure });
+        let authorName = figure.authorName;
+        let editorName = figure.editorName || figure.authorName;
+
+        if (!authorName) {
+          const createLog = await prisma.activityLog.findFirst({
+            where: { module: 'FIGURE', targetId: figure.id, action: 'CREATE' },
+            include: { user: true },
+            orderBy: { createdAt: 'asc' },
+          });
+          if (createLog?.user?.name) {
+            authorName = createLog.user.name;
+          }
+        }
+
+        if (!editorName) {
+          const updateLog = await prisma.activityLog.findFirst({
+            where: { module: 'FIGURE', targetId: figure.id, action: 'UPDATE' },
+            include: { user: true },
+            orderBy: { createdAt: 'desc' },
+          });
+          if (updateLog?.user?.name) {
+            editorName = updateLog.user.name;
+          } else {
+            editorName = authorName;
+          }
+        }
+
+        return NextResponse.json({
+          success: true,
+          data: {
+            ...figure,
+            authorName: authorName || figure.authorName || 'Administrator Perpusnas',
+            editorName: editorName || authorName || figure.editorName || 'Administrator Perpusnas',
+          },
+        });
       }
     } catch (dbErr) {
       console.warn('Prisma findFirst error in figure-profiles GET:', dbErr);
@@ -59,6 +93,8 @@ export async function GET(
           quote: mock.quote,
           fullStory: mock.fullStory,
           photoUrl: mock.photoUrl,
+          authorName: mock.authorName || 'Administrator Perpusnas',
+          editorName: mock.editorName || mock.authorName || 'Administrator Perpusnas',
           achievements: JSON.stringify(mock.achievements || []),
           careerHistory: JSON.stringify(mock.careerHistory || []),
           isSpotlight: Boolean(mock.isSpotlight),
@@ -82,6 +118,7 @@ export async function PUT(
     const { slug } = await params;
     const body = await request.json();
     const { name, position, unitKerja, quote, fullStory, photoUrl, isSpotlight } = body;
+    const user = await getCurrentUser();
 
     try {
       const existing = await prisma.figureProfile.findFirst({
@@ -91,6 +128,10 @@ export async function PUT(
       });
 
       if (existing) {
+        const finalPhoto = photoUrl !== undefined ? photoUrl : existing.photoUrl;
+        const editorId = user?.userId || existing.editorId || null;
+        const editorName = user?.name || existing.editorName || 'Administrator Perpusnas';
+
         const updated = await prisma.figureProfile.update({
           where: { id: existing.id },
           data: {
@@ -99,12 +140,37 @@ export async function PUT(
             unitKerja: unitKerja !== undefined ? unitKerja : existing.unitKerja,
             quote: quote !== undefined ? quote : existing.quote,
             fullStory: fullStory !== undefined ? fullStory : existing.fullStory,
-            photoUrl: photoUrl !== undefined ? photoUrl : existing.photoUrl,
             isSpotlight: isSpotlight !== undefined ? Boolean(isSpotlight) : existing.isSpotlight,
           },
         });
 
-        const user = await getCurrentUser();
+        try {
+          await prisma.$executeRawUnsafe(
+            `UPDATE \`profil_tokoh\` SET \`photoUrl\` = ?, \`editorId\` = ?, \`editorName\` = ? WHERE \`id\` = ?`,
+            finalPhoto,
+            editorId,
+            editorName,
+            existing.id
+          );
+        } catch (rawErr) {
+          console.warn('Raw update in PUT figure failed:', rawErr);
+        }
+
+        try {
+          await prisma.$executeRawUnsafe(
+            `UPDATE \`kupas_sosok\` SET \`nama_tokoh\` = ?, \`foto_url\` = ?, \`jabatan\` = ?, \`unit_kerja\` = ?, \`deskripsi\` = ? WHERE \`id\` = ? OR \`slug\` = ?`,
+            name || existing.name,
+            finalPhoto,
+            position !== undefined ? position : existing.position,
+            unitKerja !== undefined ? unitKerja : existing.unitKerja,
+            fullStory || existing.fullStory,
+            existing.id,
+            existing.slug
+          );
+        } catch (kupasErr) {
+          console.warn('Kupas sosok update failed:', kupasErr);
+        }
+
         if (user) {
           await logActivity({
             userId: user.userId,
@@ -115,22 +181,46 @@ export async function PUT(
           });
         }
 
-        return NextResponse.json({ success: true, message: 'Profil sosok berhasil diperbarui!', data: updated });
+        return NextResponse.json({
+          success: true,
+          message: 'Profil sosok berhasil diperbarui!',
+          data: {
+            ...updated,
+            photoUrl: finalPhoto,
+            editorId,
+            editorName,
+          },
+        });
       }
 
       // Upsert mock figure into DB
+      const finalPhoto = photoUrl || null;
       const created = await prisma.figureProfile.create({
         data: {
           name: name || 'Profil Sosok',
           slug,
-          position: position || 'Pustakawan & Insan Berprestasi',
-          unitKerja: unitKerja || 'Perpustakaan Nasional RI',
-          quote: quote || 'Mendedikasikan karya untuk kemajuan literasi bangsa.',
+          position: position?.trim() || null,
+          unitKerja: unitKerja?.trim() || null,
+          quote: (quote && quote !== 'Mendedikasikan karya untuk kemajuan literasi bangsa.') ? quote : ((fullStory || name || '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim().slice(0, 160) || null),
           fullStory: fullStory || name || '',
-          photoUrl: photoUrl || null,
+          photoUrl: finalPhoto && finalPhoto.length < 50000 ? finalPhoto : null,
           isSpotlight: Boolean(isSpotlight),
         },
       });
+
+      try {
+        await prisma.$executeRawUnsafe(
+          `UPDATE \`profil_tokoh\` SET \`photoUrl\` = ?, \`authorId\` = ?, \`authorName\` = ?, \`editorId\` = ?, \`editorName\` = ? WHERE \`id\` = ?`,
+          finalPhoto,
+          user?.userId || null,
+          user?.name || 'Administrator Perpusnas',
+          user?.userId || null,
+          user?.name || 'Administrator Perpusnas',
+          created.id
+        );
+      } catch (rawCreateErr) {
+        console.warn('Raw update on mock create failed:', rawCreateErr);
+      }
 
       return NextResponse.json({ success: true, message: 'Profil sosok berhasil diperbarui!', data: created });
     } catch (dbErr) {

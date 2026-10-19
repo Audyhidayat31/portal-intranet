@@ -77,6 +77,9 @@ export default function EditKupasSosokPage() {
 
   // Fetch initial data
   useEffect(() => {
+    try {
+      localStorage.removeItem('portal_figures_data');
+    } catch {}
     if (!rawSlug) return;
 
     const storedFigures = getStoredFigures();
@@ -353,16 +356,6 @@ export default function EditKupasSosokPage() {
       return;
     }
 
-    if (!jabatan.trim()) {
-      alert('Jabatan wajib diisi');
-      return;
-    }
-
-    if (!unitKerja.trim()) {
-      alert('Unit Kerja wajib diisi');
-      return;
-    }
-
     const storyContent = deskripsiHtml.trim();
     const plainStory = editorRef.current?.innerText?.trim() || '';
 
@@ -375,30 +368,9 @@ export default function EditKupasSosokPage() {
 
     try {
 
-      // Update mock storage
-      const storedFigures = getStoredFigures();
-      const updatedFigures = storedFigures.map((item) => {
-        if (
-          item.slug === rawSlug ||
-          item.id === rawSlug ||
-          item.name.toLowerCase().includes(rawSlug.toLowerCase())
-        ) {
-          return {
-            ...item,
-            name: nama,
-            position: jabatan || item.position,
-            unitKerja: unitKerja || item.unitKerja,
-            fullStory: storyContent || plainStory,
-            photoUrl: gambarPreview || item.photoUrl,
-            status: (status as 'Terbit' | 'Menunggu') || item.status,
-            publishedAt: tanggal.toISOString(),
-            attachments: lampiranAttachments.map((a, idx) => ({ id: idx + 1, label: a.name, src: a.preview || `/uploads/${a.name}` })),
-            attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments.map((a) => a.name).join(', ') : undefined,
-          };
-        }
-        return item;
-      });
-      saveStoredFigures(updatedFigures);
+      try {
+        localStorage.removeItem('portal_figures_data');
+      } catch {}
 
       // Attempt API PUT
       try {
@@ -407,10 +379,10 @@ export default function EditKupasSosokPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             name: nama,
-            position: jabatan || 'Pustakawan & Insan Berprestasi',
-            unitKerja: unitKerja || 'Perpustakaan Nasional RI',
-            quote: 'Mendedikasikan karya untuk kemajuan literasi bangsa.',
-            fullStory: plainStory,
+            position: jabatan.trim(),
+            unitKerja: unitKerja.trim(),
+            quote: plainStory.slice(0, 160).trim(),
+            fullStory: storyContent || plainStory,
             photoUrl: gambarPreview || '',
             isSpotlight: false,
             attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments.map((a) => a.name).join(', ') : undefined,
@@ -582,13 +554,12 @@ export default function EditKupasSosokPage() {
                             type="button"
                             disabled={!item.isCurrentMonth}
                             onClick={() => selectCalendarDay(item.day)}
-                            className={`h-8 w-8 mx-auto rounded-full flex items-center justify-center font-medium transition-colors ${
-                              !item.isCurrentMonth
+                            className={`h-8 w-8 mx-auto rounded-full flex items-center justify-center font-medium transition-colors ${!item.isCurrentMonth
                                 ? 'text-slate-300 cursor-not-allowed'
                                 : isSelected
-                                ? 'bg-[#00113a] text-white font-bold shadow-xs'
-                                : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                            }`}
+                                  ? 'bg-[#00113a] text-white font-bold shadow-xs'
+                                  : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                              }`}
                           >
                             {item.day}
                           </button>
@@ -604,14 +575,12 @@ export default function EditKupasSosokPage() {
                 htmlFor="jabatan"
                 className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2"
               >
-                Jabatan &amp; Unit Kerja{' '}
-                <span className="text-red-500">*</span> <span className="float-right hidden md:inline">:</span>
+                Jabatan &amp; Unit Kerja <span className="float-right hidden md:inline">:</span>
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <input
                   id="jabatan"
                   type="text"
-                  required
                   value={jabatan}
                   onChange={(e) => setJabatan(e.target.value)}
                   placeholder="Contoh: Pustakawan Ahli Utama"
@@ -620,7 +589,6 @@ export default function EditKupasSosokPage() {
                 <input
                   id="unitKerja"
                   type="text"
-                  required
                   value={unitKerja}
                   onChange={(e) => setUnitKerja(e.target.value)}
                   placeholder="Contoh: Deputi Pengembangan Bahan Pustaka"
@@ -643,11 +611,10 @@ export default function EditKupasSosokPage() {
                   <button
                     type="button"
                     onClick={() => execFormat('bold')}
-                    className={`p-1.5 rounded transition-colors ${
-                      activeStyles.bold
+                    className={`p-1.5 rounded transition-colors ${activeStyles.bold
                         ? 'bg-[#00113a] text-white'
                         : 'text-[#444650] hover:bg-white'
-                    }`}
+                      }`}
                     title="Tebal (Ctrl+B)"
                   >
                     <Bold className="w-4 h-4" />
@@ -655,11 +622,10 @@ export default function EditKupasSosokPage() {
                   <button
                     type="button"
                     onClick={() => execFormat('italic')}
-                    className={`p-1.5 rounded transition-colors ${
-                      activeStyles.italic
+                    className={`p-1.5 rounded transition-colors ${activeStyles.italic
                         ? 'bg-[#00113a] text-white'
                         : 'text-[#444650] hover:bg-white'
-                    }`}
+                      }`}
                     title="Miring (Ctrl+I)"
                   >
                     <Italic className="w-4 h-4" />
@@ -667,11 +633,10 @@ export default function EditKupasSosokPage() {
                   <button
                     type="button"
                     onClick={() => execFormat('underline')}
-                    className={`p-1.5 rounded transition-colors ${
-                      activeStyles.underline
+                    className={`p-1.5 rounded transition-colors ${activeStyles.underline
                         ? 'bg-[#00113a] text-white'
                         : 'text-[#444650] hover:bg-white'
-                    }`}
+                      }`}
                     title="Garis bawah (Ctrl+U)"
                   >
                     <Underline className="w-4 h-4" />
@@ -679,11 +644,10 @@ export default function EditKupasSosokPage() {
                   <button
                     type="button"
                     onClick={() => execFormat('insertUnorderedList')}
-                    className={`p-1.5 rounded transition-colors ${
-                      activeStyles.unorderedList
+                    className={`p-1.5 rounded transition-colors ${activeStyles.unorderedList
                         ? 'bg-[#00113a] text-white'
                         : 'text-[#444650] hover:bg-white'
-                    }`}
+                      }`}
                     title="Daftar Bullet"
                   >
                     <List className="w-4 h-4" />
@@ -835,7 +799,7 @@ export default function EditKupasSosokPage() {
                         <button
                           type="button"
                           onClick={() => handleRemoveLampiran(idx)}
-                          className="absolute top-1 right-1 bg-black/60 hover:bg-black text-white p-1 rounded-full transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
+                          className="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white p-1 rounded-full transition-all opacity-90 hover:opacity-100 cursor-pointer shadow-xs z-20" title="Hapus file ini" aria-label="Hapus file"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -858,15 +822,13 @@ export default function EditKupasSosokPage() {
                 <button
                   type="button"
                   onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
-                  className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${
-                    isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
-                  }`}
+                  className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
+                    }`}
                 >
                   <span className="truncate">{status || 'Jenis Status'}</span>
                   <ChevronDown
-                    className={`w-4 h-4 text-white transition-transform ${
-                      isStatusMenuOpen ? 'rotate-180' : ''
-                    }`}
+                    className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''
+                      }`}
                   />
                 </button>
 
@@ -878,11 +840,10 @@ export default function EditKupasSosokPage() {
                         setStatus('Terbit');
                         setIsStatusMenuOpen(false);
                       }}
-                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                        status === 'Terbit'
+                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Terbit'
                           ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
                           : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                      }`}
+                        }`}
                     >
                       Terbit
                     </button>
@@ -892,11 +853,10 @@ export default function EditKupasSosokPage() {
                         setStatus('Menunggu');
                         setIsStatusMenuOpen(false);
                       }}
-                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                        status === 'Menunggu'
+                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Menunggu'
                           ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
                           : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                      }`}
+                        }`}
                     >
                       Menunggu
                     </button>

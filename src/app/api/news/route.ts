@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { logActivity } from '@/lib/audit';
 
 export async function GET(request: NextRequest) {
   try {
@@ -102,6 +103,7 @@ export async function POST(request: NextRequest) {
       excerpt,
       content,
       coverImage,
+      coverImageName,
       publishedAt,
       status,
       attachmentName,
@@ -157,6 +159,42 @@ export async function POST(request: NextRequest) {
         attachmentName: attachmentName || null,
         attachmentUrl: attachmentUrl || null,
         source: source || null,
+      },
+    });
+
+    let finalCoverImageName: string | undefined = undefined;
+    if (coverImage) {
+      if (coverImageName && typeof coverImageName === 'string' && coverImageName.trim()) {
+        finalCoverImageName = coverImageName.trim();
+      } else if (!coverImage.startsWith('data:')) {
+        const clean = coverImage.split('?')[0].split('#')[0];
+        const segments = clean.split('/');
+        finalCoverImageName = decodeURIComponent(segments[segments.length - 1]);
+      } else {
+        const slugName = title ? title.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 35) : 'sampul';
+        finalCoverImageName = `${slugName}.jpg`;
+      }
+    }
+
+    const newsPublishDate = publishedAt ? new Date(publishedAt) : new Date();
+    await logActivity({
+      userId: authorId,
+      action: 'CREATE',
+      module: 'NEWS',
+      targetId: created.id,
+      description: `Menambah Berita: ${title}`,
+      details: {
+        title,
+        category: 'Berita',
+        source: source?.trim() ? source.trim() : '-',
+        tanggal: newsPublishDate.toISOString(),
+        coverImage: coverImage || null,
+        coverImageName: finalCoverImageName,
+        attachmentUrl: attachmentUrl || null,
+        attachmentName: attachmentName || null,
+        status: postStatus === 'TERBIT' ? 'Terbit' : 'Menunggu',
+        publishedAt: newsPublishDate.toISOString(),
+        contentExcerpt: excerpt || content.slice(0, 200),
       },
     });
 

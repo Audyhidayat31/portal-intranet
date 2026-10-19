@@ -242,7 +242,7 @@ export function SocialMediaModal({
               </div>
             </div>
 
-            <p className="text-[11px] text-[#007BFF] hover:underline cursor-pointer mt-1 font-medium">
+            <p className="text-[11px] text-slate-500 mt-1 font-normal">
               File maksimal berukuran 10 MB
             </p>
 

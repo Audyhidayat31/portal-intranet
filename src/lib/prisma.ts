@@ -1,4 +1,6 @@
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
+import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
@@ -42,8 +44,10 @@ function getOptimizedDatabaseUrl(): string | undefined {
 const databaseUrl = getOptimizedDatabaseUrl();
 
 function createPrismaClient(): PrismaClient {
+  const adapter = databaseUrl ? new PrismaMariaDb(databaseUrl) : undefined;
+
   const client = new PrismaClient({
-    datasources: databaseUrl ? { db: { url: databaseUrl } } : undefined,
+    adapter,
     log: [
       { emit: 'event', level: 'error' },
       { emit: 'event', level: 'warn' },

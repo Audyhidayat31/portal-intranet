@@ -57,7 +57,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { title, excerpt, content, attachmentName, publishedAt } = body;
+    const { title, excerpt, content, attachmentName, attachmentUrl, publishedAt, status } = body;
 
     const updated = await prisma.content.update({
       where: { id },
@@ -65,7 +65,9 @@ export async function PUT(
         ...(title && { title }),
         ...(excerpt && { excerpt }),
         ...(content && { body: content }),
-        ...(attachmentName !== undefined && { attachmentName }),
+        ...(attachmentName !== undefined && { attachmentName: attachmentName || null }),
+        ...(attachmentUrl !== undefined && { attachmentUrl: attachmentUrl || null }),
+        ...(status && { status: status === 'Menunggu' || status === 'MENUNGGU' ? 'MENUNGGU' : 'TERBIT' }),
         ...(publishedAt && { publishedAt: new Date(publishedAt) }),
       },
     });

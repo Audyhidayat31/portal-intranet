@@ -14,6 +14,8 @@ export interface FigureItem {
   careerHistory?: { year: string; role: string }[];
   attachments?: Array<{ id: number; label: string; src: string }>;
   attachmentName?: string;
+  authorName?: string;
+  editorName?: string;
 }
 
 export const STITCH_MOCK_FIGURES_6: FigureItem[] = [
@@ -164,21 +166,12 @@ Beliau juga memelopori pojok baca ramah anak berbasis kearifan lokal di berbagai
 const STORAGE_KEY_FIGURES = 'portal_figures_data';
 
 export const getStoredFigures = (): FigureItem[] => {
-  if (typeof window === 'undefined') return STITCH_MOCK_FIGURES_6;
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY_FIGURES);
-    if (!raw) return STITCH_MOCK_FIGURES_6;
-    return JSON.parse(raw);
-  } catch {
-    return STITCH_MOCK_FIGURES_6;
-  }
+  return STITCH_MOCK_FIGURES_6;
 };
 
-export const saveStoredFigures = (items: FigureItem[]) => {
+export const saveStoredFigures = (_items?: FigureItem[]) => {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(STORAGE_KEY_FIGURES, JSON.stringify(items));
-  } catch (err) {
-    console.error('Failed to save figures to storage', err);
-  }
+    localStorage.removeItem(STORAGE_KEY_FIGURES);
+  } catch {}
 };

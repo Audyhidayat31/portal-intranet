@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   Search, 
   RotateCcw, 
@@ -8,13 +9,30 @@ import {
   Check, 
   X, 
   CheckCircle2, 
-  AlertCircle 
+  AlertCircle
 } from 'lucide-react';
 import { TableSkeleton } from '@/components/ui/Skeleton';
 
 export default function AdminLogAktivitasPage() {
   const [logs, setLogs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedLog, setSelectedLog] = useState<any | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (selectedLog) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [selectedLog]);
 
   // Search & Role Filter states
   const [searchQuery, setSearchQuery] = useState('');
@@ -75,8 +93,8 @@ export default function AdminLogAktivitasPage() {
     fetchLogs();
   }, []);
 
-  // Format date to: dd/mm/yyyy hh:mm (matching wireframe: 03/09/2026 11:00)
-  const formatLogDate = (dateVal: string | Date) => {
+  // Format date to: dd/mm/yyyy hh:mm or dd/mm/yyyy hh:mm:ss
+  const formatLogDate = (dateVal: string | Date, withSeconds = false) => {
     try {
       const d = new Date(dateVal);
       if (isNaN(d.getTime())) return '-';
@@ -85,7 +103,10 @@ export default function AdminLogAktivitasPage() {
       const year = d.getFullYear();
       const hours = String(d.getHours()).padStart(2, '0');
       const minutes = String(d.getMinutes()).padStart(2, '0');
-      return `${day}/${month}/${year} ${hours}:${minutes}`;
+      const seconds = String(d.getSeconds()).padStart(2, '0');
+      return withSeconds
+        ? `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`
+        : `${day}/${month}/${year} ${hours}:${minutes}`;
     } catch (e) {
       return '-';
     }
@@ -103,6 +124,14 @@ export default function AdminLogAktivitasPage() {
     if (upper === 'EARTH' || upper === 'JELAJAH_BUMI' || upper === 'JELAJAH BUMI') return 'Jelajah Bumi';
     if (upper === 'DIDYOUKNOW' || upper === 'TAHUKAH_ANDA' || upper === 'TAHUKAH ANDA') return 'Tahukah Anda';
     if (upper === 'FIGURE' || upper === 'KUPAS_SOSOK' || upper === 'KUPAS SOSOK') return 'Kupas Sosok';
+    if (upper === 'ACADEMIC' || upper === 'KARYA_AKADEMIK') return 'Karya Akademik';
+    if (upper === 'FAMILY' || upper === 'KABAR_KELUARGA') return 'Kabar Keluarga';
+    if (upper === 'HUMOR') return 'Humor';
+    if (upper === 'WISDOM' || upper === 'KALIMAT_BIJAK') return 'Kalimat Bijak';
+    if (upper === 'CONSULTATION' || upper === 'KONSULTASI') return 'Konsultasi';
+    if (upper === 'DOCUMENTS' || upper === 'DOKUMEN_INTERN') return 'Dokumen Intern';
+    if (upper === 'AGENDAS' || upper === 'AGENDA') return 'Agenda Kegiatan';
+    if (upper === 'BUSINESS_TRIP' || upper === 'PERJALANAN_DINAS') return 'Laporan Perjalanan';
     if (upper === 'HOMEPAGE') return 'Homepage';
     if (upper === 'AUTH' || upper === 'AUTENTIKASI') return 'Autentikasi';
     if (upper === 'USERS' || upper === 'PENGGUNA') return 'Pengguna';
@@ -118,6 +147,7 @@ export default function AdminLogAktivitasPage() {
     if (upper === 'CREATE') return 'Create';
     if (upper === 'UPDATE') return 'Update';
     if (upper === 'DELETE') return 'Delete';
+    if (upper === 'CHANGE_STATUS') return 'Ubah Status';
     if (upper === 'LOGIN') return 'Login';
     if (upper === 'LOGOUT') return 'Logout';
     return act;
@@ -130,6 +160,160 @@ export default function AdminLogAktivitasPage() {
       return 'Admin';
     }
     return 'Pegawai';
+  };
+
+  // Helper to safely convert data URL (base64) to a Blob URL
+  // This avoids passing massive base64 strings to window.open or href, completely eliminating HTTP 431 errors
+  const dataUrlToBlobUrl = (dataUrl: string): string | null => {
+    try {
+      const parts = dataUrl.split(',');
+      if (parts.length < 2) return null;
+      const mimeMatch = parts[0].match(/:(.*?);/);
+      const mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+      const binaryStr = atob(parts[1]);
+      const len = binaryStr.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryStr.charCodeAt(i);
+      }
+      const blob = new Blob([bytes], { type: mime });
+      return URL.createObjectURL(blob);
+    } catch (err) {
+      console.error('Failed to convert dataUrl to Blob URL:', err);
+      return null;
+    }
+  };
+
+  // Helper to extract clean file name from URL or path
+  const getFileName = (url?: string | null, customName?: string | null, fallback = '-'): string => {
+    if (customName && customName.trim()) return customName.trim();
+    if (!url) return fallback;
+    if (url.startsWith('data:image/png')) return 'gambar.png';
+    if (url.startsWith('data:image')) return 'gambar.jpg';
+    if (url.startsWith('data:application/pdf')) return 'dokumen.pdf';
+    try {
+      const cleanUrl = url.split('?')[0].split('#')[0];
+      const segments = cleanUrl.split('/');
+      const last = decodeURIComponent(segments[segments.length - 1]);
+      return last || fallback;
+    } catch {
+      return fallback;
+    }
+  };
+
+  // Helper to parse multiple attachments or array JSON string
+  const parseAttachments = (
+    rawUrl?: string | null,
+    rawName?: string | null
+  ): { url: string; name: string }[] => {
+    if (!rawUrl && !rawName) return [];
+
+    const cleanUrl = rawUrl?.trim() || '';
+
+    // If rawUrl is a JSON string array: ["data:...", "data:..."]
+    if (cleanUrl.startsWith('[') && cleanUrl.endsWith(']')) {
+      try {
+        const parsed = JSON.parse(cleanUrl);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const names = rawName ? rawName.split('|||') : [];
+          return parsed
+            .filter((u) => typeof u === 'string' && u.trim().length > 0)
+            .map((u: string, idx: number) => {
+              const fallbackExt = u.startsWith('data:image/png')
+                ? '.png'
+                : u.startsWith('data:image')
+                ? '.jpg'
+                : u.startsWith('data:application/pdf')
+                ? '.pdf'
+                : '';
+              const fallbackName = `lampiran-${idx + 1}${fallbackExt}`;
+              return {
+                url: u,
+                name: names[idx]?.trim() || fallbackName,
+              };
+            });
+        }
+      } catch {}
+    }
+
+    // If rawName contains multiple names separated by |||
+    if (rawName && rawName.includes('|||')) {
+      const names = rawName.split('|||');
+      const urls = cleanUrl.includes('|||') ? cleanUrl.split('|||') : [cleanUrl];
+      return names.map((name, idx) => ({
+        url: urls[idx] || cleanUrl,
+        name: name.trim() || `lampiran-${idx + 1}`,
+      }));
+    }
+
+    // Single item
+    const singleName = rawName?.trim() || getFileName(cleanUrl, null, 'lampiran');
+    return [{ url: cleanUrl, name: singleName }];
+  };
+
+  // Safely open file in a new tab or trigger download, avoiding HTTP 431 errors
+  const handleOpenFile = (e: React.MouseEvent, rawUrl: string, fileName: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!rawUrl || rawUrl === '#' || rawUrl === '-') return;
+
+    let targetUrl = rawUrl.trim();
+
+    // If targetUrl is an array string ["..."], extract the first URL
+    if (targetUrl.startsWith('[') && targetUrl.endsWith(']')) {
+      try {
+        const parsed = JSON.parse(targetUrl);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          targetUrl = parsed[0];
+        }
+      } catch {}
+    }
+
+    // If data URL, convert to Blob URL so the browser opens it cleanly without sending a massive HTTP request
+    if (targetUrl.startsWith('data:')) {
+      const blobUrl = dataUrlToBlobUrl(targetUrl);
+      if (blobUrl) {
+        const win = window.open(blobUrl, '_blank');
+        if (!win || win.closed || typeof win.closed === 'undefined') {
+          // If popup is blocked by browser, trigger direct download
+          const a = document.createElement('a');
+          a.href = blobUrl;
+          a.download = fileName || 'berkas';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }
+      } else {
+        alert('Format berkas tidak dapat diproses.');
+      }
+      return;
+    }
+
+    // Standard web URL or relative path
+    window.open(targetUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  const renderFileItem = (url?: string | null, customName?: string | null) => {
+    if (!url && !customName) {
+      return <span className="text-slate-400 font-normal">-</span>;
+    }
+
+    const fileName = getFileName(url, customName, 'file');
+
+    if (!url || url === '#' || url === '-') {
+      return <span className="text-slate-700 font-medium">{fileName}</span>;
+    }
+
+    return (
+      <button
+        type="button"
+        onClick={(e) => handleOpenFile(e, url, fileName)}
+        className="text-blue-600 hover:text-blue-800 hover:underline font-medium text-left break-all cursor-pointer inline-flex items-center gap-1 group"
+        title={`Buka file: ${fileName}`}
+      >
+        <span>{fileName}</span>
+      </button>
+    );
   };
 
   // Filter logic
@@ -436,17 +620,28 @@ export default function AdminLogAktivitasPage() {
                       </td>
 
                       {/* Aktivitas */}
-                      <td className="py-3.5 px-5 text-center text-slate-900 font-medium border-r border-[#c5c6d2] leading-relaxed">
-                        {log.description}
+                      <td className="py-3 px-5 text-center text-slate-900 font-medium border-r border-[#c5c6d2] leading-relaxed">
+                        <div className="text-xs">{log.description}</div>
+                        {log.action !== 'LOGIN' && log.action !== 'LOGOUT' && (
+                          <button
+                            type="button"
+                            onClick={() => setSelectedLog(log)}
+                            className="block mx-auto mt-1 text-[11px] text-slate-600 hover:text-blue-600 hover:underline cursor-pointer transition-colors"
+                          >
+                            Lihat selengkapnya
+                          </button>
+                        )}
                       </td>
 
-                      {/* Aksi: Create / Update / Delete with Stitch-themed styling */}
+                      {/* Aksi: Create / Update / Delete / Ubah Status with Stitch-themed styling */}
                       <td className="py-3.5 px-4 text-center border-r border-[#c5c6d2]">
                         <span className={`inline-block px-3 py-1 rounded text-[11px] font-bold ${
                           actionName === 'Create'
                             ? 'text-[#1b6d24] bg-[#dcfce7] border border-[#86efac]'
                             : actionName === 'Delete'
                             ? 'text-[#ba1a1a] bg-[#fee2e2] border border-[#fca5a5]'
+                            : actionName === 'Ubah Status'
+                            ? 'text-[#7c2d12] bg-[#ffedd5] border border-[#fed7aa]'
                             : 'text-[#002366] bg-[#dbe1ff] border border-[#b3c5ff]'
                         }`}>
                           {actionName}
@@ -573,6 +768,217 @@ export default function AdminLogAktivitasPage() {
           </div>
         )}
       </div>
+
+      {/* Pop-up Modal: Rincian Aktivitas (Lihat Selengkapnya) - Rendered via Portal directly to body */}
+      {isMounted && selectedLog && typeof document !== 'undefined' && createPortal(
+        <div 
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200"
+          onClick={() => setSelectedLog(null)}
+        >
+          <div 
+            className="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-4 bg-[#f8f9ff] border-b border-slate-200 flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Rincian Aktivitas</h3>
+                <p className="text-xs text-slate-500">Detail riwayat tindakan dan perubahan data dalam sistem</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedLog(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-lg transition-colors cursor-pointer"
+                aria-label="Tutup Modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 max-h-[75vh] overflow-y-auto space-y-5 text-xs">
+              {/* Info Pelaksana & Waktu Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <div>
+                  <span className="text-slate-500 block mb-0.5 font-medium">Aksi</span>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="font-bold text-slate-900 text-sm">{formatModule(selectedLog.module)}</span>
+                    <span className={`px-2.5 py-0.5 rounded text-[11px] font-bold ${
+                      formatAction(selectedLog.action) === 'Create'
+                        ? 'text-[#1b6d24] bg-[#dcfce7] border border-[#86efac]'
+                        : formatAction(selectedLog.action) === 'Delete'
+                        ? 'text-[#ba1a1a] bg-[#fee2e2] border border-[#fca5a5]'
+                        : formatAction(selectedLog.action) === 'Ubah Status'
+                        ? 'text-[#7c2d12] bg-[#ffedd5] border border-[#fed7aa]'
+                        : 'text-[#002366] bg-[#dbe1ff] border border-[#b3c5ff]'
+                    }`}>
+                      {formatAction(selectedLog.action)}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <span className="text-slate-500 block mb-0.5 font-medium">Waktu</span>
+                  <span className="font-semibold text-slate-800 font-mono">
+                    {formatLogDate(selectedLog.createdAt, true)}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-slate-500 block mb-0.5 font-medium">Pengguna</span>
+                  <span className="font-semibold text-slate-900">
+                    {selectedLog.user?.name || 'Sistem'}
+                    {selectedLog.user?.nip ? ` (${selectedLog.user.nip})` : ''}
+                  </span>
+                  <span className="text-[11px] text-slate-500 block">
+                    Peran: {getUserRole(selectedLog)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Deskripsi Aktivitas Ringkas */}
+              <div className="p-3.5 bg-blue-50/60 rounded-lg border border-blue-200/80">
+                <span className="text-[#002366] font-bold block mb-1">Aktivitas</span>
+                <p className="text-slate-800 leading-relaxed font-medium">
+                  {selectedLog.description}
+                </p>
+              </div>
+
+              {/* Detail Berdasarkan Aksi: Detail Aktivitas */}
+              <div>
+                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2.5">
+                  Detail Aktivitas
+                </h4>
+
+                <div className="p-4 bg-slate-50/80 rounded-lg border border-slate-200 space-y-3.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    {/* Judul */}
+                    <div className="sm:col-span-2">
+                      <span className="text-slate-500 block mb-0.5 font-medium">Judul:</span>
+                      <span className="font-bold text-slate-900 text-[13px] leading-snug">
+                        {selectedLog.details?.title || selectedLog.description}
+                      </span>
+                    </div>
+
+                    {/* Sumber */}
+                    <div>
+                      <span className="text-slate-500 block mb-0.5 font-medium">Sumber:</span>
+                      <span className="font-medium text-slate-800">
+                        {selectedLog.details?.source && selectedLog.details.source.trim() && selectedLog.details.source.trim() !== '-'
+                          ? selectedLog.details.source.trim()
+                          : '-'}
+                      </span>
+                    </div>
+
+                    {/* Tanggal */}
+                    <div>
+                      <span className="text-slate-500 block mb-0.5 font-medium">Tanggal:</span>
+                      <span className="font-medium text-slate-800 font-mono">
+                        {selectedLog.details?.tanggal
+                          ? formatLogDate(selectedLog.details.tanggal, true)
+                          : selectedLog.details?.publishedAt
+                          ? formatLogDate(selectedLog.details.publishedAt, true)
+                          : formatLogDate(selectedLog.createdAt, true)}
+                      </span>
+                    </div>
+
+                    {/* Gambar */}
+                    <div>
+                      <span className="text-slate-500 block mb-0.5 font-medium">Gambar:</span>
+                      {renderFileItem(
+                        selectedLog.details?.coverImage || selectedLog.details?.image || selectedLog.details?.thumbnail,
+                        selectedLog.details?.coverImageName
+                      )}
+                    </div>
+
+                    {/* Lampiran */}
+                    <div>
+                      <span className="text-slate-500 block mb-0.5 font-medium">Lampiran:</span>
+                      {(() => {
+                        const rawUrl = selectedLog.details?.attachmentUrl || selectedLog.details?.fileUrl;
+                        const rawName = selectedLog.details?.attachmentName || selectedLog.details?.fileName;
+                        const attachments = parseAttachments(rawUrl, rawName);
+
+                        if (attachments.length === 0) {
+                          return <span className="text-slate-400 font-normal">-</span>;
+                        }
+
+                        return (
+                          <div className="space-y-1">
+                            {attachments.map((item, idx) => (
+                              <div key={idx}>
+                                {item.url && item.url !== '#' && item.url !== '-' ? (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => handleOpenFile(e, item.url, item.name)}
+                                    className="text-blue-600 hover:text-blue-800 hover:underline font-medium text-left break-all cursor-pointer inline-flex items-center gap-1 group"
+                                    title={`Buka lampiran: ${item.name}`}
+                                  >
+                                    <span>{item.name}</span>
+                                  </button>
+                                ) : (
+                                  <span className="text-slate-700 font-medium">{item.name}</span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
+                    </div>
+
+                    {/* Status */}
+                    <div>
+                      <span className="text-slate-500 block mb-0.5 font-medium">Status:</span>
+                      {(() => {
+                        const rawStatus =
+                          selectedLog.details?.status ||
+                          selectedLog.details?.changes?.find((c: any) => c.field?.toLowerCase() === 'status')?.new ||
+                          'Terbit';
+                        const isTerbit = String(rawStatus).toLowerCase().includes('terbit');
+                        return (
+                          <span
+                            className={`inline-block px-2.5 py-0.5 rounded text-[11px] font-bold ${
+                              isTerbit
+                                ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                                : 'bg-amber-100 text-amber-800 border border-amber-300'
+                            }`}
+                          >
+                            {isTerbit ? 'Terbit' : 'Menunggu'}
+                          </span>
+                        );
+                      })()}
+                    </div>
+                  </div>
+
+                  {/* Cuplikan Uraian / Konten jika ada */}
+                  {selectedLog.details?.contentExcerpt && (
+                    <div className="pt-2.5 border-t border-slate-200">
+                      <span className="text-slate-500 block mb-1 font-medium">Uraian / Cuplikan Konten:</span>
+                      <p className="text-slate-700 italic bg-white p-2.5 rounded border border-slate-200 leading-relaxed text-xs">
+                        "{selectedLog.details.contentExcerpt}..."
+                      </p>
+                    </div>
+                  )}
+
+
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setSelectedLog(null)}
+                className="px-5 py-2 bg-[#00113a] text-white text-xs font-semibold rounded-lg hover:bg-[#001f5c] transition-colors cursor-pointer shadow-sm"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

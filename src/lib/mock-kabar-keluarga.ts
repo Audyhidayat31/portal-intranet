@@ -69,7 +69,7 @@ Orang tua kini dapat mendampingi putra-putri membaca naskah klasik dan cerita ra
     coverImage: '/images/kabar-keluarga/card-3.jpg',
     publishedAt: '2026-08-19',
     status: 'Menunggu',
-    authorName: 'Humas Perpustakaan Nasional',
+    authorName: 'Biro SDM dan Organisasi',
     categoryType: 'Keluarga Sehat',
     attachments: MOCK_KABAR_KELUARGA_ATTACHMENTS_5,
   },

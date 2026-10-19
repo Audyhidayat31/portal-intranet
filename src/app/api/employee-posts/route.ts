@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { logActivity } from '@/lib/audit';
 import { z } from 'zod';
 
 const postSchema = z.object({
@@ -174,6 +175,41 @@ export async function POST(request: NextRequest) {
         authorId,
         status: postStatus,
         createdAt: postCreatedAt,
+      },
+    });
+
+    const categoryMap: Record<string, { module: string; label: string }> = {
+      'opini': { module: 'OPINION', label: 'Coretan Opini' },
+      'olahraga': { module: 'SPORTS', label: 'Olahraga' },
+      'tips-gaya-hidup': { module: 'LIFESTYLE', label: 'Tips dan Gaya Hidup' },
+      'jelajah-bumi': { module: 'EARTH', label: 'Jelajah Bumi' },
+      'tahukah-anda': { module: 'DIDYOUKNOW', label: 'Tahukah Anda' },
+      'karya-akademik': { module: 'ACADEMIC', label: 'Karya Akademik' },
+      'kabar-keluarga': { module: 'FAMILY', label: 'Kabar Keluarga' },
+      'humor': { module: 'HUMOR', label: 'Humor' },
+      'kalimat-bijak': { module: 'WISDOM', label: 'Kalimat Bijak' },
+      'konsultasi': { module: 'CONSULTATION', label: 'Konsultasi' },
+    };
+    const catInfo = categoryMap[categorySlug] || { module: 'POSTS', label: 'Postingan Pegawai' };
+
+    await logActivity({
+      userId: authorId,
+      action: 'CREATE',
+      module: catInfo.module,
+      targetId: newPost.id,
+      description: `Menambah ${catInfo.label}: ${title}`,
+      details: {
+        title,
+        category: catInfo.label,
+        source: body.source || '-',
+        tanggal: postCreatedAt.toISOString(),
+        coverImage: coverImage || null,
+        coverImageName: body.coverImageName || (coverImage ? `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 35) || 'postingan'}.jpg` : undefined),
+        attachmentUrl: body.attachmentUrl || null,
+        attachmentName: body.attachmentName || null,
+        status: postStatus === 'TERBIT' ? 'Terbit' : 'Menunggu',
+        publishedAt: postCreatedAt.toISOString(),
+        contentExcerpt: contentBody.slice(0, 200),
       },
     });
 

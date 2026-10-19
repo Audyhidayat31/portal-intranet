@@ -71,7 +71,7 @@ const DEFAULT_NEWS_FALLBACK = {
   coverImage:
     'https://lh3.googleusercontent.com/aida-public/AB6AXuCahcTZj5QXSmo3tJ8Zb2Xo1X9pKfvdvRYMZA94cK-i5_dLKEHbFSmblR-2uoRzcmMXVd8Pr0Gb30rpuD95uzQCqAdS2MwCjDq2jhqoR7HDhRt9ko2-g6u0vKDepAglqA-jLL14MSv0qL9KeKZUs2or1uCde_WHnFDwhqCQgCxz0VDCutPC0W9sEljXtLYwUpDTogD_ffc4JmQ759jerILSC0Cj_f0e46NooKBIPHoIXmT2BtEmOOzI',
   author: {
-    name: 'Humas Perpustakaan Nasional',
+    name: 'Biro Hukum, Organisasi, dan Humas',
   },
   body: `Jakarta – Menteri Pendidikan, Kebudayaan, Riset, dan Teknologi secara resmi membuka gedung baru Perpustakaan Nasional Republik Indonesia yang berlokasi di Jalan Medan Merdeka Selatan. Acara peresmian ini dihadiri oleh berbagai pejabat tinggi negara, budayawan, serta tokoh masyarakat.\n\nGedung baru ini dirancang dengan konsep modern dan ramah lingkungan, dilengkapi dengan fasilitas teknologi informasi mutakhir untuk mendukung layanan perpustakaan digital. Dalam sambutannya, Menteri menekankan pentingnya perpustakaan sebagai pusat literasi dan peradaban bangsa.\n\n"Perpustakaan bukan lagi sekadar tempat menyimpan buku, melainkan ruang interaksi sosial, pusat inovasi, dan sumber inspirasi bagi generasi muda kita," ujar beliau. Fasilitas baru ini diharapkan dapat meningkatkan minat baca masyarakat dan memberikan akses informasi yang lebih luas dan merata.\n\nAcara ditutup dengan penandatanganan prasasti dan tur singkat mengelilingi fasilitas gedung baru, termasuk ruang teater, area pameran, dan koleksi naskah kuno yang kini disimpan dalam ruangan dengan pengatur suhu khusus.`,
 };
@@ -174,7 +174,7 @@ export default function DetailBeritaPage() {
 
   const currentGalleryPhotos = GALLERY_PHOTOS_PAGES[galleryPage] || GALLERY_PHOTOS_PAGES[1];
 
-  const authorName = news?.author?.name || 'Humas Perpustakaan Nasional';
+  const authorName = news?.author?.name || news?.namaPenulis || news?.authorName || '-';
   const displayDate = news?.publishedAt
     ? formatDate(news.publishedAt)
     : formatDate(new Date());

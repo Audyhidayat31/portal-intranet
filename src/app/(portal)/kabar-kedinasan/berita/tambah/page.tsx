@@ -305,6 +305,7 @@ export default function TambahBeritaPage() {
           coverImage:
             gambarPreview ||
             '/images/logo-perpusnas.png',
+          coverImageName: gambarFileName || null,
           publishedAt: tanggal.toISOString(),
           status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',
           attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments.map(a => a.name).join('|||') : null,
