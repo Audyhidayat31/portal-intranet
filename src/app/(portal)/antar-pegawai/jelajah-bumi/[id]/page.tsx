@@ -12,35 +12,14 @@ import {
   ImageIcon,
 } from 'lucide-react';
 import { formatDate, canManageContent } from '@/lib/utils';
-import {
-  STITCH_MOCK_JELAJAH_BUMI_9,
-  DEFAULT_STITCH_JELAJAH_DETAIL,
-  JelajahBumiItem,
-} from '@/lib/mock-jelajah-bumi';
-
-// Mock 5 attachment images matching Stitch design
-const MOCK_ATTACHMENT_IMAGES = [
-  { id: 1, label: 'Gambar', src: '/images/jelajah-bumi/card-1.jpg' },
-  { id: 2, label: 'Gambar', src: '/images/jelajah-bumi/card-2.jpg' },
-  { id: 3, label: 'Gambar', src: '/images/jelajah-bumi/card-3.jpg' },
-  { id: 4, label: 'Gambar', src: '/images/jelajah-bumi/card-4.jpg' },
-  { id: 5, label: 'Gambar', src: '/images/jelajah-bumi/card-5.jpg' },
-];
 
 export default function DetailJelajahBumiPage() {
   const params = useParams();
   const router = useRouter();
   const rawId = (params?.id as string) || '';
 
-  const matchedInitial =
-    STITCH_MOCK_JELAJAH_BUMI_9.find(
-      (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
-    ) || DEFAULT_STITCH_JELAJAH_DETAIL;
-
-  const [item, setItem] = useState<any>(
-    matchedInitial ? { ...matchedInitial, body: matchedInitial.content } : null
-  );
-  const [isLoading, setIsLoading] = useState(!matchedInitial);
+  const [item, setItem] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Lightbox preview for attachments
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -66,53 +45,24 @@ export default function DetailJelajahBumiPage() {
   useEffect(() => {
     if (!rawId) return;
 
-    if (
-      rawId === 'default' ||
-      rawId === 'detail' ||
-      rawId === 'penerbitan-buku-sastra' ||
-      rawId.includes('penerbitan')
-    ) {
-      setItem(DEFAULT_STITCH_JELAJAH_DETAIL);
-      setIsLoading(false);
-      return;
-    }
-
-    if (!matchedInitial) {
-      setIsLoading(true);
-    }
+    setIsLoading(true);
     fetch(`/api/employee-posts/${rawId}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data) {
-          const apiItem = data.data;
-          setItem(apiItem);
+          setItem(data.data);
         } else {
-          const matchedMock = STITCH_MOCK_JELAJAH_BUMI_9.find(
-            (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
-          );
-
-          if (matchedMock) {
-            const fullItem = {
-              ...matchedMock,
-              body: matchedMock.content,
-            };
-            setItem(fullItem);
-          } else {
-            setItem(DEFAULT_STITCH_JELAJAH_DETAIL);
-          }
+          setItem(null);
         }
-        setIsLoading(false);
       })
-      .catch(() => {
-        const matchedMock = STITCH_MOCK_JELAJAH_BUMI_9.find((m) => m.id === rawId);
-        if (matchedMock) {
-          setItem({ ...matchedMock, body: matchedMock.content });
-        } else {
-          setItem(DEFAULT_STITCH_JELAJAH_DETAIL);
-        }
+      .catch((err) => {
+        console.error('Error fetching detail:', err);
+        setItem(null);
+      })
+      .finally(() => {
         setIsLoading(false);
       });
-  }, [rawId, matchedInitial]);
+  }, [rawId]);
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -120,7 +70,10 @@ export default function DetailJelajahBumiPage() {
       await fetch(`/api/employee-posts/${item?.id || rawId}`, {
         method: 'DELETE',
       });
-      router.push('/antar-pegawai/jelajah-bumi');
+      setFeedbackMsg('Catatan Jelajah Bumi berhasil dihapus.');
+      setTimeout(() => {
+        router.push('/antar-pegawai/jelajah-bumi');
+      }, 1000);
     } catch {
       router.push('/antar-pegawai/jelajah-bumi');
     } finally {
@@ -128,23 +81,6 @@ export default function DetailJelajahBumiPage() {
     }
   };
 
-  const displayTitle =
-    item?.title ||
-    'Penerbitan Buku Karya Sastra Prof. .... Berlangsung di Perpustakaan Nasional Republik Indonesia';
-
-  const rawDate = item?.publishedAt || item?.createdAt;
-  const displayDate = rawDate
-    ? formatDate(rawDate)
-
-
-    : formatDate(new Date());
-
-  const displayContent =
-    item?.body ||
-    item?.content ||
-    `Penerbitan buku karya sastra ini menjadi momen bersejarah dalam memajukan literasi dan mendokumentasikan kekayaan intelektual bangsa. Acara ini dihadiri oleh berbagai kalangan pustakawan, akademisi, sastrawan, serta mitra kerja Perpustakaan Nasional.
-
-Melalui karya ini diharapkan generasi muda semakin terinspirasi untuk terus berkarya, membaca, serta menjaga warisan budaya literasi nusantara.`;
   if (isLoading) {
     return (
       <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 flex flex-col gap-8 bg-white min-h-[60vh] justify-center items-center">
@@ -153,6 +89,26 @@ Melalui karya ini diharapkan generasi muda semakin terinspirasi untuk terus berk
       </div>
     );
   }
+
+  if (!item) {
+    return (
+      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-16 bg-white min-h-[60vh] flex flex-col justify-center items-center text-center">
+        <h1 className="text-2xl font-bold text-[#00113a] mb-2">Artikel Tidak Ditemukan</h1>
+        <p className="text-sm text-slate-500 mb-6">Catatan jelajah bumi yang Anda cari tidak tersedia di database atau telah dihapus.</p>
+        <Link
+          href="/antar-pegawai/jelajah-bumi"
+          className="bg-[#00113a] text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-[#2a4386] transition-colors"
+        >
+          Kembali ke Jelajah Bumi
+        </Link>
+      </div>
+    );
+  }
+
+  const displayTitle = item.title;
+  const rawDate = item.publishedAt || item.createdAt;
+  const displayDate = rawDate ? formatDate(rawDate) : '-';
+  const displayContent = item.body || item.content || '-';
 
   return (
     <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 bg-white min-h-[calc(100vh-80px)] flex flex-col justify-between">

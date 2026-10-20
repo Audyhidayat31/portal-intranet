@@ -74,7 +74,7 @@ export default function KaryaAkademikPage() {
           title: item.title,
           excerpt: item.excerpt || (item.body ? item.body.slice(0, 180) + '...' : ''),
           content: item.body || '',
-          coverImage: item.coverImage || '/images/kabar-keluarga/card-1.jpg',
+          coverImage: item.coverImage || '/images/logo-perpusnas.png',
           publishedAt: item.createdAt
             ? new Date(item.createdAt).toLocaleDateString('id-ID', {
                 day: 'numeric',

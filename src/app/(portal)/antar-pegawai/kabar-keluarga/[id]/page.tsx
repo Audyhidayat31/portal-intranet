@@ -5,41 +5,20 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import {
   X,
-  Edit3,
   CheckCircle,
   AlertTriangle,
   Download,
   ImageIcon,
 } from 'lucide-react';
 import { formatDate, canManageContent } from '@/lib/utils';
-import {
-  STITCH_MOCK_KABAR_KELUARGA_9,
-  KabarKeluargaItem,
-} from '@/lib/mock-kabar-keluarga';
-
-// Mock 5 attachment images matching Stitch design
-const MOCK_ATTACHMENT_IMAGES = [
-  { id: 1, label: 'Gambar', src: '/images/kabar-keluarga/card-1.jpg' },
-  { id: 2, label: 'Gambar', src: '/images/kabar-keluarga/card-2.jpg' },
-  { id: 3, label: 'Gambar', src: '/images/kabar-keluarga/card-3.jpg' },
-  { id: 4, label: 'Gambar', src: '/images/kabar-keluarga/card-4.jpg' },
-  { id: 5, label: 'Gambar', src: '/images/kabar-keluarga/card-5.jpg' },
-];
 
 export default function DetailKabarKeluargaPage() {
   const params = useParams();
   const router = useRouter();
   const rawId = (params?.id as string) || '';
 
-  const matchedInitial =
-    STITCH_MOCK_KABAR_KELUARGA_9.find(
-      (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
-    );
-
-  const [item, setItem] = useState<any>(
-    matchedInitial ? { ...matchedInitial, body: matchedInitial.content } : null
-  );
-  const [isLoading, setIsLoading] = useState(!matchedInitial);
+  const [item, setItem] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Lightbox preview for attachments
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -65,42 +44,24 @@ export default function DetailKabarKeluargaPage() {
   useEffect(() => {
     if (!rawId) return;
 
-    if (!matchedInitial) {
-      setIsLoading(true);
-    }
+    setIsLoading(true);
     fetch(`/api/employee-posts/${rawId}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data) {
-          const apiItem = data.data;
-          setItem(apiItem);
+          setItem(data.data);
         } else {
-          const matchedMock = STITCH_MOCK_KABAR_KELUARGA_9.find(
-            (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
-          );
-
-          if (matchedMock) {
-            const fullItem = {
-              ...matchedMock,
-              body: matchedMock.content,
-            };
-            setItem(fullItem);
-          } else {
-            setItem(STITCH_MOCK_KABAR_KELUARGA_9[0]);
-          }
+          setItem(null);
         }
-        setIsLoading(false);
       })
-      .catch(() => {
-        const matchedMock = STITCH_MOCK_KABAR_KELUARGA_9.find((m) => m.id === rawId);
-        if (matchedMock) {
-          setItem({ ...matchedMock, body: matchedMock.content });
-        } else {
-          setItem(STITCH_MOCK_KABAR_KELUARGA_9[0]);
-        }
+      .catch((err) => {
+        console.error('Error fetching detail:', err);
+        setItem(null);
+      })
+      .finally(() => {
         setIsLoading(false);
       });
-  }, [rawId, matchedInitial]);
+  }, [rawId]);
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -108,7 +69,10 @@ export default function DetailKabarKeluargaPage() {
       await fetch(`/api/employee-posts/${item?.id || rawId}`, {
         method: 'DELETE',
       });
-      router.push('/antar-pegawai/kabar-keluarga');
+      setFeedbackMsg('Kabar keluarga berhasil dihapus.');
+      setTimeout(() => {
+        router.push('/antar-pegawai/kabar-keluarga');
+      }, 1000);
     } catch {
       router.push('/antar-pegawai/kabar-keluarga');
     } finally {
@@ -116,22 +80,6 @@ export default function DetailKabarKeluargaPage() {
     }
   };
 
-  const displayTitle =
-    item?.title || 'Minat membaca Warga Indonesia semakin membaik';
-
-  const rawDate = item?.publishedAt || item?.createdAt;
-  const displayDate = rawDate ? formatDate(rawDate) : formatDate(new Date());
-
-
-
-
-
-  const displayContent =
-    item?.body ||
-    item?.content ||
-    `Menurut penelitian pada tanggal 19 Agustus 2026 terlihat bahwa jumlah peminat buku terus mengalami peningkatan yang signifikan di berbagai kalangan usia. Budaya membaca yang tumbuh subur berawal dari kehangatan keluarga di rumah. 
-
-Keluarga besar Perpustakaan Nasional senantiasa mendukung para pegawai dalam menumbuhkan minat baca anak sejak dini melalui pojok baca keluarga dan kebersamaan membaca buku di akhir pekan. Semoga semangat literasi ini terus mengakar kuat dalam setiap rumah tangga keluarga besar Perpusnas RI.`;
   if (isLoading) {
     return (
       <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 flex flex-col gap-8 bg-white min-h-[60vh] justify-center items-center">
@@ -140,6 +88,26 @@ Keluarga besar Perpustakaan Nasional senantiasa mendukung para pegawai dalam men
       </div>
     );
   }
+
+  if (!item) {
+    return (
+      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-16 bg-white min-h-[60vh] flex flex-col justify-center items-center text-center">
+        <h1 className="text-2xl font-bold text-[#00113a] mb-2">Artikel Tidak Ditemukan</h1>
+        <p className="text-sm text-slate-500 mb-6">Artikel kabar keluarga yang Anda cari tidak tersedia di database atau telah dihapus.</p>
+        <Link
+          href="/antar-pegawai/kabar-keluarga"
+          className="bg-[#00113a] text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-[#2a4386] transition-colors"
+        >
+          Kembali ke Kabar Keluarga
+        </Link>
+      </div>
+    );
+  }
+
+  const displayTitle = item.title;
+  const rawDate = item.publishedAt || item.createdAt;
+  const displayDate = rawDate ? formatDate(rawDate) : '-';
+  const displayContent = item.body || item.content || '-';
 
   return (
     <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 bg-white min-h-[calc(100vh-80px)] flex flex-col justify-between">
@@ -198,9 +166,9 @@ Keluarga besar Perpustakaan Nasional senantiasa mendukung para pegawai dalam men
           </div>
 
           {/* Featured Image */}
-          {(item?.coverImage || item?.coverImage) && (
-            <div className="mb-8 w-full aspect-[2/1] bg-slate-100 rounded-lg overflow-hidden border border-[#c5c6d2]">
-              <img src={item?.coverImage || item?.coverImage} alt={displayTitle} className="w-full h-full object-cover" />
+          {item.coverImage && (
+            <div className="mb-8 w-full aspect-[2/1] bg-slate-100 rounded-lg overflow-hidden border border-[#c5c6d2] flex items-center justify-center p-4">
+              <img src={item.coverImage} alt={displayTitle} className="max-h-full max-w-full object-contain" />
             </div>
           )}
 
@@ -214,39 +182,41 @@ Keluarga besar Perpustakaan Nasional senantiasa mendukung para pegawai dalam men
               {displayContent}
             </div>
           </div>
+
           {/* Divider Line */}
           <div className="border-t border-[#c5c6d2] my-8" />
 
           {/* Section: Footer Metadata & Action Buttons matching Stitch */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
             {/* Left: Dibuat oleh & copyright */}
-            
             <div className="flex flex-row gap-6">
-              <div className="text-xs text-[#757682] space-y-0.5 w-[220px]"><p className="font-semibold text-[#757682]">Dibuat oleh</p>
-              <p className="font-semibold text-[#1a1b20]">
-                {item?.author?.name || item?.authorName || 'Ahmad Fauzi'}
-              </p>
-              <p className="font-medium text-[#757682]">
-                {displayDate}
-              </p>
-              <p className="font-medium text-[#757682]">
-                Status: {item?.status === 'MENUNGGU' || item?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
-              </p>
-            </div>
+              <div className="text-xs text-[#757682] space-y-0.5 w-[220px]">
+                <p className="font-semibold text-[#757682]">Dibuat oleh</p>
+                <p className="font-semibold text-[#1a1b20]">
+                  {item.author?.name || item.authorName || 'Pegawai Perpusnas'}
+                </p>
+                <p className="font-medium text-[#757682]">
+                  {displayDate}
+                </p>
+                <p className="font-medium text-[#757682]">
+                  Status: {item.status === 'MENUNGGU' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+                </p>
+              </div>
+
               {/* Diperbarui Oleh */}
-              {(item?.updatedAt && item?.createdAt && new Date(item.updatedAt).getTime() - new Date(item.createdAt).getTime() > 1000) && (
+              {(item.updatedAt && item.createdAt && new Date(item.updatedAt).getTime() - new Date(item.createdAt).getTime() > 1000) && (
                 <>
                   <div className="border-l border-[#c5c6d2]" />
                   <div className="text-xs text-[#757682] space-y-0.5 w-[220px]">
                     <p className="font-semibold text-[#757682]">Diperbarui oleh</p>
                     <p className="font-semibold text-[#1a1b20]">
-                      {item?.editor?.name || item?.author?.name || item?.authorName || 'Administrator Perpusnas'}
+                      {item.editor?.name || item.author?.name || item.authorName || 'Administrator Perpusnas'}
                     </p>
                     <p className="font-medium text-[#757682]">
                       {formatDate(item.updatedAt)}
                     </p>
                     <p className="font-medium text-[#757682]">
-                      Status: {item?.status === 'MENUNGGU' || item?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+                      Status: {item.status === 'MENUNGGU' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
                     </p>
                   </div>
                 </>
@@ -257,7 +227,7 @@ Keluarga besar Perpustakaan Nasional senantiasa mendukung para pegawai dalam men
             {canManageContent(currentUser, item) && (
               <div className="flex items-center gap-3 self-end sm:self-auto">
                 <Link
-                  href={`/antar-pegawai/kabar-keluarga/${item?.id || rawId}/edit`}
+                  href={`/antar-pegawai/kabar-keluarga/${item.id || rawId}/edit`}
                   className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer inline-flex items-center justify-center"
                 >
                   Edit

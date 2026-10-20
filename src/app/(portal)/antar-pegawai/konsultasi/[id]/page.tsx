@@ -83,6 +83,12 @@ export default function DetailKonsultasiPage() {
             attachmentName: apiData.attachmentName || null,
             attachmentUrl: '#',
             authorName: apiData.author?.name || 'Ahmad Fauzi',
+            authorId: apiData.authorId || apiData.author?.id,
+            author: apiData.author,
+            createdAt: apiData.createdAt,
+            updatedAt: apiData.updatedAt,
+            editor: apiData.editor,
+            editorName: apiData.editorName,
             replies: (apiData.replies || []).map((r: any) => ({
               id: r.id,
               authorName: r.author?.name || 'Pegawai',
@@ -346,16 +352,16 @@ export default function DetailKonsultasiPage() {
                 </p>
               </div>
               
-              {Boolean((currentItem as any).updatedAt && (currentItem as any).createdAt && Math.abs(new Date((currentItem as any).updatedAt).getTime() - new Date((currentItem as any).createdAt).getTime()) > 5000) && (
+              {Boolean(currentItem.updatedAt && currentItem.createdAt && (new Date(currentItem.updatedAt).getTime() - new Date(currentItem.createdAt).getTime() > 1000)) && (
                 <>
                   <div className="border-l border-[#c5c6d2]" />
                   <div className="w-[220px]">
                     <p className="text-xs text-[#757682] mb-1 font-semibold">Diperbarui oleh</p>
                     <p className="text-sm sm:text-base font-bold text-[#1a1b20]">
-                      {(currentItem as any).editor?.name || currentItem.authorName || 'Administrator Perpusnas'}
+                      {currentItem.editor?.name || currentItem.editorName || currentItem.authorName || 'Administrator Perpusnas'}
                     </p>
                     <p className="text-xs sm:text-sm text-[#757682]">
-                      {(currentItem as any).updatedAt ? formatDate((currentItem as any).updatedAt) : ""}
+                      {currentItem.updatedAt ? formatDate(currentItem.updatedAt) : ''}
                     </p>
                     <p className="text-xs sm:text-sm text-[#757682]">
                       Status: {(currentItem as any).status === 'MENUNGGU' || (currentItem as any).status === 'Menunggu' ? 'Menunggu' : 'Terbit'}

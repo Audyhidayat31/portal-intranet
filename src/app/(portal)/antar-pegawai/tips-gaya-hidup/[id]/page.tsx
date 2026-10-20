@@ -18,11 +18,11 @@ import {
 
 // Mock 5 attachment images matching Stitch design
 const MOCK_ATTACHMENT_IMAGES = [
-  { id: 1, label: 'Gambar', src: '/images/tips-gaya-hidup/card-1.jpg' },
-  { id: 2, label: 'Gambar', src: '/images/tips-gaya-hidup/card-2.jpg' },
-  { id: 3, label: 'Gambar', src: '/images/tips-gaya-hidup/card-3.jpg' },
-  { id: 4, label: 'Gambar', src: '/images/tips-gaya-hidup/card-4.jpg' },
-  { id: 5, label: 'Gambar', src: '/images/tips-gaya-hidup/card-5.jpg' },
+  { id: 1, label: 'Gambar', src: '/images/logo-perpusnas.png' },
+  { id: 2, label: 'Gambar', src: '/images/logo-perpusnas.png' },
+  { id: 3, label: 'Gambar', src: '/images/logo-perpusnas.png' },
+  { id: 4, label: 'Gambar', src: '/images/logo-perpusnas.png' },
+  { id: 5, label: 'Gambar', src: '/images/logo-perpusnas.png' },
 ];
 
 export default function DetailTipsGayaHidupPage() {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma, withDbRetry } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { logActivity } from '@/lib/audit';
 import { INITIAL_MOCK_KONSULTASI } from '@/lib/mock-konsultasi';
 
 function findMockConsultation(id: string) {
@@ -63,7 +64,31 @@ export async function GET(
       );
 
       if (topic) {
-        return NextResponse.json({ success: true, data: topic });
+        let editorName = null;
+        try {
+          const updateLog = await prisma.activityLog.findFirst({
+            where: {
+              targetId: topic.id,
+              action: 'UPDATE',
+            },
+            orderBy: { createdAt: 'desc' },
+            include: { user: { select: { name: true } } },
+          });
+          if (updateLog?.user?.name) {
+            editorName = updateLog.user.name;
+          }
+        } catch (e) {
+          // ignore
+        }
+
+        return NextResponse.json({
+          success: true,
+          data: {
+            ...topic,
+            editor: editorName ? { name: editorName } : (topic.author?.name ? { name: topic.author.name } : null),
+            editorName: editorName || topic.author?.name || null,
+          },
+        });
       }
     } catch (dbErr) {
       console.warn('Prisma findUnique error in consultations GET:', dbErr);
@@ -112,6 +137,7 @@ export async function PUT(
       const existing = await prisma.consultationTopic.findUnique({ where: { id } });
 
       if (existing) {
+        const user = await getCurrentUser();
         const updated = await withDbRetry(() =>
           prisma.consultationTopic.update({
             where: { id },
@@ -119,10 +145,30 @@ export async function PUT(
           })
         );
 
+        if (user?.userId) {
+          try {
+            await logActivity({
+              userId: user.userId,
+              action: 'UPDATE',
+              module: 'CONSULTATION',
+              targetId: existing.id,
+              description: `Memperbarui topik konsultasi: ${updated.title}`,
+            });
+          } catch (logErr) {
+            console.warn('logActivity failed in consultations PUT:', logErr);
+          }
+        }
+
+        const editorName = user?.name || null;
+
         return NextResponse.json({
           success: true,
           message: 'Konsultasi berhasil diperbarui',
-          data: updated,
+          data: {
+            ...updated,
+            editor: editorName ? { name: editorName } : null,
+            editorName,
+          },
         });
       }
 

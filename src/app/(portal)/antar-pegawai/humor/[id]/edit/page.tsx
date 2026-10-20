@@ -24,7 +24,7 @@ import {
   FileText,
   X,
 } from 'lucide-react';
-import { STITCH_MOCK_HUMOR_9 } from '@/lib/mock-humor';
+
 
 const compressImage = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -162,28 +162,26 @@ export default function EditHumorPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Fetch initial post data
+  // Fetch initial post data from database
   useEffect(() => {
     if (!rawId) return;
 
-    const matchedMock = STITCH_MOCK_HUMOR_9.find(
-      (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
-    );
-
+    setIsLoading(true);
     fetch(`/api/employee-posts/${rawId}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data) {
           const item = data.data;
           setJudul(item.title || '');
-          if (item.publishedAt) {
-            const d = new Date(item.publishedAt);
+          const pubDate = item.publishedAt || item.createdAt;
+          if (pubDate) {
+            const d = new Date(pubDate);
             if (!isNaN(d.getTime())) {
               setTanggal(d);
               setViewDate(d);
             }
           }
-          setStatus(item.status === 'MENUNGGU' ? 'Menunggu' : 'Terbit');
+          setStatus(item.status === 'MENUNGGU' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit');
           const content = item.body || item.content || '';
           setDeskripsiHtml(content);
           if (editorRef.current) {
@@ -201,49 +199,12 @@ export default function EditHumorPage() {
               preview: name.match(/\.(jpg|jpeg|png|webp|gif)$/i) ? `/uploads/${name}` : null,
             })));
           }
-        } else if (matchedMock) {
-          setJudul(matchedMock.title);
-          if (matchedMock.publishedAt) {
-            const d = new Date(matchedMock.publishedAt);
-            if (!isNaN(d.getTime())) {
-              setTanggal(d);
-              setViewDate(d);
-            }
-          }
-          setStatus('Terbit');
-          const content = matchedMock.content || '';
-          setDeskripsiHtml(content);
-          if (editorRef.current) {
-            editorRef.current.innerHTML = content;
-          }
-          if (matchedMock.coverImage) {
-            setGambarPreview(matchedMock.coverImage);
-            setGambarFileName('sampul-humor.jpg');
-          }
-          if ((matchedMock as any).attachmentName || (matchedMock as any).attachment) {
-            const attStr = (matchedMock as any).attachmentName || (matchedMock as any).attachment || '';
-            const names = attStr.split(',').map((n: string) => n.trim()).filter(Boolean);
-            setLampiranAttachments(names.map((name: string) => ({
-              name,
-              preview: name.match(/\.(jpg|jpeg|png|webp|gif)$/i) ? `/uploads/${name}` : null,
-            })));
-          }
         }
-        setIsLoading(false);
       })
-      .catch(() => {
-        if (matchedMock) {
-          setJudul(matchedMock.title);
-          const content = matchedMock.content || '';
-          setDeskripsiHtml(content);
-          if (editorRef.current) {
-            editorRef.current.innerHTML = content;
-          }
-          if (matchedMock.coverImage) {
-            setGambarPreview(matchedMock.coverImage);
-            setGambarFileName('sampul-humor.jpg');
-          }
-        }
+      .catch((err) => {
+        console.error('Error fetching edit post:', err);
+      })
+      .finally(() => {
         setIsLoading(false);
       });
   }, [rawId]);

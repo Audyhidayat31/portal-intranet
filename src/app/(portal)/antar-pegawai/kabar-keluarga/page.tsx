@@ -11,12 +11,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { formatDate, isUserAdmin } from '@/lib/utils';
-import {
-  STITCH_MOCK_KABAR_KELUARGA_9,
-  KabarKeluargaItem,
-} from '@/lib/mock-kabar-keluarga';
-
-const ITEMS_PER_PAGE = 9;
+import { KabarKeluargaItem } from '@/lib/mock-kabar-keluarga';
 
 export default function KabarKeluargaPage() {
   const [allItems, setAllItems] = useState<KabarKeluargaItem[]>([]);
@@ -26,6 +21,11 @@ export default function KabarKeluargaPage() {
   const [filterAuthor, setFilterAuthor] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [currentUser, setCurrentUser] = useState<any>(null);
+
+  // Dropdown Pagination state
+  const [itemsPerPage, setItemsPerPage] = useState(9);
+  const [isPerPageOpen, setIsPerPageOpen] = useState(false);
+  const perPageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch('/api/profile/me')
@@ -37,11 +37,6 @@ export default function KabarKeluargaPage() {
       })
       .catch(() => {});
   }, []);
-
-  // Dropdown Pagination state
-  const [itemsPerPage, setItemsPerPage] = useState(9);
-  const [isPerPageOpen, setIsPerPageOpen] = useState(false);
-  const perPageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -55,64 +50,48 @@ export default function KabarKeluargaPage() {
     };
   }, []);
 
-
   const fetchKabarKeluarga = (q: string = '') => {
-    if (q.trim()) {
-      setIsLoading(true);
-    }
+    setIsLoading(true);
     fetch(`/api/employee-posts?category=kabar-keluarga&q=${encodeURIComponent(q)}`)
       .then((res) => res.json())
       .then((data) => {
         const apiItems = data.success && Array.isArray(data.data) ? data.data : [];
 
-        const formattedApiItems: KabarKeluargaItem[] = apiItems.map((item: any, idx: number) => ({
+        const formattedApiItems: KabarKeluargaItem[] = apiItems.map((item: any) => ({
           id: item.id,
           title: item.title,
           excerpt: item.excerpt || (item.body ? item.body.slice(0, 140) + '...' : ''),
           content: item.body || '',
-          coverImage: item.coverImage || `/images/kabar-keluarga/card-${(idx % 9) + 1}.jpg`,
-          publishedAt: item.createdAt || '2026-08-19',
-          status: item.status === 'MENUNGGU' ? 'Menunggu' : 'Terbit',
+          coverImage: item.coverImage || '/images/logo-perpusnas.png',
+          publishedAt: item.publishedAt || item.createdAt || '',
+          status: item.status === 'MENUNGGU' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit',
           authorName: item.author?.name || 'Pegawai Perpusnas',
           authorId: item.authorId || item.author?.id,
           author: item.author,
-          categoryType: item.tags?.[0] || 'Keluarga',
+          categoryType: item.categoryType || item.tags?.[0] || 'Keluarga',
         }));
 
-        // Keep the 9 Stitch cards on page 1 matching Google Stitch design, followed by DB posts
-        const pool = [...STITCH_MOCK_KABAR_KELUARGA_9];
-        for (const apiItm of formattedApiItems) {
-          if (!pool.some((p) => p.id === apiItm.id || p.title === apiItm.title)) {
-            pool.push(apiItm);
-          }
-        }
+        setAllItems(formattedApiItems);
 
-        setAllItems(pool);
-
-        let filtered = pool;
+        let filtered = formattedApiItems;
         if (q.trim()) {
+          const lowerQ = q.toLowerCase();
           filtered = filtered.filter(
             (item) =>
-              item.title.toLowerCase().includes(q.toLowerCase()) ||
-              item.excerpt.toLowerCase().includes(q.toLowerCase()) ||
-              item.content.toLowerCase().includes(q.toLowerCase()) ||
-              (item.authorName && item.authorName.toLowerCase().includes(q.toLowerCase()))
+              item.title.toLowerCase().includes(lowerQ) ||
+              item.excerpt.toLowerCase().includes(lowerQ) ||
+              item.content.toLowerCase().includes(lowerQ) ||
+              (item.authorName && item.authorName.toLowerCase().includes(lowerQ))
           );
         }
 
         setFilteredItems(filtered);
         setCurrentPage(1);
       })
-      .catch(() => {
-        let filtered = STITCH_MOCK_KABAR_KELUARGA_9;
-        if (q.trim()) {
-          filtered = filtered.filter(
-            (item) =>
-              item.title.toLowerCase().includes(q.toLowerCase()) ||
-              item.excerpt.toLowerCase().includes(q.toLowerCase())
-          );
-        }
-        setFilteredItems(filtered);
+      .catch((err) => {
+        console.error('Error fetching kabar-keluarga:', err);
+        setAllItems([]);
+        setFilteredItems([]);
       })
       .finally(() => {
         setIsLoading(false);
@@ -122,13 +101,6 @@ export default function KabarKeluargaPage() {
   useEffect(() => {
     fetchKabarKeluarga('');
   }, []);
-
-  const isUserAdmin = (user: any) => {
-    if (!user) return false;
-    const roleName = typeof user.role === 'string' ? user.role : user.role?.name;
-    const r = roleName?.toUpperCase();
-    return r === 'ADMINISTRATOR' || r === 'ADMIN';
-  };
 
   const canViewItem = (item: any, user: any) => {
     const isWaiting = item.status === 'Menunggu' || item.status === 'MENUNGGU' || item.status === 'DRAFT';
@@ -148,8 +120,18 @@ export default function KabarKeluargaPage() {
     fetchKabarKeluarga(searchQuery);
   };
 
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const currentCards = filteredItems.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const visibleItems = filteredItems.filter(item =>
+    canViewItem(item, currentUser) &&
+    (filterAuthor === 'all' || (currentUser && (
+      item.authorName === currentUser.name ||
+      item.author?.name === currentUser.name ||
+      item.authorId === currentUser.id ||
+      item.authorId === currentUser.userId
+    )))
+  );
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentCards = visibleItems.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 bg-white text-[#1a1b20] min-h-[calc(100vh-80px)] flex flex-col justify-between">
@@ -185,7 +167,7 @@ export default function KabarKeluargaPage() {
           </Link>
         </div>
 
-                {/* Controls Row */}
+        {/* Controls Row */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-12">
           {/* Left: Tampilkan [ 9 v ] data */}
           <div className="flex items-center gap-2 text-sm text-[#1a1b20] shrink-0" ref={perPageRef}>
@@ -258,10 +240,10 @@ export default function KabarKeluargaPage() {
           </div>
         </div>
 
-        {/* Grid of Cards: Exactly 9 Cards in 3 Columns matching Google Stitch */}
+        {/* Grid of Cards */}
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
+            {[1, 2, 3].map((n) => (
               <div
                 key={n}
                 className="border border-[#c5c6d2] rounded-xl overflow-hidden bg-white animate-pulse h-96"
@@ -273,13 +255,13 @@ export default function KabarKeluargaPage() {
             <Sparkles className="w-12 h-12 text-[#757682] mx-auto mb-3 opacity-60" />
             <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Kabar Keluarga Ditemukan</h2>
             <p className="text-sm text-[#444650]">
-              Silakan coba kata kunci lain.
+              {searchQuery.trim() ? 'Silakan coba kata kunci lain.' : 'Belum ada artikel kabar keluarga.'}
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {currentCards.filter(item => canViewItem(item, currentUser) && (filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id)))).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
-              const displayDate = item.publishedAt ? formatDate(item.publishedAt) : '19 Agustus 2026';
+            {currentCards.map((item) => {
+              const displayDate = item.publishedAt ? formatDate(item.publishedAt) : '-';
 
               return (
                 <article
@@ -287,11 +269,11 @@ export default function KabarKeluargaPage() {
                   className="bg-white border border-[#c5c6d2] rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-300 group"
                 >
                   {/* Card Cover Image */}
-                  <div className="w-full h-48 border-b border-[#c5c6d2] overflow-hidden relative shrink-0 bg-slate-100">
+                  <div className="w-full h-48 border-b border-[#c5c6d2] overflow-hidden relative shrink-0 bg-slate-100 flex items-center justify-center p-2">
                     <img
                       src={item.coverImage}
                       alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
 
@@ -340,9 +322,9 @@ export default function KabarKeluargaPage() {
         )}
 
         {/* Pagination Controls */}
-        <Pagination 
+        <Pagination
           currentPage={currentPage}
-          totalItems={filteredItems.length}
+          totalItems={visibleItems.length}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
         />
@@ -350,4 +332,3 @@ export default function KabarKeluargaPage() {
     </div>
   );
 }
-

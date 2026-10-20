@@ -78,25 +78,7 @@ export default function EditKonsultasiPage() {
   useEffect(() => {
     if (!id) return;
 
-    const allStored = getStoredConsultations();
-    const found = allStored.find((c) => c.id === id || String(c.id) === String(id));
-
-    if (found) {
-      setJudul(found.title || '');
-      setKeteranganHtml(found.description || '');
-      if (editorRef.current) {
-        editorRef.current.innerHTML = found.description || '';
-      }
-      setJenisKonsultasi(found.category || 'Kesehatan');
-      setStatus(found.status === 'Menunggu' ? 'Menunggu' : 'Terbit');
-      if (found.attachmentName) {
-        setLampiranFileName(found.attachmentName);
-      }
-      setIsLoading(false);
-      return;
-    }
-
-    // Try API
+    setIsLoading(true);
     fetch(`/api/consultations/${id}`)
       .then((res) => res.json())
       .then((data) => {
@@ -118,10 +100,40 @@ export default function EditKonsultasiPage() {
           if (apiData.attachmentName) {
             setLampiranFileName(apiData.attachmentName);
           }
+        } else {
+          const allStored = getStoredConsultations();
+          const found = allStored.find((c) => c.id === id || String(c.id) === String(id));
+          if (found) {
+            setJudul(found.title || '');
+            setKeteranganHtml(found.description || '');
+            if (editorRef.current) {
+              editorRef.current.innerHTML = found.description || '';
+            }
+            setJenisKonsultasi(found.category || 'Kesehatan');
+            setStatus(found.status === 'Menunggu' ? 'Menunggu' : 'Terbit');
+            if (found.attachmentName) {
+              setLampiranFileName(found.attachmentName);
+            }
+          }
         }
-        setIsLoading(false);
       })
       .catch(() => {
+        const allStored = getStoredConsultations();
+        const found = allStored.find((c) => c.id === id || String(c.id) === String(id));
+        if (found) {
+          setJudul(found.title || '');
+          setKeteranganHtml(found.description || '');
+          if (editorRef.current) {
+            editorRef.current.innerHTML = found.description || '';
+          }
+          setJenisKonsultasi(found.category || 'Kesehatan');
+          setStatus(found.status === 'Menunggu' ? 'Menunggu' : 'Terbit');
+          if (found.attachmentName) {
+            setLampiranFileName(found.attachmentName);
+          }
+        }
+      })
+      .finally(() => {
         setIsLoading(false);
       });
   }, [id]);
@@ -330,7 +342,7 @@ export default function EditKonsultasiPage() {
 
     // Sync to API
     try {
-      await fetch(`/api/consultations/${id}`, {
+      const res = await fetch(`/api/consultations/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -342,6 +354,15 @@ export default function EditKonsultasiPage() {
           attachmentName: updatedItem.attachmentName,
         }),
       });
+      const resData = await res.json();
+      if (resData.success && resData.data) {
+        updatedItem.updatedAt = resData.data.updatedAt || new Date().toISOString();
+        updatedItem.editor = resData.data.editor;
+        updatedItem.editorName = resData.data.editorName;
+        saveStoredConsultations(
+          currentList.map((c) => (c.id === id || String(c.id) === String(id) ? updatedItem : c))
+        );
+      }
     } catch {
       // LocalStorage already updated
     }

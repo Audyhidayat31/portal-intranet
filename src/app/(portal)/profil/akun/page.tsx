@@ -252,16 +252,22 @@ export default function ProfilPegawaiPage() {
             <div className="relative mb-4">
               <div 
                 className="group relative w-32 h-32 shrink-0 aspect-square rounded-full overflow-hidden border-4 border-slate-100 shadow-md bg-slate-100 flex items-center justify-center cursor-pointer" 
-                onClick={() => setPreviewImage(p?.avatarUrl || '/images/avatar-budi-santoso.jpg')}
+                onClick={() => p?.avatarUrl && setPreviewImage(p.avatarUrl)}
               >
-                <img
-                  src={p?.avatarUrl || '/images/avatar-budi-santoso.jpg'}
-                  alt={displayName}
-                  className="w-full h-full object-cover object-center transition-all duration-300 group-hover:scale-110 group-hover:blur-[1px]"
-                />
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <span className="text-white text-xs font-bold text-center px-4 leading-tight shadow-sm">Lihat Ukuran Penuh</span>
-                </div>
+                {p?.avatarUrl ? (
+                  <>
+                    <img
+                      src={p.avatarUrl}
+                      alt={displayName}
+                      className="w-full h-full object-cover object-center transition-all duration-300 group-hover:scale-110 group-hover:blur-[1px]"
+                    />
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <span className="text-white text-xs font-bold text-center px-4 leading-tight shadow-sm">Lihat Ukuran Penuh</span>
+                    </div>
+                  </>
+                ) : (
+                  <User className="w-16 h-16 text-slate-400 stroke-[1.5]" />
+                )}
               </div>
               <button
                 onClick={() => setIsEditModalOpen(true)}

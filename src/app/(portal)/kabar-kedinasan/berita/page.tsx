@@ -136,10 +136,7 @@ export default function BeritaPage() {
           title: item.title,
           excerpt: item.excerpt || (item.body ? item.body.slice(0, 110) + '...' : ''),
           content: item.body || item.content || '',
-          coverImage:
-            item.coverImage && !item.coverImage.includes('berita-arsip.webp')
-              ? item.coverImage
-              : '/images/logo-perpusnas.png',
+          coverImage: item.coverImage || '/images/logo-perpusnas.png',
           publishedAt: item.publishedAt || item.createdAt || new Date().toISOString(),
           status: item.status === 'MENUNGGU' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit',
           authorName: item.author?.name || 'Humas Perpusnas',
