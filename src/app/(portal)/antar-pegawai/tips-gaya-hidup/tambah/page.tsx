@@ -306,7 +306,7 @@ export default function TambahTipsGayaHidupPage() {
           category: 'tips-gaya-hidup',
           categorySlug: 'tips-gaya-hidup',
           body: htmlContent || rawText || judul,
-          coverImage: gambarPreview || '/images/tips-gaya-hidup/card-1.jpg',
+          coverImage: gambarPreview || '/images/logo-perpusnas.png',
           publishedAt: tanggal.toISOString(),
           status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',
           attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments.map((a) => a.name).join(', ') : undefined,

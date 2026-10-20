@@ -308,7 +308,7 @@ export default function TambahJelajahBumiPage() {
           category: 'jelajah-bumi',
           categorySlug: 'jelajah-bumi',
           body: htmlContent || rawText || judul,
-          coverImage: gambarPreview || '/images/jelajah-bumi/card-1.jpg',
+          coverImage: gambarPreview || '/images/logo-perpusnas.png',
           attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments.map((a) => a.name).join(', ') : undefined,
           publishedAt: tanggal.toISOString(),
           status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',

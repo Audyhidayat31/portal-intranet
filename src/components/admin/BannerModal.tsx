@@ -140,7 +140,7 @@ export function BannerModal({
       setErrorMsg('');
       await onSave({
         id: initialData?.id,
-        imageUrl: imageUrl || '/images/hero-illustration.webp',
+        imageUrl: imageUrl || '/images/logo-perpusnas.png',
         imageName: imageFileName || 'Banner.png',
         headline: headline.trim(),
         subheadline: subheadline.trim(),

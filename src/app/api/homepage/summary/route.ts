@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { isBirthdayToday } from '@/lib/utils';
 
 export async function GET() {
   try {
@@ -93,6 +94,7 @@ export async function GET() {
           unitKerja: true,
           birthDate: true,
           avatarUrl: true,
+          nip: true,
         },
       }),
       prisma.user.count({
@@ -119,13 +121,10 @@ export async function GET() {
       }).catch(() => null),
     ]);
 
-    // Calculate birthdays this month
-    const currentMonth = new Date().getMonth();
-    const birthdaysThisMonth = allProfiles.filter((p) => {
-      if (!p.birthDate) return false;
-      const bDate = new Date(p.birthDate);
-      return bDate.getMonth() === currentMonth;
-    }).slice(0, 5);
+    // Hitung pegawai yang berulang tahun pada hari ini (harian berdasarkan WIB / Asia/Jakarta)
+    const birthdaysToday = allProfiles
+      .filter((p) => isBirthdayToday(p.birthDate, p.nip))
+      .slice(0, 10);
 
     // Map Content to News format
     const mappedNews = latestNews.map(item => ({
@@ -134,7 +133,7 @@ export async function GET() {
       title: item.title,
       excerpt: item.excerpt || (item.body ? item.body.slice(0, 110) + '...' : ''),
       content: item.body || item.excerpt || '',
-      coverImage: item.coverImage && !item.coverImage.includes('berita-arsip.webp') ? item.coverImage : '/images/logo-perpusnas.png',
+      coverImage: item.coverImage || '/images/logo-perpusnas.png',
       publishedAt: item.publishedAt,
       status: item.status === 'MENUNGGU' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit',
       author: item.author ? { name: item.author.name } : { name: 'Humas Perpusnas' },
@@ -197,7 +196,8 @@ export async function GET() {
             avatarUrl: spotlightFigure.photoUrl || null,
           }
           : null,
-        birthdaysThisMonth,
+        birthdaysToday,
+        birthdaysThisMonth: birthdaysToday, // Tetap sediakan untuk kompatibilitas ke depan
         stats: {
           totalEmployees: totalEmployees ?? 0,
           totalNews: totalNews ?? 0,

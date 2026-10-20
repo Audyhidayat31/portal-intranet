@@ -138,9 +138,11 @@ export default function DetailKalimatBijakPage() {
             Antar Pegawai
           </span>
           <span className="text-[#757682]">&gt;</span>
-          <Link href="/antar-pegawai/kalimat-bijak" className="hover:text-[#00113a] font-bold text-[#1a1b20] transition-colors">
+          <Link href="/antar-pegawai/kalimat-bijak" className="hover:text-[#00113a] transition-colors">
             Kalimat Bijak
           </Link>
+          <span className="text-[#757682]">&gt;</span>
+          <span className="text-[#1a1b20] font-bold">Detail</span>
         </nav>
 
         {/* Feedback Alert */}

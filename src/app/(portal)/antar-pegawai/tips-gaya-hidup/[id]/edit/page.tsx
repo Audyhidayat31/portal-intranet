@@ -398,7 +398,7 @@ export default function EditTipsGayaHidupPage() {
     const resolvedStatus = status === 'Menunggu' ? 'Menunggu' : 'Terbit';
     const fallbackImage =
       gambarPreview ||
-      '/images/tips-gaya-hidup/card-1.jpg';
+      '/images/logo-perpusnas.png';
 
     // Update in localStorage
     const currentStored = getStoredTipsGayaHidup();

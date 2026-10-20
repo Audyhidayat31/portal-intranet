@@ -18,7 +18,7 @@ import {
   Smile,
 } from 'lucide-react';
 import { formatDate, isUserAdmin } from '@/lib/utils';
-import { STITCH_MOCK_HUMOR_9, HumorItem } from '@/lib/mock-humor';
+import { HumorItem } from '@/lib/mock-humor';
 import { Pagination } from '@/components/ui/Pagination';
 
 export default function HumorPage() {
@@ -67,9 +67,7 @@ export default function HumorPage() {
 
 
   const fetchHumor = (q: string = '') => {
-    if (q.trim()) {
-      setIsLoading(true);
-    }
+    setIsLoading(true);
     fetch(`/api/employee-posts?category=humor&q=${encodeURIComponent(q)}`)
       .then((res) => res.json())
       .then((data) => {
@@ -80,42 +78,20 @@ export default function HumorPage() {
           title: item.title,
           excerpt: item.excerpt || (item.body ? item.body.slice(0, 110) + '...' : ''),
           content: item.body || '',
-          coverImage: item.coverImage || STITCH_MOCK_HUMOR_9[0].coverImage,
-          publishedAt: item.createdAt || new Date().toISOString(),
+          coverImage: item.coverImage || '/images/logo-perpusnas.png',
+          publishedAt: item.publishedAt || item.createdAt || '',
           status: item.status === 'MENUNGGU' ? 'Menunggu' : 'Terbit',
           authorName: item.author?.name || 'Pegawai Perpusnas',
           authorId: item.authorId || item.author?.id,
           author: item.author,
         }));
 
-        if (q.trim()) {
-          const allPool = [...formattedApiItems, ...STITCH_MOCK_HUMOR_9];
-          const filtered = allPool.filter(
-            (item) =>
-              item.title.toLowerCase().includes(q.toLowerCase()) ||
-              item.excerpt.toLowerCase().includes(q.toLowerCase()) ||
-              item.content.toLowerCase().includes(q.toLowerCase()) ||
-              (item.authorName && item.authorName.toLowerCase().includes(q.toLowerCase()))
-          );
-          setHumorList(filtered);
-        } else {
-          // Merge API items with mock items ensuring all 9 cards shown
-          const combined = [...formattedApiItems];
-          for (const mockItem of STITCH_MOCK_HUMOR_9) {
-            if (combined.length >= 9) break;
-            const alreadyExists = combined.some((c) => c.id === mockItem.id);
-            if (!alreadyExists) {
-              combined.push(mockItem);
-            }
-          }
-          setHumorList(combined.slice(0, 9));
-        }
+        setHumorList(formattedApiItems);
+        setCurrentPage(1);
       })
       .catch((e) => {
         console.error(e);
-        if (!humorList || humorList.length === 0) {
-          setHumorList(STITCH_MOCK_HUMOR_9);
-        }
+        setHumorList([]);
       })
       .finally(() => {
         setIsLoading(false);
@@ -173,6 +149,22 @@ export default function HumorPage() {
     });
     setNewComment('');
   };
+
+  const filteredList = humorList.filter(
+    (item) =>
+      canViewItem(item, currentUser) &&
+      (filterAuthor === 'all' ||
+        (typeof currentUser !== 'undefined' &&
+          currentUser &&
+          ((item as any).authorName === currentUser.name ||
+            ((item as any).author && (item as any).author.name === currentUser.name) ||
+            (item as any).name === currentUser.name ||
+            (item as any).authorId === currentUser.id)))
+  );
+
+  const totalPages = Math.max(1, Math.ceil(filteredList.length / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentCards = filteredList.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-10 bg-white text-[#1a1b20] min-h-[calc(100vh-80px)] flex flex-col justify-between">
@@ -284,22 +276,24 @@ export default function HumorPage() {
         {/* Humor Grid: Exactly 9 Cards in 3 Columns matching Stitch */}
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
+            {[1, 2, 3].map((n) => (
               <div key={n} className="border border-[#c5c6d2] rounded-xl overflow-hidden bg-white animate-pulse h-96" />
             ))}
           </div>
-        ) : humorList.length === 0 ? (
+        ) : currentCards.length === 0 ? (
           <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
             <Smile className="w-12 h-12 text-[#757682] mx-auto mb-3 opacity-60" />
             <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Cerita Humor Ditemukan</h2>
             <p className="text-sm text-[#444650]">
-              Silakan coba kata kunci pencarian lain atau buat cerita humor baru.
+              {searchQuery.trim()
+                ? 'Silakan coba kata kunci pencarian lain.'
+                : 'Belum ada artikel humor.'}
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {humorList.filter(item => canViewItem(item, currentUser) && (filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id)))).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
-              const displayDate = item.publishedAt ? formatDate(item.publishedAt) : '19 Agustus 2026';
+            {currentCards.map((item) => {
+              const displayDate = item.publishedAt ? formatDate(item.publishedAt) : '-';
 
               return (
                 <article
@@ -307,11 +301,11 @@ export default function HumorPage() {
                   className="bg-white border border-[#c5c6d2] rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-300 group"
                 >
                   {/* Top Cover Image */}
-                  <div className="w-full h-48 border-b border-[#c5c6d2] overflow-hidden relative shrink-0 bg-slate-100">
+                  <div className="w-full h-48 border-b border-[#c5c6d2] overflow-hidden relative shrink-0 bg-slate-100 flex items-center justify-center p-2">
                     <img
                       src={item.coverImage}
                       alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
 
@@ -363,7 +357,7 @@ export default function HumorPage() {
       {/* Pagination Controls matching Standard Website Pagination */}
       <Pagination 
           currentPage={currentPage}
-          totalItems={humorList.length}
+          totalItems={filteredList.length}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
         />

@@ -15,6 +15,12 @@ export interface ConsultationItem {
   attachmentName?: string;
   attachmentUrl?: string;
   authorName: string;
+  authorId?: string;
+  author?: any;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+  editor?: { name: string } | null;
+  editorName?: string | null;
   replies?: ConsultationReplyItem[];
 }
 

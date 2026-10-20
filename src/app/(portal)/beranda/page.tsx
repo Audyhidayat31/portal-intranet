@@ -62,7 +62,7 @@ export default function BerandaPage() {
       });
   }, []);
 
-  const { setting, latestNews, latestPosts, spotlightFigure, birthdaysThisMonth, kalimatBijak } = data || {};
+  const { setting, latestNews, latestPosts, spotlightFigure, birthdaysToday, birthdaysThisMonth, kalimatBijak } = data || {};
 
   const activeBijak = latestKalimatBijak || kalimatBijak;
   const rawBijakQuote = activeBijak?.body || activeBijak?.quote || setting?.quoteText || 'Membaca dan melestarikan khazanah literasi adalah ikhtiar luhur merajut martabat dan masa depan bangsa.';
@@ -200,12 +200,8 @@ export default function BerandaPage() {
   const postsList = combinedPosts.slice(0, 9);
   const currentPosts = postsList.slice(currentPostPage * 3, currentPostPage * 3 + 3);
 
-  const birthdays = birthdaysThisMonth && birthdaysThisMonth.length > 0 ? birthdaysThisMonth.slice(0, 4) : [
-    { id: 'b1', fullName: 'Nama' },
-    { id: 'b2', fullName: 'Nama' },
-    { id: 'b3', fullName: 'Nama' },
-    { id: 'b4', fullName: 'Nama' },
-  ];
+  const activeBirthdays = birthdaysToday || birthdaysThisMonth;
+  const birthdays = Array.isArray(activeBirthdays) ? activeBirthdays.slice(0, 8) : [];
 
   return (
     <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 flex flex-col gap-12 md:gap-16 bg-white">
@@ -216,7 +212,7 @@ export default function BerandaPage() {
             {/* Banner Image Background */}
             <div className="absolute inset-0 w-full h-full">
                <img
-                  src={activeBanners[currentBannerIndex].imageUrl || '/images/hero-illustration.webp'}
+                  src={activeBanners[currentBannerIndex].imageUrl || '/images/logo-perpusnas.png'}
                   alt={activeBanners[currentBannerIndex].headline || 'Banner'}
                   className="w-full h-full object-cover transition-opacity duration-500"
                 />
@@ -385,7 +381,7 @@ export default function BerandaPage() {
                   </div>
                 ) : (
                   <img
-                    src={item.coverImage || '/images/berita-arsip.webp'}
+                    src={item.coverImage || '/images/logo-perpusnas.png'}
                     alt={item.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
@@ -448,7 +444,7 @@ export default function BerandaPage() {
             >
               <div className="h-48 bg-[#e3e2e8] w-full relative overflow-hidden">
                 <img
-                  src={post.coverImage || '/images/hero-illustration.webp'}
+                  src={post.coverImage || '/images/logo-perpusnas.png'}
                   alt={post.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
@@ -554,7 +550,7 @@ export default function BerandaPage() {
               : 'Doa terbaik kami untuk Bapak/Ibu di momen bertambahnya usia. Semoga selalu dianugerahi kesehatan, kebahagiaan, kelancaran, serta kesuksesan dalam setiap karya.'}
           </p>
         </div>
-        <div className="w-full lg:w-2/3 flex overflow-x-auto gap-4 pb-2 justify-start sm:justify-end">
+        <div className="w-full lg:w-2/3 flex overflow-x-auto gap-4 pb-2 justify-start sm:justify-end items-center">
           {birthdays.map((emp: any, idx: number) => (
             <div
               key={emp.id || idx}

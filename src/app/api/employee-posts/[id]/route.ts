@@ -3,9 +3,6 @@ import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { logActivity } from '@/lib/audit';
 import { STITCH_MOCK_OPINI_6 } from '@/lib/mock-opini';
-import { STITCH_MOCK_HUMOR_9 } from '@/lib/mock-humor';
-import { STITCH_MOCK_JELAJAH_BUMI_9 } from '@/lib/mock-jelajah-bumi';
-import { STITCH_MOCK_KABAR_KELUARGA_9 } from '@/lib/mock-kabar-keluarga';
 import { STITCH_MOCK_KALIMAT_BIJAK } from '@/lib/mock-kalimat-bijak';
 import { STITCH_MOCK_KARYA_AKADEMIK } from '@/lib/mock-karya-akademik';
 import { STITCH_MOCK_OLAHRAGA_9 } from '@/lib/mock-olahraga';
@@ -14,9 +11,6 @@ import { STITCH_MOCK_TIPS_GAYA_HIDUP_9 } from '@/lib/mock-tips-gaya-hidup';
 
 const ALL_MOCK_POSTS: any[] = [
   ...STITCH_MOCK_OPINI_6.map((m: any) => ({ ...m, categorySlug: 'opini' })),
-  ...STITCH_MOCK_HUMOR_9.map((m: any) => ({ ...m, categorySlug: 'humor' })),
-  ...STITCH_MOCK_JELAJAH_BUMI_9.map((m: any) => ({ ...m, categorySlug: 'jelajah-bumi' })),
-  ...STITCH_MOCK_KABAR_KELUARGA_9.map((m: any) => ({ ...m, categorySlug: 'kabar-keluarga' })),
   ...STITCH_MOCK_KALIMAT_BIJAK.map((m: any) => ({ ...m, categorySlug: 'kalimat-bijak' })),
   ...STITCH_MOCK_KARYA_AKADEMIK.map((m: any) => ({ ...m, categorySlug: 'karya-akademik' })),
   ...STITCH_MOCK_OLAHRAGA_9.map((m: any) => ({ ...m, categorySlug: 'olahraga' })),

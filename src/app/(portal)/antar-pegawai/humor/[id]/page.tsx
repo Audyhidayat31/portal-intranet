@@ -12,30 +12,15 @@ import {
   ImageIcon,
 } from 'lucide-react';
 import { formatDate, canManageContent } from '@/lib/utils';
-import { STITCH_MOCK_HUMOR_9, HumorItem } from '@/lib/mock-humor';
 
-// Mock 5 attachment images matching Stitch design
-const MOCK_ATTACHMENT_IMAGES = [
-  { id: 1, label: 'Gambar', src: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA0oi9RLhooT-XkOMEC7v4nh7NmI3yIX3mO-vcQkH3Zbz5N3OXui0lrAZJcR3wpqLESYA4Od7I9EKs6xVb2r3RHHaTrBV5yUA3WUbiIA_7EyT199ffA_W9d0NwA_8bq0_qidXbZF-jwzfB4tZQ3YreJGmNe-jwUwxNiO8lgd2MsxdhZEpNJF7GNywHi6bWBbrLUNUvci_RVB-tqkK-i38DVebEvb4mxvLFF7AfuKfjWP6LVSr2oC5Vd' },
-  { id: 2, label: 'Gambar', src: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDec0Baw2OVou_kvthuZkxxPOlZcCHmI-QFGwy_wQN4_8RXjE8fb8KlbeCnt1SnjFG5vfSMYz8Mqvqjr6y-ka5Dt3J8Z2R2ybP5bM3vYw0XJl13nelXnO6TbR2-7XGqmd5m3YGGvFNeYgMcMziwDbLd8dEIP8G7csr9VkISTz7krkCBtfhZToC6FD8fDDhOchj4FrN01ba3tJiGZC2QMMfBsBRQo9SGLrRPtES_BSsbKjF0zMhZjqcw' },
-  { id: 3, label: 'Gambar', src: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBhEDP_gi3mpvQ4Pr96__VZPmd6g1Kr4doVun1PiNEMHlAUc_JgwzMIWQTVnovzMfsqJBSgFAmZ7SshLGS_qJI3Uzd9SIaBKgTlJpmxy6vBa-e8Am80d-NTmzDZeYhU3Tfohhfr14b6j98ROWwTyP2mkW8Sm9FoloNmqsvLcOiNek4Xc4xEXY95AhCPonUYLoxAKwNoJ39voCDDX32PtXv9bcrKXYIYDKXGqlHvM06DzYdp8EIeudzq' },
-  { id: 4, label: 'Gambar', src: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA_EOes3wsDFbP30FPx61w9EwYcbn9t4_cE_UgXeKW7EsKsSLot4gn0Onb9YjW_GCG4GC1tQYCkFxAXU9h0hGZFJQleB3Jpt0-XToBFa2RFt1qvhPqlTpRNj5EUFSdSnSxuoWzNUvr2Ci13E7XN8V-Q_kvm-MMGl-EQwhuLhq7XMoYEM8CUioq2Bj8bC-SvQfKFwJXgjQamWDUdBi7W4HvMvPLlovKvX0EHn8nOk_WhGCinxm1HMswQ' },
-  { id: 5, label: 'Gambar', src: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD2kVHxDGg-jP1bEYW-H-G3v6UygUscHeZnyPb94oSRtAW_pjoJUlVg2qxV-Nx1N-0W1b74n2YArKH3F5S0sT-SVVhFteJfSqP4b-EH659zSh-vcAF2IAgnWS5wiQuuxQy7Dn1XRxKa5PyzLYiEJ3uXMj3o-Lg0x1JxszlKnSMMgvhLWpOomSoRMhxlzt-IqKYV1owRW3ahWY43RNZDDz8d7ll1H7-jbwu3Ny229_tD0Hg45wipZ9cL' },
-];
 
 export default function DetailHumorPage() {
   const params = useParams();
   const router = useRouter();
   const rawId = (params?.id as string) || '';
 
-  const matchedInitial = STITCH_MOCK_HUMOR_9.find(
-    (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
-  );
-
-  const [item, setItem] = useState<any>(
-    matchedInitial ? { ...matchedInitial, body: matchedInitial.content } : null
-  );
-  const [isLoading, setIsLoading] = useState(!matchedInitial);
+  const [item, setItem] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Lightbox preview for attachments
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -61,53 +46,24 @@ export default function DetailHumorPage() {
   useEffect(() => {
     if (!rawId) return;
 
-    if (!matchedInitial) {
-      setIsLoading(true);
-    }
+    setIsLoading(true);
     fetch(`/api/employee-posts/${rawId}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data) {
-          const apiItem = data.data;
-          setItem(apiItem);
+          setItem(data.data);
         } else {
-          const matchedMock = STITCH_MOCK_HUMOR_9.find(
-            (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
-          );
-
-          if (matchedMock) {
-            const fullItem = {
-              ...matchedMock,
-              body: matchedMock.content,
-            };
-            setItem(fullItem);
-          } else {
-            const fallback = {
-              id: rawId,
-              title: 'Kisah Buku yang Tertinggal di Rak 13',
-              publishedAt: '2026-08-20',
-              body: `Suatu hari di Perpustakaan Nasional, seorang pustakawan baru bernama Budi sedang bertugas merapikan rak di lantai 4. Saat ia sampai di Rak 13, ia menemukan sebuah buku kuno yang tampak sangat usang dan berdebu. Judulnya nyaris tak terbaca: "Rahasia Membuat Kopi Enak di Kantor".
-
-Penasaran, Budi membuka halaman pertama. Bukannya resep kopi, isinya ternyata berupa tulisan tangan bergelombang yang berbunyi: "Langkah pertama: Pastikan mesin kopi menyala. Langkah kedua: Jangan lupa taruh gelas di bawahnya. Terakhir kali saya lupa, seluruh meja basah."
-
-Ternyata buku itu bukan peninggalan bersejarah, melainkan buku catatan milik Pak Andi, pustakawan senior yang terkenal sering ceroboh. Budi tertawa geli dan mengembalikan buku itu ke raknya. Keesokan harinya, ia melihat Pak Andi panik mencari buku catatannya. "Budi, kamu lihat buku pusaka saya tidak? Yang warnanya coklat kusam?" Budi hanya tersenyum simpul sambil menunjuk ke arah Rak 13.`,
-            };
-            setItem(fallback);
-          }
+          setItem(null);
         }
-        setIsLoading(false);
       })
-      .catch(() => {
-        const matchedMock = STITCH_MOCK_HUMOR_9.find((m) => m.id === rawId);
-        if (matchedMock) {
-          setItem({
-            ...matchedMock,
-            body: matchedMock.content,
-          });
-        }
+      .catch((err) => {
+        console.error('Error fetching detail:', err);
+        setItem(null);
+      })
+      .finally(() => {
         setIsLoading(false);
       });
-  }, [rawId, matchedInitial]);
+  }, [rawId]);
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -115,7 +71,10 @@ Ternyata buku itu bukan peninggalan bersejarah, melainkan buku catatan milik Pak
       await fetch(`/api/employee-posts/${item?.id || rawId}`, {
         method: 'DELETE',
       });
-      router.push('/antar-pegawai/humor');
+      setFeedbackMsg('Cerita humor berhasil dihapus.');
+      setTimeout(() => {
+        router.push('/antar-pegawai/humor');
+      }, 1000);
     } catch {
       router.push('/antar-pegawai/humor');
     } finally {
@@ -123,24 +82,6 @@ Ternyata buku itu bukan peninggalan bersejarah, melainkan buku catatan milik Pak
     }
   };
 
-  const displayTitle =
-    item?.title || 'Kisah Buku yang Tertinggal di Rak 13';
-
-  const rawDate = item?.publishedAt || item?.createdAt;
-  const displayDate = rawDate ? formatDate(rawDate) : formatDate(new Date());
-
-
-
-
-
-  const displayContent =
-    item?.body ||
-    item?.content ||
-    `Suatu hari di Perpustakaan Nasional, seorang pustakawan baru bernama Budi sedang bertugas merapikan rak di lantai 4. Saat ia sampai di Rak 13, ia menemukan sebuah buku kuno yang tampak sangat usang dan berdebu. Judulnya nyaris tak terbaca: "Rahasia Membuat Kopi Enak di Kantor".
-
-Penasaran, Budi membuka halaman pertama. Bukannya resep kopi, isinya ternyata berupa tulisan tangan bergelombang yang berbunyi: "Langkah pertama: Pastikan mesin kopi menyala. Langkah kedua: Jangan lupa taruh gelas di bawahnya. Terakhir kali saya lupa, seluruh meja basah."
-
-Ternyata buku itu bukan peninggalan bersejarah, melainkan buku catatan milik Pak Andi, pustakawan senior yang terkenal sering ceroboh. Budi tertawa geli dan mengembalikan buku itu ke raknya. Keesokan harinya, ia melihat Pak Andi panik mencari buku catatannya. "Budi, kamu lihat buku pusaka saya tidak? Yang warnanya coklat kusam?" Budi hanya tersenyum simpul sambil menunjuk ke arah Rak 13.`;
   if (isLoading) {
     return (
       <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 flex flex-col gap-8 bg-white min-h-[60vh] justify-center items-center">
@@ -149,6 +90,26 @@ Ternyata buku itu bukan peninggalan bersejarah, melainkan buku catatan milik Pak
       </div>
     );
   }
+
+  if (!item) {
+    return (
+      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-16 bg-white min-h-[60vh] flex flex-col justify-center items-center text-center">
+        <h1 className="text-2xl font-bold text-[#00113a] mb-2">Artikel Tidak Ditemukan</h1>
+        <p className="text-sm text-slate-500 mb-6">Artikel humor yang Anda cari tidak tersedia di database atau telah dihapus.</p>
+        <Link
+          href="/antar-pegawai/humor"
+          className="bg-[#00113a] text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-[#2a4386] transition-colors"
+        >
+          Kembali ke Humor
+        </Link>
+      </div>
+    );
+  }
+
+  const displayTitle = item.title;
+  const rawDate = item.publishedAt || item.createdAt;
+  const displayDate = rawDate ? formatDate(rawDate) : '-';
+  const displayContent = item.body || item.content || '-';
 
   return (
     <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 bg-white min-h-[calc(100vh-80px)] flex flex-col justify-between">

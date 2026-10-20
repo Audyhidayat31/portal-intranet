@@ -78,6 +78,81 @@ export function formatBirthDate(birthDate: string | Date | null | undefined, nip
   return "-";
 }
 
+/**
+ * Mendeteksi apakah pegawai berulang tahun pada hari ini
+ * Mendukung zona waktu WIB (Asia/Jakarta, UTC+7), input string ISO, objek Date, serta fallback NIP standar PNS (YYYYMMDD...).
+ */
+export function isBirthdayToday(
+  birthDate: string | Date | null | undefined,
+  nip?: string | null,
+  referenceDate: Date = new Date()
+): boolean {
+  // Ambil tanggal hari ini dalam zona waktu Indonesia Barat (WIB, Asia/Jakarta, UTC+7)
+  const jakartaTodayParts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Jakarta',
+    month: 'numeric',
+    day: 'numeric',
+  }).formatToParts(referenceDate);
+
+  const todayMonth = parseInt(jakartaTodayParts.find(p => p.type === 'month')?.value || '0', 10);
+  const todayDay = parseInt(jakartaTodayParts.find(p => p.type === 'day')?.value || '0', 10);
+
+  if (!todayMonth || !todayDay) return false;
+
+  // 1. Periksa dari birthDate jika ada
+  if (birthDate) {
+    // Jika string memiliki format ISO atau YYYY-MM-DD
+    if (typeof birthDate === 'string') {
+      const match = birthDate.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (match) {
+        const strMonth = parseInt(match[2], 10);
+        const strDay = parseInt(match[3], 10);
+        if (strMonth === todayMonth && strDay === todayDay) {
+          return true;
+        }
+      }
+    }
+
+    const d = typeof birthDate === 'string' ? new Date(birthDate) : birthDate;
+    if (!isNaN(d.getTime())) {
+      // Evaluasi dalam zona waktu Asia/Jakarta
+      const bJakartaParts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Jakarta',
+        month: 'numeric',
+        day: 'numeric',
+      }).formatToParts(d);
+
+      const bMonthJakarta = parseInt(bJakartaParts.find(p => p.type === 'month')?.value || '0', 10);
+      const bDayJakarta = parseInt(bJakartaParts.find(p => p.type === 'day')?.value || '0', 10);
+
+      if (bMonthJakarta === todayMonth && bDayJakarta === todayDay) {
+        return true;
+      }
+
+      // Fallback periksa nilai UTC jika birthDate disimpan dalam UTC
+      const bMonthUTC = d.getUTCMonth() + 1;
+      const bDayUTC = d.getUTCDate();
+      if (bMonthUTC === todayMonth && bDayUTC === todayDay) {
+        return true;
+      }
+    }
+  }
+
+  // 2. Fallback periksa dari NIP (Format standar PNS: YYYYMMDD...)
+  if (nip && nip.length >= 8) {
+    const cleaned = nip.replace(/\D/g, '');
+    if (cleaned.length >= 8) {
+      const nipMonth = parseInt(cleaned.substring(4, 6), 10);
+      const nipDay = parseInt(cleaned.substring(6, 8), 10);
+      if (nipMonth === todayMonth && nipDay === todayDay) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 export function isUserAdmin(user: any): boolean {
   if (!user) return false;
   if (user.isAdmin === true) return true;

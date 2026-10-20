@@ -22,11 +22,11 @@ export interface KaryaAkademikItem {
 }
 
 export const MOCK_KARYA_AKADEMIK_ATTACHMENTS_5: KaryaAkademikAttachment[] = [
-  { id: 1, label: 'Cover Buku & Naskah', src: '/images/kabar-keluarga/card-1.jpg', fileName: 'cover_buku_sastra_prof.jpg', size: '2.4 MB' },
-  { id: 2, label: 'Dokumentasi Penyerahan', src: '/images/kabar-keluarga/card-2.jpg', fileName: 'penyerahan_koleksi_perpusnas.jpg', size: '1.8 MB' },
-  { id: 3, label: 'Kata Pengantar & Sinopsis', src: '/images/kabar-keluarga/card-3.jpg', fileName: 'sinopsis_karya_sastra.pdf', size: '850 KB' },
-  { id: 4, label: 'Sesi Diskusi Bedah Buku', src: '/images/kabar-keluarga/card-4.jpg', fileName: 'bedah_buku_auditorium.jpg', size: '3.1 MB' },
-  { id: 5, label: 'Sertifikat Registrasi ISBN', src: '/images/kabar-keluarga/card-5.jpg', fileName: 'sertifikat_deposit_isbn.pdf', size: '620 KB' },
+  { id: 1, label: 'Cover Buku & Naskah', src: '/images/logo-perpusnas.png', fileName: 'cover_buku_sastra_prof.jpg', size: '2.4 MB' },
+  { id: 2, label: 'Dokumentasi Penyerahan', src: '/images/logo-perpusnas.png', fileName: 'penyerahan_koleksi_perpusnas.jpg', size: '1.8 MB' },
+  { id: 3, label: 'Kata Pengantar & Sinopsis', src: '/images/logo-perpusnas.png', fileName: 'sinopsis_karya_sastra.pdf', size: '850 KB' },
+  { id: 4, label: 'Sesi Diskusi Bedah Buku', src: '/images/logo-perpusnas.png', fileName: 'bedah_buku_auditorium.jpg', size: '3.1 MB' },
+  { id: 5, label: 'Sertifikat Registrasi ISBN', src: '/images/logo-perpusnas.png', fileName: 'sertifikat_deposit_isbn.pdf', size: '620 KB' },
 ];
 
 export const STITCH_MOCK_KARYA_AKADEMIK: KaryaAkademikItem[] = [
@@ -37,7 +37,7 @@ export const STITCH_MOCK_KARYA_AKADEMIK: KaryaAkademikItem[] = [
     content: `Penelitian ini menyajikan pemetaan komprehensif perkembangan publikasi ilmiah mengenai manuskrip kuno nusantara yang terindeks dalam pangkalan data internasional selama kurun waktu satu dekade.
 
 Hasil analisis menunjukkan peningkatan tren riset kolaboratif antarbangsa dengan fokus dominan pada alih aksara, kodikologi, dan digitalisasi preservasi naskah lontar dan daluwang. Kajian ini memberikan arah strategis bagi prioritas akuisisi koleksi khusus di Perpustakaan Nasional RI.`,
-    coverImage: '/images/kabar-keluarga/card-2.jpg',
+    coverImage: '/images/logo-perpusnas.png',
     publishedAt: '20 Agustus 2026',
     status: 'Terbit',
     authorName: 'Dr. Sri Rahayu, M.Hum.',
@@ -53,7 +53,7 @@ Hasil analisis menunjukkan peningkatan tren riset kolaboratif antarbangsa dengan
     content: `Preservasi digital memerlukan standardisasi mikroservis dan redundansi multi-region guna mengantisipasi kerusakan fisik media penyimpanan serta keusangan format berkas (format obsolescence).
 
 Tulisan ini menjabarkan implementasi protokol OAIS (Open Archival Information System) yang diadopsi dalam infrastruktur Pusat Data dan Informasi Perpusnas RI guna memastikan siklus hidup aset intelektual bangsa terlindungi secara berkelanjutan.`,
-    coverImage: '/images/kabar-keluarga/card-3.jpg',
+    coverImage: '/images/logo-perpusnas.png',
     publishedAt: '20 Agustus 2026',
     status: 'Menunggu',
     authorName: 'Ahmad Fauzi, M.Kom.',
@@ -69,7 +69,7 @@ Tulisan ini menjabarkan implementasi protokol OAIS (Open Archival Information Sy
     content: `Layanan perpustakaan inklusif menuntut sinergi antara desain universal, koleksi buku braille/audiobook bertagging DAISY, serta antarmuka situs yang mematuhi pedoman Web Content Accessibility Guidelines (WCAG) 2.1 AA.
 
 Riset ini mengusulkan roadmap peningkatan kapasitas pustakawan dalam mendampingi pemustaka berkebutuhan khusus demi mewujudkan hak atas literasi yang setara bagi seluruh lapisan warga negara.`,
-    coverImage: '/images/kabar-keluarga/card-4.jpg',
+    coverImage: '/images/logo-perpusnas.png',
     publishedAt: '20 Agustus 2026',
     status: 'Terbit',
     authorName: 'Dewi Lestari, S.Sos.',
@@ -85,7 +85,7 @@ Riset ini mengusulkan roadmap peningkatan kapasitas pustakawan dalam mendampingi
     content: `Konektivitas antarpangkalan data warisan budaya menuntut semantik relasi yang kaya melampaui metadata MARC21 konvensional. 
 
 Melalui perancangan model graf pengetahuan (knowledge graph), pemustaka dapat menelusuri korelasi historis antara pengarang, naskah turunan, peristiwa sejarah, serta artefak terkait secara dinamis dalam satu jendela pencarian terpadu.`,
-    coverImage: '/images/kabar-keluarga/card-5.jpg',
+    coverImage: '/images/logo-perpusnas.png',
     publishedAt: '20 Agustus 2026',
     status: 'Menunggu',
     authorName: 'Hendra Gunawan, S.Kom., M.T.I.',
@@ -101,7 +101,7 @@ Melalui perancangan model graf pengetahuan (knowledge graph), pemustaka dapat me
     content: `Program Transformasi Perpustakaan Berbasis Inklusi Sosial (TPBIS) telah membuktikan bahwa perpustakaan bukan lagi sekadar gudang buku hening, melainkan ruang interaksi dan transfer keterampilan hidup (life skills).
 
 Melalui pelatihan literasi digital, wirausaha kuliner, kerajinan tangan, dan pertanian hidroponik berbasis bahan bacaan terapan, perpustakaan telah menjadi agen transformasi nyata dalam memperkuat ketahanan ekonomi keluarga.`,
-    coverImage: '/images/kabar-keluarga/card-6.jpg',
+    coverImage: '/images/logo-perpusnas.png',
     publishedAt: '18 Agustus 2026',
     status: 'Terbit',
     authorName: 'Dra. Endang Sulistyowati, M.Si.',
@@ -117,7 +117,7 @@ Melalui pelatihan literasi digital, wirausaha kuliner, kerajinan tangan, dan per
     content: `Hikayat Amir Hamzah merupakan salah satu mahakarya sastra Melayu klasik dengan ketebalan fisik dan ragam variasi salinan terbanyak di dunia Melayu.
 
 Kajian ini menelaah varian bahasa Melayu-Riau beraksara Jawi abad ke-18 dengan metode diplomatik guna menyajikan edisi teks yang akurat bagi rujukan filolog modern dan pemerhati sastra Nusantara.`,
-    coverImage: '/images/kabar-keluarga/card-7.jpg',
+    coverImage: '/images/logo-perpusnas.png',
     publishedAt: '15 Agustus 2026',
     status: 'Terbit',
     authorName: 'Rahmat Hidayat, M.Hum.',

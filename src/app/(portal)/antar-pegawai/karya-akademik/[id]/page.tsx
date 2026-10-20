@@ -70,7 +70,7 @@ export default function DetailKaryaAkademikPage() {
             title: apiData.title,
             excerpt: apiData.body?.slice(0, 180) + '...',
             content: apiData.body || '',
-            coverImage: apiData.coverImage || '/images/kabar-keluarga/card-1.jpg',
+            coverImage: apiData.coverImage || '/images/logo-perpusnas.png',
             publishedAt: apiData.createdAt
               ? new Date(apiData.createdAt).toLocaleDateString('id-ID', {
                   day: 'numeric',
@@ -162,9 +162,11 @@ export default function DetailKaryaAkademikPage() {
             Antar Pegawai
           </span>
           <span className="text-[#757682]">&gt;</span>
-          <Link href="/antar-pegawai/karya-akademik" className="hover:text-[#00113a] font-bold text-[#1a1b20] transition-colors">
+          <Link href="/antar-pegawai/karya-akademik" className="hover:text-[#00113a] transition-colors">
             Karya Akademik
           </Link>
+          <span className="text-[#757682]">&gt;</span>
+          <span className="text-[#1a1b20] font-bold">Detail</span>
         </nav>
 
         {/* Feedback Alert */}
