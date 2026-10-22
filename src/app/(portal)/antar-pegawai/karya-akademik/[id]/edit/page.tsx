@@ -398,7 +398,7 @@ export default function EditKaryaAkademikPage() {
 
     setIsSubmitting(true);
     try {
-      await fetch(`/api/employee-posts/${rawId}`, {
+      const res = await fetch(`/api/employee-posts/${rawId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -409,6 +409,16 @@ export default function EditKaryaAkademikPage() {
           status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',
         }),
       });
+      const resJson = await res.json().catch(() => null);
+      if (typeof window !== 'undefined') {
+        const editorName = resJson?.data?.editorName || resJson?.data?.editor?.name;
+        if (editorName) {
+          localStorage.setItem(`last_editor_${rawId}`, editorName);
+          if (resJson?.data?.id) {
+            localStorage.setItem(`last_editor_${resJson.data.id}`, editorName);
+          }
+        }
+      }
 
       setSuccessMessage('Perubahan Karya Akademik berhasil disimpan!');
       setTimeout(() => {

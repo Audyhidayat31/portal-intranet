@@ -66,21 +66,21 @@ export default function DetailKaryaAkademikPage() {
         if (data.success && data.data) {
           const apiData = data.data;
           const formatted: KaryaAkademikItem = {
+            ...apiData,
             id: apiData.id,
             title: apiData.title,
             excerpt: apiData.body?.slice(0, 180) + '...',
             content: apiData.body || '',
             coverImage: apiData.coverImage || '/images/logo-perpusnas.png',
-            publishedAt: apiData.createdAt
-              ? new Date(apiData.createdAt).toLocaleDateString('id-ID', {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric',
-                })
-              : '20 Agustus 2026',
-            status: apiData.status === 'TERBIT' ? 'Terbit' : 'Menunggu',
-            authorName: apiData.author?.name || 'Ahmad Fauzi',
-            authorPosition: apiData.author?.profile?.position || 'Peneliti Ahli Madya',
+            publishedAt: apiData.publishedAt || apiData.createdAt,
+            createdAt: apiData.createdAt,
+            updatedAt: apiData.updatedAt,
+            attachments: apiData.attachments,
+            status: apiData.status === 'TERBIT' || apiData.status === 'Terbit' ? 'Terbit' : 'Menunggu',
+            authorName: apiData.author?.name || apiData.authorName || 'Ahmad Fauzi',
+            authorPosition: apiData.author?.profile?.position || apiData.authorPosition || 'Peneliti Ahli Madya',
+            editor: apiData.editor || (apiData.editorName ? { name: apiData.editorName } : null),
+            editorName: apiData.editorName || apiData.editor?.name || null,
           };
           setItem(formatted);
         } else {
@@ -103,7 +103,16 @@ export default function DetailKaryaAkademikPage() {
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      await fetch(`/api/employee-posts/${item?.id || rawId}`, { method: 'DELETE' });
+      const targetId = item?.id || rawId;
+      await fetch(`/api/employee-posts/${targetId}`, { method: 'DELETE' });
+      if (typeof window !== 'undefined') {
+        try {
+          const stored: string[] = JSON.parse(localStorage.getItem('deleted_karya_akademik_ids') || '[]');
+          if (!stored.includes(targetId)) stored.push(targetId);
+          if (item?.title && !stored.includes(item.title)) stored.push(item.title);
+          localStorage.setItem('deleted_karya_akademik_ids', JSON.stringify(stored));
+        } catch {}
+      }
     } catch {
       // Continue
     } finally {
@@ -143,11 +152,13 @@ export default function DetailKaryaAkademikPage() {
   const displayDate = rawDate ? formatDate(rawDate) : formatDate(new Date());
   const displayContent = item.content || item.excerpt || '';
   const displayAuthor = item.authorName || (item as any)?.author?.name || 'Pegawai Perpusnas';
+  const localEditor = typeof window !== 'undefined' ? (localStorage.getItem(`last_editor_${item?.id}`) || localStorage.getItem(`last_editor_${rawId}`)) : null;
+  const displayEditor = (item as any)?.editor?.name || (item as any)?.editorName || localEditor;
 
   const attachments =
     item.attachments && item.attachments.length > 0
       ? item.attachments
-      : MOCK_KARYA_AKADEMIK_ATTACHMENTS_5;
+      : [];
 
   return (
     <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 bg-white min-h-[calc(100vh-80px)] flex flex-col justify-between">
@@ -224,9 +235,10 @@ export default function DetailKaryaAkademikPage() {
           </div>
 
           {/* Divider Line */}
-          <div className="border-t border-[#c5c6d2] my-8" />
+          {attachments.length > 0 && <div className="border-t border-[#c5c6d2] my-8" />}
 
           {/* Section: Lampiran matching Wireframe Gambar 3 */}
+          {attachments.length > 0 && (
           <div>
             <h3 className="text-xs font-bold text-[#1a1b20] mb-4">
               Lampiran
@@ -248,6 +260,7 @@ export default function DetailKaryaAkademikPage() {
               ))}
             </div>
           </div>
+          )}
 
           {/* Divider Line */}
           <div className="border-t border-[#c5c6d2] my-8" />
@@ -269,16 +282,16 @@ export default function DetailKaryaAkademikPage() {
               </p>
             </div>
               {/* Diperbarui Oleh */}
-              {true && (
+              {Boolean(displayEditor) && (
                 <>
                   <div className="border-l border-[#c5c6d2]" />
                   <div className="text-xs text-[#757682] space-y-0.5 w-[220px]">
                     <p className="font-semibold text-[#757682]">Diperbarui oleh</p>
                     <p className="font-semibold text-[#1a1b20]">
-                      {(item as any)?.editor?.name || (item as any)?.author?.name || (item as any)?.authorName || 'Administrator Perpusnas'}
+                      {displayEditor}
                     </p>
                     <p className="font-medium text-[#757682]">
-                      {(item as any)?.updatedAt ? formatDate((item as any).updatedAt) : '24 Agustus 2026'}
+                      {(item as any)?.updatedAt ? formatDate((item as any).updatedAt) : ''}
                     </p>
                     <p className="font-medium text-[#757682]">
                       Status: {(item as any)?.status === 'MENUNGGU' || (item as any)?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}

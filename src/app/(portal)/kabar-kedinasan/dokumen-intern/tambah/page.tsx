@@ -170,7 +170,7 @@ export default function TambahDokumenInternalPage() {
     }
   };
 
-  const handleAttachmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAttachmentChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
@@ -195,11 +195,24 @@ export default function TambahDokumenInternalPage() {
       return;
     }
 
-    const newAttachments = files.map((file) => ({
-      file,
-      name: file.name,
-      preview: null,
-    }));
+    const newAttachments = await Promise.all(
+      files.map(async (file) => {
+        let preview: string | null = null;
+        try {
+          preview = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve((reader.result as string) || '');
+            reader.onerror = () => resolve('');
+            reader.readAsDataURL(file);
+          });
+        } catch {}
+        return {
+          file,
+          name: file.name,
+          preview,
+        };
+      })
+    );
 
     setAttachments([...attachments, ...newAttachments]);
     if (attachmentInputRef.current) {
@@ -234,6 +247,7 @@ export default function TambahDokumenInternalPage() {
 
     setIsSubmitting(true);
     try {
+      const validPreviews = attachments.map((a) => a.preview).filter(Boolean);
       const res = await fetch('/api/internal-documents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -242,7 +256,8 @@ export default function TambahDokumenInternalPage() {
           documentNumber: nomorDokumen,
           categoryName: jenisDokumen,
           keterangan: htmlContent || rawText,
-          attachmentName: attachments.length > 0 ? attachments.map((a) => a.name).join(', ') : undefined,
+          attachmentName: attachments.length > 0 ? attachments.map((a) => a.name).join(', ') : null,
+          attachmentUrl: validPreviews.length > 0 ? JSON.stringify(validPreviews) : null,
           publishedAt: tanggal.toISOString(),
           status: status || 'Terbit',
         }),

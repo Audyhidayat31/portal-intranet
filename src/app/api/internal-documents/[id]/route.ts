@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getCurrentUser } from '@/lib/auth';
+import { logActivity } from '@/lib/audit';
 import { STITCH_MOCK_INTERNAL_DOCS_5 } from '@/lib/mock-internal-documents';
 
 function findMockInternalDoc(id: string) {
@@ -72,7 +74,62 @@ export async function GET(
       });
 
       if (item) {
-        return NextResponse.json({ success: true, data: item });
+        const isWaiting =
+          item.status === 'MENUNGGU' ||
+          item.status === 'Menunggu' ||
+          item.status === 'DRAFT';
+
+        if (isWaiting) {
+          const session = await getCurrentUser();
+          const isAdmin =
+            session?.role?.toUpperCase() === 'ADMINISTRATOR' ||
+            session?.role?.toUpperCase() === 'ADMIN';
+          const isAuthor = Boolean(session?.userId && item.authorId === session.userId);
+
+          if (!isAdmin && !isAuthor) {
+            return NextResponse.json(
+              { success: false, message: 'Anda tidak memiliki hak akses untuk melihat dokumen ini' },
+              { status: 403 }
+            );
+          }
+        }
+
+        let editorName = null;
+        try {
+          const updateLog = await prisma.activityLog.findFirst({
+            where: {
+              targetId: item.id,
+              action: { in: ['UPDATE', 'CHANGE_STATUS'] },
+            },
+            orderBy: { createdAt: 'desc' },
+            include: { user: { select: { name: true } } },
+          });
+          if (updateLog?.user?.name) {
+            editorName = updateLog.user.name;
+          }
+        } catch (e) {}
+
+        let docNumber = item.source || '';
+        let cleanBody = item.body || item.excerpt || '';
+        if (!docNumber && item.body && item.body.startsWith('[') && item.body.includes(']')) {
+          const closeIdx = item.body.indexOf(']');
+          docNumber = item.body.slice(1, closeIdx);
+          cleanBody = item.body.slice(closeIdx + 1).trim();
+        } else if (item.body && item.body.startsWith('[') && item.body.includes(']')) {
+          const closeIdx = item.body.indexOf(']');
+          cleanBody = item.body.slice(closeIdx + 1).trim();
+        }
+
+        return NextResponse.json({
+          success: true,
+          data: {
+            ...item,
+            documentNumber: docNumber,
+            keterangan: cleanBody,
+            editor: editorName ? { name: editorName } : null,
+            editorName: editorName || null,
+          },
+        });
       }
     } catch (dbErr) {
       console.warn('Prisma findFirst error in internal-documents GET:', dbErr);
@@ -142,7 +199,9 @@ export async function PUT(
             title: title !== undefined ? title : existing.title,
             excerpt: keterangan !== undefined ? keterangan : existing.excerpt,
             body: formattedKeterangan !== undefined ? formattedKeterangan : existing.body,
-            attachmentName: attachmentName !== undefined ? attachmentName : existing.attachmentName,
+            attachmentName: attachmentName !== undefined ? (attachmentName || null) : existing.attachmentName,
+            attachmentUrl: body.attachmentUrl !== undefined ? (body.attachmentUrl || null) : existing.attachmentUrl,
+            fileSize: attachmentName !== undefined ? (attachmentName ? (body.fileSize || existing.fileSize || '1.5 MB') : null) : existing.fileSize,
             publishedAt: publishedAt ? new Date(publishedAt) : existing.publishedAt,
             categoryId,
             source: documentNumber !== undefined ? documentNumber : existing.source,
@@ -155,10 +214,29 @@ export async function PUT(
           },
         });
 
+        const session = await getCurrentUser();
+        const actorId = session?.userId || existing.authorId;
+        const editorUser = actorId ? await prisma.user.findUnique({ where: { id: actorId }, select: { name: true } }) : null;
+        const currentEditorName = editorUser?.name || session?.name || 'Administrator Perpusnas';
+
+        await logActivity({
+          userId: actorId,
+          action: 'UPDATE',
+          module: 'INTERNAL_DOCUMENT',
+          targetId: existing.id,
+          description: `Mengubah dokumen internal: ${title || existing.title}`,
+        });
+
         return NextResponse.json({
           success: true,
           message: 'Dokumen internal berhasil diperbarui',
-          data: updated,
+          data: {
+            ...updated,
+            documentNumber: documentNumber !== undefined ? documentNumber : (updated.source || ''),
+            keterangan: keterangan !== undefined ? keterangan : (updated.excerpt || ''),
+            editor: { name: currentEditorName },
+            editorName: currentEditorName,
+          },
         });
       }
 
@@ -166,14 +244,18 @@ export async function PUT(
       const defaultUser = await prisma.user.findFirst();
       const docCat = await prisma.category.findUnique({ where: { slug: 'dokumen-intern' } });
       if (defaultUser) {
+        const upsertKeterangan = documentNumber ? `[${documentNumber}] ${keterangan || ''}` : (keterangan || '');
         const created = await prisma.content.create({
           data: {
             id,
             title: title || 'Dokumen Internal',
             slug: id,
+            source: documentNumber || null,
             excerpt: keterangan || '',
-            body: keterangan || '',
-            attachmentName: attachmentName || 'Dokumen_Internal.pdf',
+            body: upsertKeterangan || '',
+            attachmentName: attachmentName ? attachmentName : null,
+            attachmentUrl: body.attachmentUrl ? body.attachmentUrl : null,
+            fileSize: attachmentName ? (body.fileSize || '1.5 MB') : null,
             type: 'INTERNAL_DOCUMENT',
             status: status === 'Menunggu' || status === 'MENUNGGU' ? 'MENUNGGU' : 'TERBIT',
             authorId: defaultUser.id,
@@ -184,7 +266,11 @@ export async function PUT(
         return NextResponse.json({
           success: true,
           message: 'Dokumen internal berhasil diperbarui',
-          data: created,
+          data: {
+            ...created,
+            documentNumber: documentNumber || '',
+            keterangan: keterangan || '',
+          },
         });
       }
     } catch (dbErr) {

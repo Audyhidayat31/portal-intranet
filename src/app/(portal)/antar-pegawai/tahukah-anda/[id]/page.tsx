@@ -19,6 +19,7 @@ import {
   TahukahAndaItem,
   getStoredTahukahAnda,
   saveStoredTahukahAnda,
+  markTahukahAndaAsDeleted,
 } from '@/lib/mock-tahukah-anda';
 
 export default function DetailTahukahAndaPage() {
@@ -26,15 +27,8 @@ export default function DetailTahukahAndaPage() {
   const router = useRouter();
   const rawId = (params?.id as string) || '';
 
-  const storedList = getStoredTahukahAnda();
-  const matchedInitial =
-    storedList.find((m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())) ||
-    STITCH_MOCK_TAHUKAH_ANDA_9.find((m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase()));
-
-  const [tahukahItem, setTahukahItem] = useState<any>(
-    matchedInitial ? { ...matchedInitial, body: matchedInitial.content } : DEFAULT_STITCH_TAHUKAH_ANDA_DETAIL
-  );
-  const [isLoading, setIsLoading] = useState(!matchedInitial);
+  const [tahukahItem, setTahukahItem] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Lightbox preview for attachments
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -61,22 +55,68 @@ export default function DetailTahukahAndaPage() {
     if (!rawId) return;
 
     const currentStored = getStoredTahukahAnda();
-    const foundStored = currentStored.find((m) => m.id === rawId);
+    const foundStored =
+      currentStored.find((m) => m.id === rawId || (m.title && m.title.toLowerCase().includes(rawId.toLowerCase()))) ||
+      STITCH_MOCK_TAHUKAH_ANDA_9.find((m) => m.id === rawId || (m.title && m.title.toLowerCase().includes(rawId.toLowerCase())));
 
     if (foundStored) {
-      setTahukahItem({ ...foundStored, body: foundStored.content });
+      setTahukahItem({
+        ...foundStored,
+        body: foundStored.content,
+        authorId: (foundStored as any).authorId,
+      });
       setIsLoading(false);
-      return;
     }
 
-    setIsLoading(true);
     fetch(`/api/employee-posts/${rawId}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data) {
-          const tahukahItem = data.data;
-          setTahukahItem(tahukahItem);
-        } else {
+          const apiData = data.data;
+          const mergedItem = {
+            ...apiData,
+            authorId: apiData.authorId || apiData.author?.id || (foundStored as any)?.authorId,
+            body: apiData.body || apiData.content || (foundStored ? foundStored.content : ''),
+            content: apiData.body || apiData.content || (foundStored ? foundStored.content : ''),
+            publishedAt: apiData.publishedAt || apiData.createdAt,
+            authorName: apiData.author?.name || apiData.authorName || (foundStored ? foundStored.authorName : 'Ahmad Fauzi, S.Kom.'),
+            editor: apiData.editor || (apiData.editorName ? { name: apiData.editorName } : null),
+            editorName: apiData.editorName || apiData.editor?.name || null,
+          };
+          setTahukahItem(mergedItem);
+
+          if (foundStored) {
+            saveStoredTahukahAnda(
+              currentStored.map((it) => (it.id === rawId ? { ...it, ...mergedItem } : it))
+            );
+          }
+        } else if (foundStored && foundStored.title) {
+          // If direct ID not found, attempt matching via search query
+          fetch(`/api/employee-posts?category=tahukah-anda&q=${encodeURIComponent(foundStored.title.slice(0, 30))}`)
+            .then((r) => r.json())
+            .then((searchRes) => {
+              if (searchRes.success && Array.isArray(searchRes.data) && searchRes.data.length > 0) {
+                const matched = searchRes.data.find(
+                  (d: any) => d.title.trim().toLowerCase() === foundStored.title.trim().toLowerCase()
+                );
+                if (matched) {
+                  const synced = {
+                    ...matched,
+                    authorId: matched.authorId || matched.author?.id,
+                    body: matched.body || foundStored.content,
+                    content: matched.body || foundStored.content,
+                    publishedAt: matched.createdAt,
+                    authorName: matched.author?.name || 'Ahmad Fauzi, S.Kom.',
+                  };
+                  setTahukahItem(synced);
+                  saveStoredTahukahAnda(
+                    currentStored.map((it) => (it.id === rawId ? { ...it, ...synced, id: matched.id } : it))
+                  );
+                }
+              }
+            })
+            .catch(() => {});
+        } else if (!foundStored) {
           const matchedMock = STITCH_MOCK_TAHUKAH_ANDA_9.find(
             (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
           );
@@ -91,33 +131,43 @@ export default function DetailTahukahAndaPage() {
             setTahukahItem(DEFAULT_STITCH_TAHUKAH_ANDA_DETAIL);
           }
         }
-        setIsLoading(false);
       })
       .catch(() => {
-        const matchedMock = STITCH_MOCK_TAHUKAH_ANDA_9.find((m) => m.id === rawId);
-        if (matchedMock) {
-          setTahukahItem(matchedMock);
-        } else {
-          setTahukahItem(DEFAULT_STITCH_TAHUKAH_ANDA_DETAIL);
+        if (!foundStored) {
+          const matchedMock = STITCH_MOCK_TAHUKAH_ANDA_9.find((m) => m.id === rawId);
+          if (matchedMock) {
+            setTahukahItem(matchedMock);
+          } else {
+            setTahukahItem(DEFAULT_STITCH_TAHUKAH_ANDA_DETAIL);
+          }
         }
+      })
+      .finally(() => {
         setIsLoading(false);
       });
   }, [rawId]);
 
   const handleDelete = async () => {
     setIsDeleting(true);
+    const targetId = tahukahItem?.id || rawId;
+    const targetTitle = tahukahItem?.title || displayTitle || '';
+
     try {
-      await fetch(`/api/employee-posts/${tahukahItem?.id || rawId}`, {
+      await fetch(`/api/employee-posts/${targetId}?title=${encodeURIComponent(targetTitle)}`, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: targetId, title: targetTitle, rawId }),
       });
-    } catch {
-      // ignore
+    } catch (err) {
+      console.warn('API delete error:', err);
     } finally {
-      const list = getStoredTahukahAnda();
-      const filtered = list.filter((it) => it.id !== (tahukahItem?.id || rawId));
-      saveStoredTahukahAnda(filtered);
+      markTahukahAndaAsDeleted(targetId, targetTitle);
+      if (rawId && rawId !== targetId) {
+        markTahukahAndaAsDeleted(rawId, targetTitle);
+      }
       setIsDeleting(false);
       router.push('/antar-pegawai/tahukah-anda');
+      router.refresh();
     }
   };
 
@@ -241,16 +291,16 @@ export default function DetailTahukahAndaPage() {
               </p>
             </div>
               {/* Diperbarui Oleh */}
-              {true && (
+              {Boolean(tahukahItem?.editor?.name || (tahukahItem as any)?.editorName) && (
                 <>
                   <div className="border-l border-[#c5c6d2]" />
                   <div className="text-xs text-[#757682] space-y-0.5 w-[220px]">
                     <p className="font-semibold text-[#757682]">Diperbarui oleh</p>
                     <p className="font-semibold text-[#1a1b20]">
-                      {tahukahItem?.editor?.name || tahukahItem?.author?.name || tahukahItem?.authorName || 'Administrator Perpusnas'}
+                      {tahukahItem?.editor?.name || (tahukahItem as any)?.editorName}
                     </p>
                     <p className="font-medium text-[#757682]">
-                      {tahukahItem?.updatedAt ? formatDate(tahukahItem.updatedAt) : '24 Agustus 2026'}
+                      {tahukahItem?.updatedAt ? formatDate(tahukahItem.updatedAt) : ''}
                     </p>
                     <p className="font-medium text-[#757682]">
                       Status: {tahukahItem?.status === 'MENUNGGU' || tahukahItem?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
@@ -264,7 +314,7 @@ export default function DetailTahukahAndaPage() {
             {canManageContent(currentUser, tahukahItem) && (
               <div className="flex items-center gap-3 self-end sm:self-auto">
                 <Link
-                  href={`/antar-pegawai/tahukah-anda/${rawId}/edit`}
+                  href={`/antar-pegawai/tahukah-anda/${tahukahItem?.id || rawId}/edit`}
                   className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs inline-block text-center cursor-pointer"
                 >
                   Edit

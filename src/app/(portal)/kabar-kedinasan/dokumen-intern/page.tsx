@@ -73,31 +73,38 @@ export default function DokumenInternPage() {
 
         // Format API items to match InternalDocument shape if needed
         const formattedApiItems: InternalDocument[] = apiItems.map((item: any) => {
-          let docNum = 'SE/01/Perpusnas/2026';
-          let ket = item.excerpt || item.body || '';
-          if (item.body && item.body.startsWith('[') && item.body.includes(']')) {
+          let docNum = item.documentNumber || item.source || '';
+          let ket = item.keterangan || item.excerpt || item.body || '';
+          if (!docNum && item.body && item.body.startsWith('[') && item.body.includes(']')) {
             const closingIdx = item.body.indexOf(']');
             docNum = item.body.slice(1, closingIdx);
             ket = item.body.slice(closingIdx + 1).trim();
+          } else if (ket.startsWith('[') && ket.includes(']')) {
+            const closingIdx = ket.indexOf(']');
+            ket = ket.slice(closingIdx + 1).trim();
           }
 
           return {
             id: item.id,
             title: item.title,
-            documentNumber: docNum,
+            documentNumber: docNum || '-',
             category: item.category?.name || 'Surat Edaran',
             publishedAt: item.publishedAt,
             keterangan: ket,
-            attachmentName: item.attachmentName || 'Dokumen_Internal.pdf',
-            fileSize: item.fileSize || '1.5 MB',
+            attachmentName: item.attachmentName || null,
+            fileSize: item.fileSize || null,
+            status: item.status === 'MENUNGGU' || item.status === 'Menunggu' || item.status === 'DRAFT' ? 'Menunggu' : 'Terbit',
+            authorId: item.authorId,
+            author: item.author,
+            authorName: item.author?.name || 'Administrator Perpusnas',
           };
         });
 
-        setDocuments(formattedApiItems.length > 0 ? formattedApiItems : STITCH_MOCK_INTERNAL_DOCS_5);
+        setDocuments(formattedApiItems);
       })
       .catch((e) => {
         console.error(e);
-        setDocuments(STITCH_MOCK_INTERNAL_DOCS_5);
+        setDocuments([]);
       })
       .finally(() => {
         setIsLoading(false);
@@ -135,7 +142,7 @@ export default function DokumenInternPage() {
           documentNumber: newDocNumber || 'SE/103/IX/2026',
           categoryName: newCategory,
           keterangan: newKeterangan || 'Keterangan dokumen internal...',
-          attachmentName: newAttachmentName || `${newTitle.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
+          attachmentName: newAttachmentName ? newAttachmentName.trim() : null,
           publishedAt: new Date().toISOString(),
         }),
       });
@@ -284,11 +291,16 @@ export default function DokumenInternPage() {
             ))}
           </div>
         ) : documents.filter((doc: any) => {
-            const isPublished = doc.status === 'Terbit' || doc.status === 'TERBIT' || (!doc.status);
+            const isPublished = doc.status === 'Terbit' || doc.status === 'TERBIT' || doc.status === 'PUBLISHED';
             if (isPublished) return true;
             if (!currentUser) return false;
             if (isUserAdmin(currentUser)) return true;
-            return currentUser.name === (doc.authorName || doc.author?.name);
+            return Boolean(
+              currentUser.name === doc.authorName ||
+              (doc.author && doc.author.name === currentUser.name) ||
+              doc.authorId === currentUser.id ||
+              doc.authorId === currentUser.userId
+            );
           }).length === 0 ? (
           <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
             <FileText className="w-12 h-12 text-[#757682] mx-auto mb-3 opacity-60" />
@@ -379,11 +391,16 @@ export default function DokumenInternPage() {
       <Pagination 
           currentPage={currentPage}
           totalItems={documents.filter((doc: any) => {
-            const isPublished = doc.status === 'Terbit' || doc.status === 'TERBIT' || (!doc.status);
+            const isPublished = doc.status === 'Terbit' || doc.status === 'TERBIT' || doc.status === 'PUBLISHED';
             if (isPublished) return true;
             if (!currentUser) return false;
             if (isUserAdmin(currentUser)) return true;
-            return currentUser.name === (doc.authorName || doc.author?.name);
+            return Boolean(
+              currentUser.name === doc.authorName ||
+              (doc.author && doc.author.name === currentUser.name) ||
+              doc.authorId === currentUser.id ||
+              doc.authorId === currentUser.userId
+            );
           }).length}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}

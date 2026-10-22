@@ -42,7 +42,7 @@ export default function DetailKonsultasiPage() {
           setReplyAuthor(data.data.name || 'Ahmad Fauzi');
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   // Modals for Tanggapan (Replies)
@@ -71,8 +71,8 @@ export default function DetailKonsultasiPage() {
               apiData.category === 'KEPEGAWAIAN'
                 ? 'Pegawai'
                 : apiData.category === 'IT'
-                ? 'IT'
-                : 'Kesehatan',
+                  ? 'IT'
+                  : 'Kesehatan',
             date: new Date(apiData.createdAt).toLocaleDateString('id-ID', {
               day: 'numeric',
               month: 'long',
@@ -255,7 +255,7 @@ export default function DetailKonsultasiPage() {
       status: 'Terbit' as const,
       description:
         'Musim peralihan cuaca seringkali membawa lonjakan kasus batuk dan flu di lingkungan kerja. Mari tingkatkan daya tahan tubuh dengan menjaga hidrasi, konsumsi vitamin C, istirahat cukup, dan mengenakan masker saat berada di ruang kerja bersama.',
-      attachmentName: 'Konsultasi Kesehatan.pdf',
+      attachmentName: undefined,
       attachmentUrl: '#',
       authorName: 'Ahmad Fauzi',
       replies: [],
@@ -351,14 +351,14 @@ export default function DetailKonsultasiPage() {
                   Status: {(currentItem as any).status === 'MENUNGGU' || (currentItem as any).status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
                 </p>
               </div>
-              
-              {Boolean(currentItem.updatedAt && currentItem.createdAt && (new Date(currentItem.updatedAt).getTime() - new Date(currentItem.createdAt).getTime() > 1000)) && (
+
+              {Boolean(currentItem?.editor?.name || (currentItem as any)?.editorName) && (
                 <>
                   <div className="border-l border-[#c5c6d2]" />
                   <div className="w-[220px]">
                     <p className="text-xs text-[#757682] mb-1 font-semibold">Diperbarui oleh</p>
                     <p className="text-sm sm:text-base font-bold text-[#1a1b20]">
-                      {currentItem.editor?.name || currentItem.editorName || currentItem.authorName || 'Administrator Perpusnas'}
+                      {currentItem.editor?.name || (currentItem as any)?.editorName}
                     </p>
                     <p className="text-xs sm:text-sm text-[#757682]">
                       {currentItem.updatedAt ? formatDate(currentItem.updatedAt) : ''}

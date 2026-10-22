@@ -7,6 +7,8 @@ export interface TahukahAndaItem {
   publishedAt: string;
   status: 'Terbit' | 'Menunggu';
   authorName?: string;
+  authorId?: string;
+  editorName?: string;
   attachments?: Array<{ id: number; label: string; src: string }>;
 }
 
@@ -96,3 +98,55 @@ export function getTahukahAndaById(id: string): TahukahAndaItem | undefined {
   const list = getStoredTahukahAnda();
   return list.find((item) => item.id === id || item.id === String(id));
 }
+
+const DELETED_KEY = 'portal_deleted_tahukah_anda_ids_v1';
+
+export function getDeletedTahukahAnda(): { ids: string[]; titles: string[] } {
+  if (typeof window === 'undefined') return { ids: [], titles: [] };
+  try {
+    const raw = localStorage.getItem(DELETED_KEY);
+    if (!raw) return { ids: [], titles: [] };
+    const parsed = JSON.parse(raw);
+    return {
+      ids: Array.isArray(parsed?.ids) ? parsed.ids : [],
+      titles: Array.isArray(parsed?.titles) ? parsed.titles : [],
+    };
+  } catch {
+    return { ids: [], titles: [] };
+  }
+}
+
+export function markTahukahAndaAsDeleted(id: string, title?: string) {
+  if (typeof window === 'undefined') return;
+  try {
+    const current = getDeletedTahukahAnda();
+    const cleanTitle = (title || '').trim().toLowerCase();
+    const newIds = current.ids.includes(id) ? current.ids : [...current.ids, id];
+    const newTitles =
+      cleanTitle && !current.titles.includes(cleanTitle)
+        ? [...current.titles, cleanTitle]
+        : current.titles;
+    localStorage.setItem(DELETED_KEY, JSON.stringify({ ids: newIds, titles: newTitles }));
+
+    // Also remove from stored items
+    const list = getStoredTahukahAnda();
+    const filtered = list.filter(
+      (it) => it.id !== id && (!cleanTitle || (it.title || '').trim().toLowerCase() !== cleanTitle)
+    );
+    saveStoredTahukahAnda(filtered);
+  } catch (err) {
+    console.error('Failed to mark tahukah-anda as deleted', err);
+  }
+}
+
+export function isTahukahAndaDeleted(id: string, title?: string): boolean {
+  if (typeof window === 'undefined') return false;
+  const current = getDeletedTahukahAnda();
+  if (current.ids.includes(id)) return true;
+  if (title) {
+    const cleanTitle = title.trim().toLowerCase();
+    if (current.titles.includes(cleanTitle)) return true;
+  }
+  return false;
+}
+

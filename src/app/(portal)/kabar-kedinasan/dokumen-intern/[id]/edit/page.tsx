@@ -146,9 +146,19 @@ export default function EditDokumenInternalPage() {
           }
           if (item.attachmentName) {
             const names = item.attachmentName.split(',').map((n: string) => n.trim()).filter(Boolean);
-            setAttachments(names.map((name: string) => ({
+            let urls: string[] = [];
+            if (item.attachmentUrl) {
+              try {
+                const parsed = JSON.parse(item.attachmentUrl);
+                if (Array.isArray(parsed)) urls = parsed;
+                else if (typeof parsed === 'string') urls = [parsed];
+              } catch {
+                urls = [item.attachmentUrl];
+              }
+            }
+            setAttachments(names.map((name: string, idx: number) => ({
               name,
-              preview: name.match(/\.(jpg|jpeg|png|webp|gif)$/i) ? `/uploads/${name}` : null,
+              preview: urls[idx] || (name.match(/\.(jpg|jpeg|png|webp|gif)$/i) ? `/uploads/${name}` : null),
             })));
           } else {
             setAttachments([]);
@@ -282,7 +292,7 @@ export default function EditDokumenInternalPage() {
     }
   };
 
-  const handleAttachmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAttachmentChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
@@ -307,11 +317,24 @@ export default function EditDokumenInternalPage() {
       return;
     }
 
-    const newAttachments = files.map((file) => ({
-      file,
-      name: file.name,
-      preview: null,
-    }));
+    const newAttachments = await Promise.all(
+      files.map(async (file) => {
+        let preview: string | null = null;
+        try {
+          preview = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve((reader.result as string) || '');
+            reader.onerror = () => resolve('');
+            reader.readAsDataURL(file);
+          });
+        } catch {}
+        return {
+          file,
+          name: file.name,
+          preview,
+        };
+      })
+    );
 
     setAttachments([...attachments, ...newAttachments]);
     if (attachmentInputRef.current) {
@@ -347,6 +370,7 @@ export default function EditDokumenInternalPage() {
 
     setIsSubmitting(true);
     try {
+      const validPreviews = attachments.map((a) => a.preview).filter(Boolean);
       const res = await fetch(`/api/internal-documents/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -355,7 +379,8 @@ export default function EditDokumenInternalPage() {
           documentNumber: nomorDokumen || undefined,
           categoryName: jenisDokumen || 'Surat Edaran',
           keterangan: htmlContent || rawText,
-          attachmentName: attachments.length > 0 ? attachments.map((a) => a.name).join(', ') : undefined,
+          attachmentName: attachments.length > 0 ? attachments.map((a) => a.name).join(', ') : null,
+          attachmentUrl: validPreviews.length > 0 ? JSON.stringify(validPreviews) : null,
           publishedAt: tanggal.toISOString(),
           status: status || 'Terbit',
         }),

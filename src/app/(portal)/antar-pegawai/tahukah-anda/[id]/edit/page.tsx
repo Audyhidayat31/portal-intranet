@@ -464,7 +464,8 @@ export default function EditArtikelTahukahAndaPage() {
       coverImage: fallbackImage,
       publishedAt: tanggal.toISOString().split('T')[0],
       status: resolvedStatus,
-      authorName: existingItem?.authorName || 'Ahmad Fauzi',
+      authorName: existingItem?.authorName || 'Ahmad Fauzi, S.Kom.',
+      authorId: existingItem?.authorId,
       attachments: lampiranAttachments.length > 0
         ? lampiranAttachments.map((a, idx) => ({ id: idx + 1, label: a.name, src: a.preview || `/uploads/${a.name}` }))
         : existingItem?.attachments || MOCK_TAHUKAH_ANDA_ATTACHMENTS_5,
@@ -487,7 +488,7 @@ export default function EditArtikelTahukahAndaPage() {
           body: htmlContent || rawText || judul,
           coverImage: fallbackImage,
           publishedAt: tanggal.toISOString(),
-          status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',
+          status: status === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
           attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments.map((a) => a.name).join(', ') : undefined,
         }),
       });

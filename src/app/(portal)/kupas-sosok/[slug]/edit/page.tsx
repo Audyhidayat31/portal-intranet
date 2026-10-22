@@ -79,7 +79,7 @@ export default function EditKupasSosokPage() {
   useEffect(() => {
     try {
       localStorage.removeItem('portal_figures_data');
-    } catch {}
+    } catch { }
     if (!rawSlug) return;
 
     const storedFigures = getStoredFigures();
@@ -370,7 +370,7 @@ export default function EditKupasSosokPage() {
 
       try {
         localStorage.removeItem('portal_figures_data');
-      } catch {}
+      } catch { }
 
       // Attempt API PUT
       try {
@@ -555,10 +555,10 @@ export default function EditKupasSosokPage() {
                             disabled={!item.isCurrentMonth}
                             onClick={() => selectCalendarDay(item.day)}
                             className={`h-8 w-8 mx-auto rounded-full flex items-center justify-center font-medium transition-colors ${!item.isCurrentMonth
-                                ? 'text-slate-300 cursor-not-allowed'
-                                : isSelected
-                                  ? 'bg-[#00113a] text-white font-bold shadow-xs'
-                                  : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                              ? 'text-slate-300 cursor-not-allowed'
+                              : isSelected
+                                ? 'bg-[#00113a] text-white font-bold shadow-xs'
+                                : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
                               }`}
                           >
                             {item.day}
@@ -612,8 +612,8 @@ export default function EditKupasSosokPage() {
                     type="button"
                     onClick={() => execFormat('bold')}
                     className={`p-1.5 rounded transition-colors ${activeStyles.bold
-                        ? 'bg-[#00113a] text-white'
-                        : 'text-[#444650] hover:bg-white'
+                      ? 'bg-[#00113a] text-white'
+                      : 'text-[#444650] hover:bg-white'
                       }`}
                     title="Tebal (Ctrl+B)"
                   >
@@ -623,8 +623,8 @@ export default function EditKupasSosokPage() {
                     type="button"
                     onClick={() => execFormat('italic')}
                     className={`p-1.5 rounded transition-colors ${activeStyles.italic
-                        ? 'bg-[#00113a] text-white'
-                        : 'text-[#444650] hover:bg-white'
+                      ? 'bg-[#00113a] text-white'
+                      : 'text-[#444650] hover:bg-white'
                       }`}
                     title="Miring (Ctrl+I)"
                   >
@@ -634,8 +634,8 @@ export default function EditKupasSosokPage() {
                     type="button"
                     onClick={() => execFormat('underline')}
                     className={`p-1.5 rounded transition-colors ${activeStyles.underline
-                        ? 'bg-[#00113a] text-white'
-                        : 'text-[#444650] hover:bg-white'
+                      ? 'bg-[#00113a] text-white'
+                      : 'text-[#444650] hover:bg-white'
                       }`}
                     title="Garis bawah (Ctrl+U)"
                   >
@@ -645,8 +645,8 @@ export default function EditKupasSosokPage() {
                     type="button"
                     onClick={() => execFormat('insertUnorderedList')}
                     className={`p-1.5 rounded transition-colors ${activeStyles.unorderedList
-                        ? 'bg-[#00113a] text-white'
-                        : 'text-[#444650] hover:bg-white'
+                      ? 'bg-[#00113a] text-white'
+                      : 'text-[#444650] hover:bg-white'
                       }`}
                     title="Daftar Bullet"
                   >
@@ -841,8 +841,8 @@ export default function EditKupasSosokPage() {
                         setIsStatusMenuOpen(false);
                       }}
                       className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Terbit'
-                          ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
-                          : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
                         }`}
                     >
                       Terbit
@@ -854,8 +854,8 @@ export default function EditKupasSosokPage() {
                         setIsStatusMenuOpen(false);
                       }}
                       className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Menunggu'
-                          ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
-                          : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
                         }`}
                     >
                       Menunggu

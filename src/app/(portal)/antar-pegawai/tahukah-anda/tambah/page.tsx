@@ -83,6 +83,19 @@ export default function TambahArtikelTahukahAndaPage() {
   const [gambarFileName, setGambarFileName] = useState('');
   const [gambarPreview, setGambarPreview] = useState<string | null>(null);
   const [lampiranAttachments, setLampiranAttachments] = useState<Array<{ file?: File; name: string; preview: string | null }>>([]);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setCurrentUser(data.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -290,21 +303,54 @@ export default function TambahArtikelTahukahAndaPage() {
       return;
     }
 
+    const finalBody = htmlContent || rawText || judul;
+
     setIsSubmitting(true);
     const resolvedStatus = status === 'Menunggu' ? 'Menunggu' : 'Terbit';
     const fallbackImage =
       gambarPreview ||
       '/images/logo-perpusnas.png';
 
+    const authorName = currentUser?.name || 'Ahmad Fauzi, S.Kom.';
+    const authorId = currentUser?.id || currentUser?.userId;
+
+    let createdId = `tahukah-custom-${Date.now()}`;
+
+    // Persist via API first so database has it for everyone
+    try {
+      const res = await fetch('/api/employee-posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: judul,
+          category: 'tahukah-anda',
+          categorySlug: 'tahukah-anda',
+          body: finalBody,
+          coverImage: fallbackImage,
+          publishedAt: tanggal.toISOString(),
+          status: status === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
+          attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments.map((a) => a.name).join(', ') : undefined,
+        }),
+      });
+
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.success && data?.data?.id) {
+        createdId = data.data.id;
+      }
+    } catch (apiErr) {
+      console.warn('API save error, saving locally:', apiErr);
+    }
+
     const newItem: TahukahAndaItem = {
-      id: `tahukah-custom-${Date.now()}`,
+      id: createdId,
       title: judul,
       excerpt: (rawText || judul).slice(0, 140) + '...',
-      content: htmlContent || rawText || judul,
+      content: finalBody,
       coverImage: fallbackImage,
       publishedAt: tanggal.toISOString().split('T')[0],
       status: resolvedStatus,
-      authorName: 'Ahmad Fauzi',
+      authorName,
+      authorId,
       attachments: lampiranAttachments.length > 0
         ? lampiranAttachments.map((a, idx) => ({ id: idx + 1, label: a.name, src: a.preview || `/uploads/${a.name}` }))
         : MOCK_TAHUKAH_ANDA_ATTACHMENTS_5,
@@ -314,35 +360,10 @@ export default function TambahArtikelTahukahAndaPage() {
     const currentStored = getStoredTahukahAnda();
     saveStoredTahukahAnda([newItem, ...currentStored]);
 
-    // Also persist via API if available
-    try {
-      await fetch('/api/employee-posts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: judul,
-          category: 'tahukah-anda',
-          categorySlug: 'tahukah-anda',
-          body: htmlContent || rawText || judul,
-          coverImage: fallbackImage,
-          publishedAt: tanggal.toISOString(),
-          status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',
-          attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments.map((a) => a.name).join(', ') : undefined,
-        }),
-      });
-
-      setSuccessMessage('Artikel Tahukah Anda berhasil disimpan!');
-      setTimeout(() => {
-        router.push('/antar-pegawai/tahukah-anda');
-      }, 1200);
-    } catch {
-      setSuccessMessage('Artikel Tahukah Anda berhasil disimpan (mode lokal)!');
-      setTimeout(() => {
-        router.push('/antar-pegawai/tahukah-anda');
-      }, 1200);
-    } finally {
-      setIsSubmitting(false);
-    }
+    setSuccessMessage('Artikel Tahukah Anda berhasil disimpan!');
+    setTimeout(() => {
+      router.push('/antar-pegawai/tahukah-anda');
+    }, 1200);
   };
 
   return (

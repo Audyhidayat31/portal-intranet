@@ -191,13 +191,13 @@ export default function DetailKalimatBijakPage() {
               </p>
             </div>
               {/* Diperbarui Oleh */}
-              {Boolean((item as any)?.updatedAt && (item as any)?.createdAt && Math.abs(new Date((item as any).updatedAt).getTime() - new Date((item as any).createdAt).getTime()) > 5000) && (
+              {Boolean((item as any)?.editor?.name || (item as any)?.editorName) && (
                 <>
                   <div className="border-l border-[#c5c6d2]" />
                   <div className="text-xs text-[#757682] space-y-0.5 w-[220px]">
                     <p className="font-semibold text-[#757682]">Diperbarui oleh</p>
                     <p className="font-semibold text-[#1a1b20]">
-                      {(item as any)?.editor?.name || (item as any)?.author?.name || (item as any)?.authorName || 'Administrator Perpusnas'}
+                      {(item as any)?.editor?.name || (item as any)?.editorName}
                     </p>
                     <p className="font-medium text-[#757682]">
                       {(item as any)?.updatedAt ? formatDate((item as any).updatedAt) : ''}

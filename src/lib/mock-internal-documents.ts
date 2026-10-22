@@ -8,6 +8,8 @@ export interface InternalDocument {
   fileSize?: string;
   publishedAt: string;
   authorName?: string;
+  authorId?: string;
+  author?: any;
   status?: string;
 }
 

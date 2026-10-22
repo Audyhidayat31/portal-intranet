@@ -27,15 +27,8 @@ export default function DetailOlahragaPage() {
   const router = useRouter();
   const rawId = (params?.id as string) || '';
 
-  const storedList = getStoredOlahraga();
-  const matchedInitial =
-    storedList.find((m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())) ||
-    STITCH_MOCK_OLAHRAGA_9.find((m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase()));
-
-  const [olahragaItem, setOlahragaItem] = useState<any>(
-    matchedInitial ? { ...matchedInitial, body: matchedInitial.content } : DEFAULT_STITCH_OLAHRAGA_DETAIL
-  );
-  const [isLoading, setIsLoading] = useState(!matchedInitial);
+  const [olahragaItem, setOlahragaItem] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Lightbox preview for attachments
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -62,7 +55,9 @@ export default function DetailOlahragaPage() {
     if (!rawId) return;
 
     const currentStored = getStoredOlahraga();
-    const foundStored = currentStored.find((m) => m.id === rawId);
+    const foundStored =
+      currentStored.find((m) => m.id === rawId || (m.title && m.title.toLowerCase().includes(rawId.toLowerCase()))) ||
+      STITCH_MOCK_OLAHRAGA_9.find((m) => m.id === rawId || (m.title && m.title.toLowerCase().includes(rawId.toLowerCase())));
 
     if (foundStored) {
       setOlahragaItem({
@@ -70,16 +65,30 @@ export default function DetailOlahragaPage() {
         body: foundStored.content,
       });
       setIsLoading(false);
-      return;
     }
 
     fetch(`/api/employee-posts/${rawId}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data) {
-          const olahragaItem = data.data;
-          setOlahragaItem(olahragaItem);
-        } else {
+          const apiData = data.data;
+          const mergedItem = {
+            ...apiData,
+            body: apiData.body || apiData.content || (foundStored ? foundStored.content : ''),
+            content: apiData.body || apiData.content || (foundStored ? foundStored.content : ''),
+            publishedAt: apiData.publishedAt || apiData.createdAt,
+            authorName: apiData.author?.name || apiData.authorName || 'Ahmad Fauzi',
+            editor: apiData.editor || (apiData.editorName ? { name: apiData.editorName } : null),
+            editorName: apiData.editorName || apiData.editor?.name || null,
+          };
+          setOlahragaItem(mergedItem);
+
+          if (foundStored) {
+            saveStoredOlahraga(
+              currentStored.map((it) => (it.id === rawId ? { ...it, ...mergedItem } : it))
+            );
+          }
+        } else if (!foundStored) {
           const matchedMock = STITCH_MOCK_OLAHRAGA_9.find(
             (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
           );
@@ -90,16 +99,19 @@ export default function DetailOlahragaPage() {
             });
           }
         }
-        setIsLoading(false);
       })
       .catch(() => {
-        const matchedMock = STITCH_MOCK_OLAHRAGA_9.find((m) => m.id === rawId);
-        if (matchedMock) {
-          setOlahragaItem({
-            ...matchedMock,
-            body: matchedMock.content,
-          });
+        if (!foundStored) {
+          const matchedMock = STITCH_MOCK_OLAHRAGA_9.find((m) => m.id === rawId);
+          if (matchedMock) {
+            setOlahragaItem({
+              ...matchedMock,
+              body: matchedMock.content,
+            });
+          }
         }
+      })
+      .finally(() => {
         setIsLoading(false);
       });
   }, [rawId]);
@@ -241,16 +253,16 @@ export default function DetailOlahragaPage() {
               </p>
             </div>
               {/* Diperbarui Oleh */}
-              {true && (
+              {Boolean(olahragaItem?.editor?.name || (olahragaItem as any)?.editorName) && (
                 <>
                   <div className="border-l border-[#c5c6d2]" />
                   <div className="text-xs text-[#757682] space-y-0.5 w-[220px]">
                     <p className="font-semibold text-[#757682]">Diperbarui oleh</p>
                     <p className="font-semibold text-[#1a1b20]">
-                      {olahragaItem?.editor?.name || olahragaItem?.author?.name || olahragaItem?.authorName || 'Administrator Perpusnas'}
+                      {olahragaItem?.editor?.name || (olahragaItem as any)?.editorName}
                     </p>
                     <p className="font-medium text-[#757682]">
-                      {olahragaItem?.updatedAt ? formatDate(olahragaItem.updatedAt) : '24 Agustus 2026'}
+                      {olahragaItem?.updatedAt ? formatDate(olahragaItem.updatedAt) : ''}
                     </p>
                     <p className="font-medium text-[#757682]">
                       Status: {olahragaItem?.status === 'MENUNGGU' || olahragaItem?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}

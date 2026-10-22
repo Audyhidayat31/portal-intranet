@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getCurrentUser } from '@/lib/auth';
+import { logActivity } from '@/lib/audit';
 import { STITCH_MOCK_AGENDAS_6 } from '@/lib/mock-agendas';
 
 function findMockAgenda(id: string) {
@@ -56,7 +58,49 @@ export async function GET(
       });
 
       if (item) {
-        return NextResponse.json({ success: true, data: item });
+        const isWaiting =
+          item.status === 'MENUNGGU' ||
+          item.status === 'Menunggu' ||
+          item.status === 'DRAFT';
+
+        if (isWaiting) {
+          const session = await getCurrentUser();
+          const isAdmin =
+            session?.role?.toUpperCase() === 'ADMINISTRATOR' ||
+            session?.role?.toUpperCase() === 'ADMIN';
+          const isAuthor = Boolean(session?.userId && item.authorId === session.userId);
+
+          if (!isAdmin && !isAuthor) {
+            return NextResponse.json(
+              { success: false, message: 'Anda tidak memiliki hak akses untuk melihat agenda ini' },
+              { status: 403 }
+            );
+          }
+        }
+
+        let editorName = null;
+        try {
+          const updateLog = await prisma.activityLog.findFirst({
+            where: {
+              targetId: item.id,
+              action: { in: ['UPDATE', 'CHANGE_STATUS'] },
+            },
+            orderBy: { createdAt: 'desc' },
+            include: { user: { select: { name: true } } },
+          });
+          if (updateLog?.user?.name) {
+            editorName = updateLog.user.name;
+          }
+        } catch (e) {}
+
+        return NextResponse.json({
+          success: true,
+          data: {
+            ...item,
+            editor: editorName ? { name: editorName } : null,
+            editorName: editorName || null,
+          },
+        });
       }
     } catch (dbErr) {
       console.warn('Prisma findFirst error in agendas GET:', dbErr);
@@ -118,10 +162,27 @@ export async function PUT(
           },
         });
 
+        const session = await getCurrentUser();
+        const actorId = session?.userId || existing.authorId;
+        const editorUser = actorId ? await prisma.user.findUnique({ where: { id: actorId }, select: { name: true } }) : null;
+        const currentEditorName = editorUser?.name || session?.name || 'Administrator Perpusnas';
+
+        await logActivity({
+          userId: actorId,
+          action: 'UPDATE',
+          module: 'AGENDA',
+          targetId: existing.id,
+          description: `Mengubah agenda: ${title || existing.title}`,
+        });
+
         return NextResponse.json({
           success: true,
           message: 'Agenda kegiatan berhasil diperbarui',
-          data: updated,
+          data: {
+            ...updated,
+            editor: { name: currentEditorName },
+            editorName: currentEditorName,
+          },
         });
       }
 

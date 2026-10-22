@@ -149,8 +149,12 @@ export async function GET(
         try {
           const lastLog = await prisma.activityLog.findFirst({
             where: {
-              targetId: item.id,
-              action: 'UPDATE',
+              OR: [
+                { targetId: item.id },
+                { targetId: item.slug },
+                { targetId: id },
+              ],
+              action: { in: ['UPDATE', 'CHANGE_STATUS'] },
             },
             orderBy: { createdAt: 'desc' },
             include: {
@@ -432,13 +436,53 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+    const { searchParams } = new URL(request.url);
+    const titleParam = searchParams.get('title');
+
+    let bodyData: any = null;
+    try {
+      bodyData = await request.json();
+    } catch {}
+
+    const searchTitle = titleParam || bodyData?.title;
 
     try {
-      const existing = await prisma.employeePost.findFirst({
+      let existing = await prisma.employeePost.findFirst({
         where: {
           OR: [{ id }, { slug: id }],
         },
       });
+
+      if (!existing && searchTitle) {
+        existing = await prisma.employeePost.findFirst({
+          where: {
+            OR: [
+              { title: searchTitle },
+              { title: { contains: searchTitle } },
+            ],
+          },
+        });
+      }
+
+      if (!existing && (id.startsWith('karya-akademik-') || id.includes('karya-akademik'))) {
+        const mockMap: Record<string, string> = {
+          'karya-akademik-2': 'Analisis Bibliometrik',
+          'karya-akademik-3': 'Strategi Preservasi',
+          'karya-akademik-4': 'Studi Komparasi',
+          'karya-akademik-5': 'Implementasi Ontologi',
+          'karya-akademik-6': 'Transformasi Perpustakaan',
+          'karya-akademik-7': 'Kajian Filologis',
+        };
+        const titleSnippet = mockMap[id];
+        if (titleSnippet) {
+          existing = await prisma.employeePost.findFirst({
+            where: {
+              categorySlug: 'karya-akademik',
+              title: { contains: titleSnippet },
+            },
+          });
+        }
+      }
 
       if (existing) {
         const catInfo = getCategoryModuleAndLabel(existing.categorySlug);

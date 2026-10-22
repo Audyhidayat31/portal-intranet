@@ -237,16 +237,16 @@ export default function DetailCoretanOpiniPage() {
               </p>
             </div>
               {/* Diperbarui Oleh */}
-              {(opiniItem?.updatedAt && opiniItem?.createdAt && new Date(opiniItem.updatedAt).getTime() - new Date(opiniItem.createdAt).getTime() > 1000) && (
+              {Boolean(opiniItem?.editor?.name || opiniItem?.editorName) && (
                 <>
                   <div className="border-l border-[#c5c6d2]" />
                   <div className="text-xs text-[#757682] space-y-0.5 w-[220px]">
                     <p className="font-semibold text-[#757682]">Diperbarui oleh</p>
                     <p className="font-semibold text-[#1a1b20]">
-                      {opiniItem?.editor?.name || opiniItem?.author?.name || opiniItem?.authorName || 'Administrator Perpusnas'}
+                      {opiniItem?.editor?.name || opiniItem?.editorName}
                     </p>
                     <p className="font-medium text-[#757682]">
-                      {formatDate(opiniItem.updatedAt)}
+                      {formatDate(opiniItem.updatedAt || new Date())}
                     </p>
                     <p className="font-medium text-[#757682]">
                       Status: {opiniItem?.status === 'MENUNGGU' || opiniItem?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}

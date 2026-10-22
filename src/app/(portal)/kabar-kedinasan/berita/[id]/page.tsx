@@ -182,6 +182,9 @@ export default function DetailBeritaPage() {
   const createdDate = news?.createdAt ? formatDate(news.createdAt) : displayDate;
   const updatedDate = news?.updatedAt ? formatDate(news.updatedAt) : displayDate;
 
+  const isUpdated = Boolean(news?.editor?.name || news?.editorName);
+  const editorName = news?.editor?.name || news?.editorName || '-';
+
   let realAttachments: { url: string, title: string }[] = [];
   if (news?.attachmentUrl) {
     try {
@@ -317,14 +320,18 @@ export default function DetailBeritaPage() {
                     <h4 className="font-bold text-lg text-[#1a1b20] mb-1">Tanggal Dibuat</h4>
                     <p className="text-sm text-[#1a1b20]">{createdDate}</p>
                   </div>
-                  <div>
-                    <h4 className="font-bold text-lg text-[#1a1b20] mb-1">Diperbarui Oleh</h4>
-                    <p className="text-sm text-[#1a1b20]">{authorName}</p>
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-lg text-[#1a1b20] mb-1">Tanggal Diperbarui</h4>
-                    <p className="text-sm text-[#1a1b20]">{updatedDate}</p>
-                  </div>
+                  {isUpdated && (
+                    <>
+                      <div>
+                        <h4 className="font-bold text-lg text-[#1a1b20] mb-1">Diperbarui Oleh</h4>
+                        <p className="text-sm text-[#1a1b20]">{editorName}</p>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-lg text-[#1a1b20] mb-1">Tanggal Diperbarui</h4>
+                        <p className="text-sm text-[#1a1b20]">{updatedDate}</p>
+                      </div>
+                    </>
+                  )}
                   <div>
                     <h4 className="font-bold text-lg text-[#1a1b20] mb-1">Status</h4>
                     <p className="text-sm text-[#1a1b20] capitalize">

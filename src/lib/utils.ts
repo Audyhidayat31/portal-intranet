@@ -10,10 +10,27 @@ export function cn(...inputs: ClassValue[]) {
 export function formatDate(date: string | Date | null | undefined, pattern: string = "d MMMM yyyy"): string {
   if (!date) return "-";
   try {
-    const d = typeof date === "string" ? parseISO(date) : date;
-    return format(d, pattern, { locale: id });
-  } catch {
+    if (typeof date === "string") {
+      const trimmed = date.trim();
+      if (!trimmed || trimmed === "-") return "-";
+      if (/^\d{1,2}\s+[A-Za-z]+\s+\d{4}$/.test(trimmed)) {
+        return trimmed;
+      }
+      let d = parseISO(trimmed);
+      if (isNaN(d.getTime())) {
+        d = new Date(trimmed);
+      }
+      if (!isNaN(d.getTime())) {
+        return format(d, pattern, { locale: id });
+      }
+      return trimmed;
+    }
+    if (date instanceof Date && !isNaN(date.getTime())) {
+      return format(date, pattern, { locale: id });
+    }
     return "-";
+  } catch {
+    return typeof date === "string" && date.trim() ? date.trim() : "-";
   }
 }
 
@@ -162,15 +179,41 @@ export function isUserAdmin(user: any): boolean {
   return upper === 'ADMINISTRATOR' || upper === 'ADMIN';
 }
 
+function cleanPersonName(name?: string | null): string {
+  if (!name) return '';
+  return name
+    .toLowerCase()
+    .replace(/(drs\.|dr\.|prof\.|s\.kom\.|m\.kom\.|s\.sos\.|m\.si\.|m\.hum\.|s\.pd\.|m\.pd\.|s\.e\.|m\.m\.|s\.t\.|m\.t\.)/gi, '')
+    .replace(/[^a-z0-9\s]/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 export function canManageContent(user: any, content: any): boolean {
   if (!user) return false;
   if (isUserAdmin(user)) return true;
 
-  const authorId = content?.authorId || content?.penulisId || content?.author?.id;
-  const authorName = content?.authorName || content?.namaPenulis || content?.author?.name || content?.name;
+  const authorId = content?.authorId || content?.penulisId || content?.author?.id || content?.userId;
+  const currentUserId = user.id || user.userId;
 
-  if (authorId && (authorId === user.id || authorId === user.userId)) return true;
-  if (authorName && user.name && authorName.trim().toLowerCase() === user.name.trim().toLowerCase()) return true;
+  if (authorId && currentUserId && String(authorId) === String(currentUserId)) return true;
+
+  const authorNip = content?.author?.nip || content?.authorNip;
+  if (authorNip && user.nip && String(authorNip).trim() === String(user.nip).trim()) return true;
+
+  const authorName = content?.authorName || content?.namaPenulis || content?.author?.name || content?.name;
+  if (authorName && user.name) {
+    const rawAuthor = String(authorName).trim().toLowerCase();
+    const rawUser = String(user.name).trim().toLowerCase();
+    if (rawAuthor === rawUser) return true;
+
+    const normAuthor = cleanPersonName(authorName);
+    const normUser = cleanPersonName(user.name);
+    if (normAuthor && normUser) {
+      if (normAuthor === normUser) return true;
+      if (normAuthor.includes(normUser) || normUser.includes(normAuthor)) return true;
+    }
+  }
 
   return false;
 }

@@ -9,6 +9,8 @@ export interface AgendaItem {
   eventLocation?: string;
   status: 'Terbit' | 'Menunggu';
   authorName?: string;
+  authorId?: string;
+  author?: any;
   attachments?: Array<{ id: number; label: string; src: string; fileName?: string }>;
 }
 

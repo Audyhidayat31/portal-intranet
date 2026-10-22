@@ -48,44 +48,54 @@ export default function KonsultasiPage() {
   // Load consultations from localStorage / API
   useEffect(() => {
     const localData = getStoredConsultations();
-    setConsultations(localData);
+    if (localData.length > 0) {
+      setConsultations(localData);
+    }
 
-    // Also attempt fetching from API
+    // Source of truth from database API
     fetch('/api/consultations')
       .then((res) => res.json())
       .then((data) => {
         if (data.success && Array.isArray(data.data)) {
-          const apiItems: ConsultationItem[] = data.data.map((topic: any) => ({
-            id: topic.id,
-            title: topic.title,
-            category:
-              topic.category === 'KEPEGAWAIAN'
-                ? 'Pegawai'
-                : topic.category === 'IT'
-                ? 'IT'
-                : 'Kesehatan',
-            date: new Date(topic.createdAt).toLocaleDateString('id-ID', {
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
-            }),
-            status: topic.status === 'OPEN' ? 'Menunggu' : 'Terbit',
-            description: topic.question || topic.description || '',
-            attachmentName: topic.attachmentName || null,
-            attachmentUrl: '#',
-            authorName: topic.author?.name || 'Pegawai Perpusnas',
-            replies: (topic.replies || []).map((r: any) => ({
-              id: r.id,
-              authorName: r.author?.name || 'Petugas',
-              date: new Date(r.createdAt).toLocaleDateString('id-ID', {
+          const apiItems: ConsultationItem[] = data.data
+            .filter(
+              (topic: any) =>
+                !topic.title?.includes('Topik Konsultasi #') &&
+                !topic.title?.includes('Penyesuaian Angka Kredit Pustakawan') &&
+                !String(topic.id).startsWith('kon-')
+            )
+            .map((topic: any) => ({
+              id: topic.id,
+              title: topic.title,
+              category:
+                topic.category === 'KEPEGAWAIAN'
+                  ? 'Pegawai'
+                  : topic.category === 'IT'
+                  ? 'IT'
+                  : 'Kesehatan',
+              date: new Date(topic.createdAt).toLocaleDateString('id-ID', {
                 day: 'numeric',
                 month: 'long',
                 year: 'numeric',
               }),
-              content: r.replyText,
-            })),
-          }));
+              status: topic.status === 'OPEN' ? 'Menunggu' : 'Terbit',
+              description: topic.question || topic.description || '',
+              attachmentName: topic.attachmentName || undefined,
+              attachmentUrl: '#',
+              authorName: topic.author?.name || 'Pegawai Perpusnas',
+              replies: (topic.replies || []).map((r: any) => ({
+                id: r.id,
+                authorName: r.author?.name || 'Petugas',
+                date: new Date(r.createdAt).toLocaleDateString('id-ID', {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric',
+                }),
+                content: r.replyText,
+              })),
+            }));
           setConsultations(apiItems);
+          saveStoredConsultations(apiItems);
         }
       })
       .catch((err) => {
@@ -321,17 +331,9 @@ export default function KonsultasiPage() {
                 <p className="text-base font-bold text-[#00113a] mb-1">
                   Tidak Ada Konsultasi Ditemukan
                 </p>
-                <p className="text-sm text-[#444650] mb-4">
+                <p className="text-sm text-[#444650]">
                   Silakan periksa kata kunci atau atur ulang filter pencarian Anda.
                 </p>
-                <button
-                  type="button"
-                  onClick={handleReset}
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-[#0070f3] hover:underline"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  <span>Kembalikan Semua Data</span>
-                </button>
               </div>
             ) : (
               displayedItems.map((item) => (
@@ -382,15 +384,20 @@ export default function KonsultasiPage() {
 
                   {/* Bottom Row: Attachment & Lihat Button */}
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2 border-t border-[#f4f3f9]">
-                    <div className="flex items-center gap-2 text-xs sm:text-sm text-[#444650]">
-                      <FileText className="w-4 h-4 text-[#757682] shrink-0" />
-                      <span>
-                        Lampiran File :{' '}
-                        <span className="text-[#1a1b20] font-medium">
-                          {item.attachmentName || 'Konsultasi.pdf'}
+                    {item.attachmentName ? (
+                      <div className="flex items-center gap-2 text-xs sm:text-sm text-[#444650]">
+                        <FileText className="w-4 h-4 text-[#757682] shrink-0" />
+                        <span>
+                          Lampiran File :{' '}
+                          <span className="text-[#1a1b20] font-medium">
+                            {item.attachmentName}
+                          </span>
                         </span>
-                      </span>
-                    </div>
+                      </div>
+                    ) : (
+                      <div />
+                    )}
+
 
                     <Link
                       href={`/antar-pegawai/konsultasi/${item.id}`}

@@ -39,6 +39,7 @@ export default function TambahKonsultasiPage() {
   >('');
   const [status, setStatus] = useState<'Terbit' | 'Menunggu' | ''>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [jenisKonsultasiError, setJenisKonsultasiError] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
   // Active toolbar formatting states
@@ -228,19 +229,17 @@ export default function TambahKonsultasiPage() {
     }
 
     if (!jenisKonsultasi) {
+      setJenisKonsultasiError(true);
       alert('Jenis Konsultasi wajib dipilih');
       return;
     }
 
-    if (!status) {
-      alert('Status Konsultasi wajib dipilih');
-      return;
-    }
+    // Jika belum memilih status, otomatis Menunggu
+    const finalStatus = (status || 'Menunggu') as 'Terbit' | 'Menunggu';
 
     setIsSubmitting(true);
 
     const finalCategory = jenisKonsultasi as 'IT' | 'Kesehatan' | 'Pegawai';
-    const finalStatus = status as 'Terbit' | 'Menunggu';
     const finalAttachment = lampiranFileName || undefined;
 
     const newItem: ConsultationItem = {
@@ -440,60 +439,6 @@ export default function TambahKonsultasiPage() {
               )}
             </div>
 
-            {/* 3. Status Dropdown */}
-            <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Status <span className="float-right hidden md:inline">:</span>
-            </label>
-            <div className="relative w-full md:w-56" ref={statusMenuRef}>
-              <button
-                type="button"
-                onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
-                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${
-                  isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
-                }`}
-              >
-                <span className="truncate">{status || 'Jenis Status'}</span>
-                <ChevronDown
-                  className={`w-4 h-4 text-white transition-transform ${
-                    isStatusMenuOpen ? 'rotate-180' : ''
-                  }`}
-                />
-              </button>
-
-              {isStatusMenuOpen && (
-                <div className="absolute top-full left-0 z-50 w-full bg-white border border-[#c5c6d2] border-t-0 rounded-b-md shadow-lg py-1 animate-fadeIn">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStatus('Terbit');
-                      setIsStatusMenuOpen(false);
-                    }}
-                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                      status === 'Terbit'
-                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
-                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                    }`}
-                  >
-                    Terbit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStatus('Menunggu');
-                      setIsStatusMenuOpen(false);
-                    }}
-                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                      status === 'Menunggu'
-                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
-                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                    }`}
-                  >
-                    Menunggu
-                  </button>
-                </div>
-              )}
-            </div>
-
             {/* 4. Keterangan / Deskripsi */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
               Keterangan <span className="float-right hidden md:inline">:</span>
@@ -656,16 +601,15 @@ export default function TambahKonsultasiPage() {
               </div>
             </div>
 
-            {/* 5. Jenis Konsultasi Dropdown */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Jenis Konsultasi{' '}
+              Jenis Konsultasi <span className="text-red-500 font-bold">*</span>{' '}
               <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="relative w-full md:w-56" ref={jenisMenuRef}>
               <button
                 type="button"
                 onClick={() => setIsJenisMenuOpen(!isJenisMenuOpen)}
-                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${
+                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-all shadow-xs cursor-pointer ${jenisKonsultasiError && !jenisKonsultasi ? 'ring-2 ring-red-500 border-2 border-red-500' : ''} ${
                   isJenisMenuOpen ? 'rounded-t-md' : 'rounded-md'
                 }`}
               >
@@ -685,6 +629,7 @@ export default function TambahKonsultasiPage() {
                     type="button"
                     onClick={() => {
                       setJenisKonsultasi('IT');
+                      setJenisKonsultasiError(false);
                       setIsJenisMenuOpen(false);
                     }}
                     className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
@@ -725,7 +670,84 @@ export default function TambahKonsultasiPage() {
                   </button>
                 </div>
               )}
+              <input
+                type="text"
+                value={jenisKonsultasi}
+                onChange={() => {}}
+                required
+                tabIndex={-1}
+                aria-hidden="true"
+                className="opacity-0 absolute inset-0 pointer-events-none -z-10 h-0 w-0"
+                onInvalid={(e) => {
+                  (e.target as HTMLInputElement).setCustomValidity('Jenis Konsultasi wajib dipilih');
+                  setJenisKonsultasiError(true);
+                }}
+                onInput={(e) => {
+                  (e.target as HTMLInputElement).setCustomValidity('');
+                  setJenisKonsultasiError(false);
+                }}
+              />
+              {jenisKonsultasiError && !jenisKonsultasi && (
+                <p className="text-xs text-red-600 font-medium mt-1.5 animate-fadeIn">
+                  Jenis Konsultasi wajib dipilih
+                </p>
+              )}
             </div>
+
+            {/* 6. Status Dropdown (Paling Bawah) */}
+            <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
+              Status <span className="float-right hidden md:inline">:</span>
+            </label>
+            <div className="relative w-full md:w-56" ref={statusMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
+                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${
+                  isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
+                }`}
+              >
+                <span className="truncate">{status || 'Jenis Status'}</span>
+                <ChevronDown
+                  className={`w-4 h-4 text-white transition-transform ${
+                    isStatusMenuOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              {isStatusMenuOpen && (
+                <div className="absolute top-full left-0 z-50 w-full bg-white border border-[#c5c6d2] border-t-0 rounded-b-md shadow-lg py-1 animate-fadeIn">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatus('Terbit');
+                      setIsStatusMenuOpen(false);
+                    }}
+                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
+                      status === 'Terbit'
+                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                    }`}
+                  >
+                    Terbit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatus('Menunggu');
+                      setIsStatusMenuOpen(false);
+                    }}
+                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
+                      status === 'Menunggu'
+                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                    }`}
+                  >
+                    Menunggu
+                  </button>
+                </div>
+              )}
+            </div>
+
           </div>
 
           {/* Form Actions matching Stitch */}
