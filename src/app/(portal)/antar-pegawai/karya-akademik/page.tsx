@@ -75,13 +75,14 @@ export default function KaryaAkademikPage() {
           excerpt: item.excerpt || (item.body ? item.body.slice(0, 180) + '...' : ''),
           content: item.body || '',
           coverImage: item.coverImage || '/images/logo-perpusnas.png',
-          publishedAt: item.createdAt
-            ? new Date(item.createdAt).toLocaleDateString('id-ID', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-              })
-            : '20 Agustus 2026',
+          publishedAt: formatDate(item.publishedAt || item.createdAt),
+          // cleaned
+            // rm
+                // rm
+                // rm
+                // rm
+              // rm
+            // rm
           status: item.status === 'MENUNGGU' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit',
           authorName: item.author?.name || 'Ahmad Fauzi',
           authorId: item.authorId || item.author?.id,
@@ -89,22 +90,36 @@ export default function KaryaAkademikPage() {
           authorPosition: item.author?.profile?.position || 'Pustakawan Ahli',
           authorUnit: item.author?.profile?.unitKerja || 'Perpustakaan Nasional RI',
           attachments: item.attachments || [],
+          createdAt: item.createdAt,
         }));
 
         // Merge initial mock data with API database items
-        const pool = [...STITCH_MOCK_KARYA_AKADEMIK];
-        for (const apiItm of formattedApiItems) {
-          if (!pool.some((p) => p.id === apiItm.id || p.title === apiItm.title)) {
-            pool.unshift(apiItm);
-          }
-        }
+        const pool = [...formattedApiItems];
+        const deletedIds: string[] = typeof window !== 'undefined'
+          ? (() => {
+              try {
+                return JSON.parse(localStorage.getItem('deleted_karya_akademik_ids') || '[]');
+              } catch {
+                return [];
+              }
+            })()
+          : [];
+        const filteredPool = pool.filter((item) => !deletedIds.includes(item.id) && !deletedIds.some((d: string) => item.title.toLowerCase().includes(d.toLowerCase())));
+            // cleaned
+          // cleaned
+        // cleaned
+        filteredPool.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
+        });
 
-        setAllItems(pool);
+        setAllItems(filteredPool);
 
-        let filtered = pool;
+        let filtered = filteredPool;
         if (q.trim()) {
           const lowerQ = q.toLowerCase();
-          filtered = pool.filter(
+          filtered = filteredPool.filter(
             (item) =>
               item.title.toLowerCase().includes(lowerQ) ||
               item.excerpt.toLowerCase().includes(lowerQ) ||
@@ -117,7 +132,7 @@ export default function KaryaAkademikPage() {
         setCurrentPage(1);
       })
       .catch(() => {
-        let filtered = STITCH_MOCK_KARYA_AKADEMIK;
+        let filtered: KaryaAkademikItem[] = [];
         if (q.trim()) {
           const lowerQ = q.toLowerCase();
           filtered = filtered.filter(

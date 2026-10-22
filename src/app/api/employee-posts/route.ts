@@ -7,7 +7,7 @@ import { z } from 'zod';
 const postSchema = z.object({
   title: z.string().min(3, 'Judul minimal 3 karakter'),
   categorySlug: z.string().min(1, 'Kategori wajib dipilih'),
-  body: z.string().min(10, 'Isi postingan minimal 10 karakter'),
+  body: z.string().min(1, 'Isi postingan minimal 1 karakter'),
   coverImage: z.string().optional(),
   status: z.string().optional(),
   publishedAt: z.string().optional(),

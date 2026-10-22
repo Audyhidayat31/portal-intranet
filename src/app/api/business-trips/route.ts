@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getCurrentUser } from '@/lib/auth';
+import { logActivity } from '@/lib/audit';
 
 export async function GET(request: NextRequest) {
   try {
@@ -57,16 +59,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const defaultUser = await prisma.user.findFirst();
-    if (!defaultUser) {
-      return NextResponse.json(
-        { success: false, message: 'User tidak ditemukan' },
-        { status: 400 }
-      );
-    }
+    const session = await getCurrentUser();
+    let authorId = session?.userId;
 
     const authorNameValue = authorName || nama;
-    let authorId = defaultUser.id;
     if (authorNameValue) {
       const matchedUser = await prisma.user.findFirst({
         where: { name: { contains: authorNameValue } },
@@ -74,6 +70,17 @@ export async function POST(request: NextRequest) {
       if (matchedUser) {
         authorId = matchedUser.id;
       }
+    }
+
+    if (!authorId) {
+      const defaultUser = await prisma.user.findFirst();
+      if (!defaultUser) {
+        return NextResponse.json(
+          { success: false, message: 'User tidak ditemukan' },
+          { status: 400 }
+        );
+      }
+      authorId = defaultUser.id;
     }
 
     const slug = `${title
@@ -95,6 +102,19 @@ export async function POST(request: NextRequest) {
         attachmentName: attachmentName || null,
         authorId,
         publishedAt: publishedAt ? new Date(publishedAt) : new Date(),
+      },
+    });
+
+    await logActivity({
+      userId: authorId,
+      action: 'CREATE',
+      module: 'BUSINESS_TRIP',
+      targetId: created.id,
+      description: `Menambahkan laporan perjalanan dinas: ${title}`,
+      details: {
+        title,
+        destinationCity: destinationCity || 'Nasional',
+        status: tripStatus === 'TERBIT' ? 'Terbit' : 'Menunggu',
       },
     });
 

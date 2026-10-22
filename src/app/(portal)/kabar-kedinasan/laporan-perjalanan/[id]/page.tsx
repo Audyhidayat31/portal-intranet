@@ -283,7 +283,7 @@ export default function DetailLaporanPerjalananPage() {
                 </div>
               </div>
 
-              {(report?.updatedAt && report?.createdAt && new Date(report.updatedAt).getTime() - new Date(report.createdAt).getTime() > 1000) && (
+              {Boolean(report?.editor?.name || (report as any)?.editorName) && (
                 <>
                   <div className="border-l border-[#c5c6d2]" />
                   <div className="w-[220px]">
@@ -291,10 +291,10 @@ export default function DetailLaporanPerjalananPage() {
                       Diperbarui oleh
                     </span>
                     <div className="text-sm sm:text-base font-medium text-[#1a1b20]">
-                      {report?.editor?.name || report?.author?.name || report?.authorName || 'Administrator Perpusnas'}
+                      {report?.editor?.name || (report as any)?.editorName}
                     </div>
                     <div className="text-xs text-[#757682] mt-0.5">
-                      {formatDate(report.updatedAt)}
+                      {report?.updatedAt ? formatDate(report.updatedAt) : ''}
                     </div>
                     <div className="text-xs text-[#757682] mt-0.5">
                       Status: {(report?.status === 'MENUNGGU' || report?.status === 'Menunggu' || report?.status === 'DRAFT') ? 'Menunggu' : 'Terbit'}

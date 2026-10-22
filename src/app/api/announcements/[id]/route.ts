@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getCurrentUser } from '@/lib/auth';
+import { logActivity } from '@/lib/audit';
 
 export async function GET(
   request: NextRequest,
@@ -40,7 +42,29 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ success: true, data: item });
+    let editorName = null;
+    try {
+      const updateLog = await prisma.activityLog.findFirst({
+        where: {
+          targetId: item.id,
+          action: { in: ['UPDATE', 'CHANGE_STATUS'] },
+        },
+        orderBy: { createdAt: 'desc' },
+        include: { user: { select: { name: true } } },
+      });
+      if (updateLog?.user?.name) {
+        editorName = updateLog.user.name;
+      }
+    } catch (e) {}
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        ...item,
+        editor: editorName ? { name: editorName } : null,
+        editorName: editorName || null,
+      },
+    });
   } catch (error) {
     console.error('Error fetching announcement item:', error);
     return NextResponse.json(
@@ -72,10 +96,27 @@ export async function PUT(
       },
     });
 
+    const session = await getCurrentUser();
+    const actorId = session?.userId || updated.authorId;
+    const editorUser = actorId ? await prisma.user.findUnique({ where: { id: actorId }, select: { name: true } }) : null;
+    const currentEditorName = editorUser?.name || session?.name || 'Administrator Perpusnas';
+
+    await logActivity({
+      userId: actorId,
+      action: 'UPDATE',
+      module: 'ANNOUNCEMENT',
+      targetId: id,
+      description: `Mengubah pengumuman: ${title || updated.title}`,
+    });
+
     return NextResponse.json({
       success: true,
       message: 'Pengumuman berhasil diperbarui',
-      data: updated,
+      data: {
+        ...updated,
+        editor: { name: currentEditorName },
+        editorName: currentEditorName,
+      },
     });
   } catch (error) {
     console.error('Error updating announcement:', error);

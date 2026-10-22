@@ -21,6 +21,7 @@ export interface KalimatBijakItem {
   coverImage?: string;
   authorName?: string;
   authorPosition?: string;
+  authorId?: string;
   editorName?: string;
   editor?: { name: string };
   attachments?: KalimatBijakAttachment[];

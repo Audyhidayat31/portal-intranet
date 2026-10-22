@@ -173,11 +173,6 @@ export default function TambahKalimatBijakPage() {
       return;
     }
 
-    if (!status) {
-      alert('Silakan pilih status (Terbit atau Menunggu)');
-      return;
-    }
-
     setIsSubmitting(true);
     try {
       const res = await fetch('/api/employee-posts', {
@@ -188,6 +183,7 @@ export default function TambahKalimatBijakPage() {
           categorySlug: 'kalimat-bijak',
           body: editorRef.current?.innerHTML || deskripsiHtml || rawContent,
           coverImage: '/images/logo-perpusnas.png',
+          publishedAt: tanggal.toISOString(),
           status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',
         }),
       });

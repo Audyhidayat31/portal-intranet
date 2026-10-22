@@ -152,17 +152,23 @@ export default function KalimatBijakPage() {
           status: item.status === 'MENUNGGU' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit',
           authorName: item.author?.name || 'Ahmad Fauzi, S.Kom.',
           authorPosition: item.author?.profile?.position || 'Pustakawan Ahli Madya',
+          authorId: item.authorId || item.userId || item.author?.id,
           createdAt: item.createdAt,
           updatedAt: (typeof window !== 'undefined' ? localStorage.getItem(`last_updated_at_${item.id}`) : null) || item.updatedAt,
           editorName: (typeof window !== 'undefined' ? localStorage.getItem(`last_editor_${item.id}`) : null) || item.editorName || item.editor?.name || undefined,
         }));
 
-        const pool = [...STITCH_MOCK_KALIMAT_BIJAK];
-        for (const apiItm of formattedApiItems) {
-          if (!pool.some((p) => p.id === apiItm.id || p.title === apiItm.title)) {
-            pool.unshift(apiItm);
+        const pool = [...formattedApiItems];
+        for (const mock of STITCH_MOCK_KALIMAT_BIJAK) {
+          if (!pool.some((p) => p.id === mock.id || p.title === mock.title)) {
+            pool.push(mock);
           }
         }
+        pool.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
+        });
 
         setAllItems(pool);
 
@@ -501,12 +507,14 @@ export default function KalimatBijakPage() {
                   <span className="text-[11px] text-slate-500">{selectedQuote.publishedAt}</span>
                   <span className="text-[11px] text-slate-500">Status: {selectedQuote.status}</span>
                 </div>
+                {Boolean((typeof window !== 'undefined' && localStorage.getItem(`last_editor_${selectedQuote.id}`)) || selectedQuote.editorName || (selectedQuote as any).editor?.name) && (
                 <div className="flex flex-col gap-1 border-l-2 border-slate-200 pl-4 min-w-[140px]">
                   <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Diperbarui oleh</span>
-                  <span className="text-xs font-bold text-[#1a1b20]">{(typeof window !== 'undefined' && localStorage.getItem(`last_editor_${selectedQuote.id}`)) || selectedQuote.editorName || (selectedQuote as any).editor?.name || currentUser?.name || selectedQuote.authorName || 'Administrator Perpusnas'}</span>
+                  <span className="text-xs font-bold text-[#1a1b20]">{(typeof window !== 'undefined' && localStorage.getItem(`last_editor_${selectedQuote.id}`)) || selectedQuote.editorName || (selectedQuote as any).editor?.name}</span>
                   <span className="text-[11px] text-slate-500">{(typeof window !== 'undefined' && localStorage.getItem(`last_updated_at_${selectedQuote.id}`)) ? formatDate(localStorage.getItem(`last_updated_at_${selectedQuote.id}`)!) : (selectedQuote.updatedAt ? formatDate(selectedQuote.updatedAt) : selectedQuote.publishedAt)}</span>
                   <span className="text-[11px] text-slate-500">Status: {selectedQuote.status}</span>
                 </div>
+                )}
               </div>
 
               {/* Action Buttons: Edit and Hapus (Pojok Kanan Bawah) */}

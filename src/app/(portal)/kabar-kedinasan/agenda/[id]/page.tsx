@@ -260,16 +260,16 @@ export default function DetailAgendaKegiatanPage() {
               </p>
             </div>
               {/* Diperbarui Oleh */}
-              {(agendaItem?.updatedAt && agendaItem?.createdAt && new Date(agendaItem.updatedAt).getTime() - new Date(agendaItem.createdAt).getTime() > 1000) && (
+              {Boolean(agendaItem?.editor?.name || (agendaItem as any)?.editorName) && (
                 <>
                   <div className="border-l border-[#c5c6d2]" />
                   <div className="text-xs text-[#757682] space-y-0.5 w-[220px]">
                     <p className="font-semibold text-[#757682]">Diperbarui oleh</p>
                     <p className="font-semibold text-[#1a1b20]">
-                      {agendaItem?.editor?.name || agendaItem?.author?.name || agendaItem?.authorName || 'Administrator Perpusnas'}
+                      {agendaItem?.editor?.name || (agendaItem as any)?.editorName}
                     </p>
                     <p className="font-medium text-[#757682]">
-                      {formatDate(agendaItem.updatedAt)}
+                      {agendaItem?.updatedAt ? formatDate(agendaItem.updatedAt) : ''}
                     </p>
                     <p className="font-medium text-[#757682]">
                       Status: {agendaItem?.status === 'MENUNGGU' || agendaItem?.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}

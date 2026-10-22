@@ -71,6 +71,23 @@ export async function GET(
           }
         }
 
+        let editorName = null;
+        try {
+          const updateLog = await prisma.activityLog.findFirst({
+            where: {
+              targetId: item.id,
+              action: { in: ['UPDATE', 'CHANGE_STATUS'] },
+            },
+            orderBy: { createdAt: 'desc' },
+            include: { user: { select: { name: true } } },
+          });
+          if (updateLog?.user?.name) {
+            editorName = updateLog.user.name;
+          }
+        } catch (e) {
+          // ignore
+        }
+
         const mappedItem = {
           id: item.id,
           title: item.title,
@@ -91,7 +108,9 @@ export async function GET(
           author: item.author ? {
             name: item.author.name,
             profile: item.author.profile
-          } : { name: 'Humas Perpusnas' }
+          } : { name: 'Humas Perpusnas' },
+          editor: editorName ? { name: editorName } : null,
+          editorName: editorName || null,
         };
         return NextResponse.json({ success: true, data: mappedItem });
       }
@@ -267,10 +286,17 @@ export async function PUT(
           },
         });
 
+        const editorUser = actorId ? await prisma.user.findUnique({ where: { id: actorId }, select: { name: true } }) : null;
+        const currentEditorName = editorUser?.name || session?.name || 'Administrator Perpusnas';
+
         return NextResponse.json({
           success: true,
           message: 'Berita berhasil diperbarui',
-          data: updated,
+          data: {
+            ...updated,
+            editor: { name: currentEditorName },
+            editorName: currentEditorName,
+          },
         });
       }
 

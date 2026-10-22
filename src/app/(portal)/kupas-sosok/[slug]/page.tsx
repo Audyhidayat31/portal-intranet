@@ -337,13 +337,13 @@ Beliau memimpin proyek integrasi katalog induk nasional dan layanan akses reposi
               </div>
 
               {/* Diperbarui Oleh */}
-              {true && (
+              {Boolean(figureItem?.editor?.name || (figureItem as any)?.editorName) && (
                 <>
                   <div className="border-l border-[#c5c6d2]" />
                   <div className="text-xs text-[#757682] space-y-0.5 w-[220px]">
                     <p className="font-semibold text-[#757682]">Diperbarui oleh</p>
                     <p className="font-semibold text-[#1a1b20]">
-                      {figureItem?.editor?.name || figureItem?.editorName || figureItem?.author?.name || figureItem?.authorName || '-'}
+                      {figureItem?.editor?.name || (figureItem as any)?.editorName}
                     </p>
                     <p className="font-medium text-[#757682]">
                       {figureItem?.updatedAt ? formatDate(figureItem.updatedAt) : displayDate}

@@ -115,7 +115,7 @@ export default function TambahKupasSosokPage() {
   useEffect(() => {
     try {
       localStorage.removeItem('portal_figures_data');
-    } catch {}
+    } catch { }
   }, []);
 
   const formatDDMMYYYY = (date: Date) => {
@@ -273,7 +273,7 @@ export default function TambahKupasSosokPage() {
 
       try {
         localStorage.removeItem('portal_figures_data');
-      } catch {}
+      } catch { }
 
       const res = await fetch('/api/figure-profiles', {
         method: 'POST',

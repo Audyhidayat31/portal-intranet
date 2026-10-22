@@ -96,9 +96,15 @@ export default function DaftarOlahragaPage() {
           authorName: item.author?.name || 'Ahmad Fauzi',
         }));
 
-        // Pool together local stored items, API items, and base mock 9 items
-        const combinedPool = [...formattedApiItems];
+        // Pool together local stored items (artikel baru buatan pengguna), API items, and base mock items
+        const combinedPool: OlahragaItem[] = [];
+
         for (const item of localStored) {
+          if (!combinedPool.some((c) => c.id === item.id || (c.title && item.title && c.title.trim().toLowerCase() === item.title.trim().toLowerCase()))) {
+            combinedPool.push(item);
+          }
+        }
+        for (const item of formattedApiItems) {
           if (!combinedPool.some((c) => c.id === item.id || (c.title && item.title && c.title.trim().toLowerCase() === item.title.trim().toLowerCase()))) {
             combinedPool.push(item);
           }
@@ -108,6 +114,20 @@ export default function DaftarOlahragaPage() {
             combinedPool.push(item);
           }
         }
+
+        // Urutkan artikel agar yang paling baru (terkini) selalu berada di paling awal / paling kiri
+        combinedPool.sort((a, b) => {
+          const timeA = new Date(a.publishedAt || (a as any).createdAt || 0).getTime();
+          const timeB = new Date(b.publishedAt || (b as any).createdAt || 0).getTime();
+          if (!isNaN(timeA) && !isNaN(timeB) && timeB !== timeA) {
+            return timeB - timeA;
+          }
+          const isACustom = a.id.includes('custom') || a.id.startsWith('cm');
+          const isBCustom = b.id.includes('custom') || b.id.startsWith('cm');
+          if (isBCustom && !isACustom) return 1;
+          if (isACustom && !isBCustom) return -1;
+          return 0;
+        });
 
         if (q.trim()) {
           const filtered = combinedPool.filter(
@@ -119,21 +139,25 @@ export default function DaftarOlahragaPage() {
           );
           setOlahragaList(filtered);
         } else {
-          // Wireframe specifies 9 items (3x3 grid)
-          setOlahragaList(combinedPool.slice(0, 9));
+          setOlahragaList(combinedPool);
         }
       })
       .catch((e) => {
         console.error(e);
+        const sortedLocal = [...localStored].sort((a, b) => {
+          const timeA = new Date(a.publishedAt || (a as any).createdAt || 0).getTime();
+          const timeB = new Date(b.publishedAt || (b as any).createdAt || 0).getTime();
+          return timeB - timeA;
+        });
         if (q.trim()) {
-          const filtered = localStored.filter(
+          const filtered = sortedLocal.filter(
             (item) =>
               item.title.toLowerCase().includes(q.toLowerCase()) ||
               item.excerpt.toLowerCase().includes(q.toLowerCase())
           );
           setOlahragaList(filtered);
         } else {
-          setOlahragaList(localStored.slice(0, 9));
+          setOlahragaList(sortedLocal);
         }
       })
       .finally(() => {

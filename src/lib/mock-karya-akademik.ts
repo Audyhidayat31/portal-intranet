@@ -14,11 +14,15 @@ export interface KaryaAkademikItem {
   coverImage?: string;
   publishedAt: string;
   status: 'Terbit' | 'Menunggu';
+  createdAt?: string;
+  updatedAt?: string;
   authorName: string;
   authorPosition?: string;
   authorUnit?: string;
   authorAvatar?: string;
   attachments?: KaryaAkademikAttachment[];
+  editor?: { name: string } | null;
+  editorName?: string | null;
 }
 
 export const MOCK_KARYA_AKADEMIK_ATTACHMENTS_5: KaryaAkademikAttachment[] = [
@@ -29,101 +33,5 @@ export const MOCK_KARYA_AKADEMIK_ATTACHMENTS_5: KaryaAkademikAttachment[] = [
   { id: 5, label: 'Sertifikat Registrasi ISBN', src: '/images/logo-perpusnas.png', fileName: 'sertifikat_deposit_isbn.pdf', size: '620 KB' },
 ];
 
-export const STITCH_MOCK_KARYA_AKADEMIK: KaryaAkademikItem[] = [
-  {
-    id: 'karya-akademik-2',
-    title: 'Analisis Bibliometrik Publikasi Ilmiah Manuskrip Kuno Nusantara Periode 2015-2025',
-    excerpt: 'Kajian komprehensif mengenai pemetaan riset dan sitasi pernaskahan nusantara dalam jurnal bereputasi internasional menggunakan pendekatan analisis jaringan sitasi VOSviewer.',
-    content: `Penelitian ini menyajikan pemetaan komprehensif perkembangan publikasi ilmiah mengenai manuskrip kuno nusantara yang terindeks dalam pangkalan data internasional selama kurun waktu satu dekade.
+export const STITCH_MOCK_KARYA_AKADEMIK: KaryaAkademikItem[] = [];
 
-Hasil analisis menunjukkan peningkatan tren riset kolaboratif antarbangsa dengan fokus dominan pada alih aksara, kodikologi, dan digitalisasi preservasi naskah lontar dan daluwang. Kajian ini memberikan arah strategis bagi prioritas akuisisi koleksi khusus di Perpustakaan Nasional RI.`,
-    coverImage: '/images/logo-perpusnas.png',
-    publishedAt: '20 Agustus 2026',
-    status: 'Terbit',
-    authorName: 'Dr. Sri Rahayu, M.Hum.',
-    authorPosition: 'Peneliti Ahli Utama',
-    authorUnit: 'Pusat Riset dan Pengembangan Perpustakaan',
-    authorAvatar: '/images/logo-perpusnas.png',
-    attachments: MOCK_KARYA_AKADEMIK_ATTACHMENTS_5,
-  },
-  {
-    id: 'karya-akademik-3',
-    title: 'Strategi Preservasi dan Konservasi Bahan Pustaka Digital Berbasis Cloud Architecture',
-    excerpt: 'Formulasi kebijakan dan arsitektur teknis penyimpanan jangka panjang data digital master repositori naskah untuk menjamin integritas dan aksesibilitas masa depan.',
-    content: `Preservasi digital memerlukan standardisasi mikroservis dan redundansi multi-region guna mengantisipasi kerusakan fisik media penyimpanan serta keusangan format berkas (format obsolescence).
-
-Tulisan ini menjabarkan implementasi protokol OAIS (Open Archival Information System) yang diadopsi dalam infrastruktur Pusat Data dan Informasi Perpusnas RI guna memastikan siklus hidup aset intelektual bangsa terlindungi secara berkelanjutan.`,
-    coverImage: '/images/logo-perpusnas.png',
-    publishedAt: '20 Agustus 2026',
-    status: 'Menunggu',
-    authorName: 'Ahmad Fauzi, M.Kom.',
-    authorPosition: 'Pranata Komputer Ahli Muda',
-    authorUnit: 'Pusat Data dan Informasi (Pusdatin)',
-    authorAvatar: '/images/logo-perpusnas.png',
-    attachments: MOCK_KARYA_AKADEMIK_ATTACHMENTS_5,
-  },
-  {
-    id: 'karya-akademik-4',
-    title: 'Studi Komparasi Layanan Informasi Inklusif Perpustakaan bagi Komunitas Disabilitas',
-    excerpt: 'Evaluasi aksesibilitas fasilitas fisik dan portal digital ramah netra serta rungu di perpustakaan rujukan nasional kawasan Asia Tenggara.',
-    content: `Layanan perpustakaan inklusif menuntut sinergi antara desain universal, koleksi buku braille/audiobook bertagging DAISY, serta antarmuka situs yang mematuhi pedoman Web Content Accessibility Guidelines (WCAG) 2.1 AA.
-
-Riset ini mengusulkan roadmap peningkatan kapasitas pustakawan dalam mendampingi pemustaka berkebutuhan khusus demi mewujudkan hak atas literasi yang setara bagi seluruh lapisan warga negara.`,
-    coverImage: '/images/logo-perpusnas.png',
-    publishedAt: '20 Agustus 2026',
-    status: 'Terbit',
-    authorName: 'Dewi Lestari, S.Sos.',
-    authorPosition: 'Pustakawan Ahli Pertama',
-    authorUnit: 'Direktorat Layanan Perpustakaan dan Informasi',
-    authorAvatar: '/images/logo-perpusnas.png',
-    attachments: MOCK_KARYA_AKADEMIK_ATTACHMENTS_5,
-  },
-  {
-    id: 'karya-akademik-5',
-    title: 'Implementasi Ontologi Semantic Web pada Repositori Koleksi Khusus Perpusnas',
-    excerpt: 'Penerapan teknologi Linked Open Data (LOD) dan skema Resource Description and Access (RDA) untuk integrasi data silang repositori perpustakaan, museum, dan arsip.',
-    content: `Konektivitas antarpangkalan data warisan budaya menuntut semantik relasi yang kaya melampaui metadata MARC21 konvensional. 
-
-Melalui perancangan model graf pengetahuan (knowledge graph), pemustaka dapat menelusuri korelasi historis antara pengarang, naskah turunan, peristiwa sejarah, serta artefak terkait secara dinamis dalam satu jendela pencarian terpadu.`,
-    coverImage: '/images/logo-perpusnas.png',
-    publishedAt: '20 Agustus 2026',
-    status: 'Menunggu',
-    authorName: 'Hendra Gunawan, S.Kom., M.T.I.',
-    authorPosition: 'Pranata Komputer Ahli Madya',
-    authorUnit: 'Pusat Data dan Informasi',
-    authorAvatar: '/images/logo-perpusnas.png',
-    attachments: MOCK_KARYA_AKADEMIK_ATTACHMENTS_5,
-  },
-  {
-    id: 'karya-akademik-6',
-    title: 'Transformasi Perpustakaan Berbasis Inklusi Sosial dalam Pengurangan Kemiskinan',
-    excerpt: 'Kajian dampak sosio-ekonomi program perpustakaan berbasis inklusi sosial (TPBIS) pada masyarakat perdesaan dan pelaku UMKM binaan di 34 provinsi.',
-    content: `Program Transformasi Perpustakaan Berbasis Inklusi Sosial (TPBIS) telah membuktikan bahwa perpustakaan bukan lagi sekadar gudang buku hening, melainkan ruang interaksi dan transfer keterampilan hidup (life skills).
-
-Melalui pelatihan literasi digital, wirausaha kuliner, kerajinan tangan, dan pertanian hidroponik berbasis bahan bacaan terapan, perpustakaan telah menjadi agen transformasi nyata dalam memperkuat ketahanan ekonomi keluarga.`,
-    coverImage: '/images/logo-perpusnas.png',
-    publishedAt: '18 Agustus 2026',
-    status: 'Terbit',
-    authorName: 'Dra. Endang Sulistyowati, M.Si.',
-    authorPosition: 'Pustakawan Ahli Utama',
-    authorUnit: 'Pusat Pengembangan Perpustakaan Umum dan Khusus',
-    authorAvatar: '/images/logo-perpusnas.png',
-    attachments: MOCK_KARYA_AKADEMIK_ATTACHMENTS_5,
-  },
-  {
-    id: 'karya-akademik-7',
-    title: 'Kajian Filologis Naskah Hikayat Amir Hamzah Koleksi Perpustakaan Nasional',
-    excerpt: 'Transliterasi, kritik teks, dan interpretasi makna kontekstual epos kepahlawanan melayu klasik bernilai adiluhung.',
-    content: `Hikayat Amir Hamzah merupakan salah satu mahakarya sastra Melayu klasik dengan ketebalan fisik dan ragam variasi salinan terbanyak di dunia Melayu.
-
-Kajian ini menelaah varian bahasa Melayu-Riau beraksara Jawi abad ke-18 dengan metode diplomatik guna menyajikan edisi teks yang akurat bagi rujukan filolog modern dan pemerhati sastra Nusantara.`,
-    coverImage: '/images/logo-perpusnas.png',
-    publishedAt: '15 Agustus 2026',
-    status: 'Terbit',
-    authorName: 'Rahmat Hidayat, M.Hum.',
-    authorPosition: 'Filolog Ahli Muda',
-    authorUnit: 'Pusat Preservasi dan Alih Media Bahan Perpustakaan',
-    authorAvatar: '/images/logo-perpusnas.png',
-    attachments: MOCK_KARYA_AKADEMIK_ATTACHMENTS_5,
-  },
-];

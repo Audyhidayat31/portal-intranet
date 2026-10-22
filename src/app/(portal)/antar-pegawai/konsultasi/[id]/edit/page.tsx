@@ -93,8 +93,8 @@ export default function EditKonsultasiPage() {
             apiData.category === 'KEPEGAWAIAN'
               ? 'Pegawai'
               : apiData.category === 'IT'
-              ? 'IT'
-              : 'Kesehatan';
+                ? 'IT'
+                : 'Kesehatan';
           setJenisKonsultasi(cat);
           setStatus(apiData.status === 'OPEN' ? 'Menunggu' : 'Terbit');
           if (apiData.attachmentName) {
@@ -312,8 +312,8 @@ export default function EditKonsultasiPage() {
       (finalCategory === 'IT'
         ? 'Konsultasi IT.pdf'
         : finalCategory === 'Pegawai'
-        ? 'Konsultasi Pegawai.pdf'
-        : 'Konsultasi Kesehatan.pdf');
+          ? 'Konsultasi Pegawai.pdf'
+          : 'Konsultasi Kesehatan.pdf');
 
     // Update locally
     const currentList = getStoredConsultations();
@@ -517,13 +517,12 @@ export default function EditKonsultasiPage() {
                           type="button"
                           disabled={!itemDay.isCurrentMonth}
                           onClick={() => selectCalendarDay(itemDay.day)}
-                          className={`h-8 w-8 mx-auto rounded-full flex items-center justify-center font-medium transition-colors cursor-pointer ${
-                            !itemDay.isCurrentMonth
+                          className={`h-8 w-8 mx-auto rounded-full flex items-center justify-center font-medium transition-colors cursor-pointer ${!itemDay.isCurrentMonth
                               ? 'text-slate-300 cursor-not-allowed'
                               : isSelected
-                              ? 'bg-[#00113a] text-white font-bold shadow-xs'
-                              : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                          }`}
+                                ? 'bg-[#00113a] text-white font-bold shadow-xs'
+                                : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                            }`}
                         >
                           {itemDay.day}
                         </button>
@@ -543,17 +542,15 @@ export default function EditKonsultasiPage() {
               <button
                 type="button"
                 onClick={() => setIsJenisMenuOpen(!isJenisMenuOpen)}
-                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${
-                  isJenisMenuOpen ? 'rounded-t-md' : 'rounded-md'
-                }`}
+                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${isJenisMenuOpen ? 'rounded-t-md' : 'rounded-md'
+                  }`}
               >
                 <span className="truncate">
                   {jenisKonsultasi || 'Pilih Jenis Konsultasi'}
                 </span>
                 <ChevronDown
-                  className={`w-4 h-4 text-white transition-transform ${
-                    isJenisMenuOpen ? 'rotate-180' : ''
-                  }`}
+                  className={`w-4 h-4 text-white transition-transform ${isJenisMenuOpen ? 'rotate-180' : ''
+                    }`}
                 />
               </button>
 
@@ -567,11 +564,10 @@ export default function EditKonsultasiPage() {
                         setJenisKonsultasi(cat);
                         setIsJenisMenuOpen(false);
                       }}
-                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                        jenisKonsultasi === cat
+                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${jenisKonsultasi === cat
                           ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
                           : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                      }`}
+                        }`}
                     >
                       {cat}
                     </button>
@@ -588,15 +584,13 @@ export default function EditKonsultasiPage() {
               <button
                 type="button"
                 onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
-                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${
-                  isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
-                }`}
+                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
+                  }`}
               >
                 <span className="truncate">{status || 'Jenis Status'}</span>
                 <ChevronDown
-                  className={`w-4 h-4 text-white transition-transform ${
-                    isStatusMenuOpen ? 'rotate-180' : ''
-                  }`}
+                  className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''
+                    }`}
                 />
               </button>
 
@@ -608,11 +602,10 @@ export default function EditKonsultasiPage() {
                       setStatus('Terbit');
                       setIsStatusMenuOpen(false);
                     }}
-                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                      status === 'Terbit'
+                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Terbit'
                         ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
                         : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                    }`}
+                      }`}
                   >
                     Terbit
                   </button>
@@ -622,11 +615,10 @@ export default function EditKonsultasiPage() {
                       setStatus('Menunggu');
                       setIsStatusMenuOpen(false);
                     }}
-                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                      status === 'Menunggu'
+                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Menunggu'
                         ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
                         : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                    }`}
+                      }`}
                   >
                     Menunggu
                   </button>
@@ -648,11 +640,10 @@ export default function EditKonsultasiPage() {
                     e.preventDefault();
                     execFormat('bold');
                   }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${
-                    activeStyles.bold
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${activeStyles.bold
                       ? 'bg-[#00113a] text-white'
                       : 'text-[#444650]'
-                  }`}
+                    }`}
                 >
                   <Bold className="w-4 h-4" />
                 </button>
@@ -664,11 +655,10 @@ export default function EditKonsultasiPage() {
                     e.preventDefault();
                     execFormat('italic');
                   }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${
-                    activeStyles.italic
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${activeStyles.italic
                       ? 'bg-[#00113a] text-white'
                       : 'text-[#444650]'
-                  }`}
+                    }`}
                 >
                   <Italic className="w-4 h-4" />
                 </button>
@@ -680,11 +670,10 @@ export default function EditKonsultasiPage() {
                     e.preventDefault();
                     execFormat('underline');
                   }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${
-                    activeStyles.underline
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${activeStyles.underline
                       ? 'bg-[#00113a] text-white'
                       : 'text-[#444650]'
-                  }`}
+                    }`}
                 >
                   <Underline className="w-4 h-4" />
                 </button>
@@ -698,11 +687,10 @@ export default function EditKonsultasiPage() {
                     e.preventDefault();
                     execFormat('insertUnorderedList');
                   }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${
-                    activeStyles.unorderedList
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${activeStyles.unorderedList
                       ? 'bg-[#00113a] text-white'
                       : 'text-[#444650]'
-                  }`}
+                    }`}
                 >
                   <List className="w-4 h-4" />
                 </button>

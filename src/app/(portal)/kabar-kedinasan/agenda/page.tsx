@@ -71,7 +71,9 @@ export default function AgendaKegiatanPage() {
           eventStartDate: item.eventStartDate,
           eventLocation: item.eventLocation,
           status: item.status === 'MENUNGGU' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit',
-          authorName: item.author?.name || 'Biro Umum Perpusnas',
+          authorId: item.authorId,
+          author: item.author,
+          authorName: item.author?.name || item.authorName || 'Biro Umum Perpusnas',
         }));
 
         setAgendas(formattedApiItems);
@@ -221,9 +223,15 @@ export default function AgendaKegiatanPage() {
           const visibleAgendas = agendas.filter((item) => {
             const isPublished = item.status === 'Terbit' || (item.status as any) === 'TERBIT';
             if (isPublished) return true;
+            if (!currentUser) return false;
             const roleName = typeof currentUser.role === 'string' ? currentUser.role : currentUser.role?.name;
             if (roleName?.toUpperCase() === 'ADMINISTRATOR' || roleName?.toUpperCase() === 'ADMIN') return true;
-            return Boolean(currentUser.name === item.authorName || (item as any).authorId === currentUser.id);
+            return Boolean(
+              currentUser.name === item.authorName ||
+              (item.author && item.author.name === currentUser.name) ||
+              item.authorId === currentUser.id ||
+              item.authorId === currentUser.userId
+            );
           });
 
           if (visibleAgendas.length === 0) {

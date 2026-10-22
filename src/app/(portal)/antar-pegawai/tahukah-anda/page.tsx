@@ -17,12 +17,13 @@ import {
   CheckCircle,
   Share2,
 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { formatDate, canManageContent } from '@/lib/utils';
 import {
   STITCH_MOCK_TAHUKAH_ANDA_9,
   TahukahAndaItem,
   getStoredTahukahAnda,
   saveStoredTahukahAnda,
+  isTahukahAndaDeleted,
 } from '@/lib/mock-tahukah-anda';
 
 export default function DaftarTahukahAndaPage() {
@@ -80,7 +81,8 @@ export default function DaftarTahukahAndaPage() {
     const localStored = localStoredRaw.filter(
       (item) =>
         !['tahukah-2', 'tahukah-3', 'tahukah-4', 'tahukah-5', 'tahukah-6'].includes(item.id) &&
-        !/tahukah anda #([2-6])/i.test(item.title || '')
+        !/tahukah anda #([2-6])/i.test(item.title || '') &&
+        !isTahukahAndaDeleted(item.id, item.title)
     );
 
     fetch(`/api/employee-posts?category=tahukah-anda&q=${encodeURIComponent(q)}`)
@@ -88,31 +90,60 @@ export default function DaftarTahukahAndaPage() {
       .then((data) => {
         const apiItems = data.success && Array.isArray(data.data) ? data.data : [];
 
-        const formattedApiItems: TahukahAndaItem[] = apiItems.map((item: any) => ({
-          id: item.id,
-          title: item.title,
-          excerpt: item.excerpt || (item.body ? item.body.slice(0, 140) + '...' : ''),
-          content: item.body || '',
-          coverImage:
-            item.coverImage ||
-            '/images/logo-perpusnas.png',
-          publishedAt: item.createdAt || new Date().toISOString(),
-          status: item.status === 'MENUNGGU' ? 'Menunggu' : 'Terbit',
-          authorName: item.author?.name || 'Ahmad Fauzi',
-        }));
+        const formattedApiItems: TahukahAndaItem[] = apiItems
+          .filter((item: any) => !isTahukahAndaDeleted(item.id, item.title))
+          .map((item: any) => ({
+            id: item.id,
+            title: item.title,
+            excerpt: item.excerpt || (item.body ? item.body.slice(0, 140) + '...' : ''),
+            content: item.body || '',
+            coverImage:
+              item.coverImage ||
+              '/images/logo-perpusnas.png',
+            publishedAt: item.createdAt || new Date().toISOString(),
+            status: item.status === 'MENUNGGU' ? 'Menunggu' : 'Terbit',
+            authorName: item.author?.name || 'Ahmad Fauzi, S.Kom.',
+            authorId: item.authorId || item.author?.id,
+            editorName: item.editorName || item.editor?.name,
+          }));
 
-        // Pool together local stored items, API items, and base mock 9 items
-        const combinedPool = [...formattedApiItems];
+        // Pool together API items (sumber resmi database), local stored items yang belum ada di API, dan base mock items
+        const combinedPool: TahukahAndaItem[] = [];
+
+        // 1. Masukkan API items terlebih dahulu
+        for (const item of formattedApiItems) {
+          if (!isTahukahAndaDeleted(item.id, item.title) && !combinedPool.some((c) => c.id === item.id || (c.title && item.title && c.title.trim().toLowerCase() === item.title.trim().toLowerCase()))) {
+            combinedPool.push(item);
+          }
+        }
+
+        // 2. Masukkan local stored items jika belum ada di database
         for (const item of localStored) {
-          if (!combinedPool.some((c) => c.id === item.id || (c.title && item.title && c.title.trim().toLowerCase() === item.title.trim().toLowerCase()))) {
+          if (!isTahukahAndaDeleted(item.id, item.title) && !combinedPool.some((c) => c.id === item.id || (c.title && item.title && c.title.trim().toLowerCase() === item.title.trim().toLowerCase()))) {
             combinedPool.push(item);
           }
         }
+
+        // 3. Masukkan mock items jika belum ada
         for (const item of STITCH_MOCK_TAHUKAH_ANDA_9) {
-          if (!combinedPool.some((c) => c.id === item.id || (c.title && item.title && c.title.trim().toLowerCase() === item.title.trim().toLowerCase()))) {
+          if (!isTahukahAndaDeleted(item.id, item.title) && !combinedPool.some((c) => c.id === item.id || (c.title && item.title && c.title.trim().toLowerCase() === item.title.trim().toLowerCase()))) {
             combinedPool.push(item);
           }
         }
+
+        // Urutkan artikel agar yang paling baru (terkini) selalu berada di paling awal / paling kiri
+        combinedPool.sort((a, b) => {
+          const timeA = new Date(a.publishedAt || (a as any).createdAt || 0).getTime();
+          const timeB = new Date(b.publishedAt || (b as any).createdAt || 0).getTime();
+          if (!isNaN(timeA) && !isNaN(timeB) && timeB !== timeA) {
+            return timeB - timeA;
+          }
+          const isACustom = a.id.includes('custom') || a.id.startsWith('cm');
+          const isBCustom = b.id.includes('custom') || b.id.startsWith('cm');
+          if (isBCustom && !isACustom) return 1;
+          if (isACustom && !isBCustom) return -1;
+          return 0;
+        });
 
         if (q.trim()) {
           const filtered = combinedPool.filter(
@@ -124,21 +155,25 @@ export default function DaftarTahukahAndaPage() {
           );
           setItemList(filtered);
         } else {
-          // Wireframe specifies 9 items (3x3 grid)
-          setItemList(combinedPool.slice(0, 9));
+          setItemList(combinedPool);
         }
       })
       .catch((e) => {
         console.error(e);
+        const sortedLocal = [...localStored].sort((a, b) => {
+          const timeA = new Date(a.publishedAt || (a as any).createdAt || 0).getTime();
+          const timeB = new Date(b.publishedAt || (b as any).createdAt || 0).getTime();
+          return timeB - timeA;
+        });
         if (q.trim()) {
-          const filtered = localStored.filter(
+          const filtered = sortedLocal.filter(
             (item) =>
               item.title.toLowerCase().includes(q.toLowerCase()) ||
               item.excerpt.toLowerCase().includes(q.toLowerCase())
           );
           setItemList(filtered);
         } else {
-          setItemList(localStored.slice(0, 9));
+          setItemList(sortedLocal);
         }
       })
       .finally(() => {
@@ -162,12 +197,12 @@ export default function DaftarTahukahAndaPage() {
     if (!isWaiting) return true;
     if (!user) return false;
     if (isUserAdmin(user)) return true;
-    const authorName = item.authorName || item.author?.name;
-    const authorId = item.authorId || item.userId;
-    return Boolean(
-      (authorName && authorName === user.name) ||
-      (authorId && (authorId === user.id || authorId === user.userId))
-    );
+    return canManageContent(user, item);
+  };
+
+  const isCreatedByMe = (item: any, user: any) => {
+    if (!user) return false;
+    return canManageContent(user, item);
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -329,7 +364,7 @@ export default function DaftarTahukahAndaPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {itemList.filter(item => canViewItem(item, currentUser) && (filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id)))).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
+            {itemList.filter(item => canViewItem(item, currentUser) && (filterAuthor === 'all' || isCreatedByMe(item, currentUser))).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
               const displayDate = item.publishedAt ? formatDate(item.publishedAt) : '19 Agustus 2026';
 
               return (

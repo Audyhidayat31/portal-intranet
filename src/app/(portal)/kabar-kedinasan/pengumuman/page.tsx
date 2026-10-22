@@ -803,14 +803,14 @@ export default function PengumumanPage() {
                   </p>
                 </div>
 
-                {selectedAnnouncement.updatedAt && selectedAnnouncement.createdAt && new Date(selectedAnnouncement.updatedAt).getTime() - new Date(selectedAnnouncement.createdAt).getTime() > 1000 && (
+                {Boolean(selectedAnnouncement.editor?.name || (selectedAnnouncement as any).editorName) && (
                   <>
                     <div className="border-l border-[#c5c6d2]" />
                     <div className="text-sm text-[#1a1b20] w-[220px]">
                       <p className="font-bold">Diperbarui oleh</p>
-                      <p className="text-[#1a1b20]">{selectedAnnouncement.editor?.name || selectedAnnouncement.author?.name || selectedAnnouncement.authorName || 'Ahmad Fauzi'}</p>
+                      <p className="text-[#1a1b20]">{selectedAnnouncement.editor?.name || (selectedAnnouncement as any).editorName}</p>
                       <p className="text-[#444650] mb-1">
-                        {formatDate(selectedAnnouncement.updatedAt)}
+                        {selectedAnnouncement.updatedAt ? formatDate(selectedAnnouncement.updatedAt) : ''}
                       </p>
                       <p className="text-[#444650] font-medium">
                         Status: {(selectedAnnouncement.status === 'MENUNGGU' || selectedAnnouncement.status === 'Menunggu' || selectedAnnouncement.status === 'DRAFT') ? 'Menunggu' : 'Terbit'}

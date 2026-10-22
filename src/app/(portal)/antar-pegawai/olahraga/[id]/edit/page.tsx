@@ -500,7 +500,7 @@ export default function EditOlahragaPage() {
     }
 
     try {
-      await fetch(`/api/employee-posts/${rawId}`, {
+      const res = await fetch(`/api/employee-posts/${rawId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -514,6 +514,19 @@ export default function EditOlahragaPage() {
           attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments.map((a) => a.name).join(', ') : undefined,
         }),
       });
+
+      const resJson = await res.json();
+      if (resJson.success && resJson.data) {
+        const serverData = resJson.data;
+        const currentStored = getStoredOlahraga();
+        const merged = {
+          ...updatedItem,
+          editor: serverData.editor,
+          editorName: serverData.editorName,
+          updatedAt: serverData.updatedAt || new Date().toISOString(),
+        };
+        saveStoredOlahraga(currentStored.map((it) => (it.id === rawId ? (merged as any) : it)));
+      }
 
       setSuccessMessage('Perubahan Artikel Olahraga berhasil disimpan!');
       setTimeout(() => {
