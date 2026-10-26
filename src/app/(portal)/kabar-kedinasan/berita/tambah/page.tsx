@@ -74,6 +74,14 @@ export default function TambahBeritaPage() {
   const [lampiranAttachments, setLampiranAttachments] = useState<Array<{ file: File, name: string, preview: string | null }>>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [gambarError, setGambarError] = useState('');
+
+  useEffect(() => {
+    if (gambarError) {
+      const timer = setTimeout(() => setGambarError(''), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [gambarError]);
 
   // Active toolbar formatting states
   const [activeStyles, setActiveStyles] = useState({
@@ -211,9 +219,25 @@ export default function TambahBeritaPage() {
   const handleGambarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      if (file.size > 5 * 1024 * 1024) {
-        alert('Ukuran file maksimal 5MB');
+      const validTypes = ['image/jpeg', 'image/png'];
+      const validExtensions = ['.jpg', '.jpeg', '.png'];
+      const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+
+      if (!validTypes.includes(file.type) && !validExtensions.includes(fileExt)) {
         if (gambarInputRef.current) gambarInputRef.current.value = '';
+        setGambarFileName('');
+        setGambarPreview(null);
+        setGambarError('File harus berupa .jpg/.png');
+        return;
+      }
+
+      setGambarError('');
+
+      if (file.size > 5 * 1024 * 1024) {
+        if (gambarInputRef.current) gambarInputRef.current.value = '';
+        setGambarFileName('');
+        setGambarPreview(null);
+        setGambarError('Ukuran file maksimal 5MB');
         return;
       }
       setGambarFileName(file.name);
@@ -230,6 +254,7 @@ export default function TambahBeritaPage() {
     e.stopPropagation();
     setGambarFileName('');
     setGambarPreview(null);
+    setGambarError('');
     if (gambarInputRef.current) {
       gambarInputRef.current.value = '';
     }
@@ -384,7 +409,7 @@ export default function TambahBeritaPage() {
               />
             </div>
 
-                        {/* 1.5. Sumber */}
+            {/* 1.5. Sumber */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
               Sumber <span className="float-right hidden md:inline">:</span>
             </label>
@@ -468,7 +493,7 @@ export default function TambahBeritaPage() {
               )}
             </div>
 
-            
+
 
             {/* 4. Deskripsi with WYSIWYG Editor */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
@@ -567,23 +592,28 @@ export default function TambahBeritaPage() {
               />
             </div>
 
-            {/* 5. Gambar Berita */}
+            {/* 5. Gambar */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Gambar Berita <span className="float-right hidden md:inline">:</span>
+              Gambar <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="flex flex-col gap-4">
-              <div>
+              <div className="relative">
                 <div className="flex">
                   <input suppressHydrationWarning
                     type="text"
                     readOnly
                     value={gambarFileName}
                     placeholder="Berkas berupa .jpg/ .png"
-                    className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
+                    className={`flex-grow border rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682] transition-colors ${
+                      gambarError ? 'border-amber-400 ring-1 ring-amber-400' : 'border-[#c5c6d2]'
+                    }`}
                   />
                   <button
                     type="button"
-                    onClick={() => gambarInputRef.current?.click()}
+                    onClick={() => {
+                      setGambarError('');
+                      gambarInputRef.current?.click();
+                    }}
                     className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer"
                   >
                     Upload
@@ -591,10 +621,21 @@ export default function TambahBeritaPage() {
                   <input suppressHydrationWarning
                     ref={gambarInputRef}
                     type="file"
-                    accept="image/*"
+                    accept=".jpg,.jpeg,.png,image/jpeg,image/png"
                     onChange={handleGambarFileChange}
-                    className="hidden"  />
+                    className="hidden" />
                 </div>
+
+                {/* Pop up balon peringatan seperti "Mohon isi bidang ini" */}
+                {gambarError && (
+                  <div className="absolute left-2 top-[calc(100%+8px)] z-40 flex items-center gap-2.5 bg-white text-slate-800 text-xs sm:text-sm py-2 px-3.5 rounded-lg shadow-xl border border-slate-300 animate-in fade-in slide-in-from-top-1 duration-150">
+                    {/* Panah segitiga ke atas menunjuk ke input field */}
+                    <div className="absolute -top-1.5 left-6 w-3 h-3 bg-white border-t border-l border-slate-300 rotate-45 transform" />
+                    <div className="w-4 h-4 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px] font-bold shrink-0 shadow-xs">!</div>
+                    <span className="font-medium text-slate-800">{gambarError}</span>
+                  </div>
+                )}
+
                 <p className="text-xs text-[#757682] mt-1.5 font-normal">File Maksimal 5MB</p>
               </div>
 
@@ -667,7 +708,7 @@ export default function TambahBeritaPage() {
                     type="file"
                     multiple
                     onChange={handleLampiranFileChange}
-                    className="hidden"  />
+                    className="hidden" />
                 </div>
                 <p className="text-xs text-[#757682] mt-1.5 font-normal">File Maksimal 5MB</p>
               </div>

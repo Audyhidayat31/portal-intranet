@@ -16,6 +16,7 @@ import {
   CheckCircle,
   AlertCircle,
   Upload,
+  Trash2,
 } from 'lucide-react';
 import { MockEmployee } from '@/lib/mock-employees';
 import { isUserAdmin } from '@/lib/utils';
@@ -45,7 +46,7 @@ export default function LihatPegawaiPage() {
           setCurrentUser(data.data);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
 
     fetch(`/api/employees/${employeeId}`)
       .then((res) => res.json())
@@ -94,9 +95,34 @@ export default function LihatPegawaiPage() {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        setEditForm((prev) => ({ ...prev, avatarUrl: result }));
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const maxDim = 800;
+          let width = img.width;
+          let height = img.height;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressed = canvas.toDataURL('image/jpeg', 0.88);
+            setEditForm((prev) => ({ ...prev, avatarUrl: compressed }));
+          } else {
+            setEditForm((prev) => ({ ...prev, avatarUrl: event.target?.result as string }));
+          }
+        };
+        img.src = event.target?.result as string;
       };
       reader.readAsDataURL(file);
     }
@@ -156,11 +182,10 @@ export default function LihatPegawaiPage() {
         {/* Feedback Alert Banner */}
         {notification && (
           <div
-            className={`mb-6 p-4 rounded-xl border flex items-center gap-3 text-sm font-semibold animate-fadeIn ${
-              notification.type === 'success'
+            className={`mb-6 p-4 rounded-xl border flex items-center gap-3 text-sm font-semibold animate-fadeIn ${notification.type === 'success'
                 ? 'bg-green-50 border-green-200 text-green-800'
                 : 'bg-red-50 border-red-200 text-red-800'
-            }`}
+              }`}
           >
             {notification.type === 'success' ? (
               <CheckCircle className="w-5 h-5 text-green-600 shrink-0" />
@@ -226,9 +251,11 @@ export default function LihatPegawaiPage() {
                 <p className="text-xs text-[#757682] mt-1 font-mono tracking-wide">
                   {employee.nip}
                 </p>
-                <p className="text-xs sm:text-sm text-[#444650] mt-1.5 font-medium leading-relaxed">
-                  {employee.position}
-                </p>
+                {employee.position && employee.position !== '-' && (
+                  <p className="text-xs sm:text-sm text-[#444650] mt-1.5 font-medium leading-relaxed">
+                    {employee.position}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -245,7 +272,7 @@ export default function LihatPegawaiPage() {
                   <div>
                     <p className="text-xs text-[#757682] font-medium">Nama Lengkap</p>
                     <p className="text-sm font-semibold text-[#00113a] mt-0.5">
-                      {employee.fullName || employee.name}
+                      {employee.fullName || employee.name || '-'}
                     </p>
                   </div>
 
@@ -253,7 +280,7 @@ export default function LihatPegawaiPage() {
                   <div>
                     <p className="text-xs text-[#757682] font-medium">Nomor Induk Pegawai (NIP)</p>
                     <p className="text-sm font-semibold text-[#00113a] mt-0.5 font-mono">
-                      {employee.nip}
+                      {employee.nip || '-'}
                     </p>
                   </div>
 
@@ -261,7 +288,7 @@ export default function LihatPegawaiPage() {
                   <div className="sm:col-span-2">
                     <p className="text-xs text-[#757682] font-medium">Email Kedinasan</p>
                     <p className="text-sm font-semibold text-[#00113a] mt-0.5">
-                      {employee.email || `${employee.nip}@perpusnas.go.id`}
+                      {employee.email || '-'}
                     </p>
                   </div>
 
@@ -269,8 +296,9 @@ export default function LihatPegawaiPage() {
                   <div className="sm:col-span-2">
                     <p className="text-xs text-[#757682] font-medium">Alamat Domisili</p>
                     <p className="text-sm font-semibold text-[#00113a] mt-0.5 leading-relaxed">
-                      {employee.alamatDomisili ||
-                        'Jalan Imam Bonjol Nomor 1, RT 5/RW 4, Menteng, Kecamatan Menteng, Kota Jakarta Pusat'}
+                      {employee.alamatDomisili && employee.alamatDomisili !== '-'
+                        ? employee.alamatDomisili
+                        : (employee.bio && employee.bio !== '-' ? employee.bio : '-')}
                     </p>
                   </div>
 
@@ -278,7 +306,7 @@ export default function LihatPegawaiPage() {
                   <div>
                     <p className="text-xs text-[#757682] font-medium">Nomor Seluler</p>
                     <p className="text-sm font-semibold text-[#00113a] mt-0.5">
-                      {employee.phone || '+62 812 1714 0352'}
+                      {employee.phone && employee.phone !== '-' ? employee.phone : '-'}
                     </p>
                   </div>
 
@@ -286,7 +314,7 @@ export default function LihatPegawaiPage() {
                   <div>
                     <p className="text-xs text-[#757682] font-medium">Tanggal Lahir</p>
                     <p className="text-sm font-semibold text-[#00113a] mt-0.5">
-                      {employee.tanggalLahir || '27 November 1986'}
+                      {employee.tanggalLahir || '-'}
                     </p>
                   </div>
                 </div>
@@ -306,7 +334,7 @@ export default function LihatPegawaiPage() {
                   <div>
                     <p className="text-xs text-[#757682] font-medium">Satuan Kerja</p>
                     <p className="text-sm font-semibold text-[#00113a] mt-0.5">
-                      {employee.satuanKerja || 'Sistem Informasi'}
+                      {employee.satuanKerja || employee.unitKerja || '-'}
                     </p>
                   </div>
 
@@ -314,7 +342,7 @@ export default function LihatPegawaiPage() {
                   <div>
                     <p className="text-xs text-[#757682] font-medium">Unit Eselon II</p>
                     <p className="text-sm font-semibold text-[#00113a] mt-0.5">
-                      {employee.eselon2 || employee.unitKerja || 'Pusat Sistem Informasi'}
+                      {employee.eselon2 && employee.eselon2.trim() ? employee.eselon2.trim() : '-'}
                     </p>
                   </div>
 
@@ -322,7 +350,7 @@ export default function LihatPegawaiPage() {
                   <div>
                     <p className="text-xs text-[#757682] font-medium">Jabatan Saat Ini</p>
                     <p className="text-sm font-semibold text-[#00113a] mt-0.5">
-                      {employee.position || 'Kepala Sistem Informasi'}
+                      {employee.position || '-'}
                     </p>
                   </div>
 
@@ -330,7 +358,7 @@ export default function LihatPegawaiPage() {
                   <div>
                     <p className="text-xs text-[#757682] font-medium">Unit Eselon III</p>
                     <p className="text-sm font-semibold text-[#00113a] mt-0.5">
-                      {employee.eselon3 || 'Bidang Layanan Sistem Informasi'}
+                      {employee.eselon3 || '-'}
                     </p>
                   </div>
 
@@ -338,7 +366,7 @@ export default function LihatPegawaiPage() {
                   <div className="sm:col-span-2">
                     <p className="text-xs text-[#757682] font-medium">Lokasi Kerja</p>
                     <p className="text-sm font-semibold text-[#00113a] mt-0.5">
-                      {employee.lokasiKerja || 'Jl. Medan Merdeka Selatan No. 11, Jakarta 10110'}
+                      {employee.lokasiKerja || '-'}
                     </p>
                   </div>
                 </div>
@@ -391,7 +419,7 @@ export default function LihatPegawaiPage() {
                   Foto Profil
                 </label>
                 <div className="flex items-center gap-4">
-                  <div 
+                  <div
                     className={`w-16 h-16 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center ${editForm.avatarUrl ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
                     onClick={() => {
                       if (editForm.avatarUrl) {
@@ -406,12 +434,26 @@ export default function LihatPegawaiPage() {
                       <User className="w-8 h-8 text-slate-400" />
                     )}
                   </div>
-                  <div className="flex-grow space-y-2">
-                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold cursor-pointer transition-colors">
-                      <Upload className="w-3.5 h-3.5" />
+                  <div className="flex flex-col items-start gap-1.5">
+                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold cursor-pointer transition-colors border border-slate-200/60 shadow-2xs">
+                      <Upload className="w-3.5 h-3.5 text-slate-600" />
                       <span>Unggah Foto Baru</span>
                       <input type="file" accept="image/*" onChange={handleAvatarFile} className="hidden" suppressHydrationWarning />
                     </label>
+
+                    <button
+                      type="button"
+                      disabled={!editForm.avatarUrl}
+                      onClick={() => setEditForm((prev: any) => ({ ...prev, avatarUrl: '' }))}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${editForm.avatarUrl
+                          ? 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200/80 cursor-pointer shadow-2xs'
+                          : 'bg-slate-50 text-slate-300 border border-slate-200/40 cursor-not-allowed'
+                        }`}
+                      title={editForm.avatarUrl ? 'Hapus foto profil' : 'Tidak ada foto profil untuk dihapus'}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Hapus Foto Profil</span>
+                    </button>
                   </div>
                 </div>
               </div>

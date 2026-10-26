@@ -245,7 +245,9 @@ export async function PUT(
         data: {
           title: title !== undefined ? title : existing.title,
           body: contentBody !== undefined ? contentBody : existing.body,
-          coverImage: coverImage !== undefined ? coverImage : existing.coverImage,
+          coverImage: existing.categorySlug === 'kalimat-bijak'
+            ? '/images/logo-perpusnas.png'
+            : (coverImage !== undefined ? coverImage : existing.coverImage),
           status:
             status !== undefined
               ? status === 'Menunggu' || status === 'MENUNGGU'

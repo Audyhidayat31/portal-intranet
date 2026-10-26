@@ -64,6 +64,14 @@ export default function TambahDokumenInternalPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [attachmentError, setAttachmentError] = useState('');
+
+  useEffect(() => {
+    if (attachmentError) {
+      const timer = setTimeout(() => setAttachmentError(''), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [attachmentError]);
 
   // Check active styles under selection
   const checkActiveStyles = useCallback(() => {
@@ -178,20 +186,22 @@ export default function TambahDokumenInternalPage() {
       (f) => !f.name.toLowerCase().endsWith('.pdf') && f.type !== 'application/pdf'
     );
     if (nonPdf) {
-      alert(`File "${nonPdf.name}" bukan format .pdf. Hanya file .pdf yang diperbolehkan.`);
       if (attachmentInputRef.current) attachmentInputRef.current.value = '';
+      setAttachmentError('File harus berupa .pdf');
       return;
     }
 
     const oversized = files.find((f) => f.size > 5 * 1024 * 1024);
     if (oversized) {
-      alert(`File "${oversized.name}" melebihi ukuran maksimal 5MB`);
       if (attachmentInputRef.current) attachmentInputRef.current.value = '';
+      setAttachmentError('Ukuran file maksimal 5MB');
       return;
     }
 
+    setAttachmentError('');
+
     if (attachments.length + files.length > 10) {
-      alert('Maksimal 10 lampiran diperbolehkan');
+      setAttachmentError('Maksimal 10 lampiran diperbolehkan');
       return;
     }
 
@@ -635,18 +645,21 @@ export default function TambahDokumenInternalPage() {
                 htmlFor="lampiran"
                 className="font-bold text-sm text-[#1a1b20] flex items-center h-10 md:col-span-1"
               >
-                <span>Lampiran (Maks. 10 File)</span>
+                <span>Lampiran</span>
                 <span className="ml-auto pr-4 hidden md:inline">:</span>
               </label>
               <div className="md:col-span-3 space-y-4">
-                <div>
+                <div className="relative" suppressHydrationWarning>
                   <div className="flex">
                     <input
                       type="text"
                       readOnly
+                      suppressHydrationWarning
                       value={attachments.length > 0 ? (attachments.length === 1 ? attachments[0].name : `${attachments.length} file dipilih`) : ''}
                       placeholder="File berupa .pdf"
-                      className="flex-grow h-10 border border-r-0 border-[#c5c6d2] rounded-l px-3 text-sm bg-white text-[#444650] placeholder-[#757682] cursor-default focus:outline-none"
+                      className={`flex-grow h-10 border border-r-0 rounded-l px-3 text-sm bg-white text-[#444650] placeholder-[#757682] cursor-default focus:outline-none transition-colors ${
+                        attachmentError ? 'border-amber-400 ring-1 ring-amber-400' : 'border-[#c5c6d2]'
+                      }`}
                     />
                     <input
                       ref={attachmentInputRef}
@@ -659,14 +672,28 @@ export default function TambahDokumenInternalPage() {
                     />
                     <button
                       type="button"
-                      onClick={() => attachmentInputRef.current?.click()}
+                      onClick={() => {
+                        setAttachmentError('');
+                        attachmentInputRef.current?.click();
+                      }}
                       disabled={attachments.length >= 10}
                       className="px-6 h-10 bg-[#e9e7ee] border border-[#c5c6d2] rounded-r text-[#1a1b20] font-bold text-xs sm:text-sm hover:bg-[#e1e3e4] transition-colors disabled:opacity-50 cursor-pointer"
                     >
                       Upload
                     </button>
                   </div>
-                  <p className="text-xs text-[#757682] mt-1.5 font-normal">File Maksimal 5MB</p>
+
+                  {/* Pop up balon peringatan seperti "Mohon isi bidang ini" */}
+                  {attachmentError && (
+                    <div className="absolute left-2 top-[calc(100%+8px)] z-40 flex items-center gap-2.5 bg-white text-slate-800 text-xs sm:text-sm py-2 px-3.5 rounded-lg shadow-xl border border-slate-300 animate-in fade-in slide-in-from-top-1 duration-150">
+                      {/* Panah segitiga ke atas menunjuk ke input field */}
+                      <div className="absolute -top-1.5 left-6 w-3 h-3 bg-white border-t border-l border-slate-300 rotate-45 transform" />
+                      <div className="w-4 h-4 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px] font-bold shrink-0 shadow-xs">!</div>
+                      <span className="font-medium text-slate-800">{attachmentError}</span>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-[#757682] mt-1.5 font-normal">File Maksimal 5MB (Maks. 10 File)</p>
                 </div>
 
                 {/* Previews */}

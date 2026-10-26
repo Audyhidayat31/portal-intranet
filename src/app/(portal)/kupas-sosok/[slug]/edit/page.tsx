@@ -28,6 +28,7 @@ import {
   getStoredFigures,
   saveStoredFigures,
 } from '@/lib/mock-kupas-sosok';
+import { canManageContent } from '@/lib/utils';
 
 export default function EditKupasSosokPage() {
   const params = useParams();
@@ -130,11 +131,21 @@ export default function EditKupasSosokPage() {
       }
     }
 
-    fetch(`/api/figure-profiles/${rawSlug}`)
-      .then((res) => res.json())
-      .then((data) => {
+    Promise.all([
+      fetch(`/api/figure-profiles/${rawSlug}`).then((res) => res.json()),
+      fetch('/api/profile/me').then((res) => res.json()).catch(() => ({ success: false })),
+    ])
+      .then(([data, profileData]) => {
+        const currentUser = profileData?.success ? profileData.data : null;
         if (data.success && data.data) {
           const item = data.data;
+
+          if (currentUser && !canManageContent(currentUser, item)) {
+            alert('Anda tidak memiliki izin untuk mengedit profil sosok ini.');
+            router.push(`/kupas-sosok/${rawSlug}`);
+            return;
+          }
+
           setNama(item.name || '');
           setJabatan(item.position || '');
           setUnitKerja(item.unitKerja || '');

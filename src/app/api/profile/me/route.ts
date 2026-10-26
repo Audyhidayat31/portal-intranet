@@ -22,6 +22,22 @@ export async function GET() {
       return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
     }
 
+    let profileData: any = fullUser.profile;
+    try {
+      const rawProfiles: any[] = await prisma.$queryRawUnsafe(
+        'SELECT * FROM profil_pegawai WHERE userId = ? LIMIT 1',
+        fullUser.id
+      );
+      if (rawProfiles && rawProfiles.length > 0) {
+        profileData = {
+          ...fullUser.profile,
+          ...rawProfiles[0],
+        };
+      }
+    } catch (rawErr) {
+      console.warn('Raw profile query fallback error:', rawErr);
+    }
+
     const roleName = fullUser.role?.name || user.role;
     const isAdmin =
       roleName?.toUpperCase() === 'ADMINISTRATOR' ||
@@ -31,6 +47,7 @@ export async function GET() {
       success: true,
       data: {
         ...fullUser,
+        profile: profileData,
         roleName,
         isAdmin,
       },
@@ -48,7 +65,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, nip, email, phone, bio, education, birthDate, avatarUrl, position, satuanKerja, currentPassword, newPassword } = body;
+    const { name, nip, email, phone, bio, education, birthDate, avatarUrl, position, satuanKerja, eselon2, eselon3, lokasiKerja, currentPassword, newPassword } = body;
 
     // Password change check
     if (newPassword) {
@@ -75,42 +92,126 @@ export async function PUT(request: NextRequest) {
       });
     }
 
-    // Update profile info
-    await prisma.employeeProfile.update({
-      where: { userId: user.userId },
-      data: {
-        phone: phone !== undefined ? phone : undefined,
-        bio: bio !== undefined ? bio : undefined,
-        education: education !== undefined ? education : undefined,
-        birthDate: birthDate ? new Date(birthDate) : undefined,
-        avatarUrl: avatarUrl !== undefined ? avatarUrl : undefined,
-        fullName: name !== undefined ? name : undefined,
-        nip: nip !== undefined ? nip : undefined,
-        position: position !== undefined ? position : undefined,
-        unitKerja: satuanKerja !== undefined ? satuanKerja : undefined,
-      },
-    });
+    let parsedBirthDate: Date | null | undefined = undefined;
+    if (birthDate !== undefined) {
+      if (!birthDate || birthDate === '') {
+        parsedBirthDate = null;
+      } else {
+        const d = new Date(birthDate);
+        parsedBirthDate = isNaN(d.getTime()) ? null : d;
+      }
+    }
 
-    if (name !== undefined || nip !== undefined) {
+    const cleanNip = nip !== undefined && nip.trim() ? nip.trim() : undefined;
+    const cleanName = name !== undefined && name.trim() ? name.trim() : undefined;
+    const valEselon2 = eselon2 !== undefined ? (eselon2 && eselon2.trim() ? eselon2.trim() : null) : undefined;
+    const valEselon3 = eselon3 !== undefined ? (eselon3 && eselon3.trim() ? eselon3.trim() : null) : undefined;
+    const valLokasiKerja = lokasiKerja !== undefined ? (lokasiKerja && lokasiKerja.trim() ? lokasiKerja.trim() : null) : undefined;
+
+    // Update profile info
+    try {
+      await (prisma.employeeProfile as any).upsert({
+        where: { userId: user.userId },
+        create: {
+          userId: user.userId,
+          nip: cleanNip || user.nip,
+          fullName: cleanName || user.name,
+          position: (position && position.trim()) || '',
+          unitKerja: (satuanKerja && satuanKerja.trim()) || '',
+          phone: phone && phone.trim() ? phone.trim() : null,
+          bio: bio && bio.trim() ? bio.trim() : null,
+          education: education && education.trim() ? education.trim() : null,
+          birthDate: parsedBirthDate ?? null,
+          avatarUrl: avatarUrl !== undefined ? avatarUrl : null,
+          eselon2: valEselon2 ?? null,
+          eselon3: valEselon3 ?? null,
+          lokasiKerja: valLokasiKerja ?? null,
+        },
+        update: {
+          phone: phone !== undefined ? (phone && phone.trim() ? phone.trim() : null) : undefined,
+          bio: bio !== undefined ? (bio && bio.trim() ? bio.trim() : null) : undefined,
+          education: education !== undefined ? (education && education.trim() ? education.trim() : null) : undefined,
+          birthDate: parsedBirthDate !== undefined ? parsedBirthDate : undefined,
+          avatarUrl: avatarUrl !== undefined ? (avatarUrl ? avatarUrl : null) : undefined,
+          fullName: cleanName,
+          nip: cleanNip,
+          position: position !== undefined ? (position && position.trim() ? position.trim() : '') : undefined,
+          unitKerja: satuanKerja !== undefined ? (satuanKerja && satuanKerja.trim() ? satuanKerja.trim() : '') : undefined,
+          eselon2: valEselon2,
+          eselon3: valEselon3,
+          lokasiKerja: valLokasiKerja,
+        },
+      });
+    } catch (upsertErr: any) {
+      if (upsertErr?.message?.includes('Unknown argument')) {
+        // Fallback jika instance runtime Prisma di dev server belum reload skema baru
+        await (prisma.employeeProfile as any).upsert({
+          where: { userId: user.userId },
+          create: {
+            userId: user.userId,
+            nip: cleanNip || user.nip,
+            fullName: cleanName || user.name,
+            position: (position && position.trim()) || '',
+            unitKerja: (satuanKerja && satuanKerja.trim()) || '',
+            phone: phone && phone.trim() ? phone.trim() : null,
+            bio: bio && bio.trim() ? bio.trim() : null,
+            education: education && education.trim() ? education.trim() : null,
+            birthDate: parsedBirthDate ?? null,
+            avatarUrl: avatarUrl !== undefined ? avatarUrl : null,
+          },
+          update: {
+            phone: phone !== undefined ? (phone && phone.trim() ? phone.trim() : null) : undefined,
+            bio: bio !== undefined ? (bio && bio.trim() ? bio.trim() : null) : undefined,
+            education: education !== undefined ? (education && education.trim() ? education.trim() : null) : undefined,
+            birthDate: parsedBirthDate !== undefined ? parsedBirthDate : undefined,
+            avatarUrl: avatarUrl !== undefined ? (avatarUrl ? avatarUrl : null) : undefined,
+            fullName: cleanName,
+            nip: cleanNip,
+            position: position !== undefined ? (position && position.trim() ? position.trim() : '') : undefined,
+            unitKerja: satuanKerja !== undefined ? (satuanKerja && satuanKerja.trim() ? satuanKerja.trim() : '') : undefined,
+          },
+        });
+
+        // Simpan eselon2, eselon3, lokasiKerja langsung ke database MySQL
+        await prisma.$executeRawUnsafe(
+          'UPDATE profil_pegawai SET eselon2 = ?, eselon3 = ?, lokasiKerja = ?, updatedAt = NOW() WHERE userId = ?',
+          valEselon2 !== undefined ? valEselon2 : null,
+          valEselon3 !== undefined ? valEselon3 : null,
+          valLokasiKerja !== undefined ? valLokasiKerja : null,
+          user.userId
+        );
+      } else {
+        throw upsertErr;
+      }
+    }
+
+    if (cleanName !== undefined || cleanNip !== undefined) {
       await prisma.user.update({
         where: { id: user.userId },
         data: {
-          name: name !== undefined ? name : undefined,
-          nip: nip !== undefined ? nip : undefined,
+          name: cleanName,
+          nip: cleanNip,
         },
       });
     }
 
-    await logActivity({
-      userId: user.userId,
-      action: 'UPDATE',
-      module: 'USERS',
-      description: `Pegawai ${user.name} memperbarui data profil akun pribadinya.`,
-    });
+    try {
+      await logActivity({
+        userId: user.userId,
+        action: 'UPDATE',
+        module: 'USERS',
+        description: `Pegawai ${cleanName || user.name} memperbarui data profil akun pribadinya.`,
+      });
+    } catch (logErr) {
+      console.warn('Gagal mencatat log aktivitas profil:', logErr);
+    }
 
     return NextResponse.json({ success: true, message: 'Profil berhasil diperbarui!' });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ success: false, message: 'Gagal memperbarui profil' }, { status: 500 });
+  } catch (error: any) {
+    console.error('API profile me error:', error);
+    return NextResponse.json({
+      success: false,
+      message: error?.message || 'Gagal memperbarui profil'
+    }, { status: 500 });
   }
 }

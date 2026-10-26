@@ -305,9 +305,9 @@ export function AdminNavbar({ onToggleSidebar }: { onToggleSidebar?: () => void 
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-3 border border-[#c5c6d2] rounded-lg p-1.5 px-3 bg-[#f4f3f9] hover:bg-[#e9e7ee] transition-colors shadow-2xs">
             <div className="w-8 h-8 rounded-full bg-[#c5c6d2] overflow-hidden flex items-center justify-center shrink-0 text-[#00113a]">
-              {currentUser?.avatarUrl ? (
+              {(currentUser?.avatarUrl || currentUser?.profile?.avatarUrl) ? (
                 <img
-                  src={currentUser.avatarUrl}
+                  src={currentUser.avatarUrl || currentUser.profile?.avatarUrl}
                   alt={currentUser.name}
                   className="w-full h-full object-cover"
                 />

@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
         slug,
         categorySlug,
         body: contentBody,
-        coverImage: coverImage || null,
+        coverImage: categorySlug === 'kalimat-bijak' ? '/images/logo-perpusnas.png' : (coverImage || null),
         authorId,
         status: postStatus,
         createdAt: postCreatedAt,

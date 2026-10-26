@@ -169,7 +169,7 @@ export default function DirektoriPegawaiPage() {
               </div>
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
                 <span className="text-[10px] font-bold text-slate-400 uppercase">Golongan / Ruang</span>
-                <p className="font-semibold text-slate-800 mt-1">{selectedEmployee.profile?.golRuang || 'IV/a - Pembina'}</p>
+                <p className="font-semibold text-slate-800 mt-1">{selectedEmployee.profile?.golRuang || '-'}</p>
               </div>
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
                 <span className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1.5">
@@ -185,7 +185,7 @@ export default function DirektoriPegawaiPage() {
               </div>
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 sm:col-span-2">
                 <span className="text-[10px] font-bold text-slate-400 uppercase">Nomor Kontak / Ekstensi</span>
-                <p className="font-semibold text-slate-800 mt-1">{selectedEmployee.profile?.phone || '(021) 3154864'}</p>
+                <p className="font-semibold text-slate-800 mt-1">{selectedEmployee.profile?.phone || '-'}</p>
               </div>
             </div>
 

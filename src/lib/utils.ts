@@ -201,7 +201,7 @@ export function canManageContent(user: any, content: any): boolean {
   const authorNip = content?.author?.nip || content?.authorNip;
   if (authorNip && user.nip && String(authorNip).trim() === String(user.nip).trim()) return true;
 
-  const authorName = content?.authorName || content?.namaPenulis || content?.author?.name || content?.name;
+  const authorName = content?.authorName || content?.namaPenulis || content?.author?.name;
   if (authorName && user.name) {
     const rawAuthor = String(authorName).trim().toLowerCase();
     const rawUser = String(user.name).trim().toLowerCase();

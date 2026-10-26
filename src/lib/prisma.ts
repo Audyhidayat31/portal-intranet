@@ -10,7 +10,7 @@ function getOptimizedDatabaseUrl(): string | undefined {
 
   if (url.startsWith('mysql:') || url.startsWith('mariadb:')) {
     if (!url.includes('connection_limit=')) {
-      url += (url.includes('?') ? '&' : '?') + 'connection_limit=10';
+      url += (url.includes('?') ? '&' : '?') + 'connection_limit=25';
     }
     return url;
   }
@@ -100,12 +100,14 @@ export async function withDbRetry<T>(
       const isConnError =
         error?.code === 'P1001' ||
         error?.code === 'P1017' || // Server has closed the connection
+        error?.code === 'P2039' ||
         error?.message?.includes("Can't reach database server") ||
         error?.message?.includes('connection closed') ||
         error?.message?.includes('kind: Closed') ||
         error?.message?.includes('Connection refused') ||
         error?.message?.includes('Connection reset by peer') ||
-        error?.message?.includes('timed out');
+        error?.message?.includes('timed out') ||
+        error?.message?.includes('pool timeout');
 
       if (attempt <= maxRetries && isConnError) {
         console.warn(

@@ -341,9 +341,9 @@ export default function DaftarOlahragaPage() {
           </div>
         ) : olahragaList.length === 0 ? (
           <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
-            <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Artikel Olahraga Ditemukan</h2>
+            <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Olahraga Ditemukan</h2>
             <p className="text-sm text-[#444650]">
-              Silakan coba kata kunci pencarian lain atau tambahkan artikel olahraga baru.
+              Silakan coba kata kunci pencarian lain atau tambahkan olahraga baru.
             </p>
           </div>
         ) : (

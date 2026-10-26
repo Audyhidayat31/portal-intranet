@@ -346,7 +346,7 @@ export default function CoretanOpiniPage() {
           <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
             <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Coretan Opini Ditemukan</h2>
             <p className="text-sm text-[#444650]">
-              Silakan coba kata kunci pencarian lain atau buat coretan opini baru.
+              Silakan coba kata kunci pencarian lain atau tambahkan coretan opini baru.
             </p>
           </div>
         ) : (

@@ -403,11 +403,10 @@ export default function KalimatBijakPage() {
             <p className="text-xs">Memuat kalimat bijak...</p>
           </div>
         ) : currentCards.length === 0 ? (
-          <div className="py-16 text-center border border-dashed border-slate-200 rounded-2xl bg-slate-50/50 my-8">
-            <Quote className="w-10 h-10 text-slate-300 mx-auto mb-2 opacity-60" />
-            <p className="text-sm font-semibold text-slate-700">Kalimat Bijak Tidak Ditemukan</p>
-            <p className="text-xs text-slate-500 mt-1">
-              Silakan coba kata kunci pencarian yang lain.
+          <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
+            <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Kalimat Bijak Ditemukan</h2>
+            <p className="text-sm text-[#444650]">
+              Silakan coba kata kunci pencarian lain atau tambahkan kalimat bijak baru.
             </p>
           </div>
         ) : (

@@ -31,10 +31,32 @@ export default function BerandaPage() {
       .then(([homeRes, authRes, bijakRes, figureRes]) => {
         if (homeRes.success) {
           let summaryData = homeRes.data;
-          // Prioritaskan figure aktif dari tabel profil_tokoh jika ada
           if (figureRes?.success && Array.isArray(figureRes.data) && figureRes.data.length > 0) {
-            const spotlight = figureRes.data.find((f: any) => f.isSpotlight) || figureRes.data[0];
+            const sortedFigures = [...figureRes.data].sort(
+              (a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+
+            // Cek artikel yang baru saja ditambah hari ini (WIB / Asia/Jakarta)
+            const nowWIB = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+            const todayDateStr = `${nowWIB.getFullYear()}-${String(nowWIB.getMonth() + 1).padStart(2, '0')}-${String(nowWIB.getDate()).padStart(2, '0')}`;
+
+            const todayFigures = sortedFigures.filter((f: any) => {
+              if (!f.createdAt) return false;
+              const fDate = new Date(new Date(f.createdAt).toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+              const fDateStr = `${fDate.getFullYear()}-${String(fDate.getMonth() + 1).padStart(2, '0')}-${String(fDate.getDate()).padStart(2, '0')}`;
+              return fDateStr === todayDateStr;
+            });
+
+            // Berubah sehari sekali jika ada artikel baru hari ini.
+            // Kecuali tidak ada artikel baru hari ini, maka artikelnya menetap ke yang paling baru.
+            const spotlight = todayFigures.length > 0 ? todayFigures[0] : sortedFigures[0];
+
             if (spotlight) {
+              const cleanBio = (spotlight.deskripsi || spotlight.fullStory || spotlight.quote || '')
+                .replace(/<[^>]+>/g, '')
+                .replace(/&nbsp;/g, ' ')
+                .trim();
+
               summaryData = {
                 ...summaryData,
                 spotlightFigure: {
@@ -42,8 +64,9 @@ export default function BerandaPage() {
                   title: spotlight.position
                     ? `${spotlight.name.toUpperCase()} : ${spotlight.position.toUpperCase()}`
                     : spotlight.name.toUpperCase(),
-                  bio: spotlight.deskripsi || spotlight.fullStory || spotlight.quote || '',
+                  bio: cleanBio,
                   avatarUrl: spotlight.photoUrl || null,
+                  photoUrl: spotlight.photoUrl || null,
                 },
               };
             }
@@ -65,9 +88,9 @@ export default function BerandaPage() {
   const { setting, latestNews, latestPosts, spotlightFigure, birthdaysToday, birthdaysThisMonth, kalimatBijak } = data || {};
 
   const activeBijak = latestKalimatBijak || kalimatBijak;
-  const rawBijakQuote = activeBijak?.body || activeBijak?.quote || setting?.quoteText || 'Membaca dan melestarikan khazanah literasi adalah ikhtiar luhur merajut martabat dan masa depan bangsa.';
+  const rawBijakQuote = activeBijak?.body || activeBijak?.quote || '';
   const cleanBijakQuote = rawBijakQuote.replace(/<[^>]+>/g, '').replace(/^"|"$/g, '').trim();
-  const bijakFigureOrAuthor = activeBijak?.title || activeBijak?.figure || activeBijak?.author?.name || setting?.quoteAuthor || 'Pimpinan Perpustakaan Nasional RI';
+  const bijakFigureOrAuthor = activeBijak?.title || activeBijak?.figure || activeBijak?.author?.name || 'Tokoh Perpustakaan';
   const bijakTargetId = activeBijak?.id || '';
 
   // Default banners matching the admin page
@@ -148,56 +171,9 @@ export default function BerandaPage() {
     setCurrentBannerIndex((prev) => (prev - 1 + activeBanners.length) % activeBanners.length);
   };
 
-  // Mock fallbacks exactly matching Stitch Screen design
-  const newsList = latestNews && latestNews.length > 0 ? latestNews.slice(0, 3) : [
-    {
-      id: '1',
-      title: 'Minat membaca Warga Indonesia semakin membaik',
-      excerpt: 'Menurut penelitian pada tanggal 19 Agustus 2026 terlihat bahwa jumlah peminat buku...',
-      coverImage: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAYiVIlTvlHWCZXsVWN5BKuXNUOFuVWmKl4EtLECjpaOy9dESc-3QPJSVJp5bXmxWHAow1d7ZRMI2LYZ5tJGkKcpz5-yH5kqvgRBImJwBq_iPLpDXPrffOSljK8yNGkVvtipwLYF0otGU56r_SjT5AXkGqMt713QDk_R1omHKPbPeDubgX7UWOLW_cpHkr6M-H7MhReBGdqjdui0kAAPiGWQWyZUqOTWsLnPHseHwN3rkEYjBhOFgaw',
-      publishedAt: '2026-08-19',
-    },
-    {
-      id: '2',
-      title: 'Minat membaca Warga Indonesia semakin membaik',
-      excerpt: 'Menurut penelitian pada tanggal 19 Agustus 2026 terlihat bahwa jumlah peminat buku...',
-      coverImage: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCt5lBUWzhdVxrkyuiafB82wFLsq84XIOyegYfJrMcVB-gfdH9EyMg8wwKSwC0zseXJNUtgoMWG8uyFftr_pN9HUlybMmPppNL07GbZ3GoRf4alC8Sv281OsX-smoOTDl-sz2ftmhsCo0xEZS-pCJXkakqQ_w_OT1dLiUlBVndD4ZxIA-f5B1BXe3Ecb1mDnt3GS_3SUDJBhI5kaLkHiS4MT1CVxIFTe4VP6TBeBYr62-9ozimVWd70',
-      publishedAt: '2026-08-19',
-    },
-    {
-      id: '3',
-      title: 'Minat membaca Warga Indonesia semakin membaik',
-      excerpt: 'Menurut penelitian pada tanggal 19 Agustus 2026 terlihat bahwa jumlah peminat buku...',
-      coverImage: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCtvt3SrRcH9vLeIKQjXR-13wmcqrCgl1s9ZzxYkGRgWam6JRAfyfFqOPn3G1BD2GuaaYYiMyp7lCmPCKTE9F0mp9Qbf-S2E3eRqaBFaVr2MKtga9XQlMcL4ls-YdE8-Yyh-bnywt0zaTMOYC5EI2w-Z5fwTsHeRqsUKw1FzbRZILddR1ohK6xzRx0FNIjgimQnjtTfMY2FWHZEV9iHu7C4MLXo0pbcObDK3Tah6nDDOD82f_b2MCmL',
-      publishedAt: '2026-08-19',
-    },
-  ];
+  const newsList = latestNews && Array.isArray(latestNews) && latestNews.length > 0 ? latestNews.slice(0, 3) : [];
 
-  const categories = ['HUMOR', 'KONSULTASI', 'OPINI', 'OLAHRAGA', 'TAHUKAH ANDA', 'TIPS GAYA HIDUP', 'KARYA AKADEMIK'];
-  const generatedPosts = Array.from({ length: 9 }).map((_, idx) => ({
-    id: `p${idx + 1}`,
-    title: `Minat membaca Warga Indonesia semakin membaik - Bagian ${idx + 1}`,
-    content: 'Menurut penelitian pada tanggal 19 Agustus 2026 terlihat bahwa jumlah peminat buku...',
-    category: categories[idx % categories.length],
-    coverImage: [
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuBFmsQV5G444GOPEiBQmUDg0EimQGDtFLEcXXq5P1w9-nKwv4eWjePtkY-kW_EvS0EetnaQGSU--yGWdZF3CZERlTmj1GFqNxK8B_PHsuwYdaOWICZvAnLMOS6URsSZ9SATrogeMiqUHWbL5cHfXooB8QjBhQAqROIJGSe-FJf--DtPm7aLl-zxiBFZplX3DNjacuoYeURqvdKXrhE-6ZiHvKC52-ftmKi6hXXJxVGHey1gRcEDDp6d',
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuB9bzcndqYsDsEmRnwkxthuLGjFNPN9JOJtvc1Nge6Df9GjOv30GrDKbn3CyXV-qUiwLvWwIsQhdahF_pOOgi7BAtzJCIrBzc_5BwqrOVdlJjIb72GOXgB6HlhvLvHoxqhndqzIu4Gr_tCShorbnvGYNF6OI8vb9XyWFekAB1EuZzPPCfRIMqi4Iw6tJsn7iJj729H_LvafPLyLu2tOhzya8gPDF2aqFucSYmJNh94lJ39sGwu2nnQE',
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuBGRNk0oza_46EDS_OJlfiAY8kuwEDe380BVQyO6-tzN1j-8kr9EXDOHLqJexHh153m5oeAZYf3P_M2lUfvhZEWmUCzh13D7IkEoO1TJqzaje_qVF5ocpSXph3sbNtW9-oXUAuM5gVrOQxEsguu_g0HAQWhEjmLHcHoBzmD9UPl815ID6sJZvRqht91ubgXw7JiLxWvUgK2_KH683-p3KxNYufCJtjL9bDUllPT05Cg1jKf5Jtkivat'
-    ][idx % 3],
-    createdAt: '2026-08-19',
-    status: 'Terbit'
-  }));
-
-  const combinedPosts = [...(latestPosts || [])];
-  if (combinedPosts.length < 9) {
-    for (const gen of generatedPosts) {
-      if (combinedPosts.length >= 9) break;
-      if (!combinedPosts.some((p: any) => p.id === gen.id || p.title === gen.title)) {
-        combinedPosts.push(gen);
-      }
-    }
-  }
-  const postsList = combinedPosts.slice(0, 9);
+  const postsList = latestPosts && Array.isArray(latestPosts) && latestPosts.length > 0 ? latestPosts.slice(0, 9) : [];
   const currentPosts = postsList.slice(currentPostPage * 3, currentPostPage * 3 + 3);
 
   const activeBirthdays = birthdaysToday || birthdaysThisMonth;
@@ -323,11 +299,15 @@ export default function BerandaPage() {
       <section className="bg-[#f4f3f9] rounded-2xl p-6 sm:p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 md:gap-12 border border-[#e3e2e8]">
         <div className="w-full md:w-1/3 flex justify-center">
           <div className="w-48 h-48 sm:w-56 sm:h-56 md:w-60 md:h-60 rounded-xl border border-[#c5c6d2] bg-white flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
-            {spotlightFigure?.avatarUrl || spotlightFigure?.photoUrl ? (
+            {spotlightFigure?.photoUrl || spotlightFigure?.avatarUrl ? (
               <img
-                src={spotlightFigure.avatarUrl || spotlightFigure.photoUrl}
+                src={spotlightFigure.photoUrl || spotlightFigure.avatarUrl}
                 alt={spotlightFigure.name || 'Tokoh Perpusnas'}
                 className="w-full h-full object-cover object-top"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = '/images/logo-perpusnas.png';
+                  (e.currentTarget as HTMLImageElement).className = 'w-24 h-24 object-contain p-2';
+                }}
               />
             ) : (
               <User className="w-24 h-24 sm:w-28 sm:h-28 text-[#c5c6d2] stroke-[1]" />
@@ -342,10 +322,10 @@ export default function BerandaPage() {
               : (spotlightFigure?.title || spotlightFigure?.name?.toUpperCase() || 'JNB TAIRAS : PEJUANG PUSTAKAWAN')}
           </h3>
           <p className="text-sm sm:text-base text-[#444650] leading-relaxed line-clamp-3">
-            {spotlightFigure?.deskripsi ||
+            {spotlightFigure?.bio ||
+              spotlightFigure?.deskripsi ||
               spotlightFigure?.fullStory ||
               spotlightFigure?.quote ||
-              spotlightFigure?.bio ||
               'Jon Ngion Benyamin Tairas, atau lebih dikenal dengan inisial JNB. Tairas dalam kurun waktu yang tidak pendek, lebih dari 50 tahun mengabdikan seluruh hidupnya di dunia kepustakawanan.'}
           </p>
           <div className="pt-2">
@@ -364,70 +344,81 @@ export default function BerandaPage() {
         <div className="flex justify-between items-end border-b border-[#c5c6d2] pb-2">
           <h2 className="text-2xl sm:text-3xl font-bold text-[#00113a]">Berita</h2>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {newsList.map((item: any, idx: number) => (
-            <div
-              key={item.id || idx}
-              className="border border-[#c5c6d2] rounded-xl overflow-hidden bg-white shadow-sm flex flex-col group cursor-pointer hover:shadow-md transition-shadow"
-            >
-              <div className="h-48 bg-[#f4f5f8] w-full relative overflow-hidden flex items-center justify-center">
-                {item.coverImage?.includes('logo-perpusnas') ? (
-                  <div className="w-full h-full flex items-center justify-center p-6 bg-white/60">
-                    <img
-                      src={item.coverImage}
-                      alt={item.title}
-                      className="max-h-full max-w-[80%] object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-xs"
-                    />
+        {newsList.length === 0 ? (
+          <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
+            <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Berita Ditemukan</h2>
+            <p className="text-sm text-[#444650]">
+              Silakan coba kata kunci pencarian lain atau tambahkan berita baru.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {newsList.map((item: any, idx: number) => (
+                <div
+                  key={item.id || idx}
+                  className="border border-[#c5c6d2] rounded-xl overflow-hidden bg-white shadow-sm flex flex-col group cursor-pointer hover:shadow-md transition-shadow"
+                >
+                  <div className="h-48 bg-[#f4f5f8] w-full relative overflow-hidden flex items-center justify-center">
+                    {item.coverImage?.includes('logo-perpusnas') ? (
+                      <div className="w-full h-full flex items-center justify-center p-6 bg-white/60">
+                        <img
+                          src={item.coverImage}
+                          alt={item.title}
+                          className="max-h-full max-w-[80%] object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-xs"
+                        />
+                      </div>
+                    ) : (
+                      <img
+                        src={item.coverImage || '/images/logo-perpusnas.png'}
+                        alt={item.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    )}
                   </div>
-                ) : (
-                  <img
-                    src={item.coverImage || '/images/logo-perpusnas.png'}
-                    alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                )}
-              </div>
-              <div className="p-5 flex flex-col flex-grow justify-between">
-                <div>
-                  <div className="flex justify-between items-center mb-1.5">
-                    <span className="font-bold text-[10px] text-[#757682]">
-                      {item.publishedAt ? formatDate(item.publishedAt) : '19 Agustus 2026'}
-                    </span>
-                    <span className={`text-[10px] px-2 py-0.5 rounded border font-medium ${
-                      item.status === 'MENUNGGU' || item.status === 'Menunggu'
-                        ? 'bg-blue-100 text-blue-700 border-blue-200'
-                        : 'bg-green-100 text-green-700 border-green-200'
-                    }`}>
-                      Status: {item.status === 'MENUNGGU' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
-                    </span>
+                  <div className="p-5 flex flex-col flex-grow justify-between">
+                    <div>
+                      <div className="flex justify-between items-center mb-1.5">
+                        <span className="font-bold text-[10px] text-[#757682]">
+                          {item.publishedAt ? formatDate(item.publishedAt) : '19 Agustus 2026'}
+                        </span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded border font-medium ${
+                          item.status === 'MENUNGGU' || item.status === 'Menunggu'
+                            ? 'bg-blue-100 text-blue-700 border-blue-200'
+                            : 'bg-green-100 text-green-700 border-green-200'
+                        }`}>
+                          Status: {item.status === 'MENUNGGU' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+                        </span>
+                      </div>
+                      <h3 className="text-base font-bold text-[#00113a] mb-2 line-clamp-2 group-hover:text-[#1b6d24] transition-colors leading-snug">
+                        {item.title}
+                      </h3>
+                      <p className="text-xs text-[#444650] line-clamp-2 mb-4 leading-relaxed">
+                        {item.excerpt || item.content?.slice(0, 120)}
+                      </p>
+                    </div>
+                    <div className="flex justify-end mt-auto pt-2">
+                      <Link
+                        href={`/kabar-kedinasan/berita/${(item.id || item.slug || '1').replace(/^stitch-/, '')}`}
+                        className="bg-[#00113a] text-white font-bold text-xs px-4 py-1.5 rounded-md hover:bg-[#2a4386] transition-colors shadow-sm"
+                      >
+                        Lihat
+                      </Link>
+                    </div>
                   </div>
-                  <h3 className="text-base font-bold text-[#00113a] mb-2 line-clamp-2 group-hover:text-[#1b6d24] transition-colors leading-snug">
-                    {item.title}
-                  </h3>
-                  <p className="text-xs text-[#444650] line-clamp-2 mb-4 leading-relaxed">
-                    {item.excerpt || item.content?.slice(0, 120)}
-                  </p>
                 </div>
-                <div className="flex justify-end mt-auto pt-2">
-                  <Link
-                    href={`/kabar-kedinasan/berita/${(item.id || item.slug || '1').replace(/^stitch-/, '')}`}
-                    className="bg-[#00113a] text-white font-bold text-xs px-4 py-1.5 rounded-md hover:bg-[#2a4386] transition-colors shadow-sm"
-                  >
-                    Lihat
-                  </Link>
-                </div>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
-        <div className="flex justify-center pt-2">
-          <Link
-            href="/kabar-kedinasan/berita"
-            className="inline-flex items-center bg-[#00113a] text-white font-bold py-2.5 px-6 rounded-md hover:bg-[#2a4386] transition-colors shadow-sm text-sm"
-          >
-            Lihat Semua Berita
-          </Link>
-        </div>
+            <div className="flex justify-center pt-2">
+              <Link
+                href="/kabar-kedinasan/berita"
+                className="inline-flex items-center bg-[#00113a] text-white font-bold py-2.5 px-6 rounded-md hover:bg-[#2a4386] transition-colors shadow-sm text-sm"
+              >
+                Lihat Semua Berita
+              </Link>
+            </div>
+          </>
+        )}
       </section>
 
       {/* Antar Pegawai Section */}
@@ -435,107 +426,137 @@ export default function BerandaPage() {
         <div className="flex justify-between items-end border-b border-[#c5c6d2] pb-2">
           <h2 className="text-2xl sm:text-3xl font-bold text-[#00113a]">Antar Pegawai</h2>
         </div>
-        <div className="relative group/section">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {currentPosts.map((post: any, idx: number) => (
-            <div
-              key={post.id || idx}
-              className="border border-[#c5c6d2] rounded-xl overflow-hidden bg-white shadow-sm flex flex-col group cursor-pointer hover:shadow-md transition-shadow"
-            >
-              <div className="h-48 bg-[#e3e2e8] w-full relative overflow-hidden">
-                <img
-                  src={post.coverImage || '/images/logo-perpusnas.png'}
-                  alt={post.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <span className="absolute top-4 left-4 bg-white border border-[#c5c6d2] text-[#1b6d24] font-bold text-[10px] px-2 py-0.5 uppercase tracking-wider rounded shadow-sm">
-                  {post.categorySlug ? post.categorySlug.replace(/-/g, ' ') : (post.category || 'HUMOR')}
-                </span>
+        {postsList.length === 0 ? (
+          <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
+            <h2 className="text-lg font-bold text-[#00113a]">Tidak Ada Topik Ditemukan</h2>
+          </div>
+        ) : (
+          <>
+            <div className="relative group/section">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                {currentPosts.map((post: any, idx: number) => {
+                  const isKalimatBijak =
+                    post.categorySlug?.toLowerCase() === 'kalimat-bijak' ||
+                    post.category?.toLowerCase() === 'kalimat bijak' ||
+                    (post.categorySlug ? post.categorySlug.replace(/-/g, ' ').toLowerCase() : '') === 'kalimat bijak';
+                  const postCoverImage = isKalimatBijak
+                    ? '/images/logo-perpusnas.png'
+                    : (post.coverImage || '/images/logo-perpusnas.png');
+
+                  return (
+                    <div
+                      key={post.id || idx}
+                      className="border border-[#c5c6d2] rounded-xl overflow-hidden bg-white shadow-sm flex flex-col group cursor-pointer hover:shadow-md transition-shadow"
+                    >
+                      <div className="h-48 bg-[#e3e2e8] w-full relative overflow-hidden">
+                        <img
+                          src={postCoverImage}
+                          alt={post.title}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/images/logo-perpusnas.png';
+                          }}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <span className="absolute top-4 left-4 bg-white border border-[#c5c6d2] text-[#1b6d24] font-bold text-[10px] px-2 py-0.5 uppercase tracking-wider rounded shadow-sm">
+                          {post.categorySlug ? post.categorySlug.replace(/-/g, ' ') : (post.category || 'HUMOR')}
+                        </span>
+                      </div>
+                      <div className="p-5 flex flex-col flex-grow justify-between">
+                        <div>
+                          <div className="flex justify-between items-center mb-1.5">
+                            <span className="font-bold text-[10px] text-[#757682]">
+                              {post.createdAt ? formatDate(post.createdAt) : '19 Agustus 2026'}
+                            </span>
+                            <span className={`text-[10px] px-2 py-0.5 rounded border font-medium ${
+                              post.status === 'MENUNGGU' || post.status === 'Menunggu'
+                                ? 'bg-blue-100 text-blue-700 border-blue-200'
+                                : 'bg-green-100 text-green-700 border-green-200'
+                            }`}>
+                              Status: {post.status === 'MENUNGGU' || post.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
+                            </span>
+                          </div>
+                          <h3 className="text-base font-bold text-[#00113a] mb-2 line-clamp-2 group-hover:text-[#1b6d24] transition-colors leading-snug">
+                            {post.title}
+                          </h3>
+                          <p className="text-xs text-[#444650] line-clamp-2 mb-4 leading-relaxed">
+                            {post.body ? post.body.replace(/<[^>]+>/g, '').slice(0, 100) + '...' : (post.content || post.excerpt)}
+                          </p>
+                        </div>
+                        <div className="flex justify-end mt-auto pt-2">
+                          <Link
+                            href={`/antar-pegawai/${post.categorySlug || (post.category || 'opini').toLowerCase().replace(/\s+/g, '-')}/${post.slug || post.id || '1'}`}
+                            className="bg-[#00113a] text-white font-bold text-xs px-4 py-1.5 rounded-md hover:bg-[#2a4386] transition-colors shadow-sm"
+                          >
+                            Lihat
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-              <div className="p-5 flex flex-col flex-grow justify-between">
-                <div>
-                  <div className="flex justify-between items-center mb-1.5">
-                    <span className="font-bold text-[10px] text-[#757682]">
-                      {post.createdAt ? formatDate(post.createdAt) : '19 Agustus 2026'}
-                    </span>
-                    <span className={`text-[10px] px-2 py-0.5 rounded border font-medium ${
-                      post.status === 'MENUNGGU' || post.status === 'Menunggu'
-                        ? 'bg-blue-100 text-blue-700 border-blue-200'
-                        : 'bg-green-100 text-green-700 border-green-200'
-                    }`}>
-                      Status: {post.status === 'MENUNGGU' || post.status === 'Menunggu' ? 'Menunggu' : 'Terbit'}
-                    </span>
-                  </div>
-                  <h3 className="text-base font-bold text-[#00113a] mb-2 line-clamp-2 group-hover:text-[#1b6d24] transition-colors leading-snug">
-                    {post.title}
-                  </h3>
-                  <p className="text-xs text-[#444650] line-clamp-2 mb-4 leading-relaxed">
-                    {post.body ? post.body.replace(/<[^>]+>/g, '').slice(0, 100) + '...' : (post.content || post.excerpt)}
-                  </p>
-                </div>
-                <div className="flex justify-end mt-auto pt-2">
-                  <Link
-                    href={`/antar-pegawai/${post.categorySlug || (post.category || 'opini').toLowerCase().replace(/\s+/g, '-')}/${post.slug || post.id || '1'}`}
-                    className="bg-[#00113a] text-white font-bold text-xs px-4 py-1.5 rounded-md hover:bg-[#2a4386] transition-colors shadow-sm"
-                  >
-                    Lihat
-                  </Link>
-                </div>
-              </div>
+              
+              {/* Left Arrow */}
+              <button 
+                onClick={() => setCurrentPostPage(prev => Math.max(0, prev - 1))}
+                disabled={currentPostPage === 0}
+                className="absolute -left-4 sm:-left-8 md:-left-12 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border border-[#c5c6d2] shadow-md flex items-center justify-center text-[#00113a] disabled:opacity-0 transition-all opacity-0 group-hover/section:opacity-100 hover:bg-slate-50 z-10"
+                aria-label="Previous page"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+              
+              {/* Right Arrow */}
+              <button 
+                onClick={() => setCurrentPostPage(prev => Math.min(Math.max(0, Math.ceil((postsList?.length || 1) / 3) - 1), prev + 1))}
+                disabled={currentPostPage >= Math.max(0, Math.ceil((postsList?.length || 0) / 3) - 1)}
+                className="absolute -right-4 sm:-right-8 md:-right-12 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border border-[#c5c6d2] shadow-md flex items-center justify-center text-[#00113a] disabled:opacity-0 transition-all opacity-0 group-hover/section:opacity-100 hover:bg-slate-50 z-10"
+                aria-label="Next page"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
             </div>
-          ))}
-        </div>
-          
-          {/* Left Arrow */}
-          <button 
-            onClick={() => setCurrentPostPage(prev => Math.max(0, prev - 1))}
-            disabled={currentPostPage === 0}
-            className="absolute -left-4 sm:-left-8 md:-left-12 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border border-[#c5c6d2] shadow-md flex items-center justify-center text-[#00113a] disabled:opacity-0 transition-all opacity-0 group-hover/section:opacity-100 hover:bg-slate-50 z-10"
-            aria-label="Previous page"
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </button>
-          
-          {/* Right Arrow */}
-          <button 
-            onClick={() => setCurrentPostPage(prev => Math.min(Math.max(0, Math.ceil((postsList?.length || 1) / 3) - 1), prev + 1))}
-            disabled={currentPostPage >= Math.max(0, Math.ceil((postsList?.length || 0) / 3) - 1)}
-            className="absolute -right-4 sm:-right-8 md:-right-12 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border border-[#c5c6d2] shadow-md flex items-center justify-center text-[#00113a] disabled:opacity-0 transition-all opacity-0 group-hover/section:opacity-100 hover:bg-slate-50 z-10"
-            aria-label="Next page"
-          >
-            <ChevronRight className="w-6 h-6" />
-          </button>
-        </div>
-        
-        {/* Pagination Controls */}
-        <div className="flex justify-center items-center gap-2 pt-4">
-          {Array.from({ length: Math.ceil((postsList?.length || 0) / 3) || 1 }).map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => setCurrentPostPage(idx)}
-              className={`w-2 h-2 rounded-full transition-all ${
-                currentPostPage === idx ? 'bg-[#00113a] w-4' : 'bg-[#c5c6d2] hover:bg-[#a0a2af]'
-              }`}
-              aria-label={`Go to page ${idx + 1}`}
-            />
-          ))}
-        </div>
+            
+            {/* Pagination Controls */}
+            <div className="flex justify-center items-center gap-2 pt-4">
+              {Array.from({ length: Math.ceil((postsList?.length || 0) / 3) || 1 }).map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentPostPage(idx)}
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    currentPostPage === idx ? 'bg-[#00113a] w-4' : 'bg-[#c5c6d2] hover:bg-[#a0a2af]'
+                  }`}
+                  aria-label={`Go to page ${idx + 1}`}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </section>
 
       {/* Kalimat Bijak Section */}
       <section className="space-y-4">
         <h2 className="text-2xl sm:text-3xl font-bold text-[#00113a]">Kalimat Bijak</h2>
-        <Link
-          href={bijakTargetId ? `/antar-pegawai/kalimat-bijak?view=${bijakTargetId}` : '/antar-pegawai/kalimat-bijak'}
-          className="block border border-[#c5c6d2] rounded-xl p-8 md:p-12 bg-white text-center shadow-sm hover:shadow-md hover:border-[#00113a] transition-all cursor-pointer group"
-        >
-          <p className="text-base sm:text-lg text-[#1a1b20] italic mb-4 max-w-3xl mx-auto leading-relaxed">
-            "{cleanBijakQuote}"
-          </p>
-          <p className="font-bold text-xs sm:text-sm text-[#444650]">
-            {bijakFigureOrAuthor}
-          </p>
-        </Link>
+        {!activeBijak || !cleanBijakQuote ? (
+          <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
+            <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Kalimat Bijak Ditemukan</h2>
+            <p className="text-sm text-[#444650]">
+              Silakan coba kata kunci pencarian lain atau tambahkan kalimat bijak baru.
+            </p>
+          </div>
+        ) : (
+          <Link
+            href={bijakTargetId ? `/antar-pegawai/kalimat-bijak?view=${bijakTargetId}` : '/antar-pegawai/kalimat-bijak'}
+            className="block border border-[#c5c6d2] rounded-xl p-8 md:p-12 bg-white text-center shadow-sm hover:shadow-md hover:border-[#00113a] transition-all cursor-pointer group"
+          >
+            <p className="text-base sm:text-lg text-[#1a1b20] italic mb-4 max-w-3xl mx-auto leading-relaxed">
+              "{cleanBijakQuote}"
+            </p>
+            <p className="font-bold text-xs sm:text-sm text-[#444650]">
+              {bijakFigureOrAuthor}
+            </p>
+          </Link>
+        )}
       </section>
 
       {/* Selamat Ulang Tahun Section */}
