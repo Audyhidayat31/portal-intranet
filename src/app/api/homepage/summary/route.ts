@@ -50,7 +50,7 @@ export async function GET() {
       announcements,
       upcomingAgendas,
       latestPosts,
-      spotlightFigure,
+      figureProfiles,
       allProfiles,
       totalEmployees,
       totalPosts,
@@ -83,8 +83,9 @@ export async function GET() {
         take: 9,
         include: { author: { select: { name: true, profile: { select: { avatarUrl: true, unitKerja: true } } } } },
       }),
-      prisma.figureProfile.findFirst({
-        orderBy: [{ isSpotlight: 'desc' }, { createdAt: 'desc' }],
+      prisma.figureProfile.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 10,
       }),
       prisma.employeeProfile.findMany({
         select: {
@@ -172,8 +173,13 @@ export async function GET() {
         },
         latestNews: mappedNews,
         announcements: mappedAnnouncements,
-        upcomingAgendas: mappedAgendas,
-        latestPosts,
+        latestPosts: latestPosts.map((p) => {
+          const isBijak = p.categorySlug?.toLowerCase() === 'kalimat-bijak';
+          return {
+            ...p,
+            coverImage: isBijak ? '/images/logo-perpusnas.png' : (p.coverImage || '/images/logo-perpusnas.png'),
+          };
+        }),
         kalimatBijak: latestKalimatBijak
           ? {
             id: latestKalimatBijak.id,
@@ -183,19 +189,45 @@ export async function GET() {
             author: latestKalimatBijak.author?.name || 'Ahmad Fauzi, S.Kom.',
           }
           : null,
-        spotlightFigure: spotlightFigure
-          ? {
-            ...spotlightFigure,
-            title: spotlightFigure.position
-              ? `${spotlightFigure.name.toUpperCase()} : ${spotlightFigure.position.toUpperCase()}`
-              : spotlightFigure.name.toUpperCase(),
-            bio:
-              spotlightFigure.fullStory ||
-              spotlightFigure.quote ||
-              '',
-            avatarUrl: spotlightFigure.photoUrl || null,
-          }
-          : null,
+        spotlightFigure: (() => {
+          if (!figureProfiles || figureProfiles.length === 0) return null;
+
+          // Urutkan dari yang terbaru ditambahkan
+          const sorted = [...figureProfiles].sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+
+          // Cek artikel yang baru saja ditambah hari ini (WIB / Asia/Jakarta)
+          const nowWIB = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+          const todayDateStr = `${nowWIB.getFullYear()}-${String(nowWIB.getMonth() + 1).padStart(2, '0')}-${String(nowWIB.getDate()).padStart(2, '0')}`;
+
+          const todayFigures = sorted.filter((f) => {
+            if (!f.createdAt) return false;
+            const fDate = new Date(new Date(f.createdAt).toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+            const fDateStr = `${fDate.getFullYear()}-${String(fDate.getMonth() + 1).padStart(2, '0')}-${String(fDate.getDate()).padStart(2, '0')}`;
+            return fDateStr === todayDateStr;
+          });
+
+          // Berubah sehari sekali jika ada artikel baru hari ini.
+          // Kecuali tidak ada artikel baru hari ini, maka artikelnya menetap ke yang paling baru.
+          const chosen = todayFigures.length > 0 ? todayFigures[0] : sorted[0];
+          if (!chosen) return null;
+
+          const cleanBio = (chosen.deskripsi || chosen.fullStory || chosen.quote || '')
+            .replace(/<[^>]+>/g, '')
+            .replace(/&nbsp;/g, ' ')
+            .trim();
+
+          return {
+            ...chosen,
+            title: chosen.position
+              ? `${chosen.name.toUpperCase()} : ${chosen.position.toUpperCase()}`
+              : chosen.name.toUpperCase(),
+            bio: cleanBio,
+            avatarUrl: chosen.photoUrl || null,
+            photoUrl: chosen.photoUrl || null,
+          };
+        })(),
         birthdaysToday,
         birthdaysThisMonth: birthdaysToday, // Tetap sediakan untuk kompatibilitas ke depan
         stats: {

@@ -232,15 +232,14 @@ export default function AgendaKegiatanPage() {
               item.authorId === currentUser.id ||
               item.authorId === currentUser.userId
             );
-          });
+          }).filter(item => filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id)));
 
           if (visibleAgendas.length === 0) {
             return (
               <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
-                <Calendar className="w-12 h-12 text-[#757682] mx-auto mb-3 opacity-60" />
-                <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Agenda Ditemukan</h2>
+                <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Agenda Kegiatan Ditemukan</h2>
                 <p className="text-sm text-[#444650]">
-                  Silakan coba kata kunci pencarian lain atau buat agenda kegiatan baru.
+                  Silakan coba kata kunci pencarian lain atau tambahkan agenda kegiatan baru.
                 </p>
               </div>
             );
@@ -248,7 +247,7 @@ export default function AgendaKegiatanPage() {
 
           return (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-              {visibleAgendas.filter(item => filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id))).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
+              {visibleAgendas.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => {
               const displayDate = item.publishedAt ? item.publishedAt : '19 Agustus 2026';
 
               return (

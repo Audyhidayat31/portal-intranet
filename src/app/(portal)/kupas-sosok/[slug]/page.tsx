@@ -12,7 +12,7 @@ import {
   Download,
   ImageIcon,
 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { formatDate, canManageContent } from '@/lib/utils';
 import { STITCH_MOCK_FIGURES_6, FigureItem } from '@/lib/mock-kupas-sosok';
 
 export default function DetailKupasSosokPage() {
@@ -36,6 +36,18 @@ export default function DetailKupasSosokPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState('');
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/profile/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setCurrentUser(data.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!rawSlug) return;
@@ -357,21 +369,23 @@ Beliau memimpin proyek integrasi katalog induk nasional dan layanan akses reposi
             </div>
 
             {/* Right: Edit & Hapus Buttons matching Stitch */}
-            <div className="flex items-center gap-3 self-end sm:self-auto">
-              <Link
-                href={`/kupas-sosok/${rawSlug}/edit`}
-                className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs inline-block text-center"
-              >
-                Edit
-              </Link>
-              <button
-                type="button"
-                onClick={() => setIsDeleteModalOpen(true)}
-                className="px-7 py-1.5 bg-white border border-[#dc2626] hover:bg-red-50 text-[#dc2626] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer"
-              >
-                Hapus
-              </button>
-            </div>
+            {canManageContent(currentUser, figureItem) && (
+              <div className="flex items-center gap-3 self-end sm:self-auto">
+                <Link
+                  href={`/kupas-sosok/${rawSlug}/edit`}
+                  className="px-7 py-1.5 bg-white border border-[#c5c6d2] hover:bg-[#f4f3f9] text-[#1a1b20] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs inline-block text-center"
+                >
+                  Edit
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="px-7 py-1.5 bg-white border border-[#dc2626] hover:bg-red-50 text-[#dc2626] font-bold text-xs sm:text-sm rounded transition-colors shadow-2xs cursor-pointer"
+                >
+                  Hapus
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

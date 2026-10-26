@@ -248,10 +248,9 @@ export default function LaporanPerjalananPage() {
           </div>
         ) : reports.length === 0 ? (
           <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
-            <Plane className="w-12 h-12 text-[#757682] mx-auto mb-3 opacity-60" />
-            <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Laporan Ditemukan</h2>
+            <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Laporan Perjalanan Dinas Ditemukan</h2>
             <p className="text-sm text-[#444650]">
-              Silakan coba kata kunci pencarian lain atau buat laporan perjalanan dinas baru.
+              Silakan coba kata kunci pencarian lain atau tambahkan laporan perjalanan dinas baru.
             </p>
           </div>
         ) : (

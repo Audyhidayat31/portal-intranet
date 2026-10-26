@@ -243,12 +243,12 @@ export default function DynamicCategoryPage() {
           )}
         </div>
       ) : posts.length === 0 ? (
-        <EmptyState
-          title={`Belum Ada Postingan pada ${currentCategory.name}`}
-          description="Jadilah yang pertama membagikan tulisan atau ide di kategori ini!"
-          actionLabel="Tulis Sekarang"
-          onAction={() => setIsModalOpen(true)}
-        />
+        <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
+          <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada {currentCategory.name} Ditemukan</h2>
+          <p className="text-sm text-[#444650]">
+            Silakan coba kata kunci pencarian lain atau tambahkan {currentCategory.name.toLowerCase()} baru.
+          </p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {posts.map((post) => (

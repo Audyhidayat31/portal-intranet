@@ -373,9 +373,6 @@ export default function BeritaPage() {
                           </span>
                         )}
                       </div>
-                      <div className="mb-3 text-xs text-[#757682] font-medium">
-                        Oleh: {item.authorName}
-                      </div>
 
                       {/* Card Title */}
                       <h2 className="text-xl font-semibold text-[#00113a] mb-3 leading-snug line-clamp-2 group-hover:text-[#002366] transition-colors">

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { Suspense } from 'react';
 import Link from 'next/link';
@@ -64,7 +64,7 @@ function EmailKonfirmasiContent() {
 
       {/* Bottom Footer Bar Matching Wireframe */}
       <footer className="w-full bg-[#f4f5f7] border-t border-slate-200/80 py-3.5 px-4 text-center text-xs sm:text-sm text-[#444] font-normal">
-        Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.
+        © Copyright 2026, All Rights Reserved | Perpustakaan Nasional RI.
       </footer>
     </div>
   );

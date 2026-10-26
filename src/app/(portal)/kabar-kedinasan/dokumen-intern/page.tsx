@@ -290,8 +290,9 @@ export default function DokumenInternPage() {
               <div key={n} className="border border-[#c5c6d2] rounded-lg p-6 bg-slate-50 animate-pulse h-36" />
             ))}
           </div>
-        ) : documents.filter((doc: any) => {
-            const isPublished = doc.status === 'Terbit' || doc.status === 'TERBIT' || doc.status === 'PUBLISHED';
+        ) : (() => {
+          const visibleDocs = documents.filter((doc: any) => {
+            const isPublished = doc.status === 'Terbit' || doc.status === 'TERBIT' || doc.status === 'PUBLISHED' || (!doc.status);
             if (isPublished) return true;
             if (!currentUser) return false;
             if (isUserAdmin(currentUser)) return true;
@@ -301,23 +302,22 @@ export default function DokumenInternPage() {
               doc.authorId === currentUser.id ||
               doc.authorId === currentUser.userId
             );
-          }).length === 0 ? (
-          <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
-            <FileText className="w-12 h-12 text-[#757682] mx-auto mb-3 opacity-60" />
-            <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Dokumen Ditemukan</h2>
-            <p className="text-sm text-[#444650]">
-              Silakan coba kata kunci pencarian lain atau tambahkan dokumen internal baru.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4 mb-12">
-            {documents.filter((doc: any) => {
-              const isPublished = doc.status === 'Terbit' || doc.status === 'TERBIT' || (!doc.status);
-              if (isPublished) return true;
-              if (!currentUser) return false;
-              if (isUserAdmin(currentUser)) return true;
-              return currentUser.name === (doc.authorName || doc.author?.name);
-            }).filter(item => filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id))).slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((doc: any) => {
+          }).filter(item => filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id)));
+
+          if (visibleDocs.length === 0) {
+            return (
+              <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
+                <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Dokumen Internal Ditemukan</h2>
+                <p className="text-sm text-[#444650]">
+                  Silakan coba kata kunci pencarian lain atau tambahkan dokumen internal baru.
+                </p>
+              </div>
+            );
+          }
+
+          return (
+            <div className="space-y-4 mb-12">
+              {visibleDocs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((doc: any) => {
               const displayDate = doc.publishedAt
                 ? formatDate(doc.publishedAt)
                 : formatDate(new Date());
@@ -384,7 +384,7 @@ export default function DokumenInternPage() {
               );
             })}
           </div>
-        )}
+        ); })()}
       </div>
 
       {/* Pagination Controls */}

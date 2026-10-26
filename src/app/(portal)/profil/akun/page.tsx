@@ -29,7 +29,8 @@ import {
   Shield,
   Upload,
   ChevronDown,
-  Check
+  Check,
+  Trash2,
 } from 'lucide-react';
 import { CardSkeleton } from '@/components/ui/Skeleton';
 import { Button } from '@/components/ui/Button';
@@ -45,7 +46,7 @@ export default function ProfilPegawaiPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'info-akun' | 'ubah-kata-sandi'>('info-akun');
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  
+
   // Edit State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editForm, setEditForm] = useState<any>({});
@@ -81,11 +82,11 @@ export default function ProfilPegawaiPage() {
             phone: u.profile?.phone || '',
             alamatDomisili: u.profile?.bio || '',
             tanggalLahir: bd,
-            position: u.profile?.position || 'Pustakawan Ahli Madya',
-            satuanKerja: u.profile?.unitKerja || 'Pusat Data dan Informasi',
-            eselon2: 'Pusat Pengembangan Perpustakaan Sekolah/Madrasah dan Perguruan Tinggi',
-            eselon3: 'Bidang Layanan Informasi & Automasi Perpustakaan',
-            lokasiKerja: 'Gedung Fasilitas Layanan Perpusnas, Jl. Medan Merdeka Selatan No. 11',
+            position: u.profile?.position || '',
+            satuanKerja: u.profile?.unitKerja || '',
+            eselon2: u.profile?.eselon2 || '',
+            eselon3: u.profile?.eselon3 || '',
+            lokasiKerja: u.profile?.lokasiKerja || '',
             avatarUrl: u.profile?.avatarUrl || ''
           });
         }
@@ -118,10 +119,36 @@ export default function ProfilPegawaiPage() {
         return;
       }
       setAvatarFile(file);
-      // Create local preview URL
+      // Compress and resize image using canvas to ensure optimal payload
       const reader = new FileReader();
       reader.onload = (event) => {
-        setEditForm({ ...editForm, avatarUrl: event.target?.result as string });
+        const img = new window.Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const maxDim = 800;
+          let width = img.width;
+          let height = img.height;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressed = canvas.toDataURL('image/jpeg', 0.88);
+            setEditForm((prev: any) => ({ ...prev, avatarUrl: compressed }));
+          } else {
+            setEditForm((prev: any) => ({ ...prev, avatarUrl: event.target?.result as string }));
+          }
+        };
+        img.src = event.target?.result as string;
       };
       reader.readAsDataURL(file);
     }
@@ -197,14 +224,14 @@ export default function ProfilPegawaiPage() {
   }
 
   const p = profile?.profile;
-  const displayName = p?.fullName || profile?.name || 'Budi Santoso, S.IP., M.Si.';
-  const displayNip = profile?.nip || '198012052005011002';
-  const displayPosition = p?.position || 'Pustakawan Ahli Madya';
-  const displayUnitKerja = p?.unitKerja || 'Pusat Jasa Informasi Perpustakaan dan Pengelolaan Naskah Nusantara';
-  const displayEmail = profile?.email || 'budi.santoso@perpusnas.go.id';
-  const displayPhone = p?.phone || '+62 812 3456 7890';
-  const displayAddress = p?.bio || 'Jl. Salemba Raya No.28A, RT.5/RW.6, Kenari, Kec. Senen, Kota Jakarta Pusat, Daerah Khusus Ibukota Jakarta 10430';
-  const displayBirthDate = formatBirthDate(p?.birthDate, profile?.nip);
+  const displayName = p?.fullName || profile?.name || '-';
+  const displayNip = profile?.nip || '-';
+  const displayPosition = p?.position && p.position.trim() ? p.position.trim() : '';
+  const displayUnitKerja = p?.unitKerja && p.unitKerja.trim() ? p.unitKerja.trim() : '-';
+  const displayEmail = profile?.email || '-';
+  const displayPhone = p?.phone && p.phone.trim() ? p.phone.trim() : '-';
+  const displayAddress = p?.bio && p.bio.trim() ? p.bio.trim() : '-';
+  const displayBirthDate = formatBirthDate(p?.birthDate, profile?.nip) || '-';
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8 space-y-8">
@@ -232,11 +259,10 @@ export default function ProfilPegawaiPage() {
       {/* Notification Toast / Alert */}
       {statusMessage && (
         <div
-          className={`p-4 rounded-xl flex items-center gap-3 text-xs sm:text-sm font-medium animate-fadeIn ${
-            statusMessage.type === 'success'
+          className={`p-4 rounded-xl flex items-center gap-3 text-xs sm:text-sm font-medium animate-fadeIn ${statusMessage.type === 'success'
               ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
               : 'bg-red-50 text-red-800 border border-red-200'
-          }`}
+            }`}
         >
           {statusMessage.type === 'success' ? <CheckCircle className="w-5 h-5 text-emerald-600" /> : <AlertCircle className="w-5 h-5 text-red-600" />}
           <span>{statusMessage.text}</span>
@@ -250,8 +276,8 @@ export default function ProfilPegawaiPage() {
           {/* User Quick Info Card */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E9ECEF] flex flex-col items-center text-center relative overflow-hidden">
             <div className="relative mb-4">
-              <div 
-                className="group relative w-32 h-32 shrink-0 aspect-square rounded-full overflow-hidden border-4 border-slate-100 shadow-md bg-slate-100 flex items-center justify-center cursor-pointer" 
+              <div
+                className="group relative w-32 h-32 shrink-0 aspect-square rounded-full overflow-hidden border-4 border-slate-100 shadow-md bg-slate-100 flex items-center justify-center cursor-pointer"
                 onClick={() => p?.avatarUrl && setPreviewImage(p.avatarUrl)}
               >
                 {p?.avatarUrl ? (
@@ -282,9 +308,11 @@ export default function ProfilPegawaiPage() {
               {displayName.split(',')[0]}
             </h2>
             <p className="text-xs font-mono font-semibold text-slate-500">{displayNip}</p>
-            <p className="text-xs font-bold text-institutional-navy mt-3 bg-blue-50/80 border border-blue-100 px-3.5 py-1.5 rounded-full inline-block">
-              {displayPosition}
-            </p>
+            {displayPosition && displayPosition !== '-' && (
+              <p className="text-xs font-bold text-institutional-navy mt-3 bg-blue-50/80 border border-blue-100 px-3.5 py-1.5 rounded-full inline-block">
+                {displayPosition}
+              </p>
+            )}
           </div>
 
           {/* Navigation Menu List */}
@@ -293,11 +321,10 @@ export default function ProfilPegawaiPage() {
               <li>
                 <button
                   onClick={() => setActiveTab('info-akun')}
-                  className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-all text-left ${
-                    activeTab === 'info-akun'
+                  className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-all text-left ${activeTab === 'info-akun'
                       ? 'bg-blue-50/80 text-institutional-navy font-bold'
                       : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                  }`}
+                    }`}
                 >
                   <User className={`w-4 h-4 ${activeTab === 'info-akun' ? 'text-institutional-navy' : 'text-slate-500'}`} />
                   <span className={activeTab === 'info-akun' ? 'border-b-2 border-institutional-navy pb-0.5 inline-block' : ''}>Info Akun</span>
@@ -306,11 +333,10 @@ export default function ProfilPegawaiPage() {
               <li>
                 <button
                   onClick={() => setActiveTab('ubah-kata-sandi')}
-                  className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-all text-left ${
-                    activeTab === 'ubah-kata-sandi'
+                  className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-all text-left ${activeTab === 'ubah-kata-sandi'
                       ? 'bg-blue-50/80 text-institutional-navy font-bold'
                       : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                  }`}
+                    }`}
                 >
                   <Settings className={`w-4 h-4 ${activeTab === 'ubah-kata-sandi' ? 'text-institutional-navy' : 'text-slate-500'}`} />
                   <span className={activeTab === 'ubah-kata-sandi' ? 'border-b-2 border-institutional-navy pb-0.5 inline-block' : ''}>Ubah Kata Sandi</span>
@@ -381,23 +407,23 @@ export default function ProfilPegawaiPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
                   <div className="space-y-1">
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Satuan Kerja</p>
-                    <p className="text-slate-900 font-bold text-base">{p?.unitKerja || 'Pusat Data dan Informasi'}</p>
+                    <p className="text-slate-900 font-bold text-base">{p?.unitKerja || '-'}</p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Unit Eselon II</p>
-                    <p className="text-slate-800 leading-snug">{displayUnitKerja}</p>
+                    <p className="text-slate-800 leading-snug">{p?.eselon2 && p.eselon2.trim() ? p.eselon2.trim() : '-'}</p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Jabatan Saat Ini</p>
-                    <p className="text-slate-800 leading-snug">{displayPosition}</p>
+                    <p className="text-slate-800 leading-snug">{displayPosition || '-'}</p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Unit Eselon III</p>
-                    <p className="text-slate-800 leading-snug">Bidang Layanan Informasi & Automasi Perpustakaan</p>
+                    <p className="text-slate-800 leading-snug">{p?.eselon3 && p.eselon3.trim() ? p.eselon3.trim() : '-'}</p>
                   </div>
                   <div className="space-y-1 md:col-span-2">
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Lokasi Kerja</p>
-                    <p className="text-slate-800 leading-snug">Gedung Fasilitas Layanan Perpusnas, Jl. Medan Merdeka Selatan No. 11</p>
+                    <p className="text-slate-800 leading-snug">{p?.lokasiKerja && p.lokasiKerja.trim() ? p.lokasiKerja.trim() : '-'}</p>
                   </div>
                 </div>
               </section>
@@ -492,7 +518,7 @@ export default function ProfilPegawaiPage() {
                   Foto Profil
                 </label>
                 <div className="flex items-center gap-4">
-                  <div 
+                  <div
                     className={`group relative w-16 h-16 aspect-square rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center ${editForm.avatarUrl ? 'cursor-pointer' : ''}`}
                     onClick={() => {
                       if (editForm.avatarUrl) {
@@ -511,12 +537,26 @@ export default function ProfilPegawaiPage() {
                       <User className="w-8 h-8 text-slate-400" />
                     )}
                   </div>
-                  <div className="flex-grow space-y-2">
-                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold cursor-pointer transition-colors">
-                      <Upload className="w-3.5 h-3.5" />
+                  <div className="flex flex-col items-start gap-1.5">
+                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold cursor-pointer transition-colors border border-slate-200/60 shadow-2xs">
+                      <Upload className="w-3.5 h-3.5 text-slate-600" />
                       <span>Unggah Foto Baru</span>
                       <input type="file" accept=".jpg,.jpeg,.png" onChange={handleAvatarFile} className="hidden" suppressHydrationWarning />
                     </label>
+
+                    <button
+                      type="button"
+                      disabled={!editForm.avatarUrl}
+                      onClick={() => setEditForm((prev: any) => ({ ...prev, avatarUrl: '' }))}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${editForm.avatarUrl
+                          ? 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200/80 cursor-pointer shadow-2xs'
+                          : 'bg-slate-50 text-slate-300 border border-slate-200/40 cursor-not-allowed'
+                        }`}
+                      title={editForm.avatarUrl ? 'Hapus foto profil' : 'Tidak ada foto profil untuk dihapus'}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Hapus Foto Profil</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -609,8 +649,8 @@ export default function ProfilPegawaiPage() {
                 </div>
 
                 <div className="relative" ref={satuanKerjaDropdownRef}><label className="block text-xs font-bold text-[#00113a] mb-1">
-                    Satuan Kerja
-                  </label>
+                  Satuan Kerja
+                </label>
                   <button
                     type="button"
                     onClick={() => setIsSatuanKerjaDropdownOpen(!isSatuanKerjaDropdownOpen)}
@@ -632,11 +672,10 @@ export default function ProfilPegawaiPage() {
                               setEditForm({ ...editForm, satuanKerja: item });
                               setIsSatuanKerjaDropdownOpen(false);
                             }}
-                            className={`w-full text-left px-4 py-2.5 text-xs font-semibold transition-colors flex items-center justify-between cursor-pointer ${
-                              isSelected
+                            className={`w-full text-left px-4 py-2.5 text-xs font-semibold transition-colors flex items-center justify-between cursor-pointer ${isSelected
                                 ? 'bg-slate-100 text-[#00113a] font-bold'
                                 : 'text-slate-700 hover:bg-slate-50'
-                            }`}
+                              }`}
                           >
                             <span>{item}</span>
                             {isSelected && <Check className="w-3.5 h-3.5 text-[#007BFF]" />}
@@ -704,11 +743,11 @@ export default function ProfilPegawaiPage() {
             </form>
           </div>
         </div>
-      , document.body) : null}
-    
+        , document.body) : null}
+
       {/* Lightbox Preview */}
       {previewImage && typeof window !== 'undefined' && createPortal(
-        <div 
+        <div
           className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fadeIn"
           onClick={() => setPreviewImage(null)}
         >
@@ -719,9 +758,9 @@ export default function ProfilPegawaiPage() {
             >
               <X className="w-6 h-6" />
             </button>
-            <img 
-              src={previewImage} 
-              alt="Preview" 
+            <img
+              src={previewImage}
+              alt="Preview"
               className="max-w-full max-h-[85vh] rounded-xl shadow-2xl object-contain border border-white/20"
             />
           </div>

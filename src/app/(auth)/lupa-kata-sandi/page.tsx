@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { CheckCircle2, AlertCircle, ArrowLeft, ExternalLink } from 'lucide-react';
+import { CheckCircle2, AlertCircle, ArrowLeft } from 'lucide-react';
 import ReCAPTCHA from 'react-google-recaptcha';
 
 export default function LupaKataSandiPage() {
@@ -11,12 +11,14 @@ export default function LupaKataSandiPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSent, setIsSent] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [authUrl, setAuthUrl] = useState<string | null>(null);
   const [resetUrl, setResetUrl] = useState('');
   const [confirmationUrl, setConfirmationUrl] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
+    setAuthUrl(null);
 
     if (!email.trim()) {
       setErrorMessage('Silakan masukkan alamat email Anda.');
@@ -53,6 +55,11 @@ export default function LupaKataSandiPage() {
 
       if (!res.ok || !data.success) {
         setErrorMessage(data.message || 'Gagal mengirim tautan pemulihan kata sandi.');
+        if (data.statusUrl || data.authorizeUrl) {
+          setAuthUrl(data.statusUrl || data.authorizeUrl);
+        } else {
+          setAuthUrl(null);
+        }
         setIsLoading(false);
         return;
       }
@@ -105,7 +112,21 @@ export default function LupaKataSandiPage() {
             {errorMessage && (
               <div className="w-full mb-3.5 flex items-start gap-2 p-2.5 rounded bg-red-50 border border-red-200 text-red-700 text-xs text-left animate-fadeIn">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>{errorMessage}</span>
+                <div className="flex-1">
+                  <span>{errorMessage}</span>
+                  {authUrl && (
+                    <div className="mt-1.5">
+                      <a
+                        href={authUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
+                      >
+                        Hubungkan Akun Google Pengirim (1-Klik) &rarr;
+                      </a>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
@@ -123,35 +144,10 @@ export default function LupaKataSandiPage() {
                     Instruksi pemulihan kata sandi telah dikirimkan ke <strong>{email}</strong>.
                   </p>
                 </div>
-                <div className="pt-1 flex flex-col gap-2">
-                  <Link
-                    href={confirmationUrl || `/email-konfirmasi?email=${encodeURIComponent(email)}`}
-                    className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded font-semibold text-xs text-white bg-[#007BFF] hover:bg-[#0069d9] transition-colors shadow-2xs"
-                  >
-                    <span>Buka Email Konfirmasi</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </Link>
-                  <Link
-                    href={resetUrl || `/ganti-kata-sandi?email=${encodeURIComponent(email)}`}
-                    className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded font-medium text-xs text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-colors shadow-2xs"
-                  >
-                    <span>Lanjut ke Halaman Ganti Kata Sandi</span>
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsSent(false);
-                      setEmail('');
-                      setRecaptchaToken(null);
-                      setErrorMessage('');
-                    }}
-                    className="text-xs text-slate-500 hover:text-slate-800 underline font-normal"
-                  >
-                    Kirim ke email lain
-                  </button>
+                <div className="pt-2">
                   <Link
                     href="/login"
-                    className="inline-flex items-center justify-center gap-1 text-xs text-slate-600 hover:text-[#007BFF] font-medium"
+                    className="inline-flex items-center justify-center gap-1.5 text-xs text-slate-600 hover:text-[#007BFF] font-medium transition-colors"
                   >
                     <ArrowLeft className="w-3.5 h-3.5" />
                     <span>Kembali ke Halaman Utama</span>
@@ -183,7 +179,7 @@ export default function LupaKataSandiPage() {
                 </div>
 
                 {/* reCAPTCHA Widget */}
-                <div className="pt-0.5">
+                <div className="flex justify-center items-center w-full py-1">
                   <ReCAPTCHA
                     sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ''}
                     onChange={(token) => {
@@ -196,7 +192,7 @@ export default function LupaKataSandiPage() {
                 </div>
 
                 {/* Kirim Button */}
-                <div className="pt-0.5">
+                <div>
                   <button
                     type="submit"
                     disabled={isLoading}
@@ -214,12 +210,13 @@ export default function LupaKataSandiPage() {
                 </div>
 
                 {/* Kembali ke Halaman Utama Link */}
-                <div className="pt-1.5 text-center">
+                <div className="pt-2 text-center flex justify-center">
                   <Link
                     href="/login"
-                    className="text-xs sm:text-sm text-black hover:text-[#007BFF] transition-colors inline-block"
+                    className="inline-flex items-center justify-center gap-1.5 text-xs text-slate-600 hover:text-[#007BFF] font-medium transition-colors"
                   >
-                    Kembali ke Halaman Utama
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <span>Kembali ke Halaman Utama</span>
                   </Link>
                 </div>
               </form>

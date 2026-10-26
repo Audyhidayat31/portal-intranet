@@ -247,12 +247,9 @@ export default function JelajahBumiPage() {
           </div>
         ) : currentCards.length === 0 ? (
           <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
-            <Globe className="w-12 h-12 text-[#757682] mx-auto mb-3 opacity-60" />
-            <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Data Jelajah Bumi Ditemukan</h2>
+            <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Jelajah Bumi Ditemukan</h2>
             <p className="text-sm text-[#444650]">
-              {searchQuery.trim()
-                ? 'Silakan coba kata kunci pencarian lain.'
-                : 'Belum ada catatan Jelajah Bumi.'}
+              Silakan coba kata kunci pencarian lain atau tambahkan jelajah bumi baru.
             </p>
           </div>
         ) : (

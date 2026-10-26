@@ -36,8 +36,26 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { nip, name, email, password, roleId, position, unitKerja, satuanKerja, golRuang, phone, address, bio, birthDate } = body;
 
-    if (!nip || !name || !email || !password || !roleId) {
-      return NextResponse.json({ success: false, message: 'Semua field wajib diisi' }, { status: 400 });
+    if (!name || !name.trim()) {
+      return NextResponse.json({ success: false, message: 'Nama Lengkap wajib diisi' }, { status: 400 });
+    }
+    if (!nip || !nip.trim()) {
+      return NextResponse.json({ success: false, message: 'Nomor Induk Pegawai wajib diisi' }, { status: 400 });
+    }
+    if (!email || !email.trim()) {
+      return NextResponse.json({ success: false, message: 'Email Kedinasan wajib diisi' }, { status: 400 });
+    }
+    if (!birthDate) {
+      return NextResponse.json({ success: false, message: 'Tanggal Lahir wajib diisi' }, { status: 400 });
+    }
+    if (!satuanKerja || !satuanKerja.trim()) {
+      return NextResponse.json({ success: false, message: 'Pilihan Satuan Kerja wajib dipilih' }, { status: 400 });
+    }
+    if (!roleId || !roleId.trim()) {
+      return NextResponse.json({ success: false, message: 'Peran wajib dipilih' }, { status: 400 });
+    }
+    if (!password || !password.trim()) {
+      return NextResponse.json({ success: false, message: 'Kata Sandi wajib diisi' }, { status: 400 });
     }
 
     // Check unique NIP
@@ -47,7 +65,7 @@ export async function POST(request: NextRequest) {
     }
 
     const hashedPassword = await hashPassword(password);
-    const effectiveUnitKerja = satuanKerja ? (unitKerja ? `${satuanKerja} - ${unitKerja}` : satuanKerja) : (unitKerja || 'Perpusnas RI');
+    const effectiveUnitKerja = satuanKerja ? (unitKerja ? `${satuanKerja} - ${unitKerja}` : satuanKerja) : (unitKerja || '');
 
     const newUser = await prisma.user.create({
       data: {
@@ -61,10 +79,10 @@ export async function POST(request: NextRequest) {
           create: {
             nip: nip.trim(),
             fullName: name.trim(),
-            position: position || 'Aparatur Sipil Negara',
+            position: position && position.trim() ? position.trim() : '',
             unitKerja: effectiveUnitKerja,
-            golRuang: golRuang || 'III/a - Penata Muda',
-            phone: phone || null,
+            golRuang: golRuang && golRuang.trim() ? golRuang.trim() : null,
+            phone: phone && phone.trim() ? phone.trim() : null,
             bio: address || bio || null,
             birthDate: birthDate ? new Date(birthDate) : null,
           },
@@ -97,15 +115,34 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { id, name, email, roleId, status, position, unitKerja, satuanKerja, golRuang, phone, resetPassword, nip, bio, birthDate } = body;
 
+    if (name !== undefined && (!name || !name.trim())) {
+      return NextResponse.json({ success: false, message: 'Nama Lengkap wajib diisi' }, { status: 400 });
+    }
+    if (nip !== undefined && (!nip || !nip.trim())) {
+      return NextResponse.json({ success: false, message: 'Nomor Induk Pegawai wajib diisi' }, { status: 400 });
+    }
+    if (email !== undefined && (!email || !email.trim())) {
+      return NextResponse.json({ success: false, message: 'Email Kedinasan wajib diisi' }, { status: 400 });
+    }
+    if (birthDate !== undefined && !birthDate) {
+      return NextResponse.json({ success: false, message: 'Tanggal Lahir wajib diisi' }, { status: 400 });
+    }
+    if (satuanKerja !== undefined && (!satuanKerja || !satuanKerja.trim())) {
+      return NextResponse.json({ success: false, message: 'Pilihan Satuan Kerja wajib dipilih' }, { status: 400 });
+    }
+    if (roleId !== undefined && (!roleId || !roleId.trim())) {
+      return NextResponse.json({ success: false, message: 'Peran wajib dipilih' }, { status: 400 });
+    }
+
     const dataToUpdate: any = {
-      name: name !== undefined ? name : undefined,
-      email: email !== undefined ? email : undefined,
+      name: name !== undefined ? name.trim() : undefined,
+      email: email !== undefined ? email.trim() : undefined,
       roleId: roleId !== undefined ? roleId : undefined,
       status: status !== undefined ? status : undefined,
     };
     
     if (nip !== undefined) {
-      dataToUpdate.nip = nip;
+      dataToUpdate.nip = nip.trim();
     }
 
     if (resetPassword) {
@@ -120,22 +157,22 @@ export async function PUT(request: NextRequest) {
           profile: {
             upsert: {
               create: {
-                nip: nip || (await prisma.user.findUnique({ where: { id } }))?.nip || '0000',
-                fullName: name || 'Pengguna',
-                position: position || 'Aparatur Perpusnas',
-                unitKerja: effectiveUnitKerja || 'Perpusnas RI',
-                golRuang,
-                phone,
-                bio,
+                nip: nip ? nip.trim() : ((await prisma.user.findUnique({ where: { id } }))?.nip || '0000'),
+                fullName: name ? name.trim() : 'Pengguna',
+                position: position && position.trim() ? position.trim() : '',
+                unitKerja: effectiveUnitKerja || '',
+                golRuang: golRuang && golRuang.trim() ? golRuang.trim() : null,
+                phone: phone && phone.trim() ? phone.trim() : null,
+                bio: bio || null,
                 birthDate: birthDate ? new Date(birthDate) : null,
               },
               update: {
-                ...(name !== undefined && { fullName: name }),
-                ...(nip !== undefined && { nip }),
-                ...(position !== undefined && { position }),
+                ...(name !== undefined && { fullName: name.trim() }),
+                ...(nip !== undefined && { nip: nip.trim() }),
+                ...(position !== undefined && { position: position.trim() ? position.trim() : '' }),
                 ...(effectiveUnitKerja !== undefined && { unitKerja: effectiveUnitKerja }),
-                ...(golRuang !== undefined && { golRuang }),
-                ...(phone !== undefined && { phone }),
+                ...(golRuang !== undefined && { golRuang: golRuang && golRuang.trim() ? golRuang.trim() : null }),
+                ...(phone !== undefined && { phone: phone && phone.trim() ? phone.trim() : null }),
                 ...(bio !== undefined && { bio }),
                 ...(birthDate !== undefined && { birthDate: birthDate ? new Date(birthDate) : null }),
               },

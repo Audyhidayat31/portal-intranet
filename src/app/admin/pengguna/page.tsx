@@ -261,6 +261,36 @@ export default function AdminPenggunaPage() {
   // Create user
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!newName.trim()) {
+      showToast('Nama Lengkap wajib diisi!', 'error');
+      return;
+    }
+    if (!newNip.trim()) {
+      showToast('Nomor Induk Pegawai wajib diisi!', 'error');
+      return;
+    }
+    if (!newEmail.trim()) {
+      showToast('Email Kedinasan wajib diisi!', 'error');
+      return;
+    }
+    if (!newBirthDate) {
+      showToast('Tanggal Lahir wajib diisi!', 'error');
+      return;
+    }
+    if (!newPassword.trim()) {
+      showToast('Kata Sandi wajib diisi!', 'error');
+      return;
+    }
+    if (!newSatuanKerja.trim()) {
+      showToast('Pilihan Satuan Kerja wajib dipilih!', 'error');
+      return;
+    }
+    if (!newRoleId.trim()) {
+      showToast('Peran wajib dipilih!', 'error');
+      return;
+    }
+
     setIsCreating(true);
 
     try {
@@ -268,17 +298,17 @@ export default function AdminPenggunaPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          nip: newNip,
-          name: newName,
-          email: newEmail,
+          nip: newNip.trim(),
+          name: newName.trim(),
+          email: newEmail.trim(),
           password: newPassword,
           roleId: newRoleId,
-          position: newPosition,
-          unitKerja: newUnitKerja,
-          satuanKerja: newSatuanKerja,
-          golRuang: newGolRuang,
-          phone: newPhone,
-          address: newAlamat,
+          position: newPosition.trim(),
+          unitKerja: newUnitKerja.trim(),
+          satuanKerja: newSatuanKerja.trim(),
+          golRuang: newGolRuang.trim(),
+          phone: newPhone.trim(),
+          address: newAlamat.trim(),
           birthDate: newBirthDate,
           bio: newAlamat ? `${newAlamat}${newNotes ? ` | ${newNotes}` : ''}` : newNotes,
         }),
@@ -337,6 +367,32 @@ export default function AdminPenggunaPage() {
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingUser) return;
+
+    if (!editName.trim()) {
+      showToast('Nama Lengkap wajib diisi!', 'error');
+      return;
+    }
+    if (!editNip.trim()) {
+      showToast('Nomor Induk Pegawai wajib diisi!', 'error');
+      return;
+    }
+    if (!editEmail.trim()) {
+      showToast('Email Kedinasan wajib diisi!', 'error');
+      return;
+    }
+    if (!editBirthDate) {
+      showToast('Tanggal Lahir wajib diisi!', 'error');
+      return;
+    }
+    if (!editSatuanKerja.trim()) {
+      showToast('Pilihan Satuan Kerja wajib dipilih!', 'error');
+      return;
+    }
+    if (!editRoleId.trim()) {
+      showToast('Peran wajib dipilih!', 'error');
+      return;
+    }
+
     setIsUpdating(true);
 
     try {
@@ -345,19 +401,19 @@ export default function AdminPenggunaPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: editingUser.id,
-          name: editName,
-          email: editEmail,
+          name: editName.trim(),
+          email: editEmail.trim(),
           roleId: editRoleId,
           status: editStatus,
-          position: editPosition,
-          unitKerja: editUnitKerja,
-          satuanKerja: editSatuanKerja,
+          position: editPosition.trim(),
+          unitKerja: editUnitKerja.trim(),
+          satuanKerja: editSatuanKerja.trim(),
           resetPassword: editResetPassword || undefined,
-          nip: editNip,
+          nip: editNip.trim(),
           bio: editAlamat || editNotes,
           birthDate: editBirthDate,
-          golRuang: editGolRuang,
-          phone: editPhone,
+          golRuang: editGolRuang.trim(),
+          phone: editPhone.trim(),
         }),
       });
 
@@ -827,7 +883,7 @@ export default function AdminPenggunaPage() {
                 {/* 1. Nama Lengkap */}
                 <div>
                   <label className="block text-xs font-bold text-slate-800 mb-1">
-                    Nama Lengkap
+                    Nama Lengkap <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -842,7 +898,7 @@ export default function AdminPenggunaPage() {
                 {/* 2. Nomor Induk Pegawai */}
                 <div>
                   <label className="block text-xs font-bold text-slate-800 mb-1">
-                    Nomor Induk Pegawai
+                    Nomor Induk Pegawai <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -857,7 +913,7 @@ export default function AdminPenggunaPage() {
                 {/* 3. Email Kedinasan */}
                 <div>
                   <label className="block text-xs font-bold text-slate-800 mb-1">
-                    Email Kedinasan
+                    Email Kedinasan <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
@@ -900,12 +956,13 @@ export default function AdminPenggunaPage() {
                 {/* 6. Tanggal Lahir */}
                 <div>
                   <label className="block text-xs font-bold text-slate-800 mb-1">
-                    Tanggal Lahir
+                    Tanggal Lahir <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="date"
                     value={newBirthDate}
                     onChange={(e) => setNewBirthDate(e.target.value)}
+                    required
                     className="w-full rounded-md border border-[#c5c6d2] bg-white px-3.5 py-2 text-xs text-slate-900 focus:border-[#00113a] focus:outline-none transition-colors cursor-pointer"
                   />
                 </div>
@@ -913,7 +970,7 @@ export default function AdminPenggunaPage() {
                 {/* 7. Kata Sandi */}
                 <div>
                   <label className="block text-xs font-bold text-slate-800 mb-1">
-                    Kata Sandi
+                    Kata Sandi <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="password"
@@ -1016,7 +1073,7 @@ export default function AdminPenggunaPage() {
                 {/* 1. Satuan Kerja Dropdown */}
                 <div className="relative w-56 sm:w-64 mb-3.5" ref={createSatuanKerjaDropdownRef}>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    Satuan Kerja
+                    Satuan Kerja <span className="text-red-500">*</span>
                   </label>
                   <button
                     type="button"
@@ -1060,7 +1117,7 @@ export default function AdminPenggunaPage() {
                 {/* 2. Peran Dropdown (Di bawah Satuan Kerja) */}
                 <div className="relative w-56 sm:w-64 mb-5" ref={createRoleDropdownRef}>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    Peran
+                    Peran <span className="text-red-500">*</span>
                   </label>
                   <button
                     type="button"
@@ -1160,7 +1217,7 @@ export default function AdminPenggunaPage() {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-800 mb-1">
-                    Nama Lengkap
+                    Nama Lengkap <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -1174,20 +1231,21 @@ export default function AdminPenggunaPage() {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-800 mb-1">
-                    Nomor Induk Pegawai
+                    Nomor Induk Pegawai <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={editNip}
                     onChange={(e) => setEditNip(e.target.value)}
                     placeholder="Contoh: 198501152010011001"
+                    required
                     className="w-full rounded-md border border-[#c5c6d2] bg-white px-3.5 py-2 text-xs text-slate-900 focus:border-[#00113a] focus:outline-none transition-colors"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-800 mb-1">
-                    Email Kedinasan
+                    Email Kedinasan <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
@@ -1227,12 +1285,13 @@ export default function AdminPenggunaPage() {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-800 mb-1">
-                    Tanggal Lahir
+                    Tanggal Lahir <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="date"
                     value={editBirthDate}
                     onChange={(e) => setEditBirthDate(e.target.value)}
+                    required
                     className="w-full rounded-md border border-[#c5c6d2] bg-white px-3.5 py-2 text-xs text-slate-900 focus:border-[#00113a] focus:outline-none transition-colors cursor-pointer"
                   />
                 </div>
@@ -1335,7 +1394,7 @@ export default function AdminPenggunaPage() {
                 
                 <div className="relative w-56 sm:w-64 mb-3.5" ref={editSatuanKerjaDropdownRef}>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    Satuan Kerja
+                    Satuan Kerja <span className="text-red-500">*</span>
                   </label>
                   <button
                     type="button"
@@ -1379,7 +1438,7 @@ export default function AdminPenggunaPage() {
 
                 <div className="relative w-56 sm:w-64 mb-3.5" ref={editRoleDropdownRef}>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    Peran
+                    Peran <span className="text-red-500">*</span>
                   </label>
                   <button
                     type="button"

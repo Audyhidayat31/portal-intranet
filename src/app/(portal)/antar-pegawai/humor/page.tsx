@@ -282,12 +282,9 @@ export default function HumorPage() {
           </div>
         ) : currentCards.length === 0 ? (
           <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
-            <Smile className="w-12 h-12 text-[#757682] mx-auto mb-3 opacity-60" />
-            <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Cerita Humor Ditemukan</h2>
+            <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Humor Pegawai Ditemukan</h2>
             <p className="text-sm text-[#444650]">
-              {searchQuery.trim()
-                ? 'Silakan coba kata kunci pencarian lain.'
-                : 'Belum ada artikel humor.'}
+              Silakan coba kata kunci pencarian lain atau tambahkan humor pegawai baru.
             </p>
           </div>
         ) : (

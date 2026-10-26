@@ -94,6 +94,14 @@ export default function EditAgendaPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState('');
+  const [gambarError, setGambarError] = useState('');
+
+  useEffect(() => {
+    if (gambarError) {
+      const timer = setTimeout(() => setGambarError(''), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [gambarError]);
 
   // Active toolbar formatting states
   const [activeStyles, setActiveStyles] = useState({
@@ -327,9 +335,25 @@ export default function EditAgendaPage() {
   const handleGambarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      if (file.size > 5 * 1024 * 1024) {
-        alert('Ukuran file gambar maksimal 5MB');
+      const validTypes = ['image/jpeg', 'image/png'];
+      const validExtensions = ['.jpg', '.jpeg', '.png'];
+      const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+
+      if (!validTypes.includes(file.type) && !validExtensions.includes(fileExt)) {
         if (gambarInputRef.current) gambarInputRef.current.value = '';
+        setGambarFileName('');
+        setGambarPreview(null);
+        setGambarError('File harus berupa .jpg/.png');
+        return;
+      }
+
+      setGambarError('');
+
+      if (file.size > 5 * 1024 * 1024) {
+        if (gambarInputRef.current) gambarInputRef.current.value = '';
+        setGambarFileName('');
+        setGambarPreview(null);
+        setGambarError('Ukuran file maksimal 5MB');
         return;
       }
       setGambarFileName(file.name);
@@ -347,6 +371,7 @@ export default function EditAgendaPage() {
     e.stopPropagation();
     setGambarFileName('');
     setGambarPreview(null);
+    setGambarError('');
     if (gambarInputRef.current) {
       gambarInputRef.current.value = '';
     }
@@ -554,13 +579,12 @@ export default function EditAgendaPage() {
                           type="button"
                           disabled={!item.isCurrentMonth}
                           onClick={() => selectCalendarDay(item.day)}
-                          className={`h-8 w-8 mx-auto rounded-full flex items-center justify-center font-medium transition-colors cursor-pointer ${
-                            !item.isCurrentMonth
+                          className={`h-8 w-8 mx-auto rounded-full flex items-center justify-center font-medium transition-colors cursor-pointer ${!item.isCurrentMonth
                               ? 'text-slate-300 cursor-not-allowed'
                               : isSelected
-                              ? 'bg-[#00113a] text-white font-bold shadow-xs'
-                              : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                          }`}
+                                ? 'bg-[#00113a] text-white font-bold shadow-xs'
+                                : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                            }`}
                         >
                           {item.day}
                         </button>
@@ -579,9 +603,8 @@ export default function EditAgendaPage() {
               <button
                 type="button"
                 onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
-                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${
-                  isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
-                }`}
+                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
+                  }`}
               >
                 <span className="truncate">{status || 'Jenis Status'}</span>
                 <ChevronDown className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''}`} />
@@ -595,11 +618,10 @@ export default function EditAgendaPage() {
                       setStatus('Terbit');
                       setIsStatusMenuOpen(false);
                     }}
-                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                      status === 'Terbit'
+                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Terbit'
                         ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
                         : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                    }`}
+                      }`}
                   >
                     Terbit
                   </button>
@@ -609,11 +631,10 @@ export default function EditAgendaPage() {
                       setStatus('Menunggu');
                       setIsStatusMenuOpen(false);
                     }}
-                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                      status === 'Menunggu'
+                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Menunggu'
                         ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
                         : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                    }`}
+                      }`}
                   >
                     Menunggu
                   </button>
@@ -635,9 +656,8 @@ export default function EditAgendaPage() {
                     e.preventDefault();
                     execFormat('bold');
                   }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${
-                    activeStyles.bold ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                  }`}
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${activeStyles.bold ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                    }`}
                 >
                   <Bold className="w-4 h-4" />
                 </button>
@@ -649,9 +669,8 @@ export default function EditAgendaPage() {
                     e.preventDefault();
                     execFormat('italic');
                   }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${
-                    activeStyles.italic ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                  }`}
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${activeStyles.italic ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                    }`}
                 >
                   <Italic className="w-4 h-4" />
                 </button>
@@ -663,9 +682,8 @@ export default function EditAgendaPage() {
                     e.preventDefault();
                     execFormat('underline');
                   }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${
-                    activeStyles.underline ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                  }`}
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${activeStyles.underline ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                    }`}
                 >
                   <Underline className="w-4 h-4" />
                 </button>
@@ -679,9 +697,8 @@ export default function EditAgendaPage() {
                     e.preventDefault();
                     execFormat('insertUnorderedList');
                   }}
-                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${
-                    activeStyles.unorderedList ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                  }`}
+                  className={`p-1 hover:bg-[#e9e7ee] rounded transition-colors cursor-pointer ${activeStyles.unorderedList ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                    }`}
                 >
                   <List className="w-4 h-4" />
                 </button>
@@ -717,23 +734,28 @@ export default function EditAgendaPage() {
               />
             </div>
 
-            {/* 5. Gambar Agenda Kegiatan */}
+            {/* 5. Gambar */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Gambar Agenda Kegiatan <span className="float-right hidden md:inline">:</span>
+              Gambar <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="flex flex-col gap-4">
-              <div>
+              <div className="relative">
                 <div className="flex">
                   <input
                     type="text"
                     readOnly
                     value={gambarFileName}
-                    placeholder="Nama File.jpg/png"
-                    className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
+                    placeholder="Berkas berupa .jpg/ .png"
+                    className={`flex-grow border rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682] transition-colors ${
+                      gambarError ? 'border-amber-400 ring-1 ring-amber-400' : 'border-[#c5c6d2]'
+                    }`}
                   />
                   <button
                     type="button"
-                    onClick={() => gambarInputRef.current?.click()}
+                    onClick={() => {
+                      setGambarError('');
+                      gambarInputRef.current?.click();
+                    }}
                     className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer"
                   >
                     Upload
@@ -741,10 +763,21 @@ export default function EditAgendaPage() {
                   <input
                     ref={gambarInputRef}
                     type="file"
-                    accept="image/*"
+                    accept=".jpg,.jpeg,.png,image/jpeg,image/png"
                     onChange={handleGambarFileChange}
                     className="hidden" suppressHydrationWarning />
                 </div>
+
+                {/* Pop up balon peringatan seperti "Mohon isi bidang ini" */}
+                {gambarError && (
+                  <div className="absolute left-2 top-[calc(100%+8px)] z-40 flex items-center gap-2.5 bg-white text-slate-800 text-xs sm:text-sm py-2 px-3.5 rounded-lg shadow-xl border border-slate-300 animate-in fade-in slide-in-from-top-1 duration-150">
+                    {/* Panah segitiga ke atas menunjuk ke input field */}
+                    <div className="absolute -top-1.5 left-6 w-3 h-3 bg-white border-t border-l border-slate-300 rotate-45 transform" />
+                    <div className="w-4 h-4 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px] font-bold shrink-0 shadow-xs">!</div>
+                    <span className="font-medium text-slate-800">{gambarError}</span>
+                  </div>
+                )}
+
                 <p className="text-xs text-[#757682] mt-1.5 font-normal">File Maksimal 5MB</p>
               </div>
 

@@ -327,12 +327,10 @@ export default function KonsultasiPage() {
           {/* Cards List matching Wireframe 1 */}
           <div className="space-y-4 mb-10">
             {displayedItems.length === 0 ? (
-              <div className="text-center py-16 bg-white border border-dashed border-[#c5c6d2] rounded-xl">
-                <p className="text-base font-bold text-[#00113a] mb-1">
-                  Tidak Ada Konsultasi Ditemukan
-                </p>
+              <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
+                <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Konsultasi Ditemukan</h2>
                 <p className="text-sm text-[#444650]">
-                  Silakan periksa kata kunci atau atur ulang filter pencarian Anda.
+                  Silakan coba kata kunci pencarian lain atau tambahkan konsultasi baru.
                 </p>
               </div>
             ) : (

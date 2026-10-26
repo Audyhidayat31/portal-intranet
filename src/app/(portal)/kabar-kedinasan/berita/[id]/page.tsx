@@ -250,7 +250,7 @@ export default function DetailBeritaPage() {
             <li aria-current="page">
               <div className="flex items-center">
                 <span className="mx-2 text-[#757682]">&gt;</span>
-                <span className="text-[#1a1b20] font-bold">Lihat</span>
+                <span className="text-[#1a1b20] font-bold">Detail</span>
               </div>
             </li>
           </ol>

@@ -565,10 +565,9 @@ export default function PengumumanPage() {
           return currentUser.name === (item.authorName || item.author?.name);
         }).length === 0 ? (
           <div className="text-center py-16 border border-dashed border-[#c5c6d2] rounded-xl bg-white my-8">
-            <Megaphone className="w-12 h-12 text-[#757682] mx-auto mb-3 opacity-60" />
             <h2 className="text-lg font-bold text-[#00113a] mb-1">Tidak Ada Pengumuman Ditemukan</h2>
             <p className="text-sm text-[#444650]">
-              Silakan coba kata kunci pencarian lain atau klik tombol Tambah di atas.
+              Silakan coba kata kunci pencarian lain atau tambahkan pengumuman baru.
             </p>
           </div>
         ) : (

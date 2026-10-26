@@ -128,6 +128,19 @@ export async function PUT(
       });
 
       if (existing) {
+        if (user) {
+          const roleUpper = String(user.role || '').toUpperCase();
+          const isAdmin = roleUpper === 'ADMIN' || roleUpper === 'ADMINISTRATOR';
+          const isAuthor = (existing.authorId && existing.authorId === user.userId) ||
+            (existing.authorName && existing.authorName === user.name);
+          if (!isAdmin && !isAuthor) {
+            return NextResponse.json(
+              { success: false, message: 'Tidak memiliki izin untuk mengedit profil sosok ini' },
+              { status: 403 }
+            );
+          }
+        }
+
         const finalPhoto = photoUrl !== undefined ? photoUrl : existing.photoUrl;
         const editorId = user?.userId || existing.editorId || null;
         const editorName = user?.name || existing.editorName || 'Administrator Perpusnas';
@@ -253,9 +266,22 @@ export async function DELETE(
       });
 
       if (existing) {
+        const user = await getCurrentUser();
+        if (user) {
+          const roleUpper = String(user.role || '').toUpperCase();
+          const isAdmin = roleUpper === 'ADMIN' || roleUpper === 'ADMINISTRATOR';
+          const isAuthor = (existing.authorId && existing.authorId === user.userId) ||
+            (existing.authorName && existing.authorName === user.name);
+          if (!isAdmin && !isAuthor) {
+            return NextResponse.json(
+              { success: false, message: 'Tidak memiliki izin untuk menghapus profil sosok ini' },
+              { status: 403 }
+            );
+          }
+        }
+
         await prisma.figureProfile.delete({ where: { id: existing.id } });
 
-        const user = await getCurrentUser();
         if (user) {
           await logActivity({
             userId: user.userId,

@@ -45,6 +45,9 @@ export async function GET(request: NextRequest) {
         role: user.role.name,
         permissions: user.role.permissions.map((p) => p.permission.code),
         profile: user.profile,
+        avatarUrl: user.profile?.avatarUrl || null,
+        position: user.profile?.position || null,
+        unitKerja: user.profile?.unitKerja || null,
       },
     });
   } catch (error) {
