@@ -260,8 +260,8 @@ export default function ProfilPegawaiPage() {
       {statusMessage && (
         <div
           className={`p-4 rounded-xl flex items-center gap-3 text-xs sm:text-sm font-medium animate-fadeIn ${statusMessage.type === 'success'
-              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-              : 'bg-red-50 text-red-800 border border-red-200'
+            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+            : 'bg-red-50 text-red-800 border border-red-200'
             }`}
         >
           {statusMessage.type === 'success' ? <CheckCircle className="w-5 h-5 text-emerald-600" /> : <AlertCircle className="w-5 h-5 text-red-600" />}
@@ -322,8 +322,8 @@ export default function ProfilPegawaiPage() {
                 <button
                   onClick={() => setActiveTab('info-akun')}
                   className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-all text-left ${activeTab === 'info-akun'
-                      ? 'bg-blue-50/80 text-institutional-navy font-bold'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                    ? 'bg-blue-50/80 text-institutional-navy font-bold'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                     }`}
                 >
                   <User className={`w-4 h-4 ${activeTab === 'info-akun' ? 'text-institutional-navy' : 'text-slate-500'}`} />
@@ -334,8 +334,8 @@ export default function ProfilPegawaiPage() {
                 <button
                   onClick={() => setActiveTab('ubah-kata-sandi')}
                   className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-all text-left ${activeTab === 'ubah-kata-sandi'
-                      ? 'bg-blue-50/80 text-institutional-navy font-bold'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                    ? 'bg-blue-50/80 text-institutional-navy font-bold'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                     }`}
                 >
                   <Settings className={`w-4 h-4 ${activeTab === 'ubah-kata-sandi' ? 'text-institutional-navy' : 'text-slate-500'}`} />
@@ -549,8 +549,8 @@ export default function ProfilPegawaiPage() {
                       disabled={!editForm.avatarUrl}
                       onClick={() => setEditForm((prev: any) => ({ ...prev, avatarUrl: '' }))}
                       className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${editForm.avatarUrl
-                          ? 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200/80 cursor-pointer shadow-2xs'
-                          : 'bg-slate-50 text-slate-300 border border-slate-200/40 cursor-not-allowed'
+                        ? 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200/80 cursor-pointer shadow-2xs'
+                        : 'bg-slate-50 text-slate-300 border border-slate-200/40 cursor-not-allowed'
                         }`}
                       title={editForm.avatarUrl ? 'Hapus foto profil' : 'Tidak ada foto profil untuk dihapus'}
                     >
@@ -673,8 +673,8 @@ export default function ProfilPegawaiPage() {
                               setIsSatuanKerjaDropdownOpen(false);
                             }}
                             className={`w-full text-left px-4 py-2.5 text-xs font-semibold transition-colors flex items-center justify-between cursor-pointer ${isSelected
-                                ? 'bg-slate-100 text-[#00113a] font-bold'
-                                : 'text-slate-700 hover:bg-slate-50'
+                              ? 'bg-slate-100 text-[#00113a] font-bold'
+                              : 'text-slate-700 hover:bg-slate-50'
                               }`}
                           >
                             <span>{item}</span>

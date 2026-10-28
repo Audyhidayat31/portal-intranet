@@ -183,8 +183,8 @@ export default function LihatPegawaiPage() {
         {notification && (
           <div
             className={`mb-6 p-4 rounded-xl border flex items-center gap-3 text-sm font-semibold animate-fadeIn ${notification.type === 'success'
-                ? 'bg-green-50 border-green-200 text-green-800'
-                : 'bg-red-50 border-red-200 text-red-800'
+              ? 'bg-green-50 border-green-200 text-green-800'
+              : 'bg-red-50 border-red-200 text-red-800'
               }`}
           >
             {notification.type === 'success' ? (
@@ -446,8 +446,8 @@ export default function LihatPegawaiPage() {
                       disabled={!editForm.avatarUrl}
                       onClick={() => setEditForm((prev: any) => ({ ...prev, avatarUrl: '' }))}
                       className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${editForm.avatarUrl
-                          ? 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200/80 cursor-pointer shadow-2xs'
-                          : 'bg-slate-50 text-slate-300 border border-slate-200/40 cursor-not-allowed'
+                        ? 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200/80 cursor-pointer shadow-2xs'
+                        : 'bg-slate-50 text-slate-300 border border-slate-200/40 cursor-not-allowed'
                         }`}
                       title={editForm.avatarUrl ? 'Hapus foto profil' : 'Tidak ada foto profil untuk dihapus'}
                     >

@@ -115,6 +115,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validasi ukuran berkas maksimal 5MB per file
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    if (body.attachmentUrl) {
+      try {
+        const parsed = JSON.parse(body.attachmentUrl);
+        const urlList = Array.isArray(parsed) ? parsed : [parsed];
+        for (const item of urlList) {
+          if (typeof item === 'string' && item.startsWith('data:')) {
+            const approxBytes = Math.round((item.length - (item.indexOf(',') + 1)) * 0.75);
+            if (approxBytes > MAX_FILE_SIZE) {
+              return NextResponse.json(
+                { success: false, message: 'Ukuran berkas melebihi batas maksimal 5MB per file' },
+                { status: 400 }
+              );
+            }
+          }
+        }
+      } catch {}
+    }
+
     const session = await getCurrentUser();
     let authorId = session?.userId;
 

@@ -4,6 +4,7 @@ export interface AgendaItem {
   excerpt: string;
   content: string;
   coverImage: string;
+  coverImageName?: string;
   publishedAt: string;
   eventStartDate?: string;
   eventLocation?: string;
@@ -12,6 +13,8 @@ export interface AgendaItem {
   authorId?: string;
   author?: any;
   attachments?: Array<{ id: number; label: string; src: string; fileName?: string }>;
+  attachmentUrl?: string;
+  attachmentName?: string;
 }
 
 export const MOCK_AGENDA_ATTACHMENTS_5 = [

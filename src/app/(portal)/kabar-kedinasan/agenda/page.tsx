@@ -63,6 +63,7 @@ export default function AgendaKegiatanPage() {
           excerpt: item.excerpt || (item.body ? item.body.slice(0, 120) + '...' : ''),
           content: item.body || item.content || '',
           coverImage: item.coverImage || STITCH_MOCK_AGENDAS_6[0].coverImage,
+          coverImageName: item.source || item.coverImageName || undefined,
           publishedAt: item.eventStartDate
             ? formatDate(item.eventStartDate)
             : item.createdAt

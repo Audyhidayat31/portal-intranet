@@ -62,6 +62,23 @@ export default function TambahDokumenInternalPage() {
   const editorRef = useRef<HTMLDivElement>(null);
   const attachmentInputRef = useRef<HTMLInputElement>(null);
 
+  // Lightbox preview modal state
+  const [modalImageUrl, setModalImageUrl] = useState<string | null>(null);
+
+  const handleDownloadAttachment = (dataUrl: string | null | undefined, fileName: string) => {
+    if (!dataUrl) {
+      alert(`Mengunduh berkas ${fileName}...`);
+      return;
+    }
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = fileName || 'lampiran';
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [attachmentError, setAttachmentError] = useState('');
@@ -182,26 +199,31 @@ export default function TambahDokumenInternalPage() {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
-    const nonPdf = files.find(
-      (f) => !f.name.toLowerCase().endsWith('.pdf') && f.type !== 'application/pdf'
-    );
-    if (nonPdf) {
+    const allowedExtensions = ['.pdf', '.docx', '.jpg', '.jpeg', '.png'];
+    const invalidFile = files.find((f) => {
+      const ext = f.name.toLowerCase().substring(f.name.lastIndexOf('.'));
+      return !allowedExtensions.includes(ext);
+    });
+
+    if (invalidFile) {
       if (attachmentInputRef.current) attachmentInputRef.current.value = '';
-      setAttachmentError('File harus berupa .pdf');
+      setAttachmentError('Berkas harus berupa .pdf/ .docx/ .jpg/ .png');
       return;
     }
 
-    const oversized = files.find((f) => f.size > 5 * 1024 * 1024);
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB per file
+    const oversized = files.find((f) => f.size > MAX_FILE_SIZE);
     if (oversized) {
       if (attachmentInputRef.current) attachmentInputRef.current.value = '';
-      setAttachmentError('Ukuran file maksimal 5MB');
+      setAttachmentError('Ukuran berkas maksimal 5MB per file');
       return;
     }
 
     setAttachmentError('');
 
-    if (attachments.length + files.length > 10) {
-      setAttachmentError('Maksimal 10 lampiran diperbolehkan');
+    if (attachments.length + files.length > 5) {
+      if (attachmentInputRef.current) attachmentInputRef.current.value = '';
+      setAttachmentError('Maksimal 5 berkas diperbolehkan');
       return;
     }
 
@@ -258,6 +280,13 @@ export default function TambahDokumenInternalPage() {
     setIsSubmitting(true);
     try {
       const validPreviews = attachments.map((a) => a.preview).filter(Boolean);
+      const totalBytes = attachments.reduce((acc, att) => acc + (att.file?.size || 0), 0);
+      const calculatedFileSize = totalBytes > 0
+        ? totalBytes >= 1024 * 1024
+          ? `${(totalBytes / (1024 * 1024)).toFixed(1)} MB`
+          : `${Math.round(totalBytes / 1024)} KB`
+        : undefined;
+
       const res = await fetch('/api/internal-documents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -268,6 +297,7 @@ export default function TambahDokumenInternalPage() {
           keterangan: htmlContent || rawText,
           attachmentName: attachments.length > 0 ? attachments.map((a) => a.name).join(', ') : null,
           attachmentUrl: validPreviews.length > 0 ? JSON.stringify(validPreviews) : null,
+          fileSize: calculatedFileSize,
           publishedAt: tanggal.toISOString(),
           status: status || 'Terbit',
         }),
@@ -275,6 +305,11 @@ export default function TambahDokumenInternalPage() {
 
       const data = await res.json();
       if (data.success) {
+        if (data.data?.id) {
+          try {
+            sessionStorage.setItem(`internal-doc-${data.data.id}`, JSON.stringify(data.data));
+          } catch {}
+        }
         setSuccessMessage('Dokumen internal berhasil disimpan!');
         setTimeout(() => {
           router.push('/kabar-kedinasan/dokumen-intern');
@@ -655,8 +690,8 @@ export default function TambahDokumenInternalPage() {
                       type="text"
                       readOnly
                       suppressHydrationWarning
-                      value={attachments.length > 0 ? (attachments.length === 1 ? attachments[0].name : `${attachments.length} file dipilih`) : ''}
-                      placeholder="File berupa .pdf"
+                      value={attachments.length > 0 ? (attachments.length === 1 ? attachments[0].name : `${attachments.length} berkas dipilih`) : ''}
+                      placeholder="Maksimal 5 berkas berupa .pdf/ .docx/ .jpg/ .png"
                       className={`flex-grow h-10 border border-r-0 rounded-l px-3 text-sm bg-white text-[#444650] placeholder-[#757682] cursor-default focus:outline-none transition-colors ${
                         attachmentError ? 'border-amber-400 ring-1 ring-amber-400' : 'border-[#c5c6d2]'
                       }`}
@@ -664,7 +699,7 @@ export default function TambahDokumenInternalPage() {
                     <input
                       ref={attachmentInputRef}
                       type="file"
-                      accept=".pdf,application/pdf"
+                      accept=".pdf,.docx,.jpg,.jpeg,.png,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png"
                       multiple
                       suppressHydrationWarning
                       onChange={handleAttachmentChange}
@@ -676,7 +711,7 @@ export default function TambahDokumenInternalPage() {
                         setAttachmentError('');
                         attachmentInputRef.current?.click();
                       }}
-                      disabled={attachments.length >= 10}
+                      disabled={attachments.length >= 5}
                       className="px-6 h-10 bg-[#e9e7ee] border border-[#c5c6d2] rounded-r text-[#1a1b20] font-bold text-xs sm:text-sm hover:bg-[#e1e3e4] transition-colors disabled:opacity-50 cursor-pointer"
                     >
                       Upload
@@ -693,45 +728,90 @@ export default function TambahDokumenInternalPage() {
                     </div>
                   )}
 
-                  <p className="text-xs text-[#757682] mt-1.5 font-normal">File Maksimal 5MB (Maks. 10 File)</p>
+                  <p className="text-xs text-[#757682] mt-1.5 font-normal">Berkas maksimal 5MB</p>
                 </div>
 
                 {/* Previews */}
                 {attachments.length > 0 && (
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 w-full">
-                    {attachments.map((att, idx) => (
-                      <div
-                        key={idx}
-                        className="relative group bg-[#e9e7ee] border border-[#c5c6d2] rounded-md overflow-hidden aspect-square flex flex-col items-center justify-center"
-                      >
-                        {att.preview ? (
-                          <img
-                            src={att.preview}
-                            alt={att.name}
-                            className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                          />
-                        ) : (
-                          <div className="flex flex-col items-center gap-2 p-2">
-                            <FileText className="w-8 h-8 text-[#00113a]" />
-                            <span className="text-[10px] font-bold text-center break-all line-clamp-2 text-[#00113a]">
-                              {att.name}
-                            </span>
-                          </div>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => removeAttachment(idx)}
-                          className="absolute top-1 right-1 bg-black/60 hover:bg-black text-white p-1 rounded-full transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
+                    {attachments.map((att, idx) => {
+                      const isImg = att.name.match(/\.(jpg|jpeg|png|webp|gif)$/i);
+                      const isPdf = att.name.toLowerCase().endsWith('.pdf');
+                      const isDocx = att.name.toLowerCase().endsWith('.docx') || att.name.toLowerCase().endsWith('.doc');
+
+                      return (
+                        <div
+                          key={idx}
+                          className={`relative group border border-[#c5c6d2] rounded-md overflow-hidden aspect-square flex flex-col items-center justify-center transition-all shadow-2xs hover:shadow-md cursor-pointer ${
+                            isImg ? 'p-0 bg-transparent' : 'p-2.5 bg-[#e9e7ee]'
+                          }`}
+                          onClick={() => {
+                            if (isImg && att.preview) {
+                              setModalImageUrl(att.preview);
+                            } else {
+                              handleDownloadAttachment(att.preview, att.name);
+                            }
+                          }}
+                          title={isImg ? 'Klik untuk memperbesar' : `Klik untuk unduh: ${att.name}`}
                         >
-                          <X className="w-3 h-3" />
-                        </button>
-                        {att.preview && (
-                          <span className="absolute bottom-0 w-full bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center">
-                            {att.name}
-                          </span>
-                        )}
-                      </div>
-                    ))}
+                          {isImg && att.preview ? (
+                            <>
+                              <img
+                                src={att.preview}
+                                alt={att.name}
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 text-white font-medium backdrop-blur-xs pointer-events-none">
+                                <span className="text-xs text-center px-2">Klik untuk memperbesar</span>
+                              </div>
+                              <span className="absolute bottom-0 w-full bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center z-10 pointer-events-none">
+                                {att.name}
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <div className="flex flex-col items-center justify-center w-full h-full">
+                                <div
+                                  className={`w-9 h-9 rounded-lg flex items-center justify-center mb-1 group-hover:scale-105 transition-transform ${
+                                    isDocx
+                                      ? 'bg-blue-100 text-blue-600'
+                                      : 'bg-red-100 text-red-600'
+                                  }`}
+                                >
+                                  <FileText className="w-5 h-5" />
+                                </div>
+                                <span className="text-[10px] font-semibold text-[#1a1b20] group-hover:text-[#00113a] transition-colors line-clamp-2 break-all text-center px-1">
+                                  {att.name}
+                                </span>
+                                <span
+                                  className={`mt-1 px-1.5 py-0.2 rounded text-[8px] font-bold border ${
+                                    isDocx
+                                      ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                      : 'bg-red-50 text-red-700 border-red-200'
+                                  }`}
+                                >
+                                  {isPdf ? 'PDF' : isDocx ? 'DOCX' : 'BERKAS'}
+                                </span>
+                              </div>
+                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 text-white font-medium backdrop-blur-xs pointer-events-none">
+                                <span className="text-xs text-center px-2 leading-tight">Klik untuk unduh</span>
+                              </div>
+                            </>
+                          )}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeAttachment(idx);
+                            }}
+                            className="absolute top-1 right-1 bg-black/60 hover:bg-black text-white p-1 rounded-full transition-colors opacity-0 group-hover:opacity-100 cursor-pointer z-20"
+                            title="Hapus berkas"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -754,10 +834,11 @@ export default function TambahDokumenInternalPage() {
                   onChange={(e) => setJenisDokumen(e.target.value)}
                   className="w-full h-10 border border-[#c5c6d2] rounded appearance-none bg-[#f4f3f9] text-[#1a1b20] px-3 text-sm focus:outline-none focus:border-[#00113a] cursor-pointer"
                 >
-                  <option value="">Pilih Jenis Dokumen</option>
+                  <option value="" disabled hidden>Pilih Jenis Dokumen</option>
                   <option value="Surat Edaran">Surat Edaran</option>
                   <option value="Surat Keputusan">Surat Keputusan</option>
                   <option value="Formulir">Formulir</option>
+                  <option value="SOP & Regulasi">SOP & Regulasi</option>
                 </select>
                 <ChevronDown className="w-4 h-4 text-[#757682] absolute right-3 top-3 pointer-events-none" />
               </div>
@@ -818,28 +899,51 @@ export default function TambahDokumenInternalPage() {
               </div>
             </div>
 
-            {/* Action Buttons matching Stitch */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-6 mt-6 border-t border-[#c5c6d2]">
-              <div className="hidden md:block md:col-span-1" />
-              <div className="md:col-span-3 flex gap-4">
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-8 py-2.5 bg-[#00113a] text-white font-bold rounded hover:bg-[#2a4386] transition-colors shadow-sm text-sm min-w-[120px] disabled:opacity-50 cursor-pointer"
-                >
-                  {isSubmitting ? 'Menyimpan...' : 'Simpan'}
-                </button>
-                <Link
-                  href="/kabar-kedinasan/dokumen-intern"
-                  className="px-8 py-2.5 bg-transparent border border-[#c5c6d2] text-[#1a1b20] font-bold rounded hover:bg-[#f4f3f9] transition-colors text-sm min-w-[120px] text-center inline-block cursor-pointer"
-                >
-                  Keluar
-                </Link>
-              </div>
+            {/* Action Buttons */}
+            <div className="flex gap-4 pt-6 mt-6 border-t border-[#c5c6d2]">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="px-8 py-2.5 bg-[#00113a] text-white font-bold rounded hover:bg-[#2a4386] transition-colors shadow-sm text-sm min-w-[120px] disabled:opacity-50 cursor-pointer"
+              >
+                {isSubmitting ? 'Menyimpan...' : 'Simpan'}
+              </button>
+              <Link
+                href="/kabar-kedinasan/dokumen-intern"
+                className="px-8 py-2.5 bg-transparent border border-[#c5c6d2] text-[#1a1b20] font-bold rounded hover:bg-[#f4f3f9] transition-colors text-sm min-w-[120px] text-center inline-block cursor-pointer"
+              >
+                Keluar
+              </Link>
             </div>
           </form>
         </div>
       </div>
+
+      {/* Lightbox Preview Modal */}
+      {modalImageUrl && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fadeIn p-4 sm:p-8"
+          onClick={() => setModalImageUrl(null)}
+        >
+          <button
+            type="button"
+            className="absolute top-4 right-4 sm:top-8 sm:right-8 text-white/70 hover:text-white bg-black/50 hover:bg-black/80 rounded-full p-2 transition-all cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              setModalImageUrl(null);
+            }}
+          >
+            <X className="w-6 h-6 sm:w-8 sm:h-8" />
+          </button>
+
+          <img
+            src={modalImageUrl}
+            alt="Pratinjau Gambar Penuh"
+            className="max-w-full max-h-full object-contain rounded shadow-2xl cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 }

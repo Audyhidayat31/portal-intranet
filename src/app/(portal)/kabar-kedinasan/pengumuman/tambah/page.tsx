@@ -30,7 +30,7 @@ export default function TambahPengumumanPage() {
   const router = useRouter();
   const [judul, setJudul] = useState('');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [status, setStatus] = useState('Terbit');
+  const [status, setStatus] = useState<'Terbit' | 'Menunggu' | ''>('');
   const [deskripsiHtml, setDeskripsiHtml] = useState('');
   
   // Status Menu Popover state
@@ -62,8 +62,16 @@ export default function TambahPengumumanPage() {
   const [attachments, setAttachments] = useState<Array<{file: File, name: string, preview: string | null}>>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [attachmentError, setAttachmentError] = useState('');
 
   const attachmentInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (attachmentError) {
+      const timer = setTimeout(() => setAttachmentError(''), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [attachmentError]);
 
   // Check active formatting under cursor
   const checkActiveStyles = useCallback(() => {
@@ -196,10 +204,40 @@ export default function TambahPengumumanPage() {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
-    if (attachments.length + files.length > 10) {
-      alert('Maksimal 10 lampiran diperbolehkan');
+    const validExtensions = ['.pdf', '.docx', '.doc', '.jpg', '.jpeg', '.png'];
+    const validMimes = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/msword',
+      'image/jpeg',
+      'image/png',
+    ];
+
+    const invalidFile = files.find((f) => {
+      const ext = f.name.substring(f.name.lastIndexOf('.')).toLowerCase();
+      return !validExtensions.includes(ext) && !validMimes.includes(f.type);
+    });
+
+    if (invalidFile) {
+      if (attachmentInputRef.current) attachmentInputRef.current.value = '';
+      setAttachmentError('File harus berupa .pdf/.docx/.jpg/.png');
       return;
     }
+
+    const oversized = files.find((f) => f.size > 5 * 1024 * 1024);
+    if (oversized) {
+      if (attachmentInputRef.current) attachmentInputRef.current.value = '';
+      setAttachmentError('Ukuran file maksimal 5MB');
+      return;
+    }
+
+    if (attachments.length + files.length > 5) {
+      if (attachmentInputRef.current) attachmentInputRef.current.value = '';
+      setAttachmentError('Maksimal 5 lampiran diperbolehkan');
+      return;
+    }
+
+    setAttachmentError('');
 
     files.forEach((file) => {
       const reader = new FileReader();
@@ -244,7 +282,7 @@ export default function TambahPengumumanPage() {
           attachmentName: attachments.length > 0 ? attachments.map(a => a.name).join(', ') : undefined,
           attachmentUrl: attachments.length > 0 ? JSON.stringify(attachments.map(a => a.preview || '')) : undefined,
           publishedAt: selectedDate.toISOString(),
-          status,
+          status: status === 'Menunggu' ? 'Menunggu' : 'Terbit',
         }),
       });
 
@@ -660,62 +698,85 @@ export default function TambahPengumumanPage() {
             {/* Field: Lampiran */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4 items-start">
               <label className="font-bold text-sm text-[#1a1b20] flex items-center h-10 md:col-span-1">
-                <span>Lampiran (Maks. 10 File)</span>
+                <span>Lampiran</span>
                 <span className="ml-auto pr-4 hidden md:inline">:</span>
               </label>
               <div className="md:col-span-3 space-y-4">
-                <div className="flex">
-                  <input
-                    type="text"
-                    readOnly
-                    value={attachments.length > 0 ? `${attachments.length} file dipilih` : ''}
-                    placeholder="Upload maksimal 10 file..."
-                    className="flex-grow h-10 border border-r-0 border-[#c5c6d2] rounded-l px-3 text-sm bg-white text-[#444650] cursor-default focus:outline-none"
-                  />
-                  <input
-                    ref={attachmentInputRef}
-                    type="file"
-                    multiple
-                    suppressHydrationWarning
-                    onChange={handleAttachmentChange}
-                    className="hidden"  />
-                  <button
-                    type="button"
-                    onClick={() => attachmentInputRef.current?.click()}
-                    disabled={attachments.length >= 10}
-                    className="px-6 h-10 bg-[#e9e7ee] border border-[#c5c6d2] rounded-r text-[#1a1b20] font-bold text-xs sm:text-sm hover:bg-[#e1e3e4] transition-colors disabled:opacity-50"
-                  >
-                    Upload
-                  </button>
+                <div className="relative">
+                  <div className="flex">
+                    <input
+                      type="text"
+                      readOnly
+                      value={attachments.length > 0 ? `${attachments.length} file dipilih` : ''}
+                      placeholder="Maksimal 5 berkas berupa .pdf/ .docx/ .jpg/ .png"
+                      className={`flex-grow h-10 border border-r-0 rounded-l px-3 text-sm bg-white text-[#444650] cursor-default focus:outline-none transition-colors ${
+                        attachmentError ? 'border-amber-400 ring-1 ring-amber-400' : 'border-[#c5c6d2]'
+                      }`}
+                    />
+                    <input
+                      ref={attachmentInputRef}
+                      type="file"
+                      multiple
+                      accept=".pdf,.docx,.doc,.jpg,.jpeg,.png,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword,image/jpeg,image/png"
+                      suppressHydrationWarning
+                      onChange={handleAttachmentChange}
+                      className="hidden"  />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAttachmentError('');
+                        attachmentInputRef.current?.click();
+                      }}
+                      disabled={attachments.length >= 5}
+                      className="px-6 h-10 bg-[#e9e7ee] border border-[#c5c6d2] rounded-r text-[#1a1b20] font-bold text-xs sm:text-sm hover:bg-[#e1e3e4] transition-colors disabled:opacity-50"
+                    >
+                      Upload
+                    </button>
+                  </div>
+
+                  {/* Pop up balon peringatan seperti "Mohon isi bidang ini" */}
+                  {attachmentError && (
+                    <div className="absolute left-2 top-[calc(100%+8px)] z-40 flex items-center gap-2.5 bg-white text-slate-800 text-xs sm:text-sm py-2 px-3.5 rounded-lg shadow-xl border border-slate-300 animate-in fade-in slide-in-from-top-1 duration-150">
+                      {/* Panah segitiga ke atas menunjuk ke input field */}
+                      <div className="absolute -top-1.5 left-6 w-3 h-3 bg-white border-t border-l border-slate-300 rotate-45 transform" />
+                      <div className="w-4 h-4 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px] font-bold shrink-0 shadow-xs">!</div>
+                      <span className="font-medium text-slate-800">{attachmentError}</span>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-[#757682] mt-1.5 font-normal">Berkas maksimal 5MB</p>
                 </div>
 
                 {/* Previews */}
                 {attachments.length > 0 && (
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 w-full">
-                    {attachments.map((att, idx) => (
-                      <div key={idx} className="relative group bg-[#e9e7ee] border border-[#c5c6d2] rounded-md overflow-hidden aspect-square flex flex-col items-center justify-center">
-                        {att.preview ? (
-                          <img src={att.preview} alt={att.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                        ) : (
-                          <div className="flex flex-col items-center gap-2 p-2">
-                            <FileText className="w-8 h-8 text-[#00113a]" />
-                            <span className="text-[10px] font-bold text-center break-all line-clamp-2 text-[#00113a]">{att.name}</span>
-                          </div>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => removeAttachment(idx)}
-                          className="absolute top-1 right-1 bg-black/60 hover:bg-black text-white p-1 rounded-full transition-colors opacity-0 group-hover:opacity-100"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                        {att.preview && (
-                          <span className="absolute bottom-0 w-full bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center">
-                            {att.name}
-                          </span>
-                        )}
-                      </div>
-                    ))}
+                    {attachments.map((att, idx) => {
+                      const isImg = att.file?.type.startsWith('image/') || /\.(png|jpe?g|webp|gif|svg)$/i.test(att.name);
+                      return (
+                        <div key={idx} className="relative group bg-[#e9e7ee] border border-[#c5c6d2] rounded-md overflow-hidden aspect-square flex flex-col items-center justify-center">
+                          {isImg && att.preview ? (
+                            <img src={att.preview} alt={att.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                          ) : (
+                            <div className="flex flex-col items-center gap-2 p-2">
+                              <FileText className={`w-8 h-8 ${att.name.toLowerCase().endsWith('.docx') || att.name.toLowerCase().endsWith('.doc') ? 'text-blue-600' : 'text-red-600'}`} />
+                              <span className="text-[10px] font-bold text-center break-all line-clamp-2 text-[#00113a]">{att.name}</span>
+                            </div>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => removeAttachment(idx)}
+                            className="absolute top-1 right-1 bg-black/60 hover:bg-black text-white p-1 rounded-full transition-colors opacity-0 group-hover:opacity-100"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                          {isImg && (
+                            <span className="absolute bottom-0 w-full bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center">
+                              {att.name}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

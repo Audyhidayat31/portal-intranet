@@ -97,6 +97,7 @@ export async function GET(
           success: true,
           data: {
             ...item,
+            coverImageName: item.source || null,
             editor: editorName ? { name: editorName } : null,
             editorName: editorName || null,
           },
@@ -131,7 +132,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { title, content, body: contentBody, eventLocation, eventStartDate, status, coverImage, attachmentName, attachmentUrl } = body;
+    const { title, content, body: contentBody, eventLocation, eventStartDate, status, coverImage, coverImageName, attachmentName, attachmentUrl } = body;
 
     try {
       const existing = await prisma.content.findFirst({
@@ -151,6 +152,7 @@ export async function PUT(
             eventLocation: eventLocation || existing.eventLocation,
             eventStartDate: eventStartDate ? new Date(eventStartDate) : existing.eventStartDate,
             ...(coverImage !== undefined && { coverImage }),
+            ...(coverImageName !== undefined && { source: coverImageName }),
             ...(attachmentName !== undefined && { attachmentName }),
             ...(attachmentUrl !== undefined && { attachmentUrl }),
             status:

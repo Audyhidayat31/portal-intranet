@@ -21,6 +21,7 @@ import {
   Upload,
   X,
   CheckCircle,
+  FileText,
 } from 'lucide-react';
 import {
   getStoredAgendas,
@@ -67,6 +68,49 @@ const compressImage = (file: File): Promise<string> => {
   });
 };
 
+function getSafeFileName(name?: string | null, url?: string | null, fallback = 'sampul.jpg'): string {
+  if (name && name.trim()) return name.trim();
+  if (!url) return fallback;
+  if (url.startsWith('data:')) {
+    const mimeMatch = url.match(/data:image\/([a-zA-Z0-9]+);/);
+    const ext = mimeMatch ? (mimeMatch[1] === 'jpeg' ? 'jpg' : mimeMatch[1]) : 'png';
+    return `gambar-agenda.${ext}`;
+  }
+  const cleanUrl = url.split('?')[0].split('#')[0];
+  const last = cleanUrl.split('/').pop();
+  return last && last.length < 100 ? last : fallback;
+}
+
+const extractAttachmentsFromData = (dataObj: any): Array<{ name: string; preview: string | null; file?: File }> => {
+  if (!dataObj) return [];
+  if (dataObj.attachmentUrl) {
+    try {
+      const urls = JSON.parse(dataObj.attachmentUrl);
+      const names = dataObj.attachmentName ? dataObj.attachmentName.split('|||') : [];
+      if (Array.isArray(urls)) {
+        return urls.map((u: string, i: number) => ({
+          name: names[i] || `lampiran-${i + 1}`,
+          preview: u,
+        }));
+      }
+    } catch {
+      if (typeof dataObj.attachmentUrl === 'string' && (dataObj.attachmentUrl.startsWith('data:') || dataObj.attachmentUrl.startsWith('http') || dataObj.attachmentUrl.startsWith('/') || dataObj.attachmentUrl.startsWith('blob:'))) {
+        return [{
+          name: dataObj.attachmentName || 'lampiran',
+          preview: dataObj.attachmentUrl,
+        }];
+      }
+    }
+  }
+  if (dataObj.attachments && Array.isArray(dataObj.attachments) && dataObj.attachments.length > 0) {
+    return dataObj.attachments.map((att: any, i: number) => ({
+      name: att.fileName || att.label || att.name || `lampiran-${i + 1}`,
+      preview: att.src || att.preview || '',
+    }));
+  }
+  return [];
+};
+
 const readFileAsDataUrl = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -88,13 +132,13 @@ export default function EditAgendaPage() {
   const [deskripsiHtml, setDeskripsiHtml] = useState('');
   const [gambarFileName, setGambarFileName] = useState('');
   const [gambarPreview, setGambarPreview] = useState<string | null>(null);
-  const [lampiranFileName, setLampiranFileName] = useState('');
-  const [lampiranFileUrl, setLampiranFileUrl] = useState<string | null>(null);
+  const [lampiranAttachments, setLampiranAttachments] = useState<Array<{ file?: File, name: string, preview: string | null }>>([]);
   const [modalImageUrl, setModalImageUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState('');
   const [gambarError, setGambarError] = useState('');
+  const [lampiranError, setLampiranError] = useState('');
 
   useEffect(() => {
     if (gambarError) {
@@ -102,6 +146,13 @@ export default function EditAgendaPage() {
       return () => clearTimeout(timer);
     }
   }, [gambarError]);
+
+  useEffect(() => {
+    if (lampiranError) {
+      const timer = setTimeout(() => setLampiranError(''), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [lampiranError]);
 
   // Active toolbar formatting states
   const [activeStyles, setActiveStyles] = useState({
@@ -153,10 +204,12 @@ export default function EditAgendaPage() {
       }
       if (foundStored.coverImage) {
         setGambarPreview(foundStored.coverImage);
-        setGambarFileName(foundStored.coverImage.split('/').pop() || 'sampul.jpg');
+        setGambarFileName(getSafeFileName(foundStored.coverImageName, foundStored.coverImage));
       }
-      setIsLoading(false);
-      return;
+      const storedAttachments = extractAttachmentsFromData(foundStored);
+      if (storedAttachments.length > 0) {
+        setLampiranAttachments(storedAttachments);
+      }
     }
 
     fetch(`/api/agendas/${id}`)
@@ -179,9 +232,13 @@ export default function EditAgendaPage() {
           }
           if (item.coverImage) {
             setGambarPreview(item.coverImage);
-            setGambarFileName(item.coverImage.split('/').pop() || 'sampul.jpg');
+            setGambarFileName(getSafeFileName(item.coverImageName || item.source, item.coverImage));
           }
-        } else {
+          const apiAttachments = extractAttachmentsFromData(item);
+          if (apiAttachments.length > 0) {
+            setLampiranAttachments(apiAttachments);
+          }
+        } else if (!foundStored) {
           const matchedMock =
             STITCH_MOCK_AGENDAS_6.find((m) => m.id === id || m.title.toLowerCase().includes(id.toLowerCase())) ||
             STITCH_MOCK_AGENDAS_6[0];
@@ -200,31 +257,42 @@ export default function EditAgendaPage() {
           }
           if (matchedMock.coverImage) {
             setGambarPreview(matchedMock.coverImage);
-            setGambarFileName(matchedMock.coverImage.split('/').pop() || 'sampul.jpg');
+            setGambarFileName(getSafeFileName(matchedMock.coverImageName, matchedMock.coverImage));
+          }
+          const mockAttachments = extractAttachmentsFromData(matchedMock);
+          if (mockAttachments.length > 0) {
+            setLampiranAttachments(mockAttachments);
           }
         }
-        setIsLoading(false);
       })
       .catch(() => {
-        const matchedMock =
-          STITCH_MOCK_AGENDAS_6.find((m) => m.id === id) || STITCH_MOCK_AGENDAS_6[0];
-        setJudul(matchedMock.title || '');
-        if (matchedMock.eventStartDate || matchedMock.publishedAt) {
-          const d = new Date(matchedMock.eventStartDate || matchedMock.publishedAt);
-          if (!isNaN(d.getTime())) {
-            setTanggal(d);
-            setViewDate(d);
+        if (!foundStored) {
+          const matchedMock =
+            STITCH_MOCK_AGENDAS_6.find((m) => m.id === id) || STITCH_MOCK_AGENDAS_6[0];
+          setJudul(matchedMock.title || '');
+          if (matchedMock.eventStartDate || matchedMock.publishedAt) {
+            const d = new Date(matchedMock.eventStartDate || matchedMock.publishedAt);
+            if (!isNaN(d.getTime())) {
+              setTanggal(d);
+              setViewDate(d);
+            }
+          }
+          setStatus(matchedMock.status === 'Menunggu' ? 'Menunggu' : 'Terbit');
+          setDeskripsiHtml(matchedMock.content || '');
+          if (editorRef.current) {
+            editorRef.current.innerHTML = matchedMock.content || '';
+          }
+          if (matchedMock.coverImage) {
+            setGambarPreview(matchedMock.coverImage);
+            setGambarFileName(getSafeFileName(matchedMock.coverImageName, matchedMock.coverImage));
+          }
+          const mockAttachments = extractAttachmentsFromData(matchedMock);
+          if (mockAttachments.length > 0) {
+            setLampiranAttachments(mockAttachments);
           }
         }
-        setStatus(matchedMock.status === 'Menunggu' ? 'Menunggu' : 'Terbit');
-        setDeskripsiHtml(matchedMock.content || '');
-        if (editorRef.current) {
-          editorRef.current.innerHTML = matchedMock.content || '';
-        }
-        if (matchedMock.coverImage) {
-          setGambarPreview(matchedMock.coverImage);
-          setGambarFileName(matchedMock.coverImage.split('/').pop() || 'sampul.jpg');
-        }
+      })
+      .finally(() => {
         setIsLoading(false);
       });
   }, [id]);
@@ -343,7 +411,7 @@ export default function EditAgendaPage() {
         if (gambarInputRef.current) gambarInputRef.current.value = '';
         setGambarFileName('');
         setGambarPreview(null);
-        setGambarError('File harus berupa .jpg/.png');
+        setGambarError('Berkas harus berupa .jpg/.png');
         return;
       }
 
@@ -353,7 +421,7 @@ export default function EditAgendaPage() {
         if (gambarInputRef.current) gambarInputRef.current.value = '';
         setGambarFileName('');
         setGambarPreview(null);
-        setGambarError('Ukuran file maksimal 5MB');
+        setGambarError('Ukuran berkas maksimal 5MB');
         return;
       }
       setGambarFileName(file.name);
@@ -377,27 +445,82 @@ export default function EditAgendaPage() {
     }
   };
 
+  const handleDownloadAttachment = (dataUrl: string | null, fileName: string) => {
+    if (!dataUrl) return;
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = fileName || 'lampiran';
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
   const handleLampiranFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      if (file.size > 50 * 1024 * 1024) {
-        alert('Ukuran file lampiran maksimal 50MB');
-        if (lampiranInputRef.current) lampiranInputRef.current.value = '';
-        return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    if (lampiranAttachments.length + files.length > 5) {
+      setLampiranError('Maksimal 5 berkas lampiran yang diperbolehkan');
+      if (lampiranInputRef.current) lampiranInputRef.current.value = '';
+      return;
+    }
+
+    const allowedExtensions = ['.pdf', '.docx', '.doc', '.jpg', '.jpeg', '.png'];
+    const validFiles: File[] = [];
+
+    for (const file of files) {
+      const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+      if (!allowedExtensions.includes(ext)) {
+        setLampiranError('Berkas harus berupa .pdf/ .docx/ .jpg/ .png');
+        continue;
       }
-      setLampiranFileName(file.name);
+      if (file.size > 5 * 1024 * 1024) {
+        setLampiranError('Berkas maksimal 5MB');
+        continue;
+      }
+      validFiles.push(file);
+    }
+
+    if (validFiles.length === 0) {
+      if (lampiranInputRef.current) lampiranInputRef.current.value = '';
+      return;
+    }
+    setLampiranError('');
+
+    for (const file of validFiles) {
       try {
-        let url: string | null = null;
+        let preview: string | null = null;
         if (file.type.startsWith('image/')) {
-          url = await compressImage(file);
+          preview = await compressImage(file);
         } else {
-          url = await readFileAsDataUrl(file);
+          preview = await readFileAsDataUrl(file);
         }
-        setLampiranFileUrl(url);
+
+        setLampiranAttachments((prev) => {
+          if (prev.length >= 10) return prev;
+          return [
+            ...prev,
+            {
+              file,
+              name: file.name,
+              preview,
+            },
+          ];
+        });
       } catch (err) {
         console.error('Failed reading attachment', err);
       }
     }
+
+    if (lampiranInputRef.current) {
+      lampiranInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveLampiran = (index: number) => {
+    setLampiranAttachments((prev) => prev.filter((_, i) => i !== index));
+    if (lampiranInputRef.current) lampiranInputRef.current.value = '';
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -424,18 +547,32 @@ export default function EditAgendaPage() {
     // Update in localStorage
     const currentStored = getStoredAgendas();
     const existingItem = currentStored.find((it) => it.id === id);
+    const resolvedCoverName = gambarFileName || existingItem?.coverImageName || undefined;
+
+    const mappedAttachments = lampiranAttachments.map((a, i) => ({
+      id: i + 1,
+      label: a.name,
+      src: a.preview || '',
+      fileName: a.name,
+    }));
+    const mappedAttachmentName = lampiranAttachments.length > 0 ? lampiranAttachments.map((a) => a.name).join('|||') : null;
+    const mappedAttachmentUrl = lampiranAttachments.length > 0 ? JSON.stringify(lampiranAttachments.map((a) => a.preview)) : null;
+
     const updatedItem: AgendaItem = {
       id,
       title: judul,
       excerpt: (rawText || judul).slice(0, 140) + '...',
       content: htmlContent || rawText || judul,
       coverImage: fallbackImage,
+      coverImageName: resolvedCoverName,
       publishedAt: tanggal.toISOString().split('T')[0],
       eventStartDate: tanggal.toISOString(),
-      eventLocation: existingItem?.eventLocation || 'Gedung Perpusnas Medan Merdeka Selatan',
+      eventLocation: undefined,
       status: resolvedStatus,
       authorName: existingItem?.authorName || 'Biro Hukum & Humas Perpusnas',
-      attachments: existingItem?.attachments || MOCK_AGENDA_ATTACHMENTS_5,
+      attachments: mappedAttachments,
+      attachmentName: mappedAttachmentName || undefined,
+      attachmentUrl: mappedAttachmentUrl || undefined,
     };
 
     if (existingItem) {
@@ -454,10 +591,11 @@ export default function EditAgendaPage() {
           body: htmlContent || rawText || judul,
           content: htmlContent || rawText || judul,
           coverImage: fallbackImage,
+          coverImageName: resolvedCoverName || null,
           eventStartDate: tanggal.toISOString(),
           status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',
-          attachmentName: lampiranFileName || null,
-          attachmentUrl: lampiranFileUrl || null,
+          attachmentName: mappedAttachmentName,
+          attachmentUrl: mappedAttachmentUrl,
         }),
       });
     } catch {
@@ -595,54 +733,7 @@ export default function EditAgendaPage() {
               )}
             </div>
 
-            {/* 3. Status Dropdown */}
-            <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Status <span className="float-right hidden md:inline">:</span>
-            </label>
-            <div className="relative w-full md:w-56" ref={statusMenuRef}>
-              <button
-                type="button"
-                onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
-                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
-                  }`}
-              >
-                <span className="truncate">{status || 'Jenis Status'}</span>
-                <ChevronDown className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {isStatusMenuOpen && (
-                <div className="absolute top-full left-0 z-50 w-full bg-white border border-[#c5c6d2] border-t-0 rounded-b-md shadow-lg py-1 animate-fadeIn">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStatus('Terbit');
-                      setIsStatusMenuOpen(false);
-                    }}
-                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Terbit'
-                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
-                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                      }`}
-                  >
-                    Terbit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStatus('Menunggu');
-                      setIsStatusMenuOpen(false);
-                    }}
-                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Menunggu'
-                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
-                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                      }`}
-                  >
-                    Menunggu
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* 4. Deskripsi */}
+            {/* 3. Deskripsi */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
               Deskripsi <span className="text-red-500">*</span> <span className="float-right hidden md:inline">:</span>
             </label>
@@ -778,7 +869,7 @@ export default function EditAgendaPage() {
                   </div>
                 )}
 
-                <p className="text-xs text-[#757682] mt-1.5 font-normal">File Maksimal 5MB</p>
+                <p className="text-xs text-[#757682] mt-1.5 font-normal">Berkas maksimal 5MB</p>
               </div>
 
               {/* Dashed preview box */}
@@ -823,57 +914,182 @@ export default function EditAgendaPage() {
               </div>
             </div>
 
-            {/* 6. Lampiran */}
+            {/* 5. Lampiran */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
               Lampiran <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="flex flex-col gap-4">
-              <div>
+              <div className="relative">
                 <div className="flex">
-                  <input
+                  <input suppressHydrationWarning
                     type="text"
                     readOnly
-                    value={lampiranFileName}
-                    placeholder="Nama File.pdf/doc"
-                    className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
+                    value={
+                      lampiranAttachments.length > 0
+                        ? lampiranAttachments.length === 1
+                          ? lampiranAttachments[0].name
+                          : `${lampiranAttachments.length} berkas: ${lampiranAttachments.map((a) => a.name).join(', ')}`
+                        : ''
+                    }
+                    placeholder="Maksimal 5 berkas berupa .pdf/ .docx/ .jpg/ .png"
+                    className={`flex-grow border rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682] transition-colors ${
+                      lampiranError ? 'border-amber-400 ring-1 ring-amber-400' : 'border-[#c5c6d2]'
+                    }`}
                   />
                   <button
                     type="button"
-                    onClick={() => lampiranInputRef.current?.click()}
-                    className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer"
+                    onClick={() => {
+                      setLampiranError('');
+                      lampiranInputRef.current?.click();
+                    }}
+                    disabled={lampiranAttachments.length >= 5}
+                    className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer disabled:opacity-50"
                   >
                     Upload
                   </button>
                   <input
                     ref={lampiranInputRef}
                     type="file"
-                    accept=".pdf,.doc,.docx,.jpg,.png"
+                    multiple
+                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png"
                     onChange={handleLampiranFileChange}
                     className="hidden" suppressHydrationWarning />
                 </div>
-                <p className="text-xs text-[#757682] mt-1.5 font-normal">File Maksimal 50MB</p>
+
+                {/* Pop up balon peringatan seperti pada gambar agenda */}
+                {lampiranError && (
+                  <div className="absolute left-2 top-[calc(100%+8px)] z-40 flex items-center gap-2.5 bg-white text-slate-800 text-xs sm:text-sm py-2 px-3.5 rounded-lg shadow-xl border border-slate-300 animate-in fade-in slide-in-from-top-1 duration-150">
+                    {/* Panah segitiga ke atas menunjuk ke input field */}
+                    <div className="absolute -top-1.5 left-6 w-3 h-3 bg-white border-t border-l border-slate-300 rotate-45 transform" />
+                    <div className="w-4 h-4 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px] font-bold shrink-0 shadow-xs">!</div>
+                    <span className="font-medium text-slate-800">{lampiranError}</span>
+                  </div>
+                )}
+
+                <p className="text-xs text-[#757682] mt-1.5 font-normal">Berkas maksimal 5MB</p>
               </div>
 
-              {/* Dashed preview box */}
-              <div
-                onClick={() => lampiranInputRef.current?.click()}
-                className="w-full md:w-2/3 h-64 bg-[#efedf3] border-2 border-dashed border-[#c5c6d2] rounded flex items-center justify-center text-[#757682] text-sm relative group cursor-pointer hover:bg-[#e9e7ee] transition-colors overflow-hidden"
+              {/* Previews */}
+              {lampiranAttachments.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 w-full">
+                  {lampiranAttachments.map((att, idx) => {
+                    const isImg = att.file?.type?.startsWith('image/') || /\.(jpg|jpeg|png)$/i.test(att.name) || (att.preview?.startsWith('data:image') ?? false);
+                    const isPdf = att.name.toLowerCase().endsWith('.pdf');
+                    const isDocx = att.name.toLowerCase().endsWith('.docx') || att.name.toLowerCase().endsWith('.doc');
+
+                    return (
+                      <div
+                        key={idx}
+                        className={`relative group border border-[#c5c6d2] rounded-md overflow-hidden aspect-square flex flex-col items-center justify-center transition-all shadow-xs hover:shadow-md cursor-pointer ${
+                          isImg && att.preview ? 'p-0 bg-transparent' : 'p-2.5 bg-[#e9e7ee]'
+                        }`}
+                        onClick={() => {
+                          if (isImg && att.preview) {
+                            setModalImageUrl(att.preview);
+                          } else if (att.preview) {
+                            handleDownloadAttachment(att.preview, att.name);
+                          }
+                        }}
+                        title={isImg ? 'Klik untuk memperbesar' : `Unduh berkas: ${att.name}`}
+                      >
+                        {isImg && att.preview ? (
+                          <>
+                            <img src={att.preview} alt={att.name} className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 text-white font-medium backdrop-blur-xs pointer-events-none">
+                              <span className="text-xs text-center px-2">Klik untuk memperbesar</span>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div
+                              className={`w-10 h-10 rounded-lg flex items-center justify-center mb-1 group-hover:scale-105 transition-transform ${
+                                isDocx
+                                  ? 'bg-blue-100 text-blue-600'
+                                  : 'bg-red-100 text-red-600'
+                              }`}
+                            >
+                              <FileText className="w-6 h-6" />
+                            </div>
+                            <p className="text-[11px] font-semibold text-slate-800 text-center line-clamp-2 break-all px-1">
+                              {att.name}
+                            </p>
+                            <span
+                              className={`mt-1 px-1.5 py-0.5 rounded text-[9px] font-medium border ${
+                                isDocx
+                                  ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                  : 'bg-red-50 text-red-700 border-red-200'
+                              }`}
+                            >
+                              {isPdf ? 'PDF' : isDocx ? 'DOCX' : 'Dokumen'}
+                            </span>
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 text-white font-medium backdrop-blur-xs pointer-events-none">
+                              <span className="text-xs text-center px-2 leading-tight">Klik untuk unduh</span>
+                            </div>
+                          </>
+                        )}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveLampiran(idx);
+                          }}
+                          className="absolute top-1 right-1 bg-black/60 hover:bg-black text-white p-1 rounded-full transition-colors opacity-0 group-hover:opacity-100 z-10 cursor-pointer"
+                          title="Hapus berkas"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* 6. Status Dropdown */}
+            <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
+              Status <span className="float-right hidden md:inline">:</span>
+            </label>
+            <div className="relative w-full md:w-56" ref={statusMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
+                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
+                  }`}
               >
-                {lampiranFileName ? (
-                  <div className="p-4 text-center">
-                    <Upload className="w-8 h-8 text-[#00113a] mx-auto mb-2" />
-                    <span className="font-semibold text-[#00113a] block break-all">{lampiranFileName}</span>
-                    <span className="text-xs text-emerald-600 font-medium mt-1 inline-block">Berkas Terlampir</span>
-                  </div>
-                ) : (
-                  <>
-                    <span>File Preview</span>
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/5">
-                      <Upload className="w-8 h-8 text-[#757682]" />
-                    </div>
-                  </>
-                )}
-              </div>
+                <span className="truncate">{status || 'Jenis Status'}</span>
+                <ChevronDown className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isStatusMenuOpen && (
+                <div className="absolute top-full left-0 z-50 w-full bg-white border border-[#c5c6d2] border-t-0 rounded-b-md shadow-lg py-1 animate-fadeIn">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatus('Terbit');
+                      setIsStatusMenuOpen(false);
+                    }}
+                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Terbit'
+                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                      }`}
+                  >
+                    Terbit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatus('Menunggu');
+                      setIsStatusMenuOpen(false);
+                    }}
+                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Menunggu'
+                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                      }`}
+                  >
+                    Menunggu
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 

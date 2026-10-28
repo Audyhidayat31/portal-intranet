@@ -364,23 +364,21 @@ export default function DetailBeritaPage() {
                     Lampiran
                   </h2>
 
-                  {/* Horizontal Scroll Gallery */}
-                  <div className="flex overflow-x-auto gap-4 md:gap-6 pb-6 mb-2 scrollbar-thin scrollbar-thumb-[#c5c6d2] scrollbar-track-transparent snap-x snap-mandatory">
+                  {/* Grid Lampiran Thumbnail (Panjang x Lebar persis seperti halaman Tambah & Edit Berita) */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3.5 w-full max-w-4xl">
                     {galleryItems.map((photo, idx) => (
                       <div
                         key={idx}
                         onClick={() => setPreviewImage(photo.url)}
-                        className="min-w-[85vw] sm:min-w-[50vw] md:min-w-[calc(33.333%-1rem)] aspect-video shrink-0 snap-start bg-[#e3e2e8] rounded-lg border border-[#c5c6d2] overflow-hidden relative cursor-pointer group shadow-xs hover:shadow-md transition-all flex items-center justify-center"
+                        className="relative group bg-[#e9e7ee] border border-[#c5c6d2] rounded-md overflow-hidden aspect-square flex flex-col items-center justify-center cursor-pointer shadow-xs hover:shadow-md transition-all"
                       >
                         <img
                           src={photo.url}
-                          alt={photo.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          alt={photo.title || `Lampiran ${idx + 1}`}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                         />
-                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-3">
-                          <span className="text-xs text-white font-medium bg-black/50 px-2.5 py-1 rounded-full backdrop-blur-xs">
-                            Lihat Lampiran
-                          </span>
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 text-white font-medium backdrop-blur-xs pointer-events-none">
+                          <span className="text-xs text-center px-2">Klik untuk memperbesar</span>
                         </div>
                       </div>
                     ))}

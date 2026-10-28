@@ -78,6 +78,7 @@ export default function EditBeritaPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState('');
   const [gambarError, setGambarError] = useState('');
+  const [lampiranError, setLampiranError] = useState('');
 
   useEffect(() => {
     if (gambarError) {
@@ -85,6 +86,13 @@ export default function EditBeritaPage() {
       return () => clearTimeout(timer);
     }
   }, [gambarError]);
+
+  useEffect(() => {
+    if (lampiranError) {
+      const timer = setTimeout(() => setLampiranError(''), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [lampiranError]);
 
   // Active toolbar formatting states
   const [activeStyles, setActiveStyles] = useState({
@@ -337,17 +345,32 @@ export default function EditBeritaPage() {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
-    const oversized = files.find(f => f.size > 5 * 1024 * 1024);
-    if (oversized) {
-      alert(`File "${oversized.name}" melebihi ukuran maksimal 5MB`);
+    const nonImage = files.find(f => {
+      const ext = f.name.substring(f.name.lastIndexOf('.')).toLowerCase();
+      const validExts = ['.jpg', '.jpeg', '.png'];
+      const validTypes = ['image/jpeg', 'image/png'];
+      return !validExts.includes(ext) && !validTypes.includes(f.type);
+    });
+    if (nonImage) {
       if (lampiranInputRef.current) lampiranInputRef.current.value = '';
+      setLampiranError('File harus berupa .jpg/.png');
       return;
     }
 
-    if (lampiranAttachments.length + files.length > 10) {
-      alert('Maksimal 10 lampiran diperbolehkan');
+    const oversized = files.find(f => f.size > 5 * 1024 * 1024);
+    if (oversized) {
+      if (lampiranInputRef.current) lampiranInputRef.current.value = '';
+      setLampiranError('Ukuran file maksimal 5MB');
       return;
     }
+
+    if (lampiranAttachments.length + files.length > 5) {
+      if (lampiranInputRef.current) lampiranInputRef.current.value = '';
+      setLampiranError('Maksimal 5 lampiran diperbolehkan');
+      return;
+    }
+
+    setLampiranError('');
 
     const newAttachments = await Promise.all(
       files.map(async (file) => {
@@ -746,22 +769,27 @@ export default function EditBeritaPage() {
 
             {/* 6. Lampiran */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Lampiran (Maks. 10 File) <span className="float-right hidden md:inline">:</span>
+              Lampiran <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="flex flex-col gap-4">
-              <div>
+              <div className="relative">
                 <div className="flex">
                   <input suppressHydrationWarning
                     type="text"
                     readOnly
                     value={lampiranAttachments.length > 0 ? `${lampiranAttachments.length} file dipilih` : ''}
-                    placeholder="Berkas berupa .jpg/ .png"
-                    className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
+                    placeholder="Maksimal 5 berkas berupa .jpg/ .png"
+                    className={`flex-grow border rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682] transition-colors ${
+                      lampiranError ? 'border-amber-400 ring-1 ring-amber-400' : 'border-[#c5c6d2]'
+                    }`}
                   />
                   <button
                     type="button"
-                    onClick={() => lampiranInputRef.current?.click()}
-                    disabled={lampiranAttachments.length >= 10}
+                    onClick={() => {
+                      setLampiranError('');
+                      lampiranInputRef.current?.click();
+                    }}
+                    disabled={lampiranAttachments.length >= 5}
                     className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer disabled:opacity-50"
                   >
                     Upload
@@ -770,10 +798,22 @@ export default function EditBeritaPage() {
                     ref={lampiranInputRef}
                     type="file"
                     multiple
+                    accept=".jpg,.jpeg,.png,image/jpeg,image/png"
                     onChange={handleLampiranFileChange}
                     className="hidden" />
                 </div>
-                <p className="text-xs text-[#757682] mt-1.5 font-normal">File Maksimal 5MB</p>
+
+                {/* Pop up balon peringatan seperti "Mohon isi bidang ini" */}
+                {lampiranError && (
+                  <div className="absolute left-2 top-[calc(100%+8px)] z-40 flex items-center gap-2.5 bg-white text-slate-800 text-xs sm:text-sm py-2 px-3.5 rounded-lg shadow-xl border border-slate-300 animate-in fade-in slide-in-from-top-1 duration-150">
+                    {/* Panah segitiga ke atas menunjuk ke input field */}
+                    <div className="absolute -top-1.5 left-6 w-3 h-3 bg-white border-t border-l border-slate-300 rotate-45 transform" />
+                    <div className="w-4 h-4 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px] font-bold shrink-0 shadow-xs">!</div>
+                    <span className="font-medium text-slate-800">{lampiranError}</span>
+                  </div>
+                )}
+
+                <p className="text-xs text-[#757682] mt-1.5 font-normal">Berkas maksimal 5MB</p>
               </div>
 
               {/* Previews */}

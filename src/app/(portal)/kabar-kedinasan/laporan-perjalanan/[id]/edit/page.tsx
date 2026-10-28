@@ -127,17 +127,37 @@ export default function EditLaporanPerjalananPage() {
         if (data.success && data.data) {
           const item = data.data;
           setKeperluan(item.title || '');
-          if (item.publishedAt) {
-            const d = new Date(item.publishedAt);
-            if (!isNaN(d.getTime())) {
-              setTanggalMulai(d);
-              setTanggalSelesai(d);
-              setViewDate(d);
+          const startDateRaw = item.eventStartDate || item.startDate || item.publishedAt;
+          if (startDateRaw) {
+            const d1 = new Date(startDateRaw);
+            if (!isNaN(d1.getTime())) {
+              setTanggalMulai(d1);
+              setViewDate(d1);
             }
           }
-          setNamaLengkap(item.author?.name || 'Ahmad Fauzi');
-          const cityMatch = LIST_KOTA.find((k) => (item.destinationCity || '').includes(k));
-          if (cityMatch) setKotaTujuan(cityMatch);
+          const endDateRaw = item.eventEndDate || item.endDate || item.durasiPenugasan || startDateRaw;
+          if (endDateRaw) {
+            const d2 = new Date(endDateRaw);
+            if (!isNaN(d2.getTime())) {
+              setTanggalSelesai(d2);
+            }
+          }
+          setNamaLengkap(item.namaPegawai || item.authorName || item.author?.name || 'Ahmad Fauzi, S.Kom.');
+          const rawCity = item.kotaTujuan || item.destinationCity || '';
+          const cleanCity = rawCity.includes(',') ? rawCity.split(',')[0].trim() : rawCity;
+          const cityMatch = LIST_KOTA.find((k) => cleanCity.includes(k) || k.includes(cleanCity));
+          if (cityMatch) {
+            setKotaTujuan(cityMatch);
+          } else if (cleanCity) {
+            setKotaTujuan(cleanCity);
+          }
+          const rawCountry = item.negaraTujuan || item.source || (rawCity.includes(',') ? rawCity.split(',')[1].trim() : 'Indonesia');
+          const countryMatch = LIST_NEGARA.find((n) => rawCountry.includes(n) || n.includes(rawCountry));
+          if (countryMatch) {
+            setNegaraTujuan(countryMatch);
+          } else if (rawCountry) {
+            setNegaraTujuan(rawCountry);
+          }
           setUraianHtml(item.body || item.content || '');
           if (editorRef.current) {
             editorRef.current.innerHTML = item.body || item.content || '';
@@ -349,11 +369,16 @@ export default function EditLaporanPerjalananPage() {
         body: JSON.stringify({
           title: keperluan,
           destinationCity: destination,
+          kotaTujuan: kotaTujuan,
+          negaraTujuan: negaraTujuan,
+          startDate: tanggalMulai.toISOString(),
+          endDate: tanggalSelesai.toISOString(),
           excerpt: rawText.slice(0, 150) + (rawText.length > 150 ? '...' : ''),
           body: htmlContent || rawText,
           content: htmlContent || rawText,
           publishedAt: tanggalMulai.toISOString(),
           authorName: namaLengkap,
+          nama: namaLengkap,
           status: status || 'Terbit',
         }),
       });
@@ -495,13 +520,12 @@ export default function EditLaporanPerjalananPage() {
                             type="button"
                             disabled={!item.isCurrentMonth}
                             onClick={() => selectCalendarDay(item.day)}
-                            className={`h-8 w-8 mx-auto rounded-full flex items-center justify-center font-medium transition-colors ${
-                              !item.isCurrentMonth
+                            className={`h-8 w-8 mx-auto rounded-full flex items-center justify-center font-medium transition-colors ${!item.isCurrentMonth
                                 ? 'text-slate-300 cursor-not-allowed'
                                 : isSelected
-                                ? 'bg-[#00113a] text-white font-bold shadow-sm'
-                                : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                            }`}
+                                  ? 'bg-[#00113a] text-white font-bold shadow-sm'
+                                  : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                              }`}
                           >
                             {item.day}
                           </button>
@@ -521,7 +545,20 @@ export default function EditLaporanPerjalananPage() {
                 <span>Durasi Penugasan <span className="text-red-500">*</span></span>
                 <span className="ml-auto pr-4 hidden md:inline">:</span>
               </label>
-              <div className="md:col-span-3 flex flex-wrap gap-4 items-center relative" ref={datePickerRef2}>
+              <div className="md:col-span-3 flex flex-wrap items-center gap-3 sm:gap-4 relative" ref={datePickerRef2}>
+                <input
+                  type="text"
+                  readOnly
+                  value={formatDDMMYYYY(tanggalMulai)}
+                  onClick={() => {
+                    setViewDate(tanggalMulai);
+                    setActiveDatePicker(activeDatePicker === 1 ? null : 1);
+                  }}
+                  className="w-36 sm:w-40 h-10 border border-[#c5c6d2] rounded px-3 text-sm text-center bg-white text-[#1a1b20] font-semibold cursor-pointer hover:border-[#00113a] transition-colors focus:outline-none"
+                />
+
+                <span className="text-sm font-bold text-[#1a1b20]">Hingga</span>
+
                 <input
                   type="text"
                   readOnly
@@ -530,7 +567,7 @@ export default function EditLaporanPerjalananPage() {
                     setViewDate(tanggalSelesai);
                     setActiveDatePicker(activeDatePicker === 2 ? null : 2);
                   }}
-                  className="w-40 h-10 border border-[#c5c6d2] rounded px-3 text-sm text-center bg-white text-[#1a1b20] font-semibold cursor-pointer hover:border-[#00113a] transition-colors focus:outline-none"
+                  className="w-36 sm:w-40 h-10 border border-[#c5c6d2] rounded px-3 text-sm text-center bg-white text-[#1a1b20] font-semibold cursor-pointer hover:border-[#00113a] transition-colors focus:outline-none"
                 />
 
                 <button
@@ -578,13 +615,12 @@ export default function EditLaporanPerjalananPage() {
                             type="button"
                             disabled={!item.isCurrentMonth}
                             onClick={() => selectCalendarDay(item.day)}
-                            className={`h-8 w-8 mx-auto rounded-full flex items-center justify-center font-medium transition-colors ${
-                              !item.isCurrentMonth
+                            className={`h-8 w-8 mx-auto rounded-full flex items-center justify-center font-medium transition-colors ${!item.isCurrentMonth
                                 ? 'text-slate-300 cursor-not-allowed'
                                 : isSelected
-                                ? 'bg-[#00113a] text-white font-bold shadow-sm'
-                                : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                            }`}
+                                  ? 'bg-[#00113a] text-white font-bold shadow-sm'
+                                  : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                              }`}
                           >
                             {item.day}
                           </button>
@@ -688,9 +724,8 @@ export default function EditLaporanPerjalananPage() {
                       e.preventDefault();
                       execFormat('bold');
                     }}
-                    className={`p-1.5 hover:bg-[#e3e2e8] rounded transition-colors ${
-                      activeStyles.bold ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                    }`}
+                    className={`p-1.5 hover:bg-[#e3e2e8] rounded transition-colors ${activeStyles.bold ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                      }`}
                   >
                     <Bold className="w-4 h-4" />
                   </button>
@@ -701,9 +736,8 @@ export default function EditLaporanPerjalananPage() {
                       e.preventDefault();
                       execFormat('italic');
                     }}
-                    className={`p-1.5 hover:bg-[#e3e2e8] rounded transition-colors ${
-                      activeStyles.italic ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                    }`}
+                    className={`p-1.5 hover:bg-[#e3e2e8] rounded transition-colors ${activeStyles.italic ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                      }`}
                   >
                     <Italic className="w-4 h-4" />
                   </button>
@@ -714,9 +748,8 @@ export default function EditLaporanPerjalananPage() {
                       e.preventDefault();
                       execFormat('underline');
                     }}
-                    className={`p-1.5 hover:bg-[#e3e2e8] rounded transition-colors ${
-                      activeStyles.underline ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                    }`}
+                    className={`p-1.5 hover:bg-[#e3e2e8] rounded transition-colors ${activeStyles.underline ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                      }`}
                   >
                     <Underline className="w-4 h-4" />
                   </button>
@@ -729,9 +762,8 @@ export default function EditLaporanPerjalananPage() {
                       e.preventDefault();
                       execFormat('insertUnorderedList');
                     }}
-                    className={`p-1.5 hover:bg-[#e3e2e8] rounded transition-colors ${
-                      activeStyles.unorderedList ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                    }`}
+                    className={`p-1.5 hover:bg-[#e3e2e8] rounded transition-colors ${activeStyles.unorderedList ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                      }`}
                   >
                     <List className="w-4 h-4" />
                   </button>
@@ -742,9 +774,8 @@ export default function EditLaporanPerjalananPage() {
                       e.preventDefault();
                       execFormat('insertOrderedList');
                     }}
-                    className={`p-1.5 hover:bg-[#e3e2e8] rounded transition-colors ${
-                      activeStyles.orderedList ? 'bg-[#00113a] text-white' : 'text-[#444650]'
-                    }`}
+                    className={`p-1.5 hover:bg-[#e3e2e8] rounded transition-colors ${activeStyles.orderedList ? 'bg-[#00113a] text-white' : 'text-[#444650]'
+                      }`}
                   >
                     <ListOrdered className="w-4 h-4" />
                   </button>
@@ -788,9 +819,8 @@ export default function EditLaporanPerjalananPage() {
                 <button
                   type="button"
                   onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
-                  className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${
-                    isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
-                  }`}
+                  className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
+                    }`}
                 >
                   <span className="truncate">{status || 'Jenis Status'}</span>
                   <ChevronDown className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''}`} />
@@ -804,11 +834,10 @@ export default function EditLaporanPerjalananPage() {
                         setStatus('Terbit');
                         setIsStatusMenuOpen(false);
                       }}
-                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                        status === 'Terbit'
+                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Terbit'
                           ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
                           : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                      }`}
+                        }`}
                     >
                       Terbit
                     </button>
@@ -818,11 +847,10 @@ export default function EditLaporanPerjalananPage() {
                         setStatus('Menunggu');
                         setIsStatusMenuOpen(false);
                       }}
-                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                        status === 'Menunggu'
+                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Menunggu'
                           ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
                           : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                      }`}
+                        }`}
                     >
                       Menunggu
                     </button>

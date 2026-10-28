@@ -22,14 +22,26 @@ export default function DetailDokumenInternalPage() {
   const router = useRouter();
   const rawId = (params?.id as string) || '';
 
-  const matchedInitial = STITCH_MOCK_INTERNAL_DOCS_5.find(
-    (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
-  );
+  // Immediate hydration from sessionStorage or mock to eliminate flash of default values
+  const [documentItem, setDocumentItem] = useState<any>(() => {
+    if (typeof window !== 'undefined' && rawId) {
+      try {
+        const cached = sessionStorage.getItem(`internal-doc-${rawId}`);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed && (parsed.id === rawId || parsed.title)) {
+            return parsed;
+          }
+        }
+      } catch {}
+    }
+    const matchedInitial = STITCH_MOCK_INTERNAL_DOCS_5.find(
+      (m) => m.id === rawId || m.title?.toLowerCase().includes(rawId.toLowerCase())
+    );
+    return matchedInitial ? { ...matchedInitial, content: matchedInitial.keterangan } : null;
+  });
 
-  const [documentItem, setDocumentItem] = useState<any>(
-    matchedInitial ? { ...matchedInitial, content: matchedInitial.keterangan } : null
-  );
-  const [isLoading, setIsLoading] = useState(!matchedInitial);
+  const [isLoading, setIsLoading] = useState(!documentItem);
 
   // Lightbox preview for attachments
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -91,7 +103,7 @@ export default function DetailDokumenInternalPage() {
         .filter(Boolean);
       names.forEach((name: string) => {
         const isImage = Boolean(name.match(/\.(jpg|jpeg|png|webp|gif)$/i));
-        list.push({ name, isImage });
+        list.push({ name, url: `/uploads/${name}`, isImage });
       });
     }
     return list;
@@ -113,19 +125,44 @@ export default function DetailDokumenInternalPage() {
   useEffect(() => {
     if (!rawId) return;
 
-    if (!matchedInitial) {
+    // Check sessionStorage on mount/rawId change
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = sessionStorage.getItem(`internal-doc-${rawId}`);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed) {
+            setDocumentItem(parsed);
+            setIsLoading(false);
+          }
+        }
+      } catch {}
+    }
+
+    if (!documentItem) {
       setIsLoading(true);
     }
-    fetch(`/api/internal-documents/${rawId}`)
+
+    // Always revalidate with no-cache to guarantee fresh sync
+    fetch(`/api/internal-documents/${rawId}`, {
+      cache: 'no-store',
+      headers: {
+        'Pragma': 'no-cache',
+        'Cache-Control': 'no-cache',
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data) {
           const item = data.data;
           setDocumentItem(item);
+          try {
+            sessionStorage.setItem(`internal-doc-${rawId}`, JSON.stringify(item));
+          } catch {}
         } else {
           // Check if it matches our mock items
           const matchedMock = STITCH_MOCK_INTERNAL_DOCS_5.find(
-            (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
+            (m) => m.id === rawId || m.title?.toLowerCase().includes(rawId.toLowerCase())
           );
 
           if (matchedMock) {
@@ -134,34 +171,17 @@ export default function DetailDokumenInternalPage() {
               content: matchedMock.keterangan,
             };
             setDocumentItem(fullItem);
-          } else {
-            const fallback = {
-              id: rawId,
-              title: 'Laporan Pelatihan Kearsipan Digital Tingkat Lanjut',
-              documentNumber: 'SE/101/VII/2026',
-              publishedAt: '2026-08-20',
-              keterangan: `Perjalanan dinas ini dilaksanakan dalam rangka mengikuti Pelatihan Kearsipan Digital Tingkat Lanjut yang diselenggarakan oleh Arsip Nasional Republik Indonesia (ANRI) cabang Yogyakarta. Pelatihan berlangsung selama tiga hari, mulai tanggal 15 hingga 17 Agustus 2026, bertempat di Hotel Tentrem, Yogyakarta.
-
-Fokus utama dari pelatihan ini adalah pada implementasi sistem pengarsipan berbasis cloud untuk institusi pemerintahan dan strategi migrasi dari arsip fisik ke format digital dengan standar keamanan tinggi. Sesi-sesi meliputi:
-• Standarisasi Metadata Arsip Digital (Pembicara: Dr. Hendrawan).
-• Keamanan Data Siber dalam Sistem Pengarsipan Terpusat.
-• Workshop Praktis: Migrasi Data Skala Besar menggunakan Sistem Manajemen Arsip Dinamis (SRIKANDI).
-
-Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedang berlangsung di Perpusnas RI. Pengetahuan yang didapat akan segera dideseminasikan kepada tim IT dan kearsipan internal dalam sesi knowledge sharing minggu depan. Diharapkan kita dapat mengadopsi beberapa protokol keamanan baru yang diperkenalkan selama pelatihan.`,
-              attachmentName: null,
-            };
-            setDocumentItem(fallback);
           }
         }
-        setIsLoading(false);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Error fetching internal document:', err);
         const matchedMock = STITCH_MOCK_INTERNAL_DOCS_5.find((m) => m.id === rawId);
         if (matchedMock) {
           setDocumentItem(matchedMock);
-        } else {
-          setDocumentItem(STITCH_MOCK_INTERNAL_DOCS_5[0]);
         }
+      })
+      .finally(() => {
         setIsLoading(false);
       });
   }, [rawId]);
@@ -226,7 +246,7 @@ Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedan
         )}
 
         {/* Main Card Container matching Stitch */}
-        <div className="bg-white rounded-lg p-6 sm:p-10 border border-[#c5c6d2] shadow-sm max-w-4xl mx-auto relative">
+        <div className="bg-white rounded-lg p-6 sm:p-10 border border-[#c5c6d2] shadow-sm max-w-4xl mx-auto relative min-h-[460px]">
           {/* Red Close Button [X] at top-right matching Stitch */}
           <Link
             href="/kabar-kedinasan/dokumen-intern"
@@ -236,50 +256,106 @@ Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedan
             <X className="w-4 h-4 text-white stroke-[2.5]" />
           </Link>
 
-          {/* Document Main Title */}
-          <div className="pr-10 mb-8">
-            <h1 className="text-2xl sm:text-3xl font-black text-[#00113a] leading-tight tracking-tight">
-              {documentItem?.title || 'Dokumen Internal'}
-            </h1>
-          </div>
+          {isLoading && !documentItem ? (
+            <div className="animate-pulse space-y-6 pr-10 py-2">
+              {/* Title Skeleton */}
+              <div className="space-y-2 mb-8">
+                <div className="h-8 bg-slate-200 rounded w-4/5" />
+                <div className="h-8 bg-slate-200 rounded w-1/2" />
+              </div>
 
-          {/* Metadata: Nomor & Tanggal Dokumen */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-            <div>
-              <p className="text-xs font-bold text-[#757682] mb-1">Nomor</p>
-              <p className="text-sm sm:text-base font-semibold text-[#1a1b20]">
-                {rawDocNumber || '-'}
-              </p>
+              {/* Metadata Grid Skeleton */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <div className="h-3 bg-slate-200 rounded w-16 mb-2" />
+                  <div className="h-5 bg-slate-200 rounded w-32" />
+                </div>
+                <div>
+                  <div className="h-3 bg-slate-200 rounded w-28 mb-2" />
+                  <div className="h-5 bg-slate-200 rounded w-36" />
+                </div>
+              </div>
+
+              {/* Jenis Dokumen Skeleton */}
+              <div className="mb-8">
+                <div className="h-3 bg-slate-200 rounded w-24 mb-2" />
+                <div className="h-5 bg-slate-200 rounded w-40" />
+              </div>
+
+              {/* Keterangan Skeleton */}
+              <div className="space-y-3">
+                <div className="h-3 bg-slate-200 rounded w-36 mb-3" />
+                <div className="h-4 bg-slate-200 rounded w-full" />
+                <div className="h-4 bg-slate-200 rounded w-11/12" />
+                <div className="h-4 bg-slate-200 rounded w-4/5" />
+              </div>
+
+              {/* Footer Skeleton */}
+              <div className="border-t border-[#e2e3ea] pt-6 mt-8 flex justify-between">
+                <div className="space-y-2">
+                  <div className="h-3 bg-slate-200 rounded w-20" />
+                  <div className="h-4 bg-slate-200 rounded w-32" />
+                  <div className="h-3 bg-slate-200 rounded w-24" />
+                </div>
+                <div className="flex gap-2">
+                  <div className="h-9 w-20 bg-slate-200 rounded" />
+                  <div className="h-9 w-20 bg-slate-200 rounded" />
+                </div>
+              </div>
             </div>
+          ) : (
+            <>
+              {/* Document Main Title */}
+              <div className="pr-10 mb-8">
+                <h1 className="text-2xl sm:text-3xl font-black text-[#00113a] leading-tight tracking-tight">
+                  {documentItem?.title || 'Dokumen Internal'}
+                </h1>
+              </div>
 
-            <div>
-              <p className="text-xs font-bold text-[#757682] mb-1">Tanggal Dokumen</p>
-              <p className="text-sm sm:text-base font-semibold text-[#1a1b20]">
-                {documentItem?.publishedAt
-                  ? formatDate(documentItem.publishedAt)
-                  : formatDate(new Date())}
-              </p>
-            </div>
-          </div>
+              {/* Metadata: Nomor & Tanggal Dokumen */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <p className="text-xs font-bold text-[#757682] mb-1">Nomor</p>
+                  <p className="text-sm sm:text-base font-semibold text-[#1a1b20]">
+                    {rawDocNumber || '-'}
+                  </p>
+                </div>
 
-          {/* Metadata: Jenis Dokumen */}
-          <div className="mb-8">
-            <p className="text-xs font-bold text-[#757682] mb-1">Jenis Dokumen</p>
-            <p className="text-sm sm:text-base font-semibold text-[#1a1b20]">
-              {documentItem?.category?.name || documentItem?.category || 'Surat Edaran'}
-            </p>
-          </div>
+                <div>
+                  <p className="text-xs font-bold text-[#757682] mb-1">Tanggal Dokumen</p>
+                  <p className="text-sm sm:text-base font-semibold text-[#1a1b20]">
+                    {documentItem?.publishedAt
+                      ? formatDate(documentItem.publishedAt)
+                      : formatDate(new Date())}
+                  </p>
+                </div>
+              </div>
 
-          {/* Section: Keterangan Dokumen */}
-          <div>
-            <h2 className="text-xs font-bold text-[#757682] mb-2">
-              Keterangan Dokumen
-            </h2>
+              {/* Metadata: Jenis Dokumen */}
+              <div className="mb-8">
+                <p className="text-xs font-bold text-[#757682] mb-1">Jenis Dokumen</p>
+                <p className="text-sm sm:text-base font-semibold text-[#1a1b20]">
+                  {documentItem?.category?.name || documentItem?.category || 'Surat Edaran'}
+                </p>
+              </div>
 
-            <div className="text-xs sm:text-sm text-[#1a1b20] leading-relaxed whitespace-pre-line space-y-4">
-              {displayKeterangan}
-            </div>
-          </div>
+              {/* Section: Keterangan Dokumen */}
+              <div>
+                <h2 className="text-xs font-bold text-[#757682] mb-2">
+                  Keterangan Dokumen
+                </h2>
+
+                {displayKeterangan.includes('<') && displayKeterangan.includes('>') ? (
+                  <div
+                    className="text-xs sm:text-sm text-[#1a1b20] leading-relaxed space-y-3 prose max-w-none [&>p]:mb-3 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5"
+                    dangerouslySetInnerHTML={{ __html: displayKeterangan }}
+                  />
+                ) : (
+                  <div className="text-xs sm:text-sm text-[#1a1b20] leading-relaxed whitespace-pre-line space-y-4">
+                    {displayKeterangan || '-'}
+                  </div>
+                )}
+              </div>
 
           {/* Section: LAMPIRAN (Only shown if document actually has attachments) */}
           {hasAttachments && (
@@ -291,47 +367,81 @@ Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedan
                 </h3>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
-                  {attachmentsList.map((att, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => {
-                        if (att.url && att.isImage) {
-                          setPreviewImage(att.url);
-                        } else if (att.url) {
-                          const link = document.createElement('a');
-                          link.href = att.url;
-                          link.download = att.name;
-                          link.target = '_blank';
-                          document.body.appendChild(link);
-                          link.click();
-                          document.body.removeChild(link);
-                        } else {
-                          alert(`Mengunduh berkas ${att.name}...`);
-                        }
-                      }}
-                      className="aspect-square bg-[#e2e3ea] hover:bg-[#d8d9e2] border border-[#c5c6d2] rounded-md flex flex-col items-center justify-center text-xs text-[#757682] hover:text-[#00113a] font-medium transition-all group shadow-2xs cursor-pointer p-3 text-center overflow-hidden"
-                      title={att.name}
-                    >
-                      {att.isImage && att.url ? (
-                        <img
-                          src={att.url}
-                          alt={att.name}
-                          className="w-full h-full object-cover rounded group-hover:scale-105 transition-transform"
-                        />
-                      ) : (
-                        <div className="flex flex-col items-center justify-center gap-1.5 w-full h-full">
-                          <FileText className="w-8 h-8 text-[#dc2626] shrink-0 group-hover:scale-110 transition-transform" />
-                          <span className="text-[11px] font-semibold text-[#1a1b20] line-clamp-2 break-all leading-tight">
-                            {att.name}
-                          </span>
-                          <span className="text-[9px] uppercase tracking-wider text-[#757682] font-medium">
-                            {documentItem?.fileSize || 'PDF'}
-                          </span>
-                        </div>
-                      )}
-                    </button>
-                  ))}
+                  {attachmentsList.map((att, idx) => {
+                    const isDocx = att.name.toLowerCase().endsWith('.docx') || att.name.toLowerCase().endsWith('.doc');
+                    const isPdf = att.name.toLowerCase().endsWith('.pdf');
+                    const fileUrl = att.url || `/uploads/${att.name}`;
+
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => {
+                          if (att.isImage) {
+                            setPreviewImage(fileUrl);
+                          } else if (fileUrl) {
+                            const link = document.createElement('a');
+                            link.href = fileUrl;
+                            link.download = att.name;
+                            link.target = '_blank';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                          } else {
+                            alert(`Mengunduh berkas ${att.name}...`);
+                          }
+                        }}
+                        className={`aspect-square border border-[#c5c6d2] rounded-md flex flex-col items-center justify-center font-medium transition-all group shadow-2xs cursor-pointer overflow-hidden relative ${
+                          att.isImage
+                            ? 'p-0 bg-transparent'
+                            : 'p-2.5 bg-[#e9e7ee] hover:bg-[#d8d9e2] text-xs text-[#757682] hover:text-[#00113a]'
+                        }`}
+                        title={att.isImage ? 'Klik untuk memperbesar' : `Klik untuk unduh: ${att.name}`}
+                      >
+                        {att.isImage ? (
+                          <>
+                            <img
+                              src={fileUrl}
+                              alt={att.name}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 text-white font-medium backdrop-blur-xs pointer-events-none">
+                              <span className="text-xs text-center px-2">Klik untuk memperbesar</span>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="flex flex-col items-center justify-center w-full h-full">
+                              <div
+                                className={`w-9 h-9 rounded-lg flex items-center justify-center mb-1 group-hover:scale-105 transition-transform ${
+                                  isDocx
+                                    ? 'bg-blue-100 text-blue-600'
+                                    : 'bg-red-100 text-red-600'
+                                }`}
+                              >
+                                <FileText className="w-5 h-5" />
+                              </div>
+                              <span className="text-[10px] font-semibold text-[#1a1b20] group-hover:text-[#00113a] transition-colors line-clamp-2 break-all text-center px-1">
+                                {att.name}
+                              </span>
+                              <span
+                                className={`mt-1 px-1.5 py-0.2 rounded text-[8px] font-bold border ${
+                                  isDocx
+                                    ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                    : 'bg-red-50 text-red-700 border-red-200'
+                                }`}
+                              >
+                                {isPdf ? 'PDF' : isDocx ? 'DOCX' : 'BERKAS'}
+                              </span>
+                            </div>
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 text-white font-medium backdrop-blur-xs pointer-events-none">
+                              <span className="text-xs text-center px-2 leading-tight">Klik untuk unduh</span>
+                            </div>
+                          </>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </>
@@ -397,51 +507,35 @@ Hasil dari pelatihan ini sangat relevan dengan inisiatif digitalisasi yang sedan
               </div>
             )}
           </div>
+            </>
+          )}
         </div>
       </div>
 
-      {/* Lightbox Preview Modal */}
+      {/* Lightbox Preview Modal (Foto saja dengan tombol X) */}
       {previewImage && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
-          <div className="relative max-w-3xl w-full bg-white rounded-2xl overflow-hidden shadow-2xl border border-slate-700">
-            <div className="flex items-center justify-between p-4 bg-slate-900 text-white">
-              <span className="text-sm font-bold flex items-center gap-2">
-                <ImageIcon className="w-4 h-4 text-rose-400" />
-                Pratinjau Dokumen Lampiran
-              </span>
-              <button
-                type="button"
-                onClick={() => setPreviewImage(null)}
-                className="text-white hover:text-rose-400 p-1 rounded transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="p-4 flex items-center justify-center bg-slate-100 max-h-[75vh]">
-              <img
-                src={previewImage}
-                alt="Lampiran Dokumen"
-                className="max-h-[65vh] w-auto object-contain rounded shadow"
-              />
-            </div>
-            <div className="p-4 bg-white border-t border-slate-200 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => alert('Mengunduh berkas lampiran resmi...')}
-                className="px-5 py-2 bg-[#00113a] text-white text-xs font-bold rounded hover:bg-[#2a4386] transition-colors flex items-center gap-2"
-              >
-                <Download className="w-4 h-4" />
-                <span>Unduh Gambar</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setPreviewImage(null)}
-                className="px-5 py-2 bg-slate-200 text-slate-700 text-xs font-bold rounded hover:bg-slate-300 transition-colors"
-              >
-                Tutup
-              </button>
-            </div>
-          </div>
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-sm animate-fadeIn p-4 sm:p-8"
+          onClick={() => setPreviewImage(null)}
+        >
+          <button
+            type="button"
+            className="absolute top-4 right-4 sm:top-8 sm:right-8 text-white/70 hover:text-white bg-black/50 hover:bg-black/80 rounded-full p-2 transition-all cursor-pointer z-10"
+            onClick={(e) => {
+              e.stopPropagation();
+              setPreviewImage(null);
+            }}
+            title="Tutup Pratinjau"
+          >
+            <X className="w-6 h-6 sm:w-8 sm:h-8" />
+          </button>
+
+          <img
+            src={previewImage}
+            alt="Pratinjau Foto Lampiran"
+            className="max-w-full max-h-[90vh] object-contain rounded shadow-2xl cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
 
