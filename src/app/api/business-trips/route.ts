@@ -50,7 +50,21 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, excerpt, content, destinationCity, attachmentName, publishedAt, status, authorName, nama } = body;
+    const {
+      title,
+      excerpt,
+      content,
+      destinationCity,
+      kotaTujuan,
+      negaraTujuan,
+      startDate,
+      endDate,
+      attachmentName,
+      publishedAt,
+      status,
+      authorName,
+      nama,
+    } = body;
 
     if (!title || !content) {
       return NextResponse.json(
@@ -89,6 +103,10 @@ export async function POST(request: NextRequest) {
       .replace(/^-+|-+$/g, '')}-${Date.now()}`;
 
     const tripStatus = status === 'Menunggu' || status === 'MENUNGGU' ? 'MENUNGGU' : 'TERBIT';
+    const finalStartDate = startDate ? new Date(startDate) : (publishedAt ? new Date(publishedAt) : new Date());
+    const finalEndDate = endDate ? new Date(endDate) : finalStartDate;
+    const finalCity = kotaTujuan || destinationCity || 'Kota Surabaya';
+    const finalCountry = negaraTujuan || (destinationCity?.includes(',') ? destinationCity.split(',')[1].trim() : 'Indonesia');
 
     const created = await prisma.content.create({
       data: {
@@ -98,10 +116,13 @@ export async function POST(request: NextRequest) {
         body: content,
         type: 'BUSINESS_TRIP',
         status: tripStatus,
-        destinationCity: destinationCity || 'Nasional',
+        destinationCity: finalCity,
+        source: finalCountry,
+        eventStartDate: finalStartDate,
+        eventEndDate: finalEndDate,
         attachmentName: attachmentName || null,
         authorId,
-        publishedAt: publishedAt ? new Date(publishedAt) : new Date(),
+        publishedAt: finalStartDate,
       },
     });
 

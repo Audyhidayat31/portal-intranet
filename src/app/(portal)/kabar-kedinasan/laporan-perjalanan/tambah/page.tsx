@@ -273,10 +273,15 @@ export default function TambahLaporanPerjalananPage() {
         body: JSON.stringify({
           title: keperluan,
           destinationCity: destination,
+          kotaTujuan: kotaTujuan,
+          negaraTujuan: negaraTujuan,
+          startDate: tanggalMulai.toISOString(),
+          endDate: tanggalSelesai.toISOString(),
           excerpt: rawText.slice(0, 150) + (rawText.length > 150 ? '...' : ''),
           content: htmlContent || rawText,
           publishedAt: tanggalMulai.toISOString(),
           authorName: namaLengkap,
+          nama: namaLengkap,
           status: status || 'Terbit',
         }),
       });
@@ -487,13 +492,12 @@ export default function TambahLaporanPerjalananPage() {
                             type="button"
                             disabled={!item.isCurrentMonth}
                             onClick={() => selectCalendarDay(item.day)}
-                            className={`h-8 w-8 mx-auto rounded-full flex items-center justify-center font-medium transition-colors ${
-                              !item.isCurrentMonth
+                            className={`h-8 w-8 mx-auto rounded-full flex items-center justify-center font-medium transition-colors ${!item.isCurrentMonth
                                 ? 'text-slate-300 cursor-not-allowed'
                                 : isSelected
-                                ? 'bg-[#00113a] text-white font-bold shadow-sm'
-                                : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                            }`}
+                                  ? 'bg-[#00113a] text-white font-bold shadow-sm'
+                                  : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                              }`}
                           >
                             {item.day}
                           </button>
@@ -583,13 +587,12 @@ export default function TambahLaporanPerjalananPage() {
                             type="button"
                             disabled={!item.isCurrentMonth}
                             onClick={() => selectCalendarDay(item.day)}
-                            className={`h-8 w-8 mx-auto rounded-full flex items-center justify-center font-medium transition-colors ${
-                              !item.isCurrentMonth
+                            className={`h-8 w-8 mx-auto rounded-full flex items-center justify-center font-medium transition-colors ${!item.isCurrentMonth
                                 ? 'text-slate-300 cursor-not-allowed'
                                 : isSelected
-                                ? 'bg-[#00113a] text-white font-bold shadow-sm'
-                                : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                            }`}
+                                  ? 'bg-[#00113a] text-white font-bold shadow-sm'
+                                  : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                              }`}
                           >
                             {item.day}
                           </button>
@@ -694,9 +697,8 @@ export default function TambahLaporanPerjalananPage() {
                       e.preventDefault();
                       execFormat('bold');
                     }}
-                    className={`p-1.5 rounded transition-colors ${
-                      activeStyles.bold ? 'bg-[#00113a] text-white' : 'hover:bg-[#e9e7ee] text-[#1a1b20]'
-                    }`}
+                    className={`p-1.5 rounded transition-colors ${activeStyles.bold ? 'bg-[#00113a] text-white' : 'hover:bg-[#e9e7ee] text-[#1a1b20]'
+                      }`}
                   >
                     <Bold className="w-4 h-4" />
                   </button>
@@ -708,9 +710,8 @@ export default function TambahLaporanPerjalananPage() {
                       e.preventDefault();
                       execFormat('italic');
                     }}
-                    className={`p-1.5 rounded transition-colors ${
-                      activeStyles.italic ? 'bg-[#00113a] text-white' : 'hover:bg-[#e9e7ee] text-[#1a1b20]'
-                    }`}
+                    className={`p-1.5 rounded transition-colors ${activeStyles.italic ? 'bg-[#00113a] text-white' : 'hover:bg-[#e9e7ee] text-[#1a1b20]'
+                      }`}
                   >
                     <Italic className="w-4 h-4" />
                   </button>
@@ -722,9 +723,8 @@ export default function TambahLaporanPerjalananPage() {
                       e.preventDefault();
                       execFormat('underline');
                     }}
-                    className={`p-1.5 rounded transition-colors ${
-                      activeStyles.underline ? 'bg-[#00113a] text-white' : 'hover:bg-[#e9e7ee] text-[#1a1b20]'
-                    }`}
+                    className={`p-1.5 rounded transition-colors ${activeStyles.underline ? 'bg-[#00113a] text-white' : 'hover:bg-[#e9e7ee] text-[#1a1b20]'
+                      }`}
                   >
                     <Underline className="w-4 h-4" />
                   </button>
@@ -738,9 +738,8 @@ export default function TambahLaporanPerjalananPage() {
                       e.preventDefault();
                       execFormat('insertUnorderedList');
                     }}
-                    className={`p-1.5 rounded transition-colors ${
-                      activeStyles.unorderedList ? 'bg-[#00113a] text-white' : 'hover:bg-[#e9e7ee] text-[#1a1b20]'
-                    }`}
+                    className={`p-1.5 rounded transition-colors ${activeStyles.unorderedList ? 'bg-[#00113a] text-white' : 'hover:bg-[#e9e7ee] text-[#1a1b20]'
+                      }`}
                   >
                     <List className="w-4 h-4" />
                   </button>
@@ -752,9 +751,8 @@ export default function TambahLaporanPerjalananPage() {
                       e.preventDefault();
                       execFormat('insertOrderedList');
                     }}
-                    className={`p-1.5 rounded transition-colors ${
-                      activeStyles.orderedList ? 'bg-[#00113a] text-white' : 'hover:bg-[#e9e7ee] text-[#1a1b20]'
-                    }`}
+                    className={`p-1.5 rounded transition-colors ${activeStyles.orderedList ? 'bg-[#00113a] text-white' : 'hover:bg-[#e9e7ee] text-[#1a1b20]'
+                      }`}
                   >
                     <ListOrdered className="w-4 h-4" />
                   </button>
@@ -805,9 +803,8 @@ export default function TambahLaporanPerjalananPage() {
                 <button
                   type="button"
                   onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
-                  className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${
-                    isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
-                  }`}
+                  className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
+                    }`}
                 >
                   <span className="truncate">{status || 'Jenis Status'}</span>
                   <ChevronDown className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''}`} />
@@ -821,11 +818,10 @@ export default function TambahLaporanPerjalananPage() {
                         setStatus('Terbit');
                         setIsStatusMenuOpen(false);
                       }}
-                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                        status === 'Terbit'
+                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Terbit'
                           ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
                           : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                      }`}
+                        }`}
                     >
                       Terbit
                     </button>
@@ -835,11 +831,10 @@ export default function TambahLaporanPerjalananPage() {
                         setStatus('Menunggu');
                         setIsStatusMenuOpen(false);
                       }}
-                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
-                        status === 'Menunggu'
+                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Menunggu'
                           ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
                           : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                      }`}
+                        }`}
                     >
                       Menunggu
                     </button>

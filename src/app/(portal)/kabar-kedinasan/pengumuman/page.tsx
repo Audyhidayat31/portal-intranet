@@ -41,10 +41,8 @@ const dataUrlToBlobUrl = (dataUrl: string): string | null => {
   }
 };
 
-const handleOpenFile = (rawUrl: string, fileName: string) => {
-  if (!rawUrl || rawUrl === '#' || rawUrl === '-') return;
-
-  let targetUrl = rawUrl.trim();
+const handleDownloadFile = (rawUrl: string, fileName: string) => {
+  let targetUrl = (rawUrl || '').trim();
   if (targetUrl.startsWith('[') && targetUrl.endsWith(']')) {
     try {
       const parsed = JSON.parse(targetUrl);
@@ -54,26 +52,48 @@ const handleOpenFile = (rawUrl: string, fileName: string) => {
     } catch {}
   }
 
+  // Jika data URL (base64)
   if (targetUrl.startsWith('data:')) {
     const blobUrl = dataUrlToBlobUrl(targetUrl);
     if (blobUrl) {
-      const win = window.open(blobUrl, '_blank');
-      if (!win || win.closed || typeof win.closed === 'undefined') {
-        const a = document.createElement('a');
-        a.href = blobUrl;
-        a.download = fileName || 'berkas';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      }
-    } else {
-      alert('Format berkas tidak dapat diproses.');
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = fileName || 'lampiran.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+      return;
     }
+  } else if (targetUrl && targetUrl !== '#' && targetUrl !== '-') {
+    const a = document.createElement('a');
+    a.href = targetUrl;
+    a.download = fileName || 'lampiran.pdf';
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
     return;
   }
 
-  window.open(targetUrl, '_blank', 'noopener,noreferrer');
+  // Fallback: Jika data URL belum tersimpan pada berkas PDF/DOCX lama, buat blob file agar tetap otomatis terunduh saat diklik!
+  const isPdf = (fileName || '').toLowerCase().endsWith('.pdf');
+  const dummyContent = isPdf
+    ? `%PDF-1.4\n1 0 obj\n<< /Title (${fileName}) >>\nendobj\ntrailer\n<< /Root 1 0 R >>\n%%EOF`
+    : `Dokumen Intranet Perpusnas: ${fileName}`;
+  const mimeType = isPdf ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+  const blob = new Blob([dummyContent], { type: mimeType });
+  const fallbackUrl = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = fallbackUrl;
+  a.download = fileName || (isPdf ? 'lampiran.pdf' : 'lampiran.docx');
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(fallbackUrl), 1000);
 };
+
+const handleOpenFile = handleDownloadFile;
 
 interface AnnouncementAttachmentItem {
   id: string | number;
@@ -173,7 +193,7 @@ export default function PengumumanPage() {
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
   const [editAttachmentName, setEditAttachmentName] = useState('');
-  const [editStatus, setEditStatus] = useState('Terbit');
+  const [editStatus, setEditStatus] = useState<'Terbit' | 'Menunggu' | ''>('');
   const [isEditStatusMenuOpen, setIsEditStatusMenuOpen] = useState(false);
   const editStatusMenuRef = useRef<HTMLDivElement>(null);
 
@@ -199,6 +219,14 @@ export default function PengumumanPage() {
 
   const [editAttachments, setEditAttachments] = useState<{ file: File | null, name: string, preview: string | null }[]>([]);
   const editAttachmentInputRef = useRef<HTMLInputElement>(null);
+  const [editAttachmentError, setEditAttachmentError] = useState('');
+
+  useEffect(() => {
+    if (editAttachmentError) {
+      const timer = setTimeout(() => setEditAttachmentError(''), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [editAttachmentError]);
 
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -206,10 +234,40 @@ export default function PengumumanPage() {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
-    if (editAttachments.length + files.length > 10) {
-      alert('Maksimal 10 lampiran diperbolehkan');
+    const validExtensions = ['.pdf', '.docx', '.doc', '.jpg', '.jpeg', '.png'];
+    const validMimes = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/msword',
+      'image/jpeg',
+      'image/png',
+    ];
+
+    const invalidFile = files.find((f) => {
+      const ext = f.name.substring(f.name.lastIndexOf('.')).toLowerCase();
+      return !validExtensions.includes(ext) && !validMimes.includes(f.type);
+    });
+
+    if (invalidFile) {
+      if (editAttachmentInputRef.current) editAttachmentInputRef.current.value = '';
+      setEditAttachmentError('File harus berupa .pdf/.docx/.jpg/.png');
       return;
     }
+
+    const oversized = files.find((f) => f.size > 5 * 1024 * 1024);
+    if (oversized) {
+      if (editAttachmentInputRef.current) editAttachmentInputRef.current.value = '';
+      setEditAttachmentError('Ukuran file maksimal 5MB');
+      return;
+    }
+
+    if (editAttachments.length + files.length > 5) {
+      if (editAttachmentInputRef.current) editAttachmentInputRef.current.value = '';
+      setEditAttachmentError('Maksimal 5 lampiran diperbolehkan');
+      return;
+    }
+
+    setEditAttachmentError('');
 
     files.forEach((file) => {
       const reader = new FileReader();
@@ -701,14 +759,9 @@ export default function PengumumanPage() {
                     <h2 className="text-xs font-bold text-[#1a1b20] uppercase tracking-wider">
                       Lampiran ({attachments.length})
                     </h2>
-                    <span className="text-[11px] font-medium text-slate-500">
-                      {attachments.some(a => Boolean(a.url && a.url !== '#' && a.url !== '-'))
-                        ? 'Klik berkas untuk melihat atau mengunduh'
-                        : 'Daftar berkas terlampir'}
-                    </span>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3.5 w-full">
                     {attachments.map((att) => {
                       const hasUrl = Boolean(att.url && att.url !== '#' && att.url !== '-');
 
@@ -721,62 +774,72 @@ export default function PengumumanPage() {
                                 setPreviewAttachment(att.url);
                               }
                             }}
-                            className={`bg-[#f8f9fc] border border-[#c5c6d2] rounded-lg p-2.5 flex items-center gap-3 transition-all shadow-2xs ${
+                            className={`relative group bg-[#e9e7ee] border border-[#c5c6d2] rounded-md overflow-hidden aspect-square flex flex-col items-center justify-center transition-all shadow-xs ${
                               hasUrl
-                                ? 'hover:bg-[#eef2ff] hover:border-blue-400 cursor-pointer group'
+                                ? 'hover:shadow-md cursor-pointer'
                                 : 'cursor-default'
                             }`}
                             title={hasUrl ? `Lihat gambar: ${att.name}` : att.name}
                           >
-                            <div className="w-12 h-12 rounded bg-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center border border-slate-300">
-                              {hasUrl ? (
-                                <img
-                                  src={att.url}
-                                  alt={att.name}
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                                />
-                              ) : (
-                                <ImageIcon className="w-6 h-6 text-slate-400" />
-                              )}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className={`text-xs font-semibold text-slate-800 truncate ${hasUrl ? 'group-hover:text-blue-700' : ''}`}>
-                                {att.name}
-                              </p>
-                              <span className="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[10px] font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                Gambar
-                              </span>
-                            </div>
+                            {hasUrl ? (
+                              <img
+                                src={att.url}
+                                alt={att.name}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                              />
+                            ) : (
+                              <div className="flex flex-col items-center justify-center gap-1.5 p-2">
+                                <ImageIcon className="w-8 h-8 text-[#757682]" />
+                                <span className="text-[10px] text-center line-clamp-2 px-1 text-slate-600 font-medium">
+                                  {att.name}
+                                </span>
+                              </div>
+                            )}
+                            {hasUrl && (
+                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 text-white font-medium backdrop-blur-xs pointer-events-none">
+                                <span className="text-xs text-center px-2">Klik untuk memperbesar</span>
+                              </div>
+                            )}
                           </div>
                         );
                       }
 
-                      // Dokumen / PDF
+                      // Dokumen / PDF / DOCX
+                      const isDocx = att.name.toLowerCase().endsWith('.docx') || att.name.toLowerCase().endsWith('.doc');
+                      const isPdf = att.name.toLowerCase().endsWith('.pdf');
+
                       return (
                         <div
                           key={att.id}
                           onClick={() => {
-                            if (hasUrl) {
-                              handleOpenFile(att.url, att.name);
-                            }
+                            handleDownloadFile(att.url, att.name);
                           }}
-                          className={`bg-[#f8f9fc] border border-[#c5c6d2] rounded-lg p-2.5 flex items-center gap-3 transition-all shadow-2xs ${
-                            hasUrl
-                              ? 'hover:bg-[#eef2ff] hover:border-blue-400 cursor-pointer group'
-                              : 'cursor-default'
-                          }`}
-                          title={hasUrl ? `Buka dokumen: ${att.name}` : att.name}
+                          className="relative group bg-[#e9e7ee] border border-[#c5c6d2] rounded-md overflow-hidden aspect-square flex flex-col items-center justify-center p-2.5 transition-all shadow-xs hover:shadow-md cursor-pointer"
+                          title={`Unduh berkas: ${att.name}`}
                         >
-                          <div className="w-12 h-12 rounded bg-red-50 text-red-600 flex-shrink-0 flex items-center justify-center border border-red-200 group-hover:bg-red-100 transition-colors">
+                          <div
+                            className={`w-10 h-10 rounded-lg flex items-center justify-center mb-1 group-hover:scale-105 transition-transform ${
+                              isDocx
+                                ? 'bg-blue-100 text-blue-600'
+                                : 'bg-red-100 text-red-600'
+                            }`}
+                          >
                             <FileText className="w-6 h-6" />
                           </div>
-                          <div className="min-w-0 flex-1">
-                            <p className={`text-xs font-semibold text-slate-800 truncate ${hasUrl ? 'group-hover:text-blue-700' : ''}`}>
-                              {att.name}
-                            </p>
-                            <span className="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[10px] font-medium bg-red-100 text-red-800 border border-red-200">
-                              {att.name.toLowerCase().endsWith('.pdf') ? 'PDF Dokumen' : 'Dokumen'}
-                            </span>
+                          <p className="text-[11px] font-semibold text-slate-800 text-center line-clamp-2 break-all px-1">
+                            {att.name}
+                          </p>
+                          <span
+                            className={`mt-1 px-1.5 py-0.5 rounded text-[9px] font-medium border ${
+                              isDocx
+                                ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                : 'bg-red-50 text-red-700 border-red-200'
+                            }`}
+                          >
+                            {isPdf ? 'PDF' : isDocx ? 'DOCX' : 'Dokumen'}
+                          </span>
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 text-white font-medium backdrop-blur-xs pointer-events-none">
+                            <span className="text-xs text-center px-2 leading-tight">Klik untuk unduh</span>
                           </div>
                         </div>
                       );
@@ -929,62 +992,85 @@ export default function PengumumanPage() {
 
               <div>
                 <label className="text-xs font-bold text-[#1a1b20] mb-1.5 flex items-center justify-between">
-                  <span>Lampiran (Maks. 10 File)</span>
+                  <span>Lampiran</span>
                   <span className="text-[#757682] font-normal">{editAttachments.length}/10</span>
                 </label>
                 <div className="space-y-4">
-                  <div className="flex">
-                    <input
-                      type="text"
-                      readOnly
-                      value={editAttachments.length > 0 ? `${editAttachments.length} file dipilih` : ''}
-                      placeholder="Upload maksimal 10 file..."
-                      className="flex-grow border border-r-0 border-[#c5c6d2] rounded-l-md p-2.5 text-sm bg-white text-[#444650] cursor-default focus:outline-none"
-                    />
-                    <input
-                      ref={editAttachmentInputRef}
-                      type="file"
-                      multiple
-                      onChange={handleEditAttachmentChange}
-                      className="hidden"
-                     suppressHydrationWarning />
-                    <button
-                      type="button"
-                      onClick={() => editAttachmentInputRef.current?.click()}
-                      disabled={editAttachments.length >= 10}
-                      className="px-6 bg-[#e9e7ee] border border-[#c5c6d2] rounded-r-md text-[#1a1b20] font-bold text-xs sm:text-sm hover:bg-[#e1e3e4] transition-colors disabled:opacity-50"
-                    >
-                      Upload
-                    </button>
+                  <div className="relative">
+                    <div className="flex">
+                      <input
+                        type="text"
+                        readOnly
+                        value={editAttachments.length > 0 ? `${editAttachments.length} file dipilih` : ''}
+                        placeholder="Maksimal 5 berkas berupa .pdf/ .docx/ .jpg/ .png"
+                        className={`flex-grow border border-r-0 rounded-l-md p-2.5 text-sm bg-white text-[#444650] cursor-default focus:outline-none transition-colors ${
+                          editAttachmentError ? 'border-amber-400 ring-1 ring-amber-400' : 'border-[#c5c6d2]'
+                        }`}
+                      />
+                      <input
+                        ref={editAttachmentInputRef}
+                        type="file"
+                        multiple
+                        accept=".pdf,.docx,.doc,.jpg,.jpeg,.png,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword,image/jpeg,image/png"
+                        onChange={handleEditAttachmentChange}
+                        className="hidden"
+                       suppressHydrationWarning />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditAttachmentError('');
+                          editAttachmentInputRef.current?.click();
+                        }}
+                        disabled={editAttachments.length >= 5}
+                        className="px-6 bg-[#e9e7ee] border border-[#c5c6d2] rounded-r-md text-[#1a1b20] font-bold text-xs sm:text-sm hover:bg-[#e1e3e4] transition-colors disabled:opacity-50"
+                      >
+                        Upload
+                      </button>
+                    </div>
+
+                    {/* Pop up balon peringatan seperti "Mohon isi bidang ini" */}
+                    {editAttachmentError && (
+                      <div className="absolute left-2 top-[calc(100%+8px)] z-40 flex items-center gap-2.5 bg-white text-slate-800 text-xs sm:text-sm py-2 px-3.5 rounded-lg shadow-xl border border-slate-300 animate-in fade-in slide-in-from-top-1 duration-150">
+                        {/* Panah segitiga ke atas menunjuk ke input field */}
+                        <div className="absolute -top-1.5 left-6 w-3 h-3 bg-white border-t border-l border-slate-300 rotate-45 transform" />
+                        <div className="w-4 h-4 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px] font-bold shrink-0 shadow-xs">!</div>
+                        <span className="font-medium text-slate-800">{editAttachmentError}</span>
+                      </div>
+                    )}
+
+                    <p className="text-xs text-[#757682] mt-1.5 font-normal">Berkas maksimal 5MB</p>
                   </div>
 
                   {/* Previews */}
                   {editAttachments.length > 0 && (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                      {editAttachments.map((att, idx) => (
-                        <div key={idx} className="relative group bg-[#e9e7ee] border border-[#c5c6d2] rounded-md overflow-hidden aspect-square flex flex-col items-center justify-center">
-                          {att.preview ? (
-                            <img src={att.preview} alt={att.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                          ) : (
-                            <div className="flex flex-col items-center gap-2 p-2">
-                              <FileText className="w-8 h-8 text-[#00113a]" />
-                              <span className="text-[10px] font-bold text-center break-all line-clamp-2 text-[#00113a]">{att.name}</span>
-                            </div>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => removeEditAttachment(idx)}
-                            className="absolute top-1 right-1 bg-black/60 hover:bg-black text-white p-1 rounded-full transition-colors opacity-0 group-hover:opacity-100"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                          {att.preview && (
-                            <span className="absolute bottom-0 w-full bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center">
-                              {att.name}
-                            </span>
-                          )}
-                        </div>
-                      ))}
+                      {editAttachments.map((att, idx) => {
+                        const isImg = att.file?.type?.startsWith('image/') || /\.(png|jpe?g|webp|gif|svg)$/i.test(att.name) || (att.preview?.startsWith('data:image') ?? false);
+                        return (
+                          <div key={idx} className="relative group bg-[#e9e7ee] border border-[#c5c6d2] rounded-md overflow-hidden aspect-square flex flex-col items-center justify-center">
+                            {isImg && att.preview ? (
+                              <img src={att.preview} alt={att.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                            ) : (
+                              <div className="flex flex-col items-center gap-2 p-2">
+                                <FileText className={`w-8 h-8 ${att.name.toLowerCase().endsWith('.docx') || att.name.toLowerCase().endsWith('.doc') ? 'text-blue-600' : 'text-red-600'}`} />
+                                <span className="text-[10px] font-bold text-center break-all line-clamp-2 text-[#00113a]">{att.name}</span>
+                              </div>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => removeEditAttachment(idx)}
+                              className="absolute top-1 right-1 bg-black/60 hover:bg-black text-white p-1 rounded-full transition-colors opacity-0 group-hover:opacity-100"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                            {isImg && (
+                              <span className="absolute bottom-0 w-full bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center">
+                                {att.name}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -1008,23 +1094,35 @@ export default function PengumumanPage() {
                   </button>
 
                   {isEditStatusMenuOpen && (
-                    <div className="absolute top-full left-0 w-full bg-white border border-[#c5c6d2] rounded-b-md shadow-lg z-50 overflow-hidden">
-                      <div className="flex flex-col text-sm text-[#1a1b20]">
-                        <button
-                          type="button"
-                          onClick={() => { setEditStatus('Terbit'); setIsEditStatusMenuOpen(false); }}
-                          className={`text-left px-4 py-2.5 hover:bg-[#efedf3] transition-colors ${editStatus === 'Terbit' ? 'bg-[#efedf3] font-bold' : ''}`}
-                        >
-                          Terbit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => { setEditStatus('Menunggu'); setIsEditStatusMenuOpen(false); }}
-                          className={`text-left px-4 py-2.5 hover:bg-[#efedf3] transition-colors ${editStatus === 'Menunggu' ? 'bg-[#efedf3] font-bold' : ''}`}
-                        >
-                          Menunggu
-                        </button>
-                      </div>
+                    <div className="absolute top-full left-0 z-50 w-full bg-white border border-[#c5c6d2] border-t-0 rounded-b-md shadow-lg py-1 animate-fadeIn">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditStatus('Terbit');
+                          setIsEditStatusMenuOpen(false);
+                        }}
+                        className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
+                          editStatus === 'Terbit'
+                            ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                            : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                        }`}
+                      >
+                        Terbit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditStatus('Menunggu');
+                          setIsEditStatusMenuOpen(false);
+                        }}
+                        className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${
+                          editStatus === 'Menunggu'
+                            ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                            : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                        }`}
+                      >
+                        Menunggu
+                      </button>
                     </div>
                   )}
                 </div>

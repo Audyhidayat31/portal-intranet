@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, excerpt, content, eventLocation, coverImage, eventStartDate, attachmentName, attachmentUrl, status } = body;
+    const { title, excerpt, content, eventLocation, coverImage, coverImageName, eventStartDate, attachmentName, attachmentUrl, status } = body;
 
     if (!title || !content) {
       return NextResponse.json(
@@ -126,6 +126,7 @@ export async function POST(request: NextRequest) {
         status: agendaStatus,
         eventLocation: eventLocation || 'Perpustakaan Nasional RI',
         coverImage: coverImage || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBhefV1hDm9BZoapbWl8hj_Kx1fuSBMpUmJDa11zIMETtaj9OBZb42EHgmNOnQjlqWRTe9jiJf6RLK4ERfJpZZpSzk0AOJ28mos_9lk-LHMZC-4x9NZDJPGhF52TW2LIYUjuaj2COj729JUMGyJUbQygyE5WN3W9BAJPCA3AQLjqiwZLA_Qr4QGpAmOJ3lal-v90BJnf8Gl_h38YItMGssmkdiFMavJzoZDZulwDcrsn87gSHudNcnY',
+        source: coverImageName || null,
         authorId: authorId,
         attachmentName: attachmentName,
         attachmentUrl: attachmentUrl,

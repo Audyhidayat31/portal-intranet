@@ -92,6 +92,7 @@ export default function DokumenInternPage() {
             publishedAt: item.publishedAt,
             keterangan: ket,
             attachmentName: item.attachmentName || null,
+            attachmentUrl: item.attachmentUrl || null,
             fileSize: item.fileSize || null,
             status: item.status === 'MENUNGGU' || item.status === 'Menunggu' || item.status === 'DRAFT' ? 'Menunggu' : 'Terbit',
             authorId: item.authorId,
@@ -348,17 +349,24 @@ export default function DokumenInternPage() {
 
                   {/* Middle Row: Keterangan */}
                   <div className="text-xs sm:text-sm text-[#444650] leading-relaxed">
-                    <span className="font-semibold text-[#1a1b20]">Keterangan :</span>{' '}
-                    <span>{doc.keterangan || '.....'}</span>
+                    <span className="font-semibold text-[#1a1b20]">Keterangan : </span>
+                    {doc.keterangan && doc.keterangan.includes('<') && doc.keterangan.includes('>') ? (
+                      <div
+                        className="inline [&>p]:inline [&>p+p]:block [&>p+p]:mt-2 [&>i]:italic [&>b]:font-bold [&>strong]:font-bold [&>em]:italic [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5"
+                        dangerouslySetInnerHTML={{ __html: doc.keterangan }}
+                      />
+                    ) : (
+                      <span className="whitespace-pre-line">{doc.keterangan || '.....'}</span>
+                    )}
                   </div>
 
                   {/* Divider Line */}
                   <div className="w-full h-px bg-[#e2e3ea] my-1" />
 
-                  {/* Bottom Row: Lampiran File & Lihat Button */}
+                  {/* Bottom Row: Lampiran Berkas & Lihat Button */}
                   <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
                     <div className="text-xs sm:text-sm text-[#1a1b20] font-medium">
-                      <span>Lampiran File : </span>
+                      <span>Lampiran Berkas : </span>
                       <span className="text-[#002366] font-semibold">{doc.attachmentName}</span>
                     </div>
 
@@ -374,6 +382,11 @@ export default function DokumenInternPage() {
                       </span>
                       <Link
                         href={`/kabar-kedinasan/dokumen-intern/${doc.id}`}
+                        onClick={() => {
+                          try {
+                            sessionStorage.setItem(`internal-doc-${doc.id}`, JSON.stringify(doc));
+                          } catch {}
+                        }}
                         className="bg-[#00113a] text-white hover:bg-[#2a4386] font-semibold text-xs py-1.5 px-4 rounded-full transition-all shadow-sm cursor-pointer inline-flex items-center justify-center"
                       >
                         <span>Lihat</span>

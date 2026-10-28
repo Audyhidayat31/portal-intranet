@@ -103,6 +103,40 @@ export default function DetailLaporanPerjalananPage() {
     }
   };
 
+  const getTanggalDisplay = () => {
+    const start = report?.eventStartDate || report?.startDate || report?.publishedAt || report?.createdAt;
+    return start ? formatDate(start) : formatDate(new Date());
+  };
+
+  const getDurasiPenugasanDisplay = () => {
+    const start = report?.eventStartDate || report?.startDate || report?.publishedAt || report?.createdAt;
+    const end = report?.eventEndDate || report?.endDate || report?.durasiPenugasan || start;
+    const formattedStart = start ? formatDate(start) : formatDate(new Date());
+    const formattedEnd = end ? formatDate(end) : formattedStart;
+    return `${formattedStart} hingga ${formattedEnd}`;
+  };
+
+  const getNamaPegawaiDisplay = () => {
+    return report?.namaPegawai || report?.authorName || report?.author?.name || 'Ahmad Fauzi, S.Kom.';
+  };
+
+  const getKotaTujuanDisplay = () => {
+    if (report?.kotaTujuan) return report.kotaTujuan;
+    if (report?.destinationCity) {
+      return report.destinationCity.split(',')[0].trim();
+    }
+    return 'Kota Surabaya';
+  };
+
+  const getNegaraTujuanDisplay = () => {
+    if (report?.negaraTujuan) return report.negaraTujuan;
+    if (report?.source) return report.source;
+    if (report?.destinationCity && report.destinationCity.includes(',')) {
+      return report.destinationCity.split(',')[1].trim();
+    }
+    return 'Indonesia';
+  };
+
   if (isLoading) {
     return (
       <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-8 py-8 md:py-12 bg-white min-h-[calc(100vh-80px)] flex flex-col justify-between">
@@ -180,17 +214,55 @@ export default function DetailLaporanPerjalananPage() {
 
           {/* Header Section matching Stitch */}
           <header className="mb-8 pr-12">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#00113a] mb-4 tracking-tight leading-snug">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#00113a] mb-6 tracking-tight leading-snug">
               {report?.title || 'Laporan Perjalanan Dinas'}
             </h1>
-            <div>
-              <span className="font-bold text-xs text-[#444650] uppercase tracking-wider block mb-1">
-                Tanggal
-              </span>
-              <span className="text-sm sm:text-base text-[#1a1b20] font-medium">
-                {report?.publishedAt || report?.createdAt ? formatDate(report.publishedAt || report.createdAt) : formatDate(new Date())}
-                {report?.destinationCity && ` • ${report.destinationCity}`}
-              </span>
+            
+            <div className="space-y-4">
+              <div>
+                <span className="font-bold text-xs text-[#444650] uppercase tracking-wider block mb-1">
+                  Tanggal
+                </span>
+                <span className="text-sm sm:text-base text-[#1a1b20] font-medium">
+                  {getTanggalDisplay()}
+                </span>
+              </div>
+
+              <div>
+                <span className="font-bold text-xs text-[#444650] uppercase tracking-wider block mb-1">
+                  Durasi Penugasan
+                </span>
+                <span className="text-sm sm:text-base text-[#1a1b20] font-medium">
+                  {getDurasiPenugasanDisplay()}
+                </span>
+              </div>
+
+              <div>
+                <span className="font-bold text-xs text-[#444650] uppercase tracking-wider block mb-1">
+                  Nama Pegawai
+                </span>
+                <span className="text-sm sm:text-base text-[#1a1b20] font-medium">
+                  {getNamaPegawaiDisplay()}
+                </span>
+              </div>
+
+              <div>
+                <span className="font-bold text-xs text-[#444650] uppercase tracking-wider block mb-1">
+                  Kota/ Kab. Tujuan
+                </span>
+                <span className="text-sm sm:text-base text-[#1a1b20] font-medium">
+                  {getKotaTujuanDisplay()}
+                </span>
+              </div>
+
+              <div>
+                <span className="font-bold text-xs text-[#444650] uppercase tracking-wider block mb-1">
+                  Negara Tujuan
+                </span>
+                <span className="text-sm sm:text-base text-[#1a1b20] font-medium">
+                  {getNegaraTujuanDisplay()}
+                </span>
+              </div>
             </div>
           </header>
 

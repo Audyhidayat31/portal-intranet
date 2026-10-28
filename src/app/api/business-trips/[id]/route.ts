@@ -12,19 +12,34 @@ function findMockBusinessTrip(id: string) {
 }
 
 function formatMockBusinessTrip(mock: any) {
+  const rawCity = mock.destinationCity || 'Kota Surabaya';
+  const isForeign = rawCity.toLowerCase().includes('singapura') || rawCity.toLowerCase().includes('malaysia');
+  const cleanCity = rawCity.includes(',') ? rawCity.split(',')[0].trim() : rawCity;
+  const cleanCountry = isForeign ? 'Singapura' : (rawCity.includes(',') ? rawCity.split(',')[1].trim() : 'Indonesia');
+  const pubDate = mock.publishedAt ? new Date(mock.publishedAt).toISOString() : new Date().toISOString();
+
   return {
     id: mock.id,
     title: mock.title,
     slug: mock.id,
     excerpt: mock.excerpt || '',
     body: mock.content || mock.body || mock.excerpt || '',
-    destinationCity: mock.destinationCity || 'Jakarta',
+    destinationCity: rawCity,
+    kotaTujuan: cleanCity,
+    negaraTujuan: cleanCountry,
+    startDate: pubDate,
+    endDate: pubDate,
+    durasiPenugasan: pubDate,
+    eventStartDate: pubDate,
+    eventEndDate: pubDate,
+    namaPegawai: mock.author?.name || 'Ahmad Fauzi, S.Kom.',
+    authorName: mock.author?.name || 'Ahmad Fauzi, S.Kom.',
     attachmentName: mock.attachmentName || 'Laporan_Dinas.pdf',
     type: 'BUSINESS_TRIP',
     status: 'TERBIT',
-    publishedAt: mock.publishedAt ? new Date(mock.publishedAt).toISOString() : new Date().toISOString(),
+    publishedAt: pubDate,
     author: {
-      name: mock.author?.name || 'Ahmad Fauzi',
+      name: mock.author?.name || 'Ahmad Fauzi, S.Kom.',
       nip: '198501152010011001',
       profile: {
         position: mock.author?.profile?.position || 'Pustakawan Ahli Muda',
@@ -78,12 +93,28 @@ export async function GET(
           if (updateLog?.user?.name) {
             editorName = updateLog.user.name;
           }
-        } catch (e) {}
+        } catch (e) { }
+
+        const rawDest = item.destinationCity || '';
+        const kota = item.destinationCity?.includes(',') ? item.destinationCity.split(',')[0].trim() : (item.destinationCity || 'Kota Surabaya');
+        const negara = item.source || (item.destinationCity?.includes(',') ? item.destinationCity.split(',')[1].trim() : 'Indonesia');
+        const authorName = item.author?.name || 'Ahmad Fauzi, S.Kom.';
+        const startDate = item.eventStartDate || item.publishedAt || item.createdAt;
+        const endDate = item.eventEndDate || item.eventStartDate || item.publishedAt;
 
         return NextResponse.json({
           success: true,
           data: {
             ...item,
+            startDate,
+            endDate,
+            durasiPenugasan: endDate,
+            eventStartDate: startDate,
+            eventEndDate: endDate,
+            namaPegawai: authorName,
+            authorName,
+            kotaTujuan: kota,
+            negaraTujuan: negara,
             editor: editorName ? { name: editorName } : null,
             editorName: editorName || null,
           },
@@ -118,7 +149,21 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { title, excerpt, content, destinationCity, attachmentName, status, publishedAt, authorName, nama } = body;
+    const {
+      title,
+      excerpt,
+      content,
+      destinationCity,
+      kotaTujuan,
+      negaraTujuan,
+      startDate,
+      endDate,
+      attachmentName,
+      status,
+      publishedAt,
+      authorName,
+      nama,
+    } = body;
 
     try {
       const existing = await prisma.content.findFirst({
@@ -139,15 +184,23 @@ export async function PUT(
           }
         }
 
+        const finalStartDate = startDate ? new Date(startDate) : (publishedAt ? new Date(publishedAt) : existing.eventStartDate || existing.publishedAt);
+        const finalEndDate = endDate ? new Date(endDate) : (startDate ? new Date(startDate) : existing.eventEndDate || finalStartDate);
+        const finalCity = kotaTujuan !== undefined ? kotaTujuan : (destinationCity !== undefined ? destinationCity : existing.destinationCity);
+        const finalCountry = negaraTujuan !== undefined ? negaraTujuan : (existing.source || 'Indonesia');
+
         const updated = await prisma.content.update({
           where: { id: existing.id },
           data: {
             title: title !== undefined ? title : existing.title,
             excerpt: excerpt !== undefined ? excerpt : existing.excerpt,
             body: content !== undefined ? content : existing.body,
-            destinationCity: destinationCity !== undefined ? destinationCity : existing.destinationCity,
+            destinationCity: finalCity,
+            source: finalCountry,
+            eventStartDate: finalStartDate,
+            eventEndDate: finalEndDate,
             attachmentName: attachmentName !== undefined ? attachmentName : existing.attachmentName,
-            publishedAt: publishedAt ? new Date(publishedAt) : existing.publishedAt,
+            publishedAt: finalStartDate,
             authorId: updateAuthorId,
             status:
               status !== undefined

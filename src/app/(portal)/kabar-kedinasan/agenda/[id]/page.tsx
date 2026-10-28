@@ -6,12 +6,12 @@ import { useParams, useRouter } from 'next/navigation';
 import {
   X,
   Calendar,
-  MapPin,
   Clock,
   CheckCircle,
   AlertTriangle,
   Download,
   ImageIcon,
+  FileText,
 } from 'lucide-react';
 import { formatDate, canManageContent } from '@/lib/utils';
 import { STITCH_MOCK_AGENDAS_6, MOCK_AGENDA_ATTACHMENTS_5, AgendaItem } from '@/lib/mock-agendas';
@@ -149,17 +149,19 @@ export default function DetailAgendaKegiatanPage() {
             <p className="text-sm sm:text-base font-semibold text-[#1a1b20]">
               {displayDate}
             </p>
-            {agendaItem?.eventLocation && (
-              <p className="text-xs sm:text-sm text-[#444650] mt-1 flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-[#00113a]" />
-                <span>{agendaItem.eventLocation}</span>
-              </p>
-            )}
           </div>
 
           {agendaItem?.coverImage && (
-            <div className="mb-6 w-full max-h-[400px] bg-[#f4f3f9] rounded-lg overflow-hidden border border-[#c5c6d2] flex items-center justify-center cursor-pointer" onClick={() => setPreviewImage(agendaItem.coverImage)}>
-              <img src={agendaItem.coverImage} alt={displayTitle} className="w-full h-full object-contain max-h-[400px]" />
+            <div
+              className="mb-6 w-full rounded-lg overflow-hidden border border-[#c5c6d2] cursor-pointer"
+              onClick={() => setPreviewImage(agendaItem.coverImage)}
+              title="Klik untuk melihat ukuran asli"
+            >
+              <img
+                src={agendaItem.coverImage}
+                alt={displayTitle}
+                className="w-full h-auto block object-cover"
+              />
             </div>
           )}
 
@@ -204,36 +206,74 @@ export default function DetailAgendaKegiatanPage() {
                    realAttachments = MOCK_AGENDA_ATTACHMENTS_5;
                 }
                 
-                return realAttachments.map((att, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => {
-                      if (!att.src) return;
-                      if (att.src.startsWith('data:image') || (!att.src.includes('pdf') && !att.label.includes('pdf') && !att.src.startsWith('data:application'))) {
-                        setPreviewImage(att.src);
-                      } else {
-                        const link = document.createElement('a');
-                        link.href = att.src;
-                        link.download = att.label || 'lampiran';
-                        link.target = '_blank';
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                      }
-                    }}
-                    className="aspect-square bg-[#e2e3ea] hover:bg-[#d8d9e2] border border-[#c5c6d2] rounded-md flex flex-col items-center justify-center text-xs text-[#757682] hover:text-[#00113a] font-medium transition-all group shadow-2xs cursor-pointer overflow-hidden p-2"
-                  >
-                    {att.src && !att.src.includes('pdf') && !att.label.includes('pdf') && !att.src.startsWith('data:application') ? (
-                      <img src={att.src} alt={att.label} className="w-full h-full object-cover mb-1 opacity-70 group-hover:opacity-100 transition-opacity" />
-                    ) : (
-                      <div className="flex-1 flex items-center justify-center text-xl">📄</div>
-                    )}
-                    <span className="text-[10px] font-medium text-[#757682] group-hover:text-[#1a1b20] transition-colors truncate w-full text-center">
-                      {att.label}
-                    </span>
-                  </button>
-                ));
+                return realAttachments.map((att, idx) => {
+                  const isImg = att.src && (att.src.startsWith('data:image') || (!att.src.includes('pdf') && !att.src.includes('doc') && !att.label.includes('pdf') && !att.label.includes('doc') && !att.src.startsWith('data:application')));
+                  const isPdf = att.label.toLowerCase().endsWith('.pdf') || att.src.includes('pdf') || att.src.startsWith('data:application/pdf');
+                  const isDocx = att.label.toLowerCase().endsWith('.docx') || att.label.toLowerCase().endsWith('.doc') || att.src.includes('word') || att.src.includes('document');
+
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        if (!att.src) return;
+                        if (isImg) {
+                          setPreviewImage(att.src);
+                        } else {
+                          const link = document.createElement('a');
+                          link.href = att.src;
+                          link.download = att.label || 'lampiran';
+                          link.target = '_blank';
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                        }
+                      }}
+                      className={`aspect-square border border-[#c5c6d2] rounded-md flex flex-col items-center justify-center font-medium transition-all group shadow-2xs cursor-pointer overflow-hidden relative ${
+                        isImg
+                          ? 'p-0 bg-transparent'
+                          : 'p-2.5 bg-[#e9e7ee] hover:bg-[#d8d9e2] text-xs text-[#757682] hover:text-[#00113a]'
+                      }`}
+                      title={isImg ? 'Klik untuk memperbesar' : `Klik untuk unduh: ${att.label}`}
+                    >
+                      {isImg ? (
+                        <>
+                          <img src={att.src} alt={att.label} className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 text-white font-medium backdrop-blur-xs pointer-events-none">
+                            <span className="text-xs text-center px-2">Klik untuk memperbesar</span>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div
+                            className={`w-9 h-9 rounded-lg flex items-center justify-center mb-1 group-hover:scale-105 transition-transform ${
+                              isDocx
+                                ? 'bg-blue-100 text-blue-600'
+                                : 'bg-red-100 text-red-600'
+                            }`}
+                          >
+                            <FileText className="w-5 h-5" />
+                          </div>
+                          <span className="text-[10px] font-semibold text-[#1a1b20] group-hover:text-[#00113a] transition-colors line-clamp-2 break-all text-center px-1">
+                            {att.label}
+                          </span>
+                          <span
+                            className={`mt-1 px-1.5 py-0.2 rounded text-[8px] font-bold border ${
+                              isDocx
+                                ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                : 'bg-red-50 text-red-700 border-red-200'
+                            }`}
+                          >
+                            {isPdf ? 'PDF' : isDocx ? 'DOCX' : 'BERKAS'}
+                          </span>
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 text-white font-medium backdrop-blur-xs pointer-events-none">
+                            <span className="text-xs text-center px-2 leading-tight">Klik untuk unduh</span>
+                          </div>
+                        </>
+                      )}
+                    </button>
+                  );
+                });
               })()}
 
             </div>
@@ -304,27 +344,26 @@ export default function DetailAgendaKegiatanPage() {
       {/* Lightbox Modal */}
       {previewImage && (
         <div
-          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 animate-fadeIn"
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-8 animate-fadeIn"
           onClick={() => setPreviewImage(null)}
         >
           <div
-            className="bg-white rounded-lg p-3 max-w-xl w-full relative shadow-2xl animate-scaleUp"
+            className="relative max-w-4xl w-full max-h-[90vh] flex items-center justify-center animate-scaleUp"
             onClick={(e) => e.stopPropagation()}
           >
+            <img
+              src={previewImage}
+              alt="Lampiran Agenda"
+              className="max-h-[85vh] max-w-full object-contain rounded shadow-2xl cursor-default"
+            />
             <button
               type="button"
               onClick={() => setPreviewImage(null)}
-              className="absolute -top-3 -right-3 w-8 h-8 bg-black/70 hover:bg-black text-white rounded-full flex items-center justify-center cursor-pointer shadow-lg"
+              className="absolute top-2 right-2 sm:-top-10 sm:-right-10 bg-white/20 hover:bg-white text-white hover:text-black p-2 rounded-full transition-colors cursor-pointer"
+              title="Tutup"
             >
-              <X className="w-5 h-5" />
+              <X className="w-6 h-6" />
             </button>
-            <div className="w-full aspect-video bg-slate-100 rounded overflow-hidden flex items-center justify-center">
-              <img
-                src={previewImage}
-                alt="Lampiran Agenda"
-                className="w-full h-full object-contain"
-              />
-            </div>
           </div>
         </div>
       )}
