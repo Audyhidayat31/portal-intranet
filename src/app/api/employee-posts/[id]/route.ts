@@ -146,28 +146,52 @@ export async function GET(
         }
 
         let editorName = null;
+        let attachmentName = (item as any).attachmentName || null;
+        let attachmentUrl = (item as any).attachmentUrl || null;
+        let coverImageName = (item as any).coverImageName || null;
         try {
-          const lastLog = await prisma.activityLog.findFirst({
+          const logs = await prisma.activityLog.findMany({
             where: {
               OR: [
                 { targetId: item.id },
                 { targetId: item.slug },
                 { targetId: id },
               ],
-              action: { in: ['UPDATE', 'CHANGE_STATUS'] },
             },
             orderBy: { createdAt: 'desc' },
+            take: 10,
             include: {
               user: { select: { name: true } },
             },
           });
-          editorName = lastLog?.user?.name || null;
+
+          const updateLog = logs.find((l) => l.action === 'UPDATE' || l.action === 'CHANGE_STATUS');
+          editorName = updateLog?.user?.name || null;
+
+          for (const log of logs) {
+            if (log.description && log.description.includes('|||DETAILS|||')) {
+              try {
+                const parts = log.description.split('|||DETAILS|||');
+                if (parts[1]) {
+                  const details = JSON.parse(parts[1]);
+                  if (!attachmentName && details.attachmentName) {
+                    attachmentName = details.attachmentName;
+                  }
+                  if (!attachmentUrl && details.attachmentUrl) {
+                    attachmentUrl = details.attachmentUrl;
+                  }
+                }
+              } catch {}
+            }
+          }
         } catch {}
 
         return NextResponse.json({
           success: true,
           data: {
             ...item,
+            attachmentName,
+            attachmentUrl,
             publishedAt: item.createdAt,
             editor: editorName ? { name: editorName } : null,
             editorName: editorName || null,
@@ -224,7 +248,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { title, body: contentBody, coverImage, status, publishedAt, createdAt } = body;
+    const { title, body: contentBody, coverImage, status, publishedAt, createdAt, attachmentName, attachmentUrl } = body;
     const user = await getCurrentUser();
     const currentUserName = user?.name || body.editorName || null;
 
@@ -334,11 +358,9 @@ export async function PUT(
             source: '-',
             tanggal: (existing.createdAt || new Date()).toISOString(),
             coverImage: (coverImage !== undefined ? coverImage : existing.coverImage) || null,
-            coverImageName: (coverImage !== undefined ? coverImage : existing.coverImage)
-              ? `${(title || existing.title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 35) || 'postingan'}.jpg`
-              : undefined,
-            attachmentUrl: null,
-            attachmentName: null,
+            coverImageName: body.coverImageName !== undefined ? body.coverImageName : (coverImage !== undefined ? coverImage : existing.coverImage) ? `${(title || existing.title).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 35) || "postingan"}.jpg` : null,
+            attachmentUrl: attachmentUrl !== undefined ? (attachmentUrl || null) : null,
+            attachmentName: attachmentName !== undefined ? (attachmentName || null) : null,
             status: (newPostStatus || existing.status) === 'TERBIT' ? 'Terbit' : 'Menunggu',
             changes,
           },
@@ -350,6 +372,9 @@ export async function PUT(
         message: 'Postingan berhasil diperbarui',
         data: {
           ...updated,
+          coverImageName: body.coverImageName !== undefined ? body.coverImageName : null,
+          attachmentName: attachmentName !== undefined ? attachmentName : null,
+          attachmentUrl: attachmentUrl !== undefined ? attachmentUrl : null,
           editor: currentUserName ? { name: currentUserName } : null,
           editorName: currentUserName,
         },
@@ -401,6 +426,8 @@ export async function PUT(
           message: 'Postingan berhasil diperbarui',
           data: {
             ...created,
+            attachmentName: attachmentName !== undefined ? attachmentName : null,
+            attachmentUrl: attachmentUrl !== undefined ? attachmentUrl : null,
             editor: currentUserName ? { name: currentUserName } : null,
             editorName: currentUserName,
           },
@@ -418,6 +445,8 @@ export async function PUT(
         title,
         body: contentBody,
         coverImage,
+        attachmentName: attachmentName !== undefined ? attachmentName : null,
+        attachmentUrl: attachmentUrl !== undefined ? attachmentUrl : null,
         status,
         editor: currentUserName ? { name: currentUserName } : null,
         editorName: currentUserName,

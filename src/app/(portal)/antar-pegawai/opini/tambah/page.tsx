@@ -23,6 +23,7 @@ import {
   FileText,
   X,
 } from 'lucide-react';
+import AttachmentUploadField, { AttachmentItem } from '@/components/portal/AttachmentUploadField';
 
 const compressImage = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -80,7 +81,7 @@ export default function TambahCoretanOpiniPage() {
   const [deskripsiHtml, setDeskripsiHtml] = useState('');
   const [gambarFileName, setGambarFileName] = useState('');
   const [gambarPreview, setGambarPreview] = useState<string | null>(null);
-  const [lampiranAttachments, setLampiranAttachments] = useState<Array<{ file?: File; name: string; preview: string | null }>>([]);
+  const [lampiranAttachments, setLampiranAttachments] = useState<AttachmentItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [gambarError, setGambarError] = useState('');
@@ -116,7 +117,6 @@ export default function TambahCoretanOpiniPage() {
   // Editor and Input refs
   const editorRef = useRef<HTMLDivElement>(null);
   const gambarInputRef = useRef<HTMLInputElement>(null);
-  const lampiranInputRef = useRef<HTMLInputElement>(null);
 
   // Check active styles under selection
   const checkActiveStyles = useCallback(() => {
@@ -233,7 +233,7 @@ export default function TambahCoretanOpiniPage() {
         if (gambarInputRef.current) gambarInputRef.current.value = '';
         setGambarFileName('');
         setGambarPreview(null);
-        setGambarError('File harus berupa .jpg/.png');
+        setGambarError('Berkas harus berupa .jpg/.png');
         return;
       }
 
@@ -267,41 +267,6 @@ export default function TambahCoretanOpiniPage() {
     }
   };
 
-  const handleLampiranFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (!files.length) return;
-
-    const oversized = files.find((f) => f.size > 5 * 1024 * 1024);
-    if (oversized) {
-      alert(`File "${oversized.name}" melebihi ukuran maksimal 5MB`);
-      if (lampiranInputRef.current) lampiranInputRef.current.value = '';
-      return;
-    }
-
-    if (lampiranAttachments.length + files.length > 10) {
-      alert('Maksimal 10 lampiran diperbolehkan');
-      return;
-    }
-
-    const newAttachments = files.map((file) => {
-      let preview: string | null = null;
-      if (file.type.startsWith('image/')) {
-        preview = URL.createObjectURL(file);
-      }
-      return { file, name: file.name, preview };
-    });
-
-    setLampiranAttachments([...lampiranAttachments, ...newAttachments]);
-    if (lampiranInputRef.current) {
-      lampiranInputRef.current.value = '';
-    }
-  };
-
-  const handleRemoveLampiran = (index: number) => {
-    setLampiranAttachments(lampiranAttachments.filter((_, i) => i !== index));
-    if (lampiranInputRef.current) lampiranInputRef.current.value = '';
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const rawText = editorRef.current?.innerText?.trim() || '';
@@ -319,6 +284,7 @@ export default function TambahCoretanOpiniPage() {
 
     setIsSubmitting(true);
     try {
+      const validPreviews = lampiranAttachments.map((a) => a.preview).filter(Boolean);
       const res = await fetch('/api/employee-posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -327,13 +293,23 @@ export default function TambahCoretanOpiniPage() {
           categorySlug: 'opini',
           body: htmlContent || rawText || judul,
           coverImage: gambarPreview || '/images/logo-perpusnas.png',
-          attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments.map((a) => a.name).join(', ') : undefined,
+          attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments.map((a) => a.name).join(', ') : null,
+          attachmentUrl: validPreviews.length > 0 ? JSON.stringify(validPreviews) : null,
           publishedAt: tanggal.toISOString(),
           status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',
         }),
       });
 
       const data = await res.json();
+      if (data.data?.id) {
+        try {
+          sessionStorage.setItem(`opini-${data.data.id}`, JSON.stringify({
+            ...data.data,
+            attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments.map((a) => a.name).join(', ') : null,
+            attachmentUrl: validPreviews.length > 0 ? JSON.stringify(validPreviews) : null,
+          }));
+        } catch {}
+      }
       setSuccessMessage('Artikel Coretan Opini berhasil disimpan!');
       setTimeout(() => {
         router.push('/antar-pegawai/opini');
@@ -575,9 +551,9 @@ export default function TambahCoretanOpiniPage() {
               />
             </div>
 
-            {/* 5. Gambar Coretan Opini */}
+            {/* 5. Gambar */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Gambar Coretan Opini <span className="float-right hidden md:inline">:</span>
+              Gambar <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="flex flex-col gap-4">
               <div className="relative" suppressHydrationWarning>
@@ -620,7 +596,7 @@ export default function TambahCoretanOpiniPage() {
                   </div>
                 )}
 
-                <p className="text-xs text-[#757682] mt-1.5 font-normal">File Maksimal 5MB</p>
+                <p className="text-xs text-[#757682] mt-1.5 font-normal">Berkas maksimal 5MB</p>
               </div>
 
               {/* Dashed preview box: Gambar Preview */}
@@ -662,77 +638,13 @@ export default function TambahCoretanOpiniPage() {
 
             {/* 6. Lampiran */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Lampiran (Maks. 10 File) <span className="float-right hidden md:inline">:</span>
+              Lampiran <span className="float-right hidden md:inline">:</span>
             </label>
-            <div className="flex flex-col gap-4">
-              <div>
-                <div className="flex">
-                  <input
-                    type="text"
-                    readOnly
-                    value={lampiranAttachments.length > 0 ? `${lampiranAttachments.length} file dipilih` : ''}
-                    placeholder="Berkas berupa .jpg/ .png/ .pdf"
-                    className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => lampiranInputRef.current?.click()}
-                    disabled={lampiranAttachments.length >= 10}
-                    className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer disabled:opacity-50"
-                  >
-                    Upload
-                  </button>
-                  <input
-                    ref={lampiranInputRef}
-                    type="file"
-                    multiple
-                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                    onChange={handleLampiranFileChange}
-                    className="hidden"
-                    suppressHydrationWarning
-                  />
-                </div>
-                <p className="text-xs text-[#757682] mt-1.5 font-normal">File Maksimal 5MB</p>
-              </div>
-
-              {/* Previews */}
-              {lampiranAttachments.length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 w-full">
-                  {lampiranAttachments.map((att, idx) => (
-                    <div
-                      key={idx}
-                      className="relative group bg-[#e9e7ee] border border-[#c5c6d2] rounded-md overflow-hidden aspect-square flex flex-col items-center justify-center"
-                    >
-                      {att.preview ? (
-                        <img
-                          src={att.preview}
-                          alt={att.name}
-                          className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                        />
-                      ) : (
-                        <div className="flex flex-col items-center gap-2 p-2">
-                          <FileText className="w-8 h-8 text-[#00113a]" />
-                          <span className="text-[10px] font-bold text-center break-all line-clamp-2 text-[#00113a]">
-                            {att.name}
-                          </span>
-                        </div>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveLampiran(idx)}
-                        className="absolute top-1 right-1 bg-black/60 hover:bg-black text-white p-1 rounded-full transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                      {att.preview && (
-                        <span className="absolute bottom-0 w-full bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center">
-                          {att.name}
-                        </span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
+            <div>
+              <AttachmentUploadField
+                attachments={lampiranAttachments}
+                onChange={setLampiranAttachments}
+              />
             </div>
 
             {/* Status Dropdown */}

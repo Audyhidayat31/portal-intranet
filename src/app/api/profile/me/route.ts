@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getCurrentUser, hashPassword, verifyPassword } from '@/lib/auth';
+import { getCurrentUser, hashPassword, verifyPassword, signToken, setAuthCookie } from '@/lib/auth';
 import { logActivity } from '@/lib/audit';
 
 export async function GET() {
@@ -104,9 +104,42 @@ export async function PUT(request: NextRequest) {
 
     const cleanNip = nip !== undefined && nip.trim() ? nip.trim() : undefined;
     const cleanName = name !== undefined && name.trim() ? name.trim() : undefined;
+    const cleanEmail = email !== undefined && email.trim() ? email.trim() : undefined;
     const valEselon2 = eselon2 !== undefined ? (eselon2 && eselon2.trim() ? eselon2.trim() : null) : undefined;
     const valEselon3 = eselon3 !== undefined ? (eselon3 && eselon3.trim() ? eselon3.trim() : null) : undefined;
     const valLokasiKerja = lokasiKerja !== undefined ? (lokasiKerja && lokasiKerja.trim() ? lokasiKerja.trim() : null) : undefined;
+
+    // Validasi email agar tidak duplikat dengan akun lain
+    if (cleanEmail !== undefined) {
+      const existingEmail = await prisma.user.findFirst({
+        where: {
+          email: cleanEmail,
+          id: { not: user.userId },
+        },
+      });
+      if (existingEmail) {
+        return NextResponse.json(
+          { success: false, message: 'Email kedinasan sudah digunakan oleh pengguna lain.' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Validasi NIP agar tidak duplikat dengan akun lain
+    if (cleanNip !== undefined) {
+      const existingNip = await prisma.user.findFirst({
+        where: {
+          nip: cleanNip,
+          id: { not: user.userId },
+        },
+      });
+      if (existingNip) {
+        return NextResponse.json(
+          { success: false, message: 'Nomor Induk Pegawai (NIP) sudah terdaftar pada pengguna lain.' },
+          { status: 400 }
+        );
+      }
+    }
 
     // Update profile info
     try {
@@ -185,13 +218,16 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    if (cleanName !== undefined || cleanNip !== undefined) {
+    // Update data utama pada tabel User (Nama, NIP, Email Kedinasan)
+    const userUpdateData: any = {};
+    if (cleanName !== undefined) userUpdateData.name = cleanName;
+    if (cleanNip !== undefined) userUpdateData.nip = cleanNip;
+    if (cleanEmail !== undefined) userUpdateData.email = cleanEmail;
+
+    if (Object.keys(userUpdateData).length > 0) {
       await prisma.user.update({
         where: { id: user.userId },
-        data: {
-          name: cleanName,
-          nip: cleanNip,
-        },
+        data: userUpdateData,
       });
     }
 
@@ -206,7 +242,26 @@ export async function PUT(request: NextRequest) {
       console.warn('Gagal mencatat log aktivitas profil:', logErr);
     }
 
-    return NextResponse.json({ success: true, message: 'Profil berhasil diperbarui!' });
+    // Muat ulang data user untuk memperbarui token autentikasi sesi bila diperlukan
+    const updatedUser = await prisma.user.findUnique({
+      where: { id: user.userId },
+      include: { role: true },
+    });
+
+    const response = NextResponse.json({ success: true, message: 'Profil berhasil diperbarui!' });
+
+    if (updatedUser) {
+      const newToken = signToken({
+        userId: updatedUser.id,
+        nip: updatedUser.nip,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role.name,
+      });
+      setAuthCookie(response, newToken);
+    }
+
+    return response;
   } catch (error: any) {
     console.error('API profile me error:', error);
     return NextResponse.json({

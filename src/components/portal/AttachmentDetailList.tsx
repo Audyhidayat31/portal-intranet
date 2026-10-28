@@ -44,17 +44,19 @@ export default function AttachmentDetailList({
         const parsed = JSON.parse(attachmentUrl);
         if (Array.isArray(parsed)) {
           const names = attachmentName
-            ? attachmentName.split(',').map((s) => s.trim())
+            ? attachmentName.split(',').map((s) => s.trim()).filter(Boolean)
             : [];
-          parsed.forEach((url: string, i: number) => {
+          const totalCount = Math.max(names.length, parsed.length);
+          for (let i = 0; i < totalCount; i++) {
             const name = names[i] || `Lampiran ${i + 1}`;
+            const url = parsed[i] || `/uploads/${name}`;
             const isImage = Boolean(
               url?.startsWith('data:image') ||
                 name.match(/\.(jpg|jpeg|png|webp|gif)$/i) ||
                 url?.match(/\.(jpg|jpeg|png|webp|gif)$/i)
             );
             result.push({ name, url, isImage });
-          });
+          }
         } else if (typeof parsed === 'string') {
           const isImage = Boolean(
             parsed.startsWith('data:image') ||

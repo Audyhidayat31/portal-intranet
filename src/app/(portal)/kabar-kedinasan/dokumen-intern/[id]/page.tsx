@@ -22,24 +22,15 @@ export default function DetailDokumenInternalPage() {
   const router = useRouter();
   const rawId = (params?.id as string) || '';
 
-  // Immediate hydration from sessionStorage or mock to eliminate flash of default values
-  const [documentItem, setDocumentItem] = useState<any>(() => {
-    if (typeof window !== 'undefined' && rawId) {
-      try {
-        const cached = sessionStorage.getItem(`internal-doc-${rawId}`);
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (parsed && (parsed.id === rawId || parsed.title)) {
-            return parsed;
-          }
-        }
-      } catch {}
-    }
-    const matchedInitial = STITCH_MOCK_INTERNAL_DOCS_5.find(
-      (m) => m.id === rawId || m.title?.toLowerCase().includes(rawId.toLowerCase())
-    );
-    return matchedInitial ? { ...matchedInitial, content: matchedInitial.keterangan } : null;
-  });
+  const matchedInitial = rawId
+    ? STITCH_MOCK_INTERNAL_DOCS_5.find(
+        (m) => m.id === rawId || (rawId.length >= 3 && m.title?.toLowerCase().includes(rawId.toLowerCase()))
+      )
+    : null;
+
+  const [documentItem, setDocumentItem] = useState<any>(
+    matchedInitial ? { ...matchedInitial, content: matchedInitial.keterangan } : null
+  );
 
   const [isLoading, setIsLoading] = useState(!documentItem);
 

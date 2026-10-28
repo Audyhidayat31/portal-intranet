@@ -227,7 +227,41 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'Anda tidak dapat menghapus akun Anda sendiri' }, { status: 400 });
     }
 
-    await prisma.user.delete({ where: { id } });
+    await prisma.$transaction(async (tx) => {
+      // Nonaktifkan pemeriksaan foreign key sementara untuk memastikan cascade delete berjalan aman
+      await tx.$executeRawUnsafe('SET FOREIGN_KEY_CHECKS = 0;');
+
+      // Hapus data relasi terkait
+      await tx.employeeProfile.deleteMany({ where: { userId: id } });
+      await tx.postComment.deleteMany({ where: { authorId: id } });
+      await tx.employeePost.deleteMany({ where: { authorId: id } });
+      await tx.content.deleteMany({ where: { authorId: id } });
+      await tx.consultationReply.deleteMany({ where: { authorId: id } });
+      await tx.consultationTopic.deleteMany({ where: { authorId: id } });
+      await tx.activityLog.deleteMany({ where: { userId: id } });
+
+      // Hapus entri tabel legacy jika ada
+      try { await (tx as any).berita?.deleteMany({ where: { authorId: id } }); } catch {}
+      try { await (tx as any).pengumuman?.deleteMany({ where: { authorId: id } }); } catch {}
+      try { await (tx as any).agendaKegiatan?.deleteMany({ where: { authorId: id } }); } catch {}
+      try { await (tx as any).laporanPerjalananDinas?.deleteMany({ where: { authorId: id } }); } catch {}
+      try { await (tx as any).dokumenIntern?.deleteMany({ where: { authorId: id } }); } catch {}
+      try { await (tx as any).coretanOpini?.deleteMany({ where: { authorId: id } }); } catch {}
+      try { await (tx as any).humorPegawai?.deleteMany({ where: { authorId: id } }); } catch {}
+      try { await (tx as any).jelajahBumi?.deleteMany({ where: { authorId: id } }); } catch {}
+      try { await (tx as any).kabarKeluarga?.deleteMany({ where: { authorId: id } }); } catch {}
+      try { await (tx as any).kalimatBijak?.deleteMany({ where: { authorId: id } }); } catch {}
+      try { await (tx as any).karyaAkademik?.deleteMany({ where: { authorId: id } }); } catch {}
+      try { await (tx as any).tipsGayaHidup?.deleteMany({ where: { authorId: id } }); } catch {}
+      try { await (tx as any).olahraga?.deleteMany({ where: { authorId: id } }); } catch {}
+      try { await (tx as any).tahukahAnda?.deleteMany({ where: { authorId: id } }); } catch {}
+
+      // Hapus user utama
+      await tx.user.delete({ where: { id } });
+
+      // Kembalikan pemeriksaan foreign key
+      await tx.$executeRawUnsafe('SET FOREIGN_KEY_CHECKS = 1;');
+    });
 
     await logActivity({
       userId: currentUser.userId,
@@ -239,7 +273,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true, message: 'Pengguna berhasil dihapus!' });
   } catch (error) {
-    console.error(error);
+    console.error('Error deleting user:', error);
     return NextResponse.json({ success: false, message: 'Gagal menghapus pengguna' }, { status: 500 });
   }
 }
