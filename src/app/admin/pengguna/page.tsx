@@ -230,7 +230,26 @@ export default function AdminPenggunaPage() {
     }
   };
 
-  const SATUAN_KERJA_OPTIONS = ['Sistem Informasi', 'Pusat Data dan Informasi'];
+  const SATUAN_KERJA_OPTIONS = [
+    'Sistem Informasi',
+    'Biro SDM dan Umum',
+    'Pusat Data dan Informasi',
+    'UPT Perpustakaan Bung Hatta',
+    'Pusat Jasa Perpustakaan dan Pengelolaan Naskah Nusantara',
+    'Pusat Preservasi dan Alih Media Bahan Perpustakaan',
+    'Pusat Pengembagan Perpustakaan Sekolah/ Madrasah dan Perguruan Tinggi',
+    'Biro Perencanaan dan Keuangan',
+    'Pusat Pembinaan Pustakawan',
+    'UPT Perpustakaan Bung Karno',
+    'Pusat Bibliografi dan Pengolahan Bahan Perpustakaan',
+    'Direktorat Standardisasi dan Akreditasi Perpustakaan',
+    'Pusat Analisis Perpustakaan dan Pengembangan Budaya Baca',
+    'Biro Hukum, Organisasi, Kerjasama dan Humas',
+    'Pusat Pendidikan dan Pelatihan',
+    'Inspektorat',
+    'Direktorat Deposit dan Pengembangan Koleksi Perpustakaan',
+    'Pusat Pengembangan Perpustakaan Umum dan Khusus',
+  ];
 
   const selectedRoleName = useMemo(() => {
     const r = roles.find((role) => role.id === newRoleId);
@@ -1088,7 +1107,7 @@ export default function AdminPenggunaPage() {
                   </button>
 
                   {isCreateSatuanKerjaDropdownOpen && (
-                    <div className="absolute left-0 w-56 sm:w-64 mt-1 bg-white border border-[#c5c6d2] rounded-xl shadow-lg overflow-hidden py-1 z-50 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="absolute left-0 w-72 sm:w-80 md:w-96 max-h-64 overflow-y-auto mt-1 bg-white border border-[#c5c6d2] rounded-xl shadow-lg py-1 z-50 animate-in fade-in zoom-in-95 duration-150">
                       {SATUAN_KERJA_OPTIONS.map((item) => {
                         const isSelected = newSatuanKerja === item;
                         return (
@@ -1132,7 +1151,7 @@ export default function AdminPenggunaPage() {
                   </button>
 
                   {isCreateRoleDropdownOpen && (
-                    <div className="absolute left-0 w-56 sm:w-64 mt-1 bg-white border border-[#c5c6d2] rounded-xl shadow-lg overflow-hidden py-1 z-50 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="absolute left-0 w-72 sm:w-80 md:w-96 max-h-64 overflow-y-auto mt-1 bg-white border border-[#c5c6d2] rounded-xl shadow-lg py-1 z-50 animate-in fade-in zoom-in-95 duration-150">
                       {roles.map((r) => {
                         const isSelected = newRoleId === r.id;
                         const label = r.name === 'ADMINISTRATOR' ? 'Admin' : 'Pegawai';
@@ -1410,7 +1429,7 @@ export default function AdminPenggunaPage() {
                   </button>
 
                   {isEditSatuanKerjaDropdownOpen && (
-                    <div className="absolute left-0 w-56 sm:w-64 mt-1 bg-white border border-[#c5c6d2] rounded-xl shadow-lg overflow-hidden py-1 z-50 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="absolute left-0 w-72 sm:w-80 md:w-96 max-h-64 overflow-y-auto mt-1 bg-white border border-[#c5c6d2] rounded-xl shadow-lg py-1 z-50 animate-in fade-in zoom-in-95 duration-150">
                       {SATUAN_KERJA_OPTIONS.map((item) => {
                         const isSelected = editSatuanKerja === item;
                         return (

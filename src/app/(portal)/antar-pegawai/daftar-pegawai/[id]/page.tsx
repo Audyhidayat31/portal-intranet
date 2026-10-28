@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import {
   ChevronRight,
+  ChevronDown,
+  Check,
   X,
   Pencil,
   User,
@@ -21,6 +23,27 @@ import {
 import { MockEmployee } from '@/lib/mock-employees';
 import { isUserAdmin } from '@/lib/utils';
 
+const SATUAN_KERJA_OPTIONS = [
+  'Sistem Informasi',
+  'Biro SDM dan Umum',
+  'Pusat Data dan Informasi',
+  'UPT Perpustakaan Bung Hatta',
+  'Pusat Jasa Perpustakaan dan Pengelolaan Naskah Nusantara',
+  'Pusat Preservasi dan Alih Media Bahan Perpustakaan',
+  'Pusat Pengembagan Perpustakaan Sekolah/ Madrasah dan Perguruan Tinggi',
+  'Biro Perencanaan dan Keuangan',
+  'Pusat Pembinaan Pustakawan',
+  'UPT Perpustakaan Bung Karno',
+  'Pusat Bibliografi dan Pengolahan Bahan Perpustakaan',
+  'Direktorat Standardisasi dan Akreditasi Perpustakaan',
+  'Pusat Analisis Perpustakaan dan Pengembangan Budaya Baca',
+  'Biro Hukum, Organisasi, Kerjasama dan Humas',
+  'Pusat Pendidikan dan Pelatihan',
+  'Inspektorat',
+  'Direktorat Deposit dan Pengembangan Koleksi Perpustakaan',
+  'Pusat Pengembangan Perpustakaan Umum dan Khusus',
+];
+
 export default function LihatPegawaiPage() {
   const params = useParams();
   const router = useRouter();
@@ -35,6 +58,24 @@ export default function LihatPegawaiPage() {
   const [editForm, setEditForm] = useState<Partial<MockEmployee>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [isSatuanKerjaDropdownOpen, setIsSatuanKerjaDropdownOpen] = useState(false);
+  const satuanKerjaDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        satuanKerjaDropdownRef.current &&
+        !satuanKerjaDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsSatuanKerjaDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     if (!employeeId) return;
@@ -545,16 +586,45 @@ export default function LihatPegawaiPage() {
                   />
                 </div>
 
-                <div>
+                {/* Satuan Kerja Dropdown */}
+                <div className="relative" ref={satuanKerjaDropdownRef}>
                   <label className="block text-xs font-bold text-[#00113a] mb-1">
                     Satuan Kerja
                   </label>
-                  <input
-                    type="text"
-                    value={editForm.satuanKerja || ''}
-                    onChange={(e) => setEditForm({ ...editForm, satuanKerja: e.target.value })}
-                    className="w-full rounded border border-[#c5c6d2] px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#00113a]"
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setIsSatuanKerjaDropdownOpen(!isSatuanKerjaDropdownOpen)}
+                    className="w-full flex items-center justify-between px-3.5 py-2.5 bg-[#5b6b82] text-white text-xs font-bold rounded-xl hover:bg-[#485568] transition-colors cursor-pointer shadow-xs text-left"
+                  >
+                    <span className="truncate pr-2">{editForm.satuanKerja || editForm.unitKerja || 'Pilih Satuan Kerja'}</span>
+                    <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${isSatuanKerjaDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {isSatuanKerjaDropdownOpen && (
+                    <div className="absolute left-0 w-72 sm:w-80 md:w-96 max-h-60 overflow-y-auto mt-1 bg-white border border-[#c5c6d2] rounded-xl shadow-xl py-1 z-50 animate-in fade-in zoom-in-95 duration-150">
+                      {SATUAN_KERJA_OPTIONS.map((item) => {
+                        const isSelected = (editForm.satuanKerja || editForm.unitKerja) === item;
+                        return (
+                          <button
+                            key={item}
+                            type="button"
+                            onClick={() => {
+                              setEditForm({ ...editForm, satuanKerja: item, unitKerja: item });
+                              setIsSatuanKerjaDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-2.5 text-xs font-semibold transition-colors flex items-center justify-between cursor-pointer ${
+                              isSelected
+                                ? 'bg-slate-100 text-[#00113a] font-bold'
+                                : 'text-slate-700 hover:bg-slate-50'
+                            }`}
+                          >
+                            <span>{item}</span>
+                            {isSelected && <Check className="w-3.5 h-3.5 text-[#007BFF]" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 <div>

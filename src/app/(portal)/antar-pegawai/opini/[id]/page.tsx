@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { formatDate, canManageContent } from '@/lib/utils';
 import { STITCH_MOCK_OPINI_6, OpiniItem } from '@/lib/mock-opini';
+import AttachmentDetailList from '@/components/portal/AttachmentDetailList';
 
 // Mock 5 attachment images matching Stitch design
 const MOCK_ATTACHMENT_IMAGES = [
@@ -30,14 +31,16 @@ export default function DetailCoretanOpiniPage() {
   const router = useRouter();
   const rawId = (params?.id as string) || '';
 
-  const matchedInitial = STITCH_MOCK_OPINI_6.find(
-    (m) => m.id === rawId || m.title.toLowerCase().includes(rawId.toLowerCase())
-  );
+  const matchedInitial = rawId
+    ? STITCH_MOCK_OPINI_6.find(
+        (m) => m.id === rawId || (rawId.length >= 3 && m.title.toLowerCase().includes(rawId.toLowerCase()))
+      )
+    : null;
 
   const [opiniItem, setOpiniItem] = useState<any>(
     matchedInitial ? { ...matchedInitial, body: matchedInitial.content } : null
   );
-  const [isLoading, setIsLoading] = useState(!matchedInitial);
+  const [isLoading, setIsLoading] = useState<boolean>(!matchedInitial);
 
   // Lightbox preview for attachments
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -63,15 +66,35 @@ export default function DetailCoretanOpiniPage() {
   useEffect(() => {
     if (!rawId) return;
 
+    // Fast-hydrate from sessionStorage on client
+    try {
+      const cached = sessionStorage.getItem(`opini-${rawId}`);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed) {
+          setOpiniItem((prev: any) => ({
+            ...parsed,
+            attachmentName: parsed.attachmentName || prev?.attachmentName || null,
+            attachmentUrl: parsed.attachmentUrl || prev?.attachmentUrl || null,
+          }));
+          setIsLoading(false);
+        }
+      }
+    } catch {}
+
     if (!matchedInitial) {
       setIsLoading(true);
     }
-    fetch(`/api/employee-posts/${rawId}`)
+    fetch(`/api/employee-posts/${rawId}`, { cache: 'no-store', headers: { 'Cache-Control': 'no-cache' } })
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data) {
           const opiniItem = data.data;
-          setOpiniItem(opiniItem);
+          setOpiniItem((prev: any) => ({
+            ...opiniItem,
+            attachmentName: opiniItem.attachmentName || prev?.attachmentName || null,
+            attachmentUrl: opiniItem.attachmentUrl || prev?.attachmentUrl || null,
+          }));
         } else {
           // Check if it matches our mock items
           const matchedMock = STITCH_MOCK_OPINI_6.find(
@@ -129,7 +152,7 @@ export default function DetailCoretanOpiniPage() {
   const rawDate = opiniItem?.publishedAt || opiniItem?.createdAt;
   const displayDate = rawDate
     ? formatDate(rawDate)
-    : formatDate(new Date());
+    : '-';
 
   const displayContent =
     opiniItem?.body ||
@@ -214,9 +237,26 @@ export default function DetailCoretanOpiniPage() {
             </h2>
 
             <div className="text-xs sm:text-sm text-[#1a1b20] leading-relaxed whitespace-pre-line space-y-4">
-              {displayContent}
+              {displayContent && displayContent.includes('<') && displayContent.includes('>') ? (
+                <div
+                  className="prose max-w-none text-xs sm:text-sm text-[#1a1b20] leading-relaxed space-y-3 [&>p]:mb-3 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&>i]:italic [&>b]:font-bold [&>strong]:font-bold [&>em]:italic [&_source-footnote]:hidden"
+                  dangerouslySetInnerHTML={{ __html: displayContent }}
+                />
+              ) : (
+                <span>{displayContent}</span>
+              )}
             </div>
           </div>
+          {/* Section: LAMPIRAN (Shown if opini has attachments) */}
+          {(opiniItem?.attachmentName || opiniItem?.attachmentUrl) && (
+            <div className="mt-8 pt-6 border-t border-[#e2e3ea]">
+              <AttachmentDetailList
+                attachmentName={opiniItem.attachmentName}
+                attachmentUrl={opiniItem.attachmentUrl}
+              />
+            </div>
+          )}
+
           {/* Divider Line */}
           <div className="border-t border-[#c5c6d2] my-8" />
 

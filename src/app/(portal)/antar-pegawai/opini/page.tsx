@@ -21,6 +21,23 @@ import { formatDate, isUserAdmin } from '@/lib/utils';
 import { STITCH_MOCK_OPINI_6, OpiniItem } from '@/lib/mock-opini';
 import { Pagination } from '@/components/ui/Pagination';
 
+const stripHtml = (html: string): string => {
+  if (!html) return '';
+  return html
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
 export default function CoretanOpiniPage() {
   const [opiniList, setOpiniList] = useState<OpiniItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -87,7 +104,11 @@ export default function CoretanOpiniPage() {
         const formattedApiItems: OpiniItem[] = apiItems.map((item: any) => ({
           id: item.id,
           title: item.title,
-          excerpt: item.excerpt || (item.body ? item.body.slice(0, 110) + '...' : ''),
+          excerpt: stripHtml(item.body || item.content || '')
+            ? stripHtml(item.body || item.content || '').length > 130
+              ? stripHtml(item.body || item.content || '').slice(0, 130) + '...'
+              : stripHtml(item.body || item.content || '')
+            : '',
           content: item.body || '',
           coverImage: item.coverImage || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBhefV1hDm9BZoapbWl8hj_Kx1fuSBMpUmJDa11zIMETtaj9OBZb42EHgmNOnQjlqWRTe9jiJf6RLK4ERfJpZZpSzk0AOJ28mos_9lk-LHMZC-4x9NZDJPGhF52TW2LIYUjuaj2COj729JUMGyJUbQygyE5WN3W9BAJPCA3AQLjqiwZLA_Qr4QGpAmOJ3lal-v90BJnf8Gl_h38YItMGssmkdiFMavJzoZDZulwDcrsn87gSHudNcnY',
           publishedAt: item.createdAt || new Date().toISOString(),
@@ -102,7 +123,7 @@ export default function CoretanOpiniPage() {
             (item) =>
               item.title.toLowerCase().includes(q.toLowerCase()) ||
               item.excerpt.toLowerCase().includes(q.toLowerCase()) ||
-              item.content.toLowerCase().includes(q.toLowerCase()) ||
+              stripHtml(item.content).toLowerCase().includes(q.toLowerCase()) ||
               (item.authorName && item.authorName.toLowerCase().includes(q.toLowerCase()))
           );
           setOpiniList(filtered);
@@ -401,6 +422,11 @@ export default function CoretanOpiniPage() {
                     <div className="flex justify-end pt-2 mt-auto">
                       <Link
                         href={`/antar-pegawai/opini/${item.id}`}
+                        onClick={() => {
+                          try {
+                            sessionStorage.setItem(`opini-${item.id}`, JSON.stringify(item));
+                          } catch {}
+                        }}
                         className="px-6 py-1.5 bg-[#00113a] hover:bg-[#2a4386] text-white text-xs sm:text-sm font-bold rounded transition-colors shadow-sm inline-block text-center cursor-pointer"
                       >
                         Lihat
@@ -472,7 +498,14 @@ export default function CoretanOpiniPage() {
 
             {/* Modal Content */}
             <div className="py-2 text-sm text-[#1a1b20] leading-relaxed whitespace-pre-line space-y-4">
-              {selectedOpini.content || selectedOpini.excerpt}
+              {selectedOpini.content && selectedOpini.content.includes('<') && selectedOpini.content.includes('>') ? (
+                <div
+                  className="prose max-w-none [&>p]:mb-3 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&>i]:italic [&>b]:font-bold [&>strong]:font-bold [&>em]:italic [&_source-footnote]:hidden"
+                  dangerouslySetInnerHTML={{ __html: selectedOpini.content }}
+                />
+              ) : (
+                <span>{selectedOpini.content || selectedOpini.excerpt}</span>
+              )}
             </div>
 
             {/* Interactivity: Like & Share */}

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, AlertCircle, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, Sparkles } from 'lucide-react';
 import ReCAPTCHA from 'react-google-recaptcha';
 export default function LoginPage() {
   const router = useRouter();
@@ -14,7 +14,6 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const [showDemoAcc, setShowDemoAcc] = useState(false);
 
   const [infoPenting, setInfoPenting] = useState<{
     headline: string;
@@ -87,12 +86,6 @@ export default function LoginPage() {
       setErrorMessage('Terjadi kendala jaringan saat menghubungkan ke server.');
       setIsLoading(false);
     }
-  };
-
-  const fillQuickCredential = (nipVal: string, passVal: string) => {
-    setNip(nipVal);
-    setPassword(passVal);
-    setErrorMessage('');
   };
 
   return (
@@ -229,46 +222,6 @@ export default function LoginPage() {
                 </Link>
               </div>
             </form>
-
-            {/* Quick Demo Credentials (Collapsible helper) */}
-            <div className="mt-5 pt-3 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => setShowDemoAcc(!showDemoAcc)}
-                className="text-[11px] text-slate-400 hover:text-slate-600 flex items-center gap-1 transition-colors"
-              >
-                <span>Akses Cepat Pengujian (Demo Mode)</span>
-                {showDemoAcc ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-              </button>
-              {showDemoAcc && (
-                <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2 text-left">
-                  <button
-                    type="button"
-                    onClick={() => fillQuickCredential('ADMIN001', 'admin123')}
-                    className="p-2 text-xs bg-slate-50 hover:bg-blue-50 border border-slate-200 rounded transition-colors"
-                  >
-                    <div className="font-semibold text-slate-800">Administrator</div>
-                    <div className="text-[10px] text-slate-500 font-mono">ADMIN001</div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => fillQuickCredential('198501152010011001', 'pegawai123')}
-                    className="p-2 text-xs bg-slate-50 hover:bg-blue-50 border border-slate-200 rounded transition-colors"
-                  >
-                    <div className="font-semibold text-slate-800">Pegawai (Bambang)</div>
-                    <div className="text-[10px] text-slate-500 font-mono">198501152010011001</div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => fillQuickCredential('199208142018011005', 'pegawai123')}
-                    className="p-2 text-xs bg-slate-50 hover:bg-blue-50 border border-slate-200 rounded transition-colors"
-                  >
-                    <div className="font-semibold text-slate-800">Pegawai (Ahmad)</div>
-                    <div className="text-[10px] text-slate-500 font-mono">199208142018011005</div>
-                  </button>
-                </div>
-              )}
-            </div>
           </div>
 
           {/* Right Column: Centered Star & Pemberitahuan (as per Wireframe) */}

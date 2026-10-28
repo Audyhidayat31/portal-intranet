@@ -42,7 +42,26 @@ export default function ProfilPegawaiPage() {
   const [profile, setProfile] = useState<any | null>(null);
   const [isSatuanKerjaDropdownOpen, setIsSatuanKerjaDropdownOpen] = useState(false);
   const satuanKerjaDropdownRef = useRef<HTMLDivElement>(null);
-  const SATUAN_KERJA_OPTIONS = ['Sistem Informasi', 'Pusat Data dan Informasi'];
+  const SATUAN_KERJA_OPTIONS = [
+    'Sistem Informasi',
+    'Biro SDM dan Umum',
+    'Pusat Data dan Informasi',
+    'UPT Perpustakaan Bung Hatta',
+    'Pusat Jasa Perpustakaan dan Pengelolaan Naskah Nusantara',
+    'Pusat Preservasi dan Alih Media Bahan Perpustakaan',
+    'Pusat Pengembagan Perpustakaan Sekolah/ Madrasah dan Perguruan Tinggi',
+    'Biro Perencanaan dan Keuangan',
+    'Pusat Pembinaan Pustakawan',
+    'UPT Perpustakaan Bung Karno',
+    'Pusat Bibliografi dan Pengolahan Bahan Perpustakaan',
+    'Direktorat Standardisasi dan Akreditasi Perpustakaan',
+    'Pusat Analisis Perpustakaan dan Pengembangan Budaya Baca',
+    'Biro Hukum, Organisasi, Kerjasama dan Humas',
+    'Pusat Pendidikan dan Pelatihan',
+    'Inspektorat',
+    'Direktorat Deposit dan Pengembangan Koleksi Perpustakaan',
+    'Pusat Pengembangan Perpustakaan Umum dan Khusus',
+  ];
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'info-akun' | 'ubah-kata-sandi'>('info-akun');
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -661,7 +680,7 @@ export default function ProfilPegawaiPage() {
                   </button>
 
                   {isSatuanKerjaDropdownOpen && (
-                    <div className="absolute left-0 w-full mt-1 bg-white border border-[#c5c6d2] rounded-xl shadow-lg overflow-hidden py-1 z-50 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="absolute left-0 w-72 sm:w-80 md:w-96 max-h-64 overflow-y-auto mt-1 bg-white border border-[#c5c6d2] rounded-xl shadow-lg py-1 z-50 animate-in fade-in zoom-in-95 duration-150">
                       {SATUAN_KERJA_OPTIONS.map((item) => {
                         const isSelected = editForm.satuanKerja === item;
                         return (

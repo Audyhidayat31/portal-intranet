@@ -8,10 +8,13 @@ const postSchema = z.object({
   title: z.string().min(3, 'Judul minimal 3 karakter'),
   categorySlug: z.string().min(1, 'Kategori wajib dipilih'),
   body: z.string().min(1, 'Isi postingan minimal 1 karakter'),
-  coverImage: z.string().optional(),
-  status: z.string().optional(),
-  publishedAt: z.string().optional(),
-  createdAt: z.string().optional(),
+  coverImage: z.string().nullable().optional(),
+  coverImageName: z.string().nullable().optional(),
+  attachmentName: z.string().nullable().optional(),
+  attachmentUrl: z.string().nullable().optional(),
+  status: z.string().nullable().optional(),
+  publishedAt: z.string().nullable().optional(),
+  createdAt: z.string().nullable().optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -102,10 +105,9 @@ export async function GET(request: NextRequest) {
     let postsWithEditor: any[] = posts;
     try {
       const postIds = posts.map((p) => p.id);
-      const updateLogs = await prisma.activityLog.findMany({
+      const allLogs = await prisma.activityLog.findMany({
         where: {
           targetId: { in: postIds },
-          action: 'UPDATE',
         },
         orderBy: { createdAt: 'desc' },
         include: {
@@ -114,16 +116,34 @@ export async function GET(request: NextRequest) {
       });
 
       const editorMap = new Map<string, string>();
-      for (const log of updateLogs) {
-        if (log.targetId && log.user?.name && !editorMap.has(log.targetId)) {
+      const attachmentMap = new Map<string, { attachmentName: string | null; attachmentUrl: string | null }>();
+      for (const log of allLogs) {
+        if (log.targetId && log.user?.name && !editorMap.has(log.targetId) && (log.action === 'UPDATE' || log.action === 'CHANGE_STATUS')) {
           editorMap.set(log.targetId, log.user.name);
+        }
+        if (log.targetId && !attachmentMap.has(log.targetId) && log.description.includes('|||DETAILS|||')) {
+          try {
+            const parts = log.description.split('|||DETAILS|||');
+            if (parts[1]) {
+              const details = JSON.parse(parts[1]);
+              if (details.attachmentName || details.attachmentUrl) {
+                attachmentMap.set(log.targetId, {
+                  attachmentName: details.attachmentName || null,
+                  attachmentUrl: details.attachmentUrl || null,
+                });
+              }
+            }
+          } catch {}
         }
       }
 
       postsWithEditor = posts.map((p) => {
         const editorName = editorMap.get(p.id) || null;
+        const att = attachmentMap.get(p.id);
         return {
           ...p,
+          attachmentName: (p as any).attachmentName || att?.attachmentName || null,
+          attachmentUrl: (p as any).attachmentUrl || att?.attachmentUrl || null,
           publishedAt: p.createdAt,
           editor: editorName ? { name: editorName } : null,
           editorName,
@@ -204,7 +224,7 @@ export async function POST(request: NextRequest) {
         source: body.source || '-',
         tanggal: postCreatedAt.toISOString(),
         coverImage: coverImage || null,
-        coverImageName: body.coverImageName || (coverImage ? `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 35) || 'postingan'}.jpg` : undefined),
+        coverImageName: body.coverImageName || (coverImage && !coverImage.includes('logo-perpusnas') ? `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 35) || 'postingan'}.jpg` : null),
         attachmentUrl: body.attachmentUrl || null,
         attachmentName: body.attachmentName || null,
         status: postStatus === 'TERBIT' ? 'Terbit' : 'Menunggu',
@@ -216,7 +236,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'Postingan berhasil dipublikasikan!',
-      data: newPost,
+      data: {
+        ...newPost,
+        attachmentName: body.attachmentName || null,
+        attachmentUrl: body.attachmentUrl || null,
+      },
     });
   } catch (error) {
     console.error('Error creating post:', error);
