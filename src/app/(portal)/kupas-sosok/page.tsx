@@ -13,6 +13,11 @@ import {
 import { formatDate } from '@/lib/utils';
 import { STITCH_MOCK_FIGURES_6, FigureItem } from '@/lib/mock-kupas-sosok';
 
+function stripHtml(html: string) {
+  if (!html) return '';
+  return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+}
+
 export default function KupasSosokPage() {
   const [figureList, setFigureList] = useState<FigureItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -51,8 +56,8 @@ export default function KupasSosokPage() {
           slug: item.slug,
           position: item.position || '',
           unitKerja: item.unitKerja || '',
-          quote: item.quote || '',
-          fullStory: item.fullStory || '',
+          quote: stripHtml(item.quote || ''),
+          fullStory: stripHtml(item.fullStory || item.deskripsi || ''),
           photoUrl: item.photoUrl || '',
           publishedAt: item.createdAt || new Date().toISOString(),
           status: item.status || 'Terbit',
@@ -106,7 +111,6 @@ export default function KupasSosokPage() {
     fetchFigures(searchQuery);
   };
 
-  const ITEMS_PER_PAGE = 6;
   const visibleFigures = figureList.filter((item: any) => {
     const isPublished = item.status === 'Terbit' || item.status === 'TERBIT' || (!item.status);
     if (isPublished) return true;
@@ -120,8 +124,9 @@ export default function KupasSosokPage() {
       (authorId && (authorId === currentUser.id || authorId === currentUser.userId))
     );
   });
-  const totalPages = Math.ceil(visibleFigures.length / ITEMS_PER_PAGE) || 1;
-  const paginatedList = visibleFigures.filter(item => filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id))).slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  const filteredByAuthor = visibleFigures.filter(item => filterAuthor === 'all' || (typeof currentUser !== 'undefined' && currentUser && ((item as any).authorName === currentUser.name || ((item as any).author && (item as any).author.name === currentUser.name) || (item as any).name === currentUser.name || (item as any).authorId === currentUser.id)));
+  const totalPages = Math.ceil(filteredByAuthor.length / itemsPerPage) || 1;
+  const paginatedList = filteredByAuthor.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <div className="w-full bg-[#fcfcff] min-h-screen">
@@ -317,7 +322,7 @@ export default function KupasSosokPage() {
 
                       {/* Card Excerpt */}
                       <p className="text-sm text-[#444650] mb-6 line-clamp-3 leading-relaxed flex-grow">
-                        {((item.fullStory || item.quote || item.position || '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim()) || '-'}
+                        {stripHtml(item.fullStory || item.quote || item.position || '') || '-'}
                       </p>
                     </div>
 

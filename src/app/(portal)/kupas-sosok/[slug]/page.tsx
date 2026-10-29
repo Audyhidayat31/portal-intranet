@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { formatDate, canManageContent } from '@/lib/utils';
 import { STITCH_MOCK_FIGURES_6, FigureItem } from '@/lib/mock-kupas-sosok';
+import AttachmentDetailList from '@/components/portal/AttachmentDetailList';
 
 export default function DetailKupasSosokPage() {
   const params = useParams();
@@ -137,7 +138,13 @@ Beliau memimpin proyek integrasi katalog induk nasional dan layanan akses reposi
     : figureItem?.createdAt
       ? formatDate(figureItem.createdAt)
       : formatDate(new Date());
-  const displayContent = figureItem?.fullStory || figureItem?.body || figureItem?.quote || '';
+  const rawContent = figureItem?.fullStory || figureItem?.body || figureItem?.quote || '';
+  const displayContent = rawContent
+    .replace(/&amp;nbsp;?/gi, ' ')
+    .replace(/&nbsp;?/gi, ' ')
+    .replace(/\u00a0/g, ' ');
+  const storedEditor = typeof window !== 'undefined' ? localStorage.getItem(`last_editor_${figureItem?.id || rawSlug}`) : null;
+  const editorName = figureItem?.editor?.name || (figureItem as any)?.editorName || storedEditor;
 
   // Attachments
   const hasRealPhoto = Boolean(figureItem?.photoUrl && !figureItem.photoUrl.includes('unsplash.com'));
@@ -278,7 +285,7 @@ Beliau memimpin proyek integrasi katalog induk nasional dan layanan akses reposi
 
             {displayContent.includes('<') && displayContent.includes('>') ? (
               <div
-                className="text-xs sm:text-sm text-[#1a1b20] leading-relaxed space-y-3 font-normal"
+                className="text-xs sm:text-sm text-[#1a1b20] leading-relaxed space-y-3 font-normal prose prose-sm max-w-none prose-p:my-2 prose-headings:text-[#00113a]"
                 dangerouslySetInnerHTML={{ __html: displayContent }}
               />
             ) : (
@@ -288,44 +295,22 @@ Beliau memimpin proyek integrasi katalog induk nasional dan layanan akses reposi
             )}
           </div>
 
-          {/* Section: LAMPIRAN (Hanya muncul jika ada berkas pendukung yang diunggah) */}
-          {realAttachments.length > 0 && (
-            <>
-              {/* Divider Line */}
-              <div className="border-t border-[#c5c6d2] my-8" />
-
-              <div>
-                <h3 className="text-xs font-bold text-[#1a1b20] uppercase tracking-wider mb-4">
-                  LAMPIRAN
-                </h3>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
-                  {realAttachments.map((att) => (
-                    <button
-                      key={att.id}
-                      type="button"
-                      onClick={() => att.src && setPreviewImage(att.src)}
-                      className="aspect-square bg-[#e2e3ea] hover:bg-[#d8d9e2] border border-[#c5c6d2] rounded-md overflow-hidden relative flex flex-col items-center justify-center text-xs text-[#757682] hover:text-[#00113a] font-medium transition-all group shadow-2xs cursor-pointer p-2"
-                    >
-                      {att.isImage && att.src ? (
-                        <img
-                          src={att.src}
-                          alt={att.label}
-                          className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform"
-                        />
-                      ) : (
-                        <div className="flex flex-col items-center justify-center text-center p-2">
-                          <FileText className="w-6 h-6 mb-1 text-[#757682]" />
-                          <span className="text-[11px] line-clamp-2 font-medium text-[#1a1b20]">
-                            {att.label}
-                          </span>
-                        </div>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </>
+          {/* Section: LAMPIRAN */}
+          {(figureItem?.attachmentName || figureItem?.attachmentUrl || (figureItem?.attachments && figureItem.attachments.length > 0)) && (
+            <div className="mt-8 pt-6 border-t border-[#e2e3ea]">
+              <AttachmentDetailList
+                attachments={
+                  figureItem?.attachments && (!figureItem?.attachmentUrl && !figureItem?.attachmentName)
+                    ? figureItem.attachments.map((att: any) => ({
+                        name: att.label || `Lampiran ${att.id}`,
+                        url: att.src,
+                      }))
+                    : undefined
+                }
+                attachmentName={figureItem?.attachmentName}
+                attachmentUrl={figureItem?.attachmentUrl}
+              />
+            </div>
           )}
 
           {/* Divider Line */}
@@ -349,13 +334,13 @@ Beliau memimpin proyek integrasi katalog induk nasional dan layanan akses reposi
               </div>
 
               {/* Diperbarui Oleh */}
-              {Boolean(figureItem?.editor?.name || (figureItem as any)?.editorName) && (
+              {Boolean(editorName) && (
                 <>
                   <div className="border-l border-[#c5c6d2]" />
                   <div className="text-xs text-[#757682] space-y-0.5 w-[220px]">
                     <p className="font-semibold text-[#757682]">Diperbarui oleh</p>
                     <p className="font-semibold text-[#1a1b20]">
-                      {figureItem?.editor?.name || (figureItem as any)?.editorName}
+                      {editorName}
                     </p>
                     <p className="font-medium text-[#757682]">
                       {figureItem?.updatedAt ? formatDate(figureItem.updatedAt) : displayDate}

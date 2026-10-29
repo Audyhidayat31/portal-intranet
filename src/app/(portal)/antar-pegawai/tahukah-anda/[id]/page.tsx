@@ -21,6 +21,7 @@ import {
   saveStoredTahukahAnda,
   markTahukahAndaAsDeleted,
 } from '@/lib/mock-tahukah-anda';
+import AttachmentDetailList from '@/components/portal/AttachmentDetailList';
 
 export default function DetailTahukahAndaPage() {
   const params = useParams();
@@ -64,6 +65,9 @@ export default function DetailTahukahAndaPage() {
         ...foundStored,
         body: foundStored.content,
         authorId: (foundStored as any).authorId,
+        coverImageName: (foundStored as any).coverImageName,
+        attachmentName: (foundStored as any).attachmentName,
+        attachmentUrl: (foundStored as any).attachmentUrl,
       });
       setIsLoading(false);
     }
@@ -82,6 +86,9 @@ export default function DetailTahukahAndaPage() {
             authorName: apiData.author?.name || apiData.authorName || (foundStored ? foundStored.authorName : 'Ahmad Fauzi, S.Kom.'),
             editor: apiData.editor || (apiData.editorName ? { name: apiData.editorName } : null),
             editorName: apiData.editorName || apiData.editor?.name || null,
+            coverImageName: apiData.coverImageName || (foundStored as any)?.coverImageName,
+            attachmentName: apiData.attachmentName || (foundStored as any)?.attachmentName,
+            attachmentUrl: apiData.attachmentUrl || (foundStored as any)?.attachmentUrl,
           };
           setTahukahItem(mergedItem);
 
@@ -266,10 +273,19 @@ export default function DetailTahukahAndaPage() {
               Uraian Artikel Tahukah Anda
             </h2>
 
-            <div className="text-xs sm:text-sm text-[#1a1b20] leading-relaxed whitespace-pre-line space-y-4">
-              {displayContent}
-            </div>
+            <div
+              className="text-xs sm:text-sm text-[#1a1b20] leading-relaxed prose prose-sm max-w-none prose-p:my-2 prose-headings:text-[#00113a]"
+              dangerouslySetInnerHTML={{ __html: displayContent }}
+            />
           </div>
+
+          {/* Lampiran List */}
+          <AttachmentDetailList
+            attachmentName={tahukahItem?.attachmentName}
+            attachmentUrl={tahukahItem?.attachmentUrl}
+            attachments={tahukahItem?.attachments}
+          />
+
           {/* Divider Line */}
           <div className="border-t border-[#c5c6d2] my-8" />
 
