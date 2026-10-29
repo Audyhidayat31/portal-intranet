@@ -25,6 +25,20 @@ import {
   saveStoredOlahraga,
 } from '@/lib/mock-olahraga';
 
+function stripHtml(html: string): string {
+  if (!html) return '';
+  return html
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/data-path-to-node="[^"]*"/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 export default function DaftarOlahragaPage() {
   const [olahragaList, setOlahragaList] = useState<OlahragaItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -86,7 +100,10 @@ export default function DaftarOlahragaPage() {
         const formattedApiItems: OlahragaItem[] = apiItems.map((item: any) => ({
           id: item.id,
           title: item.title,
-          excerpt: item.excerpt || (item.body ? item.body.slice(0, 140) + '...' : ''),
+          excerpt: (() => {
+            const raw = stripHtml(item.excerpt || item.body || item.content || '');
+            return raw.length > 140 ? raw.slice(0, 140) + '...' : raw;
+          })(),
           content: item.body || '',
           coverImage:
             item.coverImage ||
@@ -389,7 +406,7 @@ export default function DaftarOlahragaPage() {
 
                       {/* Card Excerpt */}
                       <p className="text-sm text-[#444650] mb-6 line-clamp-3 leading-relaxed flex-grow">
-                        {item.excerpt}
+                        {stripHtml(item.excerpt)}
                       </p>
                     </div>
 

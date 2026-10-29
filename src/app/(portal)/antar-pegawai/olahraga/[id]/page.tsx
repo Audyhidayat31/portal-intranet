@@ -13,6 +13,7 @@ import {
   ImageIcon,
 } from 'lucide-react';
 import { formatDate, canManageContent } from '@/lib/utils';
+import AttachmentDetailList from '@/components/portal/AttachmentDetailList';
 import {
   DEFAULT_STITCH_OLAHRAGA_DETAIL,
   STITCH_MOCK_OLAHRAGA_9,
@@ -78,6 +79,9 @@ export default function DetailOlahragaPage() {
             content: apiData.body || apiData.content || (foundStored ? foundStored.content : ''),
             publishedAt: apiData.publishedAt || apiData.createdAt,
             authorName: apiData.author?.name || apiData.authorName || 'Ahmad Fauzi',
+            attachmentName: apiData.attachmentName,
+            attachmentUrl: apiData.attachmentUrl,
+            coverImageName: apiData.coverImageName,
             editor: apiData.editor || (apiData.editorName ? { name: apiData.editorName } : null),
             editorName: apiData.editorName || apiData.editor?.name || null,
           };
@@ -229,9 +233,34 @@ export default function DetailOlahragaPage() {
             </h2>
 
             <div className="text-xs sm:text-sm text-[#1a1b20] leading-relaxed whitespace-pre-line space-y-4">
-              {displayContent}
+              {displayContent && displayContent.includes('<') && displayContent.includes('>') ? (
+                <div
+                  className="prose max-w-none text-xs sm:text-sm text-[#1a1b20] leading-relaxed space-y-3 [&>p]:mb-3 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&>i]:italic [&>b]:font-bold [&>strong]:font-bold [&>em]:italic [&_source-footnote]:hidden"
+                  dangerouslySetInnerHTML={{ __html: displayContent }}
+                />
+              ) : (
+                <span>{displayContent}</span>
+              )}
             </div>
           </div>
+
+          {/* Section: LAMPIRAN (Shown if has attachments) */}
+          {(olahragaItem?.attachmentName || olahragaItem?.attachmentUrl || (olahragaItem?.attachments && olahragaItem.attachments.length > 0)) && (
+            <div className="mt-8 pt-6 border-t border-[#e2e3ea]">
+              <AttachmentDetailList
+                attachments={
+                  olahragaItem?.attachments && (!olahragaItem?.attachmentUrl && !olahragaItem?.attachmentName)
+                    ? olahragaItem.attachments.map((att: any) => ({
+                        name: att.label || `Lampiran ${att.id}`,
+                        url: att.src,
+                      }))
+                    : undefined
+                }
+                attachmentName={olahragaItem?.attachmentName}
+                attachmentUrl={olahragaItem?.attachmentUrl}
+              />
+            </div>
+          )}
           {/* Divider Line */}
           <div className="border-t border-[#c5c6d2] my-8" />
 

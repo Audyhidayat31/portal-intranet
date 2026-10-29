@@ -117,15 +117,19 @@ export async function GET(request: NextRequest) {
 
       const editorMap = new Map<string, string>();
       const attachmentMap = new Map<string, { attachmentName: string | null; attachmentUrl: string | null }>();
+      const coverImageMap = new Map<string, string | null>();
       for (const log of allLogs) {
         if (log.targetId && log.user?.name && !editorMap.has(log.targetId) && (log.action === 'UPDATE' || log.action === 'CHANGE_STATUS')) {
           editorMap.set(log.targetId, log.user.name);
         }
-        if (log.targetId && !attachmentMap.has(log.targetId) && log.description.includes('|||DETAILS|||')) {
+        if (log.targetId && (!attachmentMap.has(log.targetId) || !coverImageMap.has(log.targetId)) && log.description.includes('|||DETAILS|||')) {
           try {
             const parts = log.description.split('|||DETAILS|||');
             if (parts[1]) {
               const details = JSON.parse(parts[1]);
+              if (details.coverImageName && !coverImageMap.has(log.targetId)) {
+                coverImageMap.set(log.targetId, details.coverImageName);
+              }
               if (details.attachmentName || details.attachmentUrl) {
                 attachmentMap.set(log.targetId, {
                   attachmentName: details.attachmentName || null,
@@ -142,6 +146,7 @@ export async function GET(request: NextRequest) {
         const att = attachmentMap.get(p.id);
         return {
           ...p,
+          coverImageName: (p as any).coverImageName || coverImageMap.get(p.id) || null,
           attachmentName: (p as any).attachmentName || att?.attachmentName || null,
           attachmentUrl: (p as any).attachmentUrl || att?.attachmentUrl || null,
           publishedAt: p.createdAt,
@@ -179,7 +184,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, message: result.error.errors[0].message }, { status: 400 });
     }
 
-    const { title, categorySlug, body: contentBody, coverImage, status, publishedAt, createdAt } = result.data;
+    const { title, categorySlug, body: contentBody, coverImage, coverImageName, status, publishedAt, createdAt } = result.data;
     const slug = `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}`;
 
     const postStatus = status === 'MENUNGGU' || status === 'Menunggu' ? 'MENUNGGU' : 'TERBIT';
@@ -190,7 +195,7 @@ export async function POST(request: NextRequest) {
         title,
         slug,
         categorySlug,
-        body: contentBody,
+        body: contentBody ? contentBody.replace(/&nbsp;/gi, ' ').replace(/&nbsp/gi, ' ') : contentBody,
         coverImage: categorySlug === 'kalimat-bijak' ? '/images/logo-perpusnas.png' : (coverImage || null),
         authorId,
         status: postStatus,
@@ -224,7 +229,7 @@ export async function POST(request: NextRequest) {
         source: body.source || '-',
         tanggal: postCreatedAt.toISOString(),
         coverImage: coverImage || null,
-        coverImageName: body.coverImageName || (coverImage && !coverImage.includes('logo-perpusnas') ? `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 35) || 'postingan'}.jpg` : null),
+        coverImageName: coverImageName || body.coverImageName || (coverImage && !coverImage.includes('logo-perpusnas') ? `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 35) || 'postingan'}.jpg` : null),
         attachmentUrl: body.attachmentUrl || null,
         attachmentName: body.attachmentName || null,
         status: postStatus === 'TERBIT' ? 'Terbit' : 'Menunggu',
@@ -238,6 +243,7 @@ export async function POST(request: NextRequest) {
       message: 'Postingan berhasil dipublikasikan!',
       data: {
         ...newPost,
+        coverImageName: coverImageName || body.coverImageName || null,
         attachmentName: body.attachmentName || null,
         attachmentUrl: body.attachmentUrl || null,
       },

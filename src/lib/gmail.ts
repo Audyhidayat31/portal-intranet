@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import nodemailer from 'nodemailer';
 
 export interface SendPasswordResetEmailParams {
   toEmail: string;
@@ -174,6 +175,43 @@ export function getGmailCredentials() {
 }
 
 /**
+ * Safely get SMTP credentials from environment or fallback to reading .env directly
+ */
+export function getSmtpCredentials() {
+  let host = process.env.SMTP_HOST || '';
+  let port = Number(process.env.SMTP_PORT) || 587;
+  let user = process.env.SMTP_USER || '';
+  let pass = process.env.SMTP_PASS || '';
+  let from = process.env.SMTP_FROM || (user ? `Cakrawala Portal Intranet <${user}>` : '');
+
+  // Read directly from .env file if any key is missing
+  if (!host || !user || !pass) {
+    try {
+      const envPath = path.resolve(process.cwd(), '.env');
+      if (fs.existsSync(envPath)) {
+        const envContent = fs.readFileSync(envPath, 'utf8');
+        const matchHost = envContent.match(/SMTP_HOST=["']?([^"'\r\n]+)["']?/);
+        const matchPort = envContent.match(/SMTP_PORT=["']?([^"'\r\n]+)["']?/);
+        const matchUser = envContent.match(/SMTP_USER=["']?([^"'\r\n]+)["']?/);
+        const matchPass = envContent.match(/SMTP_PASS=["']?([^"'\r\n]+)["']?/);
+        const matchFrom = envContent.match(/SMTP_FROM=["']?([^"'\r\n]+)["']?/);
+
+        if (matchHost?.[1]) host = matchHost[1];
+        if (matchPort?.[1]) port = Number(matchPort[1]) || 587;
+        if (matchUser?.[1]) user = matchUser[1];
+        if (matchPass?.[1]) pass = matchPass[1];
+        if (matchFrom?.[1]) from = matchFrom[1];
+      }
+    } catch {
+      // Ignore
+    }
+  }
+
+  const secure = process.env.SMTP_SECURE === 'true' || port === 465;
+  return { host, port, secure, user, pass, from };
+}
+
+/**
  * Generate Google OAuth Consent URL
  */
 export function getGoogleOAuthUrl(): string {
@@ -284,26 +322,75 @@ export function updateEnvTokens(refreshToken: string, senderEmail: string) {
 }
 
 /**
- * Send Email via Gmail API (REST)
+ * Send Email via SMTP (Primary) or Gmail API (Fallback)
  */
 export async function sendPasswordResetEmail({
   toEmail,
   recipientName,
   resetUrl,
-}: SendPasswordResetEmailParams): Promise<{ success: boolean; messageId?: string; error?: string; simulated?: boolean }> {
+}: SendPasswordResetEmailParams): Promise<{ success: boolean; messageId?: string; error?: string; simulated?: boolean; via?: string }> {
+  // 1. Try sending via SMTP (mail.go.id / perpusnas.go.id)
+  const smtp = getSmtpCredentials();
+  if (smtp.host && smtp.user && smtp.pass) {
+    try {
+      const transporter = nodemailer.createTransport({
+        host: smtp.host,
+        port: smtp.port,
+        secure: smtp.secure,
+        requireTLS: smtp.port === 587,
+        auth: {
+          user: smtp.user,
+          pass: smtp.pass,
+        },
+        tls: {
+          rejectUnauthorized: false,
+          ciphers: 'DEFAULT@SECLEVEL=0',
+        },
+        connectionTimeout: 20000,
+        greetingTimeout: 20000,
+        socketTimeout: 20000,
+      });
+
+      const htmlBody = generatePasswordResetHtml({ recipientName, resetUrl });
+
+      const info = await transporter.sendMail({
+        from: smtp.from || `Cakrawala Portal Intranet <${smtp.user}>`,
+        to: toEmail,
+        subject: 'Permintaan Atur Ulang Kata Sandi - Cakrawala Portal Intranet',
+        html: htmlBody,
+      });
+
+      return {
+        success: true,
+        messageId: info.messageId,
+        via: 'SMTP',
+      };
+    } catch (smtpError: any) {
+      console.error('[SMTP SEND ERROR]:', smtpError);
+      // If Gmail API is not configured, return SMTP error directly
+      const { clientId, clientSecret, refreshToken } = getGmailCredentials();
+      if (!clientId || !clientSecret || !refreshToken) {
+        return {
+          success: false,
+          error: `Gagal mengirim email via SMTP (${smtp.host}): ${smtpError.message}`,
+        };
+      }
+    }
+  }
+
+  // 2. Fallback to Gmail API (REST)
   const { clientId, clientSecret, refreshToken, senderEmail: configSender } = getGmailCredentials();
   const senderEmail = configSender || 'persuratan@perpusnas.go.id';
 
   // Check if refresh token is present
   if (!clientId || !clientSecret || !refreshToken) {
     console.warn(
-      `[GMAIL API WARNING] GMAIL_REFRESH_TOKEN belum diset di .env.\n` +
-      `Buka http://localhost:3000/api/auth/google/authorize untuk menghubungkan akun Gmail pengirim.`
+      `[EMAIL CONFIG WARNING] Baik SMTP maupun Gmail API belum dikonfigurasi dengan lengkap di .env.`
     );
     return {
       success: false,
       simulated: true,
-      error: 'Gmail API belum diotorisasi. Hubungkan akun Google pengirim melalui /api/auth/google/authorize.',
+      error: 'Pengiriman email belum siap. Konfigurasi SMTP atau Gmail API belum lengkap di .env.',
     };
   }
 
@@ -379,12 +466,13 @@ export async function sendPasswordResetEmail({
     return {
       success: true,
       messageId: sendData.id,
+      via: 'GMAIL_API',
     };
   } catch (error: any) {
-    console.error('[GMAIL API EXCEPTION]:', error);
+    console.error('[EMAIL EXCEPTION]:', error);
     return {
       success: false,
-      error: error.message || 'Kendala saat menghubungkan ke Gmail API',
+      error: error.message || 'Kendala saat mengirim email',
     };
   }
 }

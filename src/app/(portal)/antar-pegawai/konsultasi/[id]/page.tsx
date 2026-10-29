@@ -17,7 +17,9 @@ import {
   ConsultationReplyItem,
   getStoredConsultations,
   saveStoredConsultations,
+  getConsultationFromIDB,
 } from '@/lib/mock-konsultasi';
+import AttachmentDetailList from '@/components/portal/AttachmentDetailList';
 
 export default function DetailKonsultasiPage() {
   const params = useParams();
@@ -81,7 +83,7 @@ export default function DetailKonsultasiPage() {
             status: apiData.status === 'OPEN' ? 'Menunggu' : 'Terbit',
             description: apiData.question || '',
             attachmentName: apiData.attachmentName || null,
-            attachmentUrl: '#',
+            attachmentUrl: apiData.attachmentUrl || null,
             authorName: apiData.author?.name || 'Ahmad Fauzi',
             authorId: apiData.authorId || apiData.author?.id,
             author: apiData.author,
@@ -100,11 +102,46 @@ export default function DetailKonsultasiPage() {
               content: r.replyText,
             })),
           };
+
+          const localItem = getStoredConsultations().find(
+            (c) => c.id === id || String(c.id) === String(id)
+          );
+          if (localItem) {
+            mapped.attachmentName = localItem.attachmentName || mapped.attachmentName;
+            mapped.attachmentUrl = localItem.attachmentUrl || mapped.attachmentUrl;
+          }
+
           setItem(mapped);
+
+          // Jika attachmentUrl disimpan di IndexedDB (karena file besar), ambil data aslinya
+          getConsultationFromIDB(id).then((fromIdb) => {
+            if (fromIdb && fromIdb.attachmentUrl && fromIdb.attachmentUrl !== 'idb-stored') {
+              setItem((prev) =>
+                prev
+                  ? {
+                      ...prev,
+                      attachmentName: fromIdb.attachmentName || prev.attachmentName,
+                      attachmentUrl: fromIdb.attachmentUrl,
+                    }
+                  : prev
+              );
+            }
+          });
         }
       })
       .catch((err) => {
         console.warn('Fallback to local consultation data:', err);
+        const localItem = getStoredConsultations().find(
+          (c) => c.id === id || String(c.id) === String(id)
+        );
+        if (localItem) {
+          setItem(localItem);
+        }
+        getConsultationFromIDB(id).then((fromIdb) => {
+          if (fromIdb) {
+            setItem(fromIdb);
+          }
+        });
       })
       .finally(() => {
         setIsLoading(false);
@@ -324,15 +361,12 @@ export default function DetailKonsultasiPage() {
           </div>
 
           {/* Lampiran File (if exists) */}
-          {currentItem.attachmentName && (
-            <div className="mb-8 p-3.5 bg-white border border-[#c5c6d2] rounded-lg inline-flex items-center gap-3 text-sm text-[#444650]">
-              <FileText className="w-4 h-4 text-[#0070f3]" />
-              <span>
-                Lampiran File :{' '}
-                <span className="font-semibold text-[#00113a]">
-                  {currentItem.attachmentName}
-                </span>
-              </span>
+          {(currentItem.attachmentName || currentItem.attachmentUrl) && (
+            <div className="mb-8">
+              <AttachmentDetailList
+                attachmentName={currentItem.attachmentName}
+                attachmentUrl={currentItem.attachmentUrl}
+              />
             </div>
           )}
 

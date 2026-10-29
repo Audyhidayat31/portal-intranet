@@ -619,7 +619,7 @@ export default function TambahKupasSosokPage() {
 
               {/* Lampiran */}
               <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-                Lampiran Berkas (Maks. 10 File) <span className="float-right hidden md:inline">:</span>
+                Lampiran <span className="float-right hidden md:inline">:</span>
               </label>
               <div className="flex flex-col gap-4">
                 <div>
@@ -649,7 +649,7 @@ export default function TambahKupasSosokPage() {
                       suppressHydrationWarning
                     />
                   </div>
-                  <p className="text-xs text-[#757682] mt-1.5 font-normal">File Maksimal 5MB</p>
+                  <p className="text-xs text-[#757682] mt-1.5 font-normal">Berkas Maksimal 5MB</p>
                 </div>
 
                 {/* Previews */}

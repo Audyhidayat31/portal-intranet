@@ -119,7 +119,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { title, question, description, category, status } = body;
+    const { title, question, description, category, status, attachmentName, attachmentUrl } = body;
 
     const dataToUpdate: any = {};
     if (title) dataToUpdate.title = title.trim();
@@ -131,6 +131,12 @@ export async function PUT(
     }
     if (status) {
       dataToUpdate.status = status === 'Menunggu' ? 'OPEN' : 'ANSWERED';
+    }
+    if (attachmentName !== undefined) {
+      dataToUpdate.attachmentName = attachmentName || null;
+    }
+    if (attachmentUrl !== undefined) {
+      dataToUpdate.attachmentUrl = attachmentUrl || null;
     }
 
     try {
@@ -183,6 +189,8 @@ export async function PUT(
             question: dataToUpdate.question || title || '',
             authorId: defaultUser.id,
             status: dataToUpdate.status || 'OPEN',
+            attachmentName: dataToUpdate.attachmentName || null,
+            attachmentUrl: dataToUpdate.attachmentUrl || null,
           },
         });
 

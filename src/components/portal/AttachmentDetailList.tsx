@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { FileText, X } from 'lucide-react';
+import { FileText, X, Video } from 'lucide-react';
 
 export interface DetailAttachmentItem {
   name: string;
@@ -127,6 +127,10 @@ export default function AttachmentDetailList({
             att.name.toLowerCase().endsWith('.docx') ||
             att.name.toLowerCase().endsWith('.doc');
           const isPdf = att.name.toLowerCase().endsWith('.pdf');
+          const isVideo = Boolean(
+            att.name.match(/\.(mp4|mkv|avi|mov|webm|3gp|wmv|m4v|flv)$/i) ||
+            att.url?.startsWith('data:video')
+          );
           const fileUrl = att.url || `/uploads/${att.name}`;
 
           return (
@@ -169,24 +173,36 @@ export default function AttachmentDetailList({
                   <div className="flex flex-col items-center justify-center w-full h-full">
                     <div
                       className={`w-9 h-9 rounded-lg flex items-center justify-center mb-1 group-hover:scale-105 transition-transform ${
-                        isDocx
+                        isVideo
+                          ? 'bg-neutral-200 text-black'
+                          : isDocx
                           ? 'bg-blue-100 text-blue-600'
-                          : 'bg-red-100 text-red-600'
+                          : isPdf
+                          ? 'bg-red-100 text-red-600'
+                          : 'bg-slate-200 text-slate-700'
                       }`}
                     >
-                      <FileText className="w-5 h-5" />
+                      {isVideo ? (
+                        <Video className="w-5 h-5 text-black" />
+                      ) : (
+                        <FileText className="w-5 h-5" />
+                      )}
                     </div>
                     <span className="text-[10px] font-semibold text-[#1a1b20] group-hover:text-[#00113a] transition-colors line-clamp-2 break-all text-center px-1">
                       {att.name}
                     </span>
                     <span
                       className={`mt-1 px-1.5 py-0.2 rounded text-[8px] font-bold border ${
-                        isDocx
+                        isVideo
+                          ? 'bg-white text-black border-black'
+                          : isDocx
                           ? 'bg-blue-50 text-blue-700 border-blue-200'
-                          : 'bg-red-50 text-red-700 border-red-200'
+                          : isPdf
+                          ? 'bg-red-50 text-red-700 border-red-200'
+                          : 'bg-slate-50 text-slate-700 border-slate-200'
                       }`}
                     >
-                      {isPdf ? 'PDF' : isDocx ? 'DOCX' : 'BERKAS'}
+                      {isVideo ? 'VIDEO' : isPdf ? 'PDF' : isDocx ? 'DOCX' : 'BERKAS'}
                     </span>
                   </div>
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 text-white font-medium backdrop-blur-xs pointer-events-none">

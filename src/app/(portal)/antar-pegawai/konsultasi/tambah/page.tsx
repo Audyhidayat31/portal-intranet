@@ -17,7 +17,9 @@ import {
   Heading2,
   Type,
   Quote,
-  Upload,
+  X,
+  FileText,
+  Video,
   CheckCircle,
 } from 'lucide-react';
 import {
@@ -26,6 +28,15 @@ import {
   saveStoredConsultations,
 } from '@/lib/mock-konsultasi';
 
+const readFileAsDataUrl = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
 export default function TambahKonsultasiPage() {
   const router = useRouter();
 
@@ -33,7 +44,9 @@ export default function TambahKonsultasiPage() {
   const [judul, setJudul] = useState('');
   const [tanggal, setTanggal] = useState<Date>(new Date());
   const [keteranganHtml, setKeteranganHtml] = useState('');
-  const [lampiranFileName, setLampiranFileName] = useState('');
+  const [lampiranAttachments, setLampiranAttachments] = useState<
+    Array<{ file?: File; name: string; preview: string | null }>
+  >([]);
   const [jenisKonsultasi, setJenisKonsultasi] = useState<
     'IT' | 'Kesehatan' | 'Pegawai' | ''
   >('');
@@ -212,11 +225,48 @@ export default function TambahKonsultasiPage() {
     }
   };
 
-  const handleLampiranFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setLampiranFileName(file.name);
+  const handleLampiranFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    // Satu berkas maksimal 5MB
+    const oversized = files.find((f) => f.size > 5 * 1024 * 1024);
+    if (oversized) {
+      alert(`Berkas "${oversized.name}" melebihi ukuran maksimal 5MB`);
+      if (lampiranInputRef.current) lampiranInputRef.current.value = '';
+      return;
     }
+
+    // Total maksimal 5 berkas
+    if (lampiranAttachments.length + files.length > 5) {
+      alert('Maksimal 5 berkas diperbolehkan');
+      if (lampiranInputRef.current) lampiranInputRef.current.value = '';
+      return;
+    }
+
+    const newAttachments = await Promise.all(
+      files.map(async (file) => {
+        let preview: string | null = null;
+        try {
+          preview = await readFileAsDataUrl(file);
+        } catch {
+          if (file.type.startsWith('image/')) {
+            preview = URL.createObjectURL(file);
+          }
+        }
+        return { file, name: file.name, preview };
+      })
+    );
+
+    setLampiranAttachments((prev) => [...prev, ...newAttachments]);
+    if (lampiranInputRef.current) {
+      lampiranInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveLampiran = (index: number) => {
+    setLampiranAttachments((prev) => prev.filter((_, i) => i !== index));
+    if (lampiranInputRef.current) lampiranInputRef.current.value = '';
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -240,7 +290,13 @@ export default function TambahKonsultasiPage() {
     setIsSubmitting(true);
 
     const finalCategory = jenisKonsultasi as 'IT' | 'Kesehatan' | 'Pegawai';
-    const finalAttachment = lampiranFileName || undefined;
+    const validPreviews = lampiranAttachments.map((a) => a.preview).filter(Boolean);
+    const finalAttachment =
+      lampiranAttachments.length > 0
+        ? lampiranAttachments.map((a) => a.name).join(', ')
+        : undefined;
+    const finalAttachmentUrl =
+      validPreviews.length > 0 ? JSON.stringify(validPreviews) : undefined;
 
     const newItem: ConsultationItem = {
       id: String(Date.now()),
@@ -250,7 +306,7 @@ export default function TambahKonsultasiPage() {
       status: finalStatus,
       description: rawText || judul.trim(),
       attachmentName: finalAttachment,
-      attachmentUrl: '#',
+      attachmentUrl: finalAttachmentUrl,
       authorName: 'Ahmad Fauzi',
       replies: [],
     };
@@ -262,7 +318,7 @@ export default function TambahKonsultasiPage() {
 
     // Sync to API
     try {
-      await fetch('/api/consultations', {
+      const res = await fetch('/api/consultations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -272,8 +328,14 @@ export default function TambahKonsultasiPage() {
           description: newItem.description,
           status: newItem.status,
           attachmentName: newItem.attachmentName,
+          attachmentUrl: newItem.attachmentUrl,
         }),
       });
+      const resData = await res.json();
+      if (resData.success && resData.data?.id) {
+        newItem.id = resData.data.id;
+        saveStoredConsultations([newItem, ...currentList]);
+      }
     } catch (err) {
       console.warn('API sync fallback to local storage:', err);
     }
@@ -551,54 +613,133 @@ export default function TambahKonsultasiPage() {
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
               Lampiran <span className="float-right hidden md:inline">:</span>
             </label>
-            <div className="flex flex-col gap-4">
+            <div>
               <div className="flex">
                 <input
                   type="text"
                   readOnly
-                  value={lampiranFileName}
-                  placeholder="Nama file .pdf / .docx"
+                  value={
+                    lampiranAttachments.length > 0
+                      ? `${lampiranAttachments.length} berkas dipilih`
+                      : ''
+                  }
+                  placeholder="Maksimal 5 berkas"
                   className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
                 />
                 <button
                   type="button"
                   onClick={() => lampiranInputRef.current?.click()}
-                  className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer"
+                  disabled={lampiranAttachments.length >= 5}
+                  className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer disabled:opacity-50"
                 >
                   Upload
                 </button>
                 <input
                   ref={lampiranInputRef}
                   type="file"
-                  accept=".pdf,.doc,.docx"
+                  multiple
+                  accept="*"
                   onChange={handleLampiranFileChange}
-                  className="hidden" suppressHydrationWarning />
+                  className="hidden"
+                  suppressHydrationWarning
+                />
               </div>
+              <p className="text-xs text-[#757682] mt-1.5 font-normal">Berkas maksimal 5MB</p>
 
-              {/* Dashed preview box: File Preview */}
-              <div
-                onClick={() => lampiranInputRef.current?.click()}
-                className="w-full md:w-2/3 h-52 bg-[#efedf3] border-2 border-dashed border-[#c5c6d2] rounded flex items-center justify-center text-[#757682] text-sm relative group cursor-pointer hover:bg-[#e9e7ee] transition-colors overflow-hidden"
-              >
-                {lampiranFileName ? (
-                  <div className="p-4 text-center">
-                    <Upload className="w-8 h-8 text-[#00113a] mx-auto mb-2" />
-                    <span className="font-semibold text-[#00113a] block break-all">
-                      {lampiranFileName}
-                    </span>
-                    <span className="text-xs text-emerald-600 font-medium mt-1 inline-block">
-                      Berkas Terlampir
-                    </span>
-                  </div>
-                ) : (
-                  <>
-                    <span>File Preview</span>
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/5">
-                      <Upload className="w-8 h-8 text-[#757682]" />
-                    </div>
-                  </>
-                )}
-              </div>
+              {/* Previews */}
+              {lampiranAttachments.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 w-full mt-3">
+                  {lampiranAttachments.map((att, idx) => {
+                    const ext = att.name.split('.').pop()?.toUpperCase() || 'BERKAS';
+                    const isDocx =
+                      att.name.toLowerCase().endsWith('.docx') ||
+                      att.name.toLowerCase().endsWith('.doc');
+                    const isPdf = att.name.toLowerCase().endsWith('.pdf');
+                    const isVideo = Boolean(
+                      att.name.match(/\.(mp4|mkv|avi|mov|webm|3gp|wmv|m4v|flv)$/i) ||
+                        att.preview?.startsWith('data:video')
+                    );
+                    const isImage = Boolean(
+                      att.name.match(/\.(jpg|jpeg|png|webp|gif)$/i) ||
+                        att.preview?.startsWith('data:image')
+                    );
+
+                    return (
+                      <div
+                        key={idx}
+                        className="relative group bg-[#e9e7ee] border border-[#c5c6d2] rounded-md overflow-hidden aspect-square flex flex-col items-center justify-center p-2"
+                      >
+                        {isImage && att.preview ? (
+                          <img
+                            src={att.preview}
+                            alt={att.name}
+                            className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
+                          />
+                        ) : (
+                          <div className="flex flex-col items-center justify-center gap-1.5 p-1 text-center w-full h-full">
+                            <div
+                              className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                                isVideo
+                                  ? 'bg-neutral-200 text-black'
+                                  : isDocx
+                                  ? 'bg-blue-100 text-blue-600'
+                                  : isPdf
+                                  ? 'bg-red-100 text-red-600'
+                                  : 'bg-slate-200 text-[#00113a]'
+                              }`}
+                            >
+                              {isVideo ? (
+                                <Video className="w-5 h-5 text-black" />
+                              ) : (
+                                <FileText className="w-5 h-5" />
+                              )}
+                            </div>
+                            <span
+                              className="text-[10px] font-medium text-slate-800 truncate w-full px-1 text-center"
+                              title={att.name}
+                            >
+                              {att.name}
+                            </span>
+                            {isVideo && (
+                              <span className="text-[8px] font-bold text-black bg-white border border-black px-2 py-0.5 rounded uppercase tracking-wider shadow-2xs">
+                                VIDEO
+                              </span>
+                            )}
+                            {isPdf && !isVideo && (
+                              <span className="text-[8px] font-bold text-red-600 bg-white border border-red-200 px-2 py-0.5 rounded uppercase tracking-wider shadow-2xs">
+                                PDF
+                              </span>
+                            )}
+                            {isDocx && !isVideo && (
+                              <span className="text-[8px] font-bold text-blue-600 bg-white border border-blue-200 px-2 py-0.5 rounded uppercase tracking-wider shadow-2xs">
+                                DOCX
+                              </span>
+                            )}
+                            {!isPdf && !isDocx && !isVideo && (
+                              <span className="text-[8px] font-bold text-slate-600 bg-white border border-slate-200 px-2 py-0.5 rounded uppercase tracking-wider shadow-2xs">
+                                {ext}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveLampiran(idx)}
+                          className="absolute top-1 right-1 bg-black/60 hover:bg-red-600 text-white p-1 rounded-full transition-colors opacity-0 group-hover:opacity-100 cursor-pointer z-10"
+                          title="Hapus berkas"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                        {isImage && (
+                          <span className="absolute bottom-0 w-full bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center">
+                            {att.name}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">

@@ -114,18 +114,6 @@ export default function LupaKataSandiPage() {
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                 <div className="flex-1">
                   <span>{errorMessage}</span>
-                  {authUrl && (
-                    <div className="mt-1.5">
-                      <a
-                        href={authUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-semibold text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
-                      >
-                        Hubungkan Akun Google Pengirim (1-Klik) &rarr;
-                      </a>
-                    </div>
-                  )}
                 </div>
               </div>
             )}

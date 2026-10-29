@@ -20,7 +20,19 @@ import {
   KaryaAkademikItem,
 } from '@/lib/mock-karya-akademik';
 
-const itemsPerPage = 5;
+function stripHtml(html: string): string {
+  if (!html) return '';
+  return html
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/data-path-to-node="[^"]*"/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
 export default function KaryaAkademikPage() {
   const [allItems, setAllItems] = useState<KaryaAkademikItem[]>([]);
@@ -72,7 +84,10 @@ export default function KaryaAkademikPage() {
         const formattedApiItems: KaryaAkademikItem[] = apiItems.map((item: any) => ({
           id: item.id,
           title: item.title,
-          excerpt: item.excerpt || (item.body ? item.body.slice(0, 180) + '...' : ''),
+          excerpt: (() => {
+            const raw = stripHtml(item.excerpt || item.body || item.content || '');
+            return raw.length > 180 ? raw.slice(0, 180) + '...' : raw;
+          })(),
           content: item.body || '',
           coverImage: item.coverImage || '/images/logo-perpusnas.png',
           publishedAt: formatDate(item.publishedAt || item.createdAt),
@@ -341,7 +356,7 @@ export default function KaryaAkademikPage() {
 
                     {/* Deskripsi */}
                     <p className="text-xs sm:text-sm text-slate-600 mt-2 line-clamp-2 sm:line-clamp-3 leading-relaxed font-normal">
-                      {item.excerpt || item.content}
+                      {stripHtml(item.excerpt || item.content)}
                     </p>
                   </div>
 

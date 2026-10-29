@@ -12,7 +12,29 @@ import {
   ImageIcon,
 } from 'lucide-react';
 import { formatDate, canManageContent } from '@/lib/utils';
+import AttachmentDetailList from '@/components/portal/AttachmentDetailList';
 
+const cleanHumorContent = (content: string) => {
+  if (!content) return '';
+  return content
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&nbsp/gi, ' ');
+};
+
+const decodeHtmlEntities = (str: string) => {
+  return str
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&nbsp/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>');
+};
+
+const isHtmlContent = (str: string) => {
+  return /<[a-z][\s\S]*>/i.test(str);
+};
 
 export default function DetailHumorPage() {
   const params = useParams();
@@ -174,9 +196,27 @@ export default function DetailHumorPage() {
             </h2>
 
             <div className="text-xs sm:text-sm text-[#1a1b20] leading-relaxed whitespace-pre-line space-y-4">
-              {displayContent}
+              {isHtmlContent(displayContent) ? (
+                <div
+                  className="prose max-w-none text-xs sm:text-sm text-[#1a1b20] leading-relaxed whitespace-normal space-y-3 [&>p]:mb-3 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&>i]:italic [&>b]:font-bold [&>strong]:font-bold [&>em]:italic [&>u]:underline [&_source-footnote]:hidden"
+                  dangerouslySetInnerHTML={{ __html: cleanHumorContent(displayContent) }}
+                />
+              ) : (
+                <span>{decodeHtmlEntities(displayContent).trimEnd()}</span>
+              )}
             </div>
           </div>
+
+          {/* Section: LAMPIRAN (Shown if humor has attachments) */}
+          {(item?.attachmentName || item?.attachmentUrl) && (
+            <div className="mt-8 pt-6 border-t border-[#e2e3ea]">
+              <AttachmentDetailList
+                attachmentName={item.attachmentName}
+                attachmentUrl={item.attachmentUrl}
+              />
+            </div>
+          )}
+
           {/* Divider Line */}
           <div className="border-t border-[#c5c6d2] my-8" />
 

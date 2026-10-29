@@ -10,6 +10,9 @@ export interface JelajahBumiItem {
   authorId?: string;
   author?: any;
   location?: string;
+  coverImageName?: string;
+  attachmentName?: string;
+  attachmentUrl?: string;
   attachments?: Array<{ id: number; label: string; src: string }>;
 }
 

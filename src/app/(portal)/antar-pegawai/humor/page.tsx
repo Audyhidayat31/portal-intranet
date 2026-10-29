@@ -21,6 +21,24 @@ import { formatDate, isUserAdmin } from '@/lib/utils';
 import { HumorItem } from '@/lib/mock-humor';
 import { Pagination } from '@/components/ui/Pagination';
 
+const stripHtml = (html: string): string => {
+  if (!html) return '';
+  return html
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&nbsp/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
 export default function HumorPage() {
   const [humorList, setHumorList] = useState<HumorItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -73,18 +91,21 @@ export default function HumorPage() {
       .then((data) => {
         const apiItems = data.success && Array.isArray(data.data) ? data.data : [];
 
-        const formattedApiItems: HumorItem[] = apiItems.map((item: any) => ({
-          id: item.id,
-          title: item.title,
-          excerpt: item.excerpt || (item.body ? item.body.slice(0, 110) + '...' : ''),
-          content: item.body || '',
-          coverImage: item.coverImage || '/images/logo-perpusnas.png',
-          publishedAt: item.publishedAt || item.createdAt || '',
-          status: item.status === 'MENUNGGU' ? 'Menunggu' : 'Terbit',
-          authorName: item.author?.name || 'Pegawai Perpusnas',
-          authorId: item.authorId || item.author?.id,
-          author: item.author,
-        }));
+        const formattedApiItems: HumorItem[] = apiItems.map((item: any) => {
+          const cleanBody = stripHtml(item.body || '');
+          return {
+            id: item.id,
+            title: item.title,
+            excerpt: item.excerpt || (cleanBody ? (cleanBody.length > 110 ? cleanBody.slice(0, 110) + '...' : cleanBody) : ''),
+            content: item.body || '',
+            coverImage: item.coverImage || '/images/logo-perpusnas.png',
+            publishedAt: item.publishedAt || item.createdAt || '',
+            status: item.status === 'MENUNGGU' ? 'Menunggu' : 'Terbit',
+            authorName: item.author?.name || 'Pegawai Perpusnas',
+            authorId: item.authorId || item.author?.id,
+            author: item.author,
+          };
+        });
 
         setHumorList(formattedApiItems);
         setCurrentPage(1);
@@ -298,11 +319,11 @@ export default function HumorPage() {
                   className="bg-white border border-[#c5c6d2] rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-300 group"
                 >
                   {/* Top Cover Image */}
-                  <div className="w-full h-48 border-b border-[#c5c6d2] overflow-hidden relative shrink-0 bg-slate-100 flex items-center justify-center p-2">
+                  <div className="w-full h-48 border-b border-[#c5c6d2] overflow-hidden relative shrink-0 bg-slate-100">
                     <img
                       src={item.coverImage}
                       alt={item.title}
-                      className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
 

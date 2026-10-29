@@ -7,7 +7,16 @@ export interface OlahragaItem {
   publishedAt: string;
   status: 'Terbit' | 'Menunggu';
   authorName?: string;
+  authorId?: string;
+  author?: any;
+  coverImageName?: string;
+  attachmentName?: string;
+  attachmentUrl?: string;
   attachments?: Array<{ id: number; label: string; src: string }>;
+  createdAt?: string;
+  updatedAt?: string;
+  editor?: { name: string } | null;
+  editorName?: string | null;
 }
 
 export const MOCK_OLAHRAGA_ATTACHMENTS_5 = [

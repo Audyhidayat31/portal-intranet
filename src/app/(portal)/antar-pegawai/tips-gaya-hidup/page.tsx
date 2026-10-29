@@ -17,6 +17,24 @@ import {
   TipsGayaHidupItem,
 } from '@/lib/mock-tips-gaya-hidup';
 
+const stripHtml = (html: string): string => {
+  if (!html) return '';
+  return html
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&nbsp/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
 export default function TipsGayaHidupPage() {
   const [itemsList, setItemsList] = useState<TipsGayaHidupItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -64,7 +82,10 @@ export default function TipsGayaHidupPage() {
         const formattedApiItems: TipsGayaHidupItem[] = apiItems.map((item: any, idx: number) => ({
           id: item.id,
           title: item.title,
-          excerpt: item.excerpt || (item.body ? item.body.slice(0, 140) + '...' : ''),
+          excerpt: (() => {
+            const raw = stripHtml(item.excerpt || item.body || item.content || '');
+            return raw.length > 140 ? raw.slice(0, 140) + '...' : raw;
+          })(),
           content: item.body || '',
           coverImage: item.coverImage || `/images/tips-gaya-hidup/card-${(idx % 9) + 1}.jpg`,
           publishedAt: item.createdAt || '2026-08-19',
@@ -292,7 +313,7 @@ export default function TipsGayaHidupPage() {
 
                       {/* Card Excerpt */}
                       <p className="text-sm text-[#444650] mb-6 line-clamp-3 leading-relaxed flex-grow">
-                        {item.excerpt}
+                        {stripHtml(item.excerpt)}
                       </p>
                     </div>
 

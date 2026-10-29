@@ -56,8 +56,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          message: emailResult.error || 'Gmail API belum diotorisasi. Hubungkan akun Google melalui /api/auth/google/authorize.',
-          authorizeUrl: '/api/auth/google/authorize',
+          message: emailResult.error || 'Pengiriman email gagal. Pastikan server SMTP atau Gmail API telah aktif.',
           statusUrl: '/api/auth/google/status',
         },
         { status: 400 }

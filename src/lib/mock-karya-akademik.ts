@@ -21,6 +21,9 @@ export interface KaryaAkademikItem {
   authorUnit?: string;
   authorAvatar?: string;
   attachments?: KaryaAkademikAttachment[];
+  coverImageName?: string;
+  attachmentName?: string;
+  attachmentUrl?: string;
   editor?: { name: string } | null;
   editorName?: string | null;
 }

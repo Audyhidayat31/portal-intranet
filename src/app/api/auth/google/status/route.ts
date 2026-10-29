@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getGmailCredentials, sendPasswordResetEmail, getGoogleOAuthUrl } from '@/lib/gmail';
+import { getGmailCredentials, getSmtpCredentials, sendPasswordResetEmail, getGoogleOAuthUrl } from '@/lib/gmail';
 
 export async function GET() {
+  const smtp = getSmtpCredentials();
+  const isSmtpConfigured = Boolean(smtp.host && smtp.user && smtp.pass);
+
   const { clientId, clientSecret, refreshToken, senderEmail } = getGmailCredentials();
-  const isConfigured = Boolean(clientId && clientSecret && refreshToken);
+  const isGoogleConfigured = Boolean(clientId && clientSecret && refreshToken);
 
   let isTokenValid = false;
   let testError = '';
 
-  if (isConfigured) {
+  if (isGoogleConfigured) {
     try {
       const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
@@ -24,24 +27,25 @@ export async function GET() {
       if (tokenRes.ok && data.access_token) {
         isTokenValid = true;
       } else {
-        testError = data.error_description || data.error || 'Token tidak valid';
+        testError = data.error_description || data.error || 'Token Google tidak valid';
       }
     } catch (e: any) {
       testError = e.message;
     }
   }
 
+  const isEmailServiceReady = isSmtpConfigured || isTokenValid;
   const authUrl = getGoogleOAuthUrl();
 
   const html = `<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="utf-8">
-  <title>Status Integrasi Gmail API - Cakrawala</title>
+  <title>Status Integrasi Email Layanan - Cakrawala</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; color: #1e293b; padding: 24px 16px; margin: 0; }
-    .card { max-width: 600px; margin: 20px auto; background: #ffffff; padding: 32px; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; }
+    .card { max-width: 640px; margin: 20px auto; background: #ffffff; padding: 32px; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; }
     .badge { display: inline-block; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 700; }
     .badge-success { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
     .badge-error { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
@@ -51,7 +55,7 @@ export async function GET() {
     .info-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #e2e8f0; }
     .info-row:last-child { border-bottom: none; }
     .info-label { font-weight: 600; color: #475569; }
-    .info-val { font-family: monospace; color: #0f172a; word-break: break-all; max-width: 320px; }
+    .info-val { font-family: monospace; color: #0f172a; word-break: break-all; max-width: 340px; }
     .btn { display: inline-block; background: #007BFF; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 14px; border: none; cursor: pointer; transition: background 0.15s; }
     .btn:hover { background: #0056b3; }
     .btn-outline { background: white; color: #0f172a; border: 1px solid #cbd5e1; margin-left: 8px; }
@@ -64,57 +68,56 @@ export async function GET() {
   <div class="card">
     <div>
       ${
-        isTokenValid
+        isSmtpConfigured
+          ? '<span class="badge badge-success">✓ SMTP MAIL.GO.ID AKTIF & TERKONFIGURASI</span>'
+          : isTokenValid
           ? '<span class="badge badge-success">✓ GMAIL API TERHUBUNG & AKTIF</span>'
-          : '<span class="badge badge-error">✕ GMAIL API BELUM TERHUBUNG</span>'
+          : '<span class="badge badge-error">✕ LAYANAN EMAIL BELUM AKTIF</span>'
       }
     </div>
-    <h1>Status Integrasi Gmail API</h1>
+    <h1>Status Integrasi Email (SMTP perpusnas.go.id)</h1>
     <p>
       ${
-        isTokenValid
-          ? 'Gmail API telah siap digunakan untuk mengirimkan email otomatis reset kata sandi ke kotak masuk pengguna.'
-          : 'Gmail API memerlukan otorisasi akun Google pengirim agar dapat mengirimkan email tautan secara resmi.'
+        isSmtpConfigured
+          ? 'Sistem pengiriman email telah terhubung dengan server resmi <strong>smtpauth.mail.go.id</strong> menggunakan akun <strong>' + smtp.user + '</strong>.'
+          : 'Server email belum terkonfigurasi secara lengkap.'
       }
     </p>
 
     <div class="info-list">
+      <div style="font-weight:700;margin-bottom:8px;color:#0f172a;">Pengaturan SMTP (Utama):</div>
       <div class="info-row">
-        <span class="info-label">Client ID:</span>
-        <span class="info-val">${clientId ? clientId.substring(0, 20) + '...' : '(Belum diatur)'}</span>
+        <span class="info-label">SMTP Host:</span>
+        <span class="info-val">${smtp.host || '(Belum diset)'}</span>
       </div>
       <div class="info-row">
-        <span class="info-label">Client Secret:</span>
-        <span class="info-val">${clientSecret ? '••••••••' + clientSecret.slice(-4) : '(Belum diatur)'}</span>
+        <span class="info-label">Port & Enkripsi:</span>
+        <span class="info-val">${smtp.port} (TLS / STARTTLS)</span>
       </div>
       <div class="info-row">
-        <span class="info-label">Email Pengirim:</span>
-        <span class="info-val">${senderEmail || '(Otomatis mengikuti akun Google pengotorisasi)'}</span>
+        <span class="info-label">Akun Email Pengirim:</span>
+        <span class="info-val">${smtp.user || '(Belum diset)'}</span>
       </div>
       <div class="info-row">
-        <span class="info-label">Refresh Token:</span>
-        <span class="info-val">${refreshToken ? '✓ Tersimpan di .env' : '✕ Kosong (Perlu Otorisasi)'}</span>
+        <span class="info-label">Status Sandi:</span>
+        <span class="info-val">${smtp.pass ? '✓ Tersimpan di .env' : '✕ Belum diset'}</span>
       </div>
-      ${testError ? `<div class="info-row"><span class="info-label" style="color:#b91c1c;">Catatan:</span><span class="info-val" style="color:#b91c1c;">${testError}</span></div>` : ''}
     </div>
 
     <div>
-      <a href="${authUrl}" class="btn">
-        ${isTokenValid ? 'Hubungkan Ulang Akun Google' : 'Hubungkan Akun Google Pengirim (1-Klik)'}
-      </a>
-      <a href="/lupa-kata-sandi" class="btn btn-outline">
-        Halaman Lupa Kata Sandi
+      <a href="/lupa-kata-sandi" class="btn btn-outline" style="margin-left:0;">
+        Kunjungi Halaman Lupa Kata Sandi
       </a>
     </div>
 
     ${
-      isTokenValid
+      isEmailServiceReady
         ? `
     <div class="test-box">
       <h3 style="font-size: 15px; margin: 0 0 8px;">Kirim Email Percobaan (Uji Coba Pengiriman)</h3>
-      <p style="margin-bottom: 12px; font-size: 13px;">Kirim email reset kata sandi uji coba langsung ke email Anda untuk memastikan email masuk ke Inbox Gmail:</p>
+      <p style="margin-bottom: 12px; font-size: 13px;">Kirim email reset kata sandi uji coba langsung ke email Anda untuk memastikan pengiriman berjalan lancar:</p>
       <form action="/api/auth/google/status" method="POST">
-        <input type="email" name="testEmail" class="input-text" placeholder="Masukkan alamat email Anda (contoh: budiarga21@gmail.com)" required value="${senderEmail || ''}" />
+        <input type="email" name="testEmail" class="input-text" placeholder="Masukkan alamat email Anda (contoh: ${smtp.user || 'nama@perpusnas.go.id'})" required value="${smtp.user || ''}" />
         <button type="submit" class="btn" style="background:#15803d;">Kirim Email Uji Coba Sekarang</button>
       </form>
     </div>
@@ -179,9 +182,9 @@ export async function POST(request: NextRequest) {
         <body>
           <div class="card">
             <h2>✓ Email Berhasil Terkirim!</h2>
-            <p>Email uji coba telah dikirim ke <strong>${testEmail}</strong> melalui Gmail API.</p>
-            <p style="font-size:12px;color:#64748b;">ID Pesan Google: ${res.messageId || '-'}</p>
-            <p style="font-size:13px;color:#475569;">Silakan cek kotak masuk (Inbox) atau folder Spam pada akun Gmail Anda.</p>
+            <p>Email uji coba telah dikirim ke <strong>${testEmail}</strong> melalui <strong>${res.via === 'SMTP' ? 'SMTP Mail.go.id' : 'Layanan Email'}</strong>.</p>
+            <p style="font-size:12px;color:#64748b;">ID Pesan: ${res.messageId || '-'}</p>
+            <p style="font-size:13px;color:#475569;">Silakan periksa kotak masuk (Inbox) atau folder Spam pada akun email Anda.</p>
             <a href="/lupa-kata-sandi" class="btn">Kembali ke Lupa Kata Sandi</a>
           </div>
         </body>
