@@ -26,6 +26,11 @@ import {
   isTahukahAndaDeleted,
 } from '@/lib/mock-tahukah-anda';
 
+const stripHtml = (html: string) => {
+  if (!html) return '';
+  return html.replace(/<[^>]*>/g, '').trim();
+};
+
 export default function DaftarTahukahAndaPage() {
   const [itemList, setItemList] = useState<TahukahAndaItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -95,7 +100,7 @@ export default function DaftarTahukahAndaPage() {
           .map((item: any) => ({
             id: item.id,
             title: item.title,
-            excerpt: item.excerpt || (item.body ? item.body.slice(0, 140) + '...' : ''),
+            excerpt: item.excerpt ? stripHtml(item.excerpt) : (item.body ? stripHtml(item.body).slice(0, 140) + '...' : ''),
             content: item.body || '',
             coverImage:
               item.coverImage ||
@@ -405,7 +410,7 @@ export default function DaftarTahukahAndaPage() {
 
                       {/* Card Excerpt */}
                       <p className="text-sm text-[#444650] mb-6 line-clamp-3 leading-relaxed flex-grow">
-                        {item.excerpt}
+                        {stripHtml(item.excerpt)}
                       </p>
                     </div>
 

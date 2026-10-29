@@ -4,11 +4,16 @@ export interface TahukahAndaItem {
   excerpt: string;
   content: string;
   coverImage: string;
+  coverImageName?: string;
+  attachmentName?: string;
+  attachmentUrl?: string;
   publishedAt: string;
   status: 'Terbit' | 'Menunggu';
   authorName?: string;
   authorId?: string;
+  editor?: { name: string };
   editorName?: string;
+  updatedAt?: string;
   attachments?: Array<{ id: number; label: string; src: string }>;
 }
 

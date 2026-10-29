@@ -21,6 +21,7 @@ import {
   Upload,
   CheckCircle,
   FileText,
+  Video,
   X,
 } from 'lucide-react';
 import {
@@ -29,6 +30,52 @@ import {
   saveStoredFigures,
 } from '@/lib/mock-kupas-sosok';
 import { canManageContent } from '@/lib/utils';
+
+const compressImage = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 1200;
+        const MAX_HEIGHT = 1200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            height *= MAX_HEIGHT / height;
+            width = MAX_HEIGHT;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.8));
+      };
+      img.onerror = (error) => reject(error);
+    };
+    reader.onerror = (error) => reject(error);
+  });
+};
+
+const readFileAsDataUrl = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
 
 export default function EditKupasSosokPage() {
   const params = useParams();
@@ -48,6 +95,23 @@ export default function EditKupasSosokPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [gambarError, setGambarError] = useState('');
+  const [lampiranError, setLampiranError] = useState('');
+  const [previewAttachmentImage, setPreviewAttachmentImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (gambarError) {
+      const timer = setTimeout(() => setGambarError(''), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [gambarError]);
+
+  useEffect(() => {
+    if (lampiranError) {
+      const timer = setTimeout(() => setLampiranError(''), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [lampiranError]);
 
   // Active toolbar formatting states
   const [activeStyles, setActiveStyles] = useState({
@@ -98,7 +162,7 @@ export default function EditKupasSosokPage() {
       if (matchedFigure.status) setStatus(matchedFigure.status);
       if (matchedFigure.photoUrl) {
         setGambarPreview(matchedFigure.photoUrl);
-        setGambarFileName(matchedFigure.photoUrl.split('/').pop() || '');
+        setGambarFileName(matchedFigure.coverImageName || matchedFigure.photoUrl.split('/').pop() || '');
       }
       const contentVal = matchedFigure.fullStory || '';
       setDeskripsiHtml(contentVal);
@@ -109,7 +173,21 @@ export default function EditKupasSosokPage() {
           setViewDate(parsed);
         }
       }
-      if (matchedFigure.attachments && matchedFigure.attachments.length > 0) {
+      if (matchedFigure.attachmentUrl) {
+        try {
+          const parsed = JSON.parse(matchedFigure.attachmentUrl);
+          if (Array.isArray(parsed)) {
+            setLampiranAttachments(
+              parsed.map((att: any) => ({
+                name: att.name || 'Lampiran',
+                preview: att.url || null,
+              }))
+            );
+          }
+        } catch {
+          // fallback
+        }
+      } else if (matchedFigure.attachments && matchedFigure.attachments.length > 0) {
         setLampiranAttachments(
           matchedFigure.attachments.map((att: any) => {
             const name = att.label || att.name || (att.src ? att.src.split('/').pop() : `Lampiran ${att.id}`);
@@ -151,7 +229,7 @@ export default function EditKupasSosokPage() {
           setUnitKerja(item.unitKerja || '');
           if (item.photoUrl) {
             setGambarPreview(item.photoUrl);
-            setGambarFileName(item.photoUrl.split('/').pop() || '');
+            setGambarFileName(item.coverImageName || item.photoUrl.split('/').pop() || '');
           }
           const bodyVal = item.fullStory || item.body || '';
           setDeskripsiHtml(bodyVal);
@@ -162,7 +240,21 @@ export default function EditKupasSosokPage() {
               setViewDate(parsed);
             }
           }
-          if (item.attachments && item.attachments.length > 0) {
+          if (item.attachmentUrl) {
+            try {
+              const parsed = JSON.parse(item.attachmentUrl);
+              if (Array.isArray(parsed)) {
+                setLampiranAttachments(
+                  parsed.map((att: any) => ({
+                    name: att.name || 'Lampiran',
+                    preview: att.url || null,
+                  }))
+                );
+              }
+            } catch {
+              // fallback
+            }
+          } else if (item.attachments && item.attachments.length > 0) {
             setLampiranAttachments(
               item.attachments.map((att: any) => {
                 const name = att.label || att.name || (att.src ? att.src.split('/').pop() : `Lampiran ${att.id}`);
@@ -304,15 +396,38 @@ export default function EditKupasSosokPage() {
     }
   };
 
-  const handleGambarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleGambarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const validTypes = ['image/jpeg', 'image/png'];
+      const validExtensions = ['.jpg', '.jpeg', '.png'];
+      const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+
+      if (!validTypes.includes(file.type) && !validExtensions.includes(fileExt)) {
+        if (gambarInputRef.current) gambarInputRef.current.value = '';
+        setGambarFileName('');
+        setGambarPreview(null);
+        setGambarError('Berkas harus berupa .jpg/ .png');
+        return;
+      }
+
+      setGambarError('');
+
+      if (file.size > 5 * 1024 * 1024) {
+        if (gambarInputRef.current) gambarInputRef.current.value = '';
+        setGambarFileName('');
+        setGambarPreview(null);
+        setGambarError('Berkas maksimal 5MB');
+        return;
+      }
       setGambarFileName(file.name);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setGambarPreview(event.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressed = await compressImage(file);
+        setGambarPreview(compressed);
+      } catch {
+        const dataUrl = await readFileAsDataUrl(file);
+        setGambarPreview(dataUrl);
+      }
     }
   };
 
@@ -320,34 +435,53 @@ export default function EditKupasSosokPage() {
     e.stopPropagation();
     setGambarFileName('');
     setGambarPreview(null);
+    setGambarError('');
     if (gambarInputRef.current) {
       gambarInputRef.current.value = '';
     }
   };
 
-  const handleLampiranFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLampiranFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
-    const oversized = files.find((f) => f.size > 5 * 1024 * 1024);
-    if (oversized) {
-      alert(`File "${oversized.name}" melebihi ukuran maksimal 5MB`);
+    const validExtensions = ['.pdf', '.docx', '.doc', '.jpg', '.jpeg', '.png'];
+    const invalidFile = files.find((f) => {
+      const ext = f.name.substring(f.name.lastIndexOf('.')).toLowerCase();
+      return !validExtensions.includes(ext);
+    });
+
+    if (invalidFile) {
+      setLampiranError('Berkas harus berupa .pdf/ .docx/ .jpg/ .png');
       if (lampiranInputRef.current) lampiranInputRef.current.value = '';
       return;
     }
 
-    if (lampiranAttachments.length + files.length > 10) {
-      alert('Maksimal 10 lampiran diperbolehkan');
+    const oversized = files.find((f) => f.size > 5 * 1024 * 1024);
+    if (oversized) {
+      setLampiranError(`Berkas "${oversized.name}" melebihi ukuran maksimal 5MB`);
+      if (lampiranInputRef.current) lampiranInputRef.current.value = '';
       return;
     }
 
-    const newAttachments = files.map((file) => {
+    if (lampiranAttachments.length + files.length > 5) {
+      setLampiranError('Maksimal 5 berkas diperbolehkan');
+      if (lampiranInputRef.current) lampiranInputRef.current.value = '';
+      return;
+    }
+
+    setLampiranError('');
+
+    const newAttachments: Array<{ file: File; name: string; preview: string | null }> = [];
+    for (const file of files) {
       let preview: string | null = null;
-      if (file.type.startsWith('image/')) {
-        preview = URL.createObjectURL(file);
+      try {
+        preview = await readFileAsDataUrl(file);
+      } catch {
+        preview = null;
       }
-      return { file, name: file.name, preview };
-    });
+      newAttachments.push({ file, name: file.name, preview });
+    }
 
     setLampiranAttachments([...lampiranAttachments, ...newAttachments]);
     if (lampiranInputRef.current) {
@@ -356,8 +490,32 @@ export default function EditKupasSosokPage() {
   };
 
   const handleRemoveLampiran = (index: number) => {
+    setLampiranError('');
     setLampiranAttachments(lampiranAttachments.filter((_, i) => i !== index));
     if (lampiranInputRef.current) lampiranInputRef.current.value = '';
+  };
+
+  const handleDownloadAttachment = (att: { file?: File; name: string; preview: string | null }) => {
+    if (att.file) {
+      const url = URL.createObjectURL(att.file);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = att.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } else if (att.preview) {
+      const a = document.createElement('a');
+      a.href = att.preview;
+      a.download = att.name;
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } else {
+      alert(`Mengunduh berkas ${att.name}...`);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -378,26 +536,36 @@ export default function EditKupasSosokPage() {
     setIsSubmitting(true);
 
     try {
-
       try {
         localStorage.removeItem('portal_figures_data');
       } catch { }
+
+      try {
+        const userStr = localStorage.getItem('portal_user');
+        const userName = userStr ? JSON.parse(userStr)?.name : 'Administrator Perpusnas';
+        localStorage.setItem(`last_editor_${rawSlug}`, userName || 'Administrator Perpusnas');
+      } catch { }
+
+      const payload = {
+        name: nama,
+        position: jabatan.trim() || undefined,
+        unitKerja: unitKerja.trim() || undefined,
+        quote: plainStory.slice(0, 160).trim(),
+        fullStory: storyContent || plainStory,
+        photoUrl: gambarPreview || '',
+        coverImageName: gambarFileName || undefined,
+        attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments.map((a) => a.name).join(', ') : undefined,
+        attachmentUrl: lampiranAttachments.length > 0 ? JSON.stringify(lampiranAttachments.map((a) => ({ name: a.name, url: a.preview || '' }))) : undefined,
+        status: status === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
+        publishedAt: tanggal.toISOString(),
+      };
 
       // Attempt API PUT
       try {
         await fetch(`/api/figure-profiles/${rawSlug}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: nama,
-            position: jabatan.trim(),
-            unitKerja: unitKerja.trim(),
-            quote: plainStory.slice(0, 160).trim(),
-            fullStory: storyContent || plainStory,
-            photoUrl: gambarPreview || '',
-            isSpotlight: false,
-            attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments.map((a) => a.name).join(', ') : undefined,
-          }),
+          body: JSON.stringify(payload),
         });
       } catch (e) {
         console.warn('API PUT figure failed, local storage updated', e);
@@ -594,7 +762,7 @@ export default function EditKupasSosokPage() {
                   type="text"
                   value={jabatan}
                   onChange={(e) => setJabatan(e.target.value)}
-                  placeholder="Contoh: Pustakawan Ahli Utama"
+                  placeholder="Tuliskan jabatan"
                   className="w-full border border-[#c5c6d2] rounded p-3 text-sm sm:text-base text-[#1a1b20] placeholder-[#757682] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none transition-colors"
                 />
                 <input
@@ -602,7 +770,7 @@ export default function EditKupasSosokPage() {
                   type="text"
                   value={unitKerja}
                   onChange={(e) => setUnitKerja(e.target.value)}
-                  placeholder="Contoh: Deputi Pengembangan Bahan Pustaka"
+                  placeholder="Tuliskan unit kerja"
                   className="w-full border border-[#c5c6d2] rounded p-3 text-sm sm:text-base text-[#1a1b20] placeholder-[#757682] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none transition-colors"
                 />
               </div>
@@ -686,30 +854,42 @@ export default function EditKupasSosokPage() {
 
               {/* 6. Foto Kupas Sosok */}
               <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-                Foto / Gambar Profil <span className="float-right hidden md:inline">:</span>
+                Gambar <span className="float-right hidden md:inline">:</span>
               </label>
               <div className="flex flex-col gap-4">
-                <div className="flex">
-                  <input
-                    type="text"
-                    readOnly
-                    value={gambarFileName}
-                    placeholder="Nama File.jpg/png"
-                    className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => gambarInputRef.current?.click()}
-                    className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer"
-                  >
-                    Upload
-                  </button>
-                  <input
-                    ref={gambarInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleGambarFileChange}
-                    className="hidden" suppressHydrationWarning />
+                <div className="relative">
+                  <div className="flex">
+                    <input
+                      type="text"
+                      readOnly
+                      value={gambarFileName}
+                      placeholder="Nama File.jpg/png"
+                      className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => gambarInputRef.current?.click()}
+                      className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer"
+                    >
+                      Upload
+                    </button>
+                    <input
+                      ref={gambarInputRef}
+                      type="file"
+                      accept=".jpg,.jpeg,.png"
+                      onChange={handleGambarFileChange}
+                      className="hidden" suppressHydrationWarning />
+                  </div>
+
+                  {gambarError && (
+                    <div className="absolute left-2 top-[calc(100%+8px)] z-40 flex items-center gap-2.5 bg-white text-slate-800 text-xs sm:text-sm py-2 px-3.5 rounded-lg shadow-xl border border-slate-300 animate-in fade-in slide-in-from-top-1 duration-150">
+                      <div className="absolute -top-1.5 left-6 w-3 h-3 bg-white border-t border-l border-slate-300 rotate-45 transform" />
+                      <div className="w-4 h-4 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px] font-bold shrink-0 shadow-xs">!</div>
+                      <span className="font-medium text-slate-800">{gambarError}</span>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-[#757682] mt-1.5 font-normal">Berkas Maksimal 5MB</p>
                 </div>
 
                 {/* Dashed preview box: Gambar Preview */}
@@ -754,19 +934,19 @@ export default function EditKupasSosokPage() {
                 Lampiran <span className="float-right hidden md:inline">:</span>
               </label>
               <div className="flex flex-col gap-4">
-                <div>
+                <div className="relative">
                   <div className="flex">
                     <input
                       type="text"
                       readOnly
-                      value={lampiranAttachments.length > 0 ? `${lampiranAttachments.length} file dipilih` : ''}
-                      placeholder="Berkas berupa .jpg/ .png/ .pdf"
+                      value={lampiranAttachments.length > 0 ? `${lampiranAttachments.length} berkas dipilih` : ''}
+                      placeholder="Maksimal 5 berkas berupa .pdf/ .docx/ .jpg/ .png"
                       className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
                     />
                     <button
                       type="button"
                       onClick={() => lampiranInputRef.current?.click()}
-                      disabled={lampiranAttachments.length >= 10}
+                      disabled={lampiranAttachments.length >= 5}
                       className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer disabled:opacity-50"
                     >
                       Upload
@@ -781,45 +961,142 @@ export default function EditKupasSosokPage() {
                       suppressHydrationWarning
                     />
                   </div>
+
+                  {lampiranError && (
+                    <div className="absolute left-2 top-[calc(100%+8px)] z-40 flex items-center gap-2.5 bg-white text-slate-800 text-xs sm:text-sm py-2 px-3.5 rounded-lg shadow-xl border border-slate-300 animate-in fade-in slide-in-from-top-1 duration-150">
+                      <div className="absolute -top-1.5 left-6 w-3 h-3 bg-white border-t border-l border-slate-300 rotate-45 transform" />
+                      <div className="w-4 h-4 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px] font-bold shrink-0 shadow-xs">!</div>
+                      <span className="font-medium text-slate-800">{lampiranError}</span>
+                    </div>
+                  )}
+
                   <p className="text-xs text-[#757682] mt-1.5 font-normal">Berkas Maksimal 5MB</p>
                 </div>
 
                 {/* Previews */}
                 {lampiranAttachments.length > 0 && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 w-full">
-                    {lampiranAttachments.map((att, idx) => (
-                      <div
-                        key={idx}
-                        className="relative group bg-[#e9e7ee] border border-[#c5c6d2] rounded-md overflow-hidden aspect-square flex flex-col items-center justify-center"
-                      >
-                        {att.preview ? (
-                          <img
-                            src={att.preview}
-                            alt={att.name}
-                            className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                          />
-                        ) : (
-                          <div className="flex flex-col items-center gap-2 p-2">
-                            <FileText className="w-8 h-8 text-[#00113a]" />
-                            <span className="text-[10px] font-bold text-center break-all line-clamp-2 text-[#00113a]">
-                              {att.name}
-                            </span>
-                          </div>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveLampiran(idx)}
-                          className="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white p-1 rounded-full transition-all opacity-90 hover:opacity-100 cursor-pointer shadow-xs z-20" title="Hapus file ini" aria-label="Hapus file"
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 w-full mt-3">
+                    {lampiranAttachments.map((att, idx) => {
+                      const ext = att.name.split('.').pop()?.toUpperCase() || 'BERKAS';
+                      const isDocx =
+                        att.name.toLowerCase().endsWith('.docx') ||
+                        att.name.toLowerCase().endsWith('.doc');
+                      const isPdf = att.name.toLowerCase().endsWith('.pdf');
+                      const isVideo = Boolean(
+                        att.name.match(/\.(mp4|mkv|avi|mov|webm|3gp|wmv|m4v|flv)$/i) ||
+                          att.preview?.startsWith('data:video')
+                      );
+                      const isImage = Boolean(
+                        att.name.match(/\.(jpg|jpeg|png|webp|gif)$/i) ||
+                          att.preview?.startsWith('data:image')
+                      );
+                      const imgUrl = att.preview || (att.file ? URL.createObjectURL(att.file) : null);
+
+                      return (
+                        <div
+                          key={idx}
+                          onClick={() => {
+                            if (isImage && imgUrl) {
+                              setPreviewAttachmentImage(imgUrl);
+                            } else {
+                              handleDownloadAttachment(att);
+                            }
+                          }}
+                          title={
+                            isImage
+                              ? 'Klik untuk memperbesar'
+                              : `Klik untuk unduh: ${att.name}`
+                          }
+                          className={`relative group border border-[#c5c6d2] rounded-md overflow-hidden aspect-square flex flex-col items-center justify-center cursor-pointer transition-all shadow-2xs ${
+                            isImage && imgUrl
+                              ? 'p-0 bg-transparent'
+                              : 'p-2 bg-[#e9e7ee] hover:bg-[#d8d9e2]'
+                          }`}
                         >
-                          <X className="w-3 h-3" />
-                        </button>
-                        {att.preview && (
-                          <span className="absolute bottom-0 w-full bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center">
-                            {att.name}
-                          </span>
-                        )}
-                      </div>
-                    ))}
+                          {isImage && imgUrl ? (
+                            <>
+                              <img
+                                src={imgUrl}
+                                alt={att.name}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 text-white font-medium backdrop-blur-xs pointer-events-none z-10">
+                                <span className="text-xs text-center px-2">
+                                  Klik untuk memperbesar
+                                </span>
+                              </div>
+                              <span className="absolute bottom-0 w-full bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center z-10">
+                                {att.name}
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <div className="flex flex-col items-center justify-center gap-1.5 p-1 text-center w-full h-full">
+                                <div
+                                  className={`w-9 h-9 rounded-lg flex items-center justify-center mb-0.5 group-hover:scale-105 transition-transform ${
+                                    isVideo
+                                      ? 'bg-neutral-200 text-black'
+                                      : isDocx
+                                      ? 'bg-blue-100 text-blue-600'
+                                      : isPdf
+                                      ? 'bg-red-100 text-red-600'
+                                      : 'bg-slate-200 text-[#00113a]'
+                                  }`}
+                                >
+                                  {isVideo ? (
+                                    <Video className="w-5 h-5 text-black" />
+                                  ) : (
+                                    <FileText className="w-5 h-5" />
+                                  )}
+                                </div>
+                                <span
+                                  className="text-[10px] font-semibold text-[#1a1b20] group-hover:text-[#00113a] transition-colors line-clamp-2 break-all text-center px-1"
+                                  title={att.name}
+                                >
+                                  {att.name}
+                                </span>
+                                {isVideo && (
+                                  <span className="text-[8px] font-bold text-black bg-white border border-black px-1.5 py-0.2 rounded uppercase tracking-wider shadow-2xs">
+                                    VIDEO
+                                  </span>
+                                )}
+                                {isPdf && !isVideo && (
+                                  <span className="text-[8px] font-bold text-red-600 bg-white border border-red-200 px-1.5 py-0.2 rounded uppercase tracking-wider shadow-2xs">
+                                    PDF
+                                  </span>
+                                )}
+                                {isDocx && !isVideo && (
+                                  <span className="text-[8px] font-bold text-blue-600 bg-white border border-blue-200 px-1.5 py-0.2 rounded uppercase tracking-wider shadow-2xs">
+                                    DOCX
+                                  </span>
+                                )}
+                                {!isPdf && !isDocx && !isVideo && (
+                                  <span className="text-[8px] font-bold text-slate-600 bg-white border border-slate-200 px-1.5 py-0.2 rounded uppercase tracking-wider shadow-2xs">
+                                    {ext}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 text-white font-medium backdrop-blur-xs pointer-events-none z-10">
+                                <span className="text-xs text-center px-2 leading-tight">
+                                  Klik untuk unduh
+                                </span>
+                              </div>
+                            </>
+                          )}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveLampiran(idx);
+                            }}
+                            className="absolute top-1 right-1 bg-black/60 hover:bg-red-600 text-white p-1 rounded-full transition-colors opacity-0 group-hover:opacity-100 cursor-pointer z-20"
+                            title="Hapus berkas"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -894,6 +1171,32 @@ export default function EditKupasSosokPage() {
           </form>
         </div>
       </div>
+
+      {/* Lightbox Modal Pratinjau Foto Lampiran */}
+      {previewAttachmentImage && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-sm animate-fadeIn p-4 sm:p-8"
+          onClick={() => setPreviewAttachmentImage(null)}
+        >
+          <button
+            type="button"
+            className="absolute top-4 right-4 sm:top-8 sm:right-8 text-white/70 hover:text-white bg-black/50 hover:bg-black/80 rounded-full p-2 transition-all cursor-pointer z-10"
+            onClick={(e) => {
+              e.stopPropagation();
+              setPreviewAttachmentImage(null);
+            }}
+            title="Tutup Pratinjau"
+          >
+            <X className="w-6 h-6 sm:w-8 sm:h-8" />
+          </button>
+          <img
+            src={previewAttachmentImage}
+            alt="Pratinjau Foto Lampiran"
+            className="max-w-full max-h-[90vh] object-contain rounded shadow-2xl cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 }

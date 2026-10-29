@@ -14,8 +14,12 @@ export interface FigureItem {
   careerHistory?: { year: string; role: string }[];
   attachments?: Array<{ id: number; label: string; src: string }>;
   attachmentName?: string;
+  attachmentUrl?: string;
+  coverImageName?: string;
   authorName?: string;
+  editor?: { name: string };
   editorName?: string;
+  updatedAt?: string;
 }
 
 export const STITCH_MOCK_FIGURES_6: FigureItem[] = [
