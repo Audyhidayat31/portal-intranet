@@ -13,6 +13,24 @@ import {
 import { formatDate, isUserAdmin } from '@/lib/utils';
 import { KabarKeluargaItem } from '@/lib/mock-kabar-keluarga';
 
+const stripHtml = (html: string): string => {
+  if (!html) return '';
+  return html
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&nbsp/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
 export default function KabarKeluargaPage() {
   const [allItems, setAllItems] = useState<KabarKeluargaItem[]>([]);
   const [filteredItems, setFilteredItems] = useState<KabarKeluargaItem[]>([]);
@@ -60,7 +78,10 @@ export default function KabarKeluargaPage() {
         const formattedApiItems: KabarKeluargaItem[] = apiItems.map((item: any) => ({
           id: item.id,
           title: item.title,
-          excerpt: item.excerpt || (item.body ? item.body.slice(0, 140) + '...' : ''),
+          excerpt: (() => {
+            const raw = stripHtml(item.excerpt || item.body || item.content || '');
+            return raw.length > 140 ? raw.slice(0, 140) + '...' : raw;
+          })(),
           content: item.body || '',
           coverImage: item.coverImage || '/images/logo-perpusnas.png',
           publishedAt: item.publishedAt || item.createdAt || '',
@@ -300,7 +321,7 @@ export default function KabarKeluargaPage() {
 
                       {/* Card Excerpt */}
                       <p className="text-sm text-[#444650] mb-6 line-clamp-3 leading-relaxed flex-grow">
-                        {item.excerpt}
+                        {stripHtml(item.excerpt)}
                       </p>
                     </div>
 

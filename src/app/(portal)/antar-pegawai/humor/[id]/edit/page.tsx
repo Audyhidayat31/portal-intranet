@@ -13,10 +13,6 @@ import {
   Underline,
   List,
   Link2,
-  Heading1,
-  Heading2,
-  Type,
-  Quote,
   ImageIcon,
   Upload,
   CheckCircle,
@@ -114,9 +110,6 @@ export default function EditHumorPage() {
   const [isStatusMenuOpen, setIsStatusMenuOpen] = useState(false);
   const statusMenuRef = useRef<HTMLDivElement>(null);
 
-  // Styling dropdown state
-  const [isStylingMenuOpen, setIsStylingMenuOpen] = useState(false);
-  const stylingMenuRef = useRef<HTMLDivElement>(null);
 
   // Editor and Input refs
   const editorRef = useRef<HTMLDivElement>(null);
@@ -159,12 +152,6 @@ export default function EditHumorPage() {
       ) {
         setIsStatusMenuOpen(false);
       }
-      if (
-        stylingMenuRef.current &&
-        !stylingMenuRef.current.contains(event.target as Node)
-      ) {
-        setIsStylingMenuOpen(false);
-      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -190,21 +177,34 @@ export default function EditHumorPage() {
             }
           }
           setStatus(item.status === 'MENUNGGU' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit');
-          const content = item.body || item.content || '';
+          const content = (item.body || item.content || '')
+            .replace(/&nbsp;/gi, ' ')
+            .replace(/&nbsp/gi, ' ');
           setDeskripsiHtml(content);
           if (editorRef.current) {
             editorRef.current.innerHTML = content;
           }
           if (item.coverImage) {
             setGambarPreview(item.coverImage);
-            setGambarFileName('sampul-humor.jpg');
+            const safeCoverName = item.coverImageName || (!item.coverImage.startsWith('data:') ? (item.coverImage.split('/').pop() || 'sampul-humor.jpg') : 'sampul-humor.jpg');
+            setGambarFileName(safeCoverName);
           }
           if (item.attachmentName || item.attachment) {
             const attStr = item.attachmentName || item.attachment || '';
             const names = attStr.split(',').map((n: string) => n.trim()).filter(Boolean);
-            setLampiranAttachments(names.map((name: string) => ({
+            let parsedUrls: string[] = [];
+            if (item.attachmentUrl) {
+              try {
+                const p = JSON.parse(item.attachmentUrl);
+                if (Array.isArray(p)) parsedUrls = p;
+                else parsedUrls = [item.attachmentUrl];
+              } catch {
+                parsedUrls = [item.attachmentUrl];
+              }
+            }
+            setLampiranAttachments(names.map((name: string, idx: number) => ({
               name,
-              preview: name.match(/\.(jpg|jpeg|png|webp|gif)$/i) ? `/uploads/${name}` : null,
+              preview: parsedUrls[idx] || (name.match(/\.(jpg|jpeg|png|webp|gif)$/i) ? `/uploads/${name}` : null),
             })));
           }
         }
@@ -331,29 +331,48 @@ export default function EditHumorPage() {
     }
   };
 
-  const handleLampiranFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLampiranFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
-    const oversized = files.find((f) => f.size > 5 * 1024 * 1024);
-    if (oversized) {
-      alert(`File "${oversized.name}" melebihi ukuran maksimal 5MB`);
+    const validExtensions = ['.pdf', '.docx', '.doc', '.jpg', '.jpeg', '.png'];
+    const invalidFile = files.find((f) => {
+      const ext = f.name.substring(f.name.lastIndexOf('.')).toLowerCase();
+      return !validExtensions.includes(ext);
+    });
+
+    if (invalidFile) {
+      alert(`Berkas "${invalidFile.name}" tidak didukung. Berkas harus berupa .pdf, .docx, .jpg, atau .png`);
       if (lampiranInputRef.current) lampiranInputRef.current.value = '';
       return;
     }
 
-    if (lampiranAttachments.length + files.length > 10) {
-      alert('Maksimal 10 lampiran diperbolehkan');
+    const oversized = files.find((f) => f.size > 5 * 1024 * 1024);
+    if (oversized) {
+      alert(`Berkas "${oversized.name}" melebihi ukuran maksimal 5MB`);
+      if (lampiranInputRef.current) lampiranInputRef.current.value = '';
       return;
     }
 
-    const newAttachments = files.map((file) => {
-      let preview: string | null = null;
-      if (file.type.startsWith('image/')) {
-        preview = URL.createObjectURL(file);
-      }
-      return { file, name: file.name, preview };
-    });
+    if (lampiranAttachments.length + files.length > 5) {
+      alert('Maksimal 5 lampiran diperbolehkan');
+      if (lampiranInputRef.current) lampiranInputRef.current.value = '';
+      return;
+    }
+
+    const newAttachments = await Promise.all(
+      files.map(async (file) => {
+        let preview: string | null = null;
+        try {
+          preview = await readFileAsDataUrl(file);
+        } catch {
+          if (file.type.startsWith('image/')) {
+            preview = URL.createObjectURL(file);
+          }
+        }
+        return { file, name: file.name, preview };
+      })
+    );
 
     setLampiranAttachments([...lampiranAttachments, ...newAttachments]);
     if (lampiranInputRef.current) {
@@ -383,14 +402,21 @@ export default function EditHumorPage() {
 
     setIsSubmitting(true);
     try {
+      const validPreviews = lampiranAttachments.map((a) => a.preview).filter(Boolean);
+      const sanitizedBody = (htmlContent || rawText || judul)
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/&nbsp/gi, ' ');
+
       await fetch(`/api/employee-posts/${rawId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: judul,
-          body: htmlContent || rawText || judul,
+          body: sanitizedBody,
           coverImage: gambarPreview || '/images/logo-perpusnas.png',
+          coverImageName: gambarFileName || undefined,
           attachmentName: lampiranAttachments.length > 0 ? lampiranAttachments.map((a) => a.name).join(', ') : undefined,
+          attachmentUrl: validPreviews.length > 0 ? JSON.stringify(validPreviews) : undefined,
           status: status === 'Terbit' ? 'TERBIT' : 'MENUNGGU',
         }),
       });
@@ -620,69 +646,7 @@ export default function EditHumorPage() {
                   <Link2 className="w-4 h-4" />
                 </button>
 
-                <div className="relative ml-auto mr-2" ref={stylingMenuRef}>
-                  <button
-                    type="button"
-                    onClick={() => setIsStylingMenuOpen(!isStylingMenuOpen)}
-                    className="text-xs font-semibold text-[#757682] hover:text-[#00113a] flex items-center gap-1 transition-colors cursor-pointer"
-                  >
-                    <span>Styling</span>
-                    <ChevronDown className="w-3.5 h-3.5" />
-                  </button>
 
-                  {isStylingMenuOpen && (
-                    <div className="absolute top-7 right-0 z-50 bg-white border border-[#c5c6d2] rounded-lg shadow-xl py-1.5 w-44 text-xs animate-fadeIn">
-                      <button
-                        type="button"
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          execFormat('formatBlock', '<h1>');
-                          setIsStylingMenuOpen(false);
-                        }}
-                        className="w-full px-3 py-2 text-left hover:bg-[#f4f3f9] flex items-center gap-2 text-[#1a1b20]"
-                      >
-                        <Heading1 className="w-4 h-4 text-[#00113a]" />
-                        <span>Judul Utama (H1)</span>
-                      </button>
-                      <button
-                        type="button"
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          execFormat('formatBlock', '<h2>');
-                          setIsStylingMenuOpen(false);
-                        }}
-                        className="w-full px-3 py-2 text-left hover:bg-[#f4f3f9] flex items-center gap-2 text-[#1a1b20]"
-                      >
-                        <Heading2 className="w-4 h-4 text-[#00113a]" />
-                        <span>Sub Judul (H2)</span>
-                      </button>
-                      <button
-                        type="button"
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          execFormat('formatBlock', '<p>');
-                          setIsStylingMenuOpen(false);
-                        }}
-                        className="w-full px-3 py-2 text-left hover:bg-[#f4f3f9] flex items-center gap-2 text-[#1a1b20]"
-                      >
-                        <Type className="w-4 h-4 text-[#00113a]" />
-                        <span>Paragraf Normal</span>
-                      </button>
-                      <button
-                        type="button"
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          execFormat('formatBlock', '<blockquote>');
-                          setIsStylingMenuOpen(false);
-                        }}
-                        className="w-full px-3 py-2 text-left hover:bg-[#f4f3f9] flex items-center gap-2 text-[#1a1b20]"
-                      >
-                        <Quote className="w-4 h-4 text-[#00113a]" />
-                        <span>Kutipan (Quote)</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
               </div>
 
               {/* Contenteditable Editor area */}
@@ -701,9 +665,9 @@ export default function EditHumorPage() {
               />
             </div>
 
-            {/* 4. Gambar Humor Pegawai */}
+            {/* 4. Gambar */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Gambar Humor Pegawai <span className="float-right hidden md:inline">:</span>
+              Gambar <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="flex flex-col gap-4">
               <div className="relative" suppressHydrationWarning>
@@ -748,7 +712,7 @@ export default function EditHumorPage() {
                   </div>
                 )}
 
-                <p className="text-xs text-[#757682] mt-1.5 font-normal">File Maksimal 5MB</p>
+                <p className="text-xs text-[#757682] mt-1.5 font-normal">Berkas maksimal 5MB</p>
               </div>
 
               {/* Dashed preview box: Gambar Preview */}
@@ -790,7 +754,7 @@ export default function EditHumorPage() {
 
             {/* 5. Lampiran */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Lampiran (Maks. 10 File) <span className="float-right hidden md:inline">:</span>
+              Lampiran <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="flex flex-col gap-4">
               <div>
@@ -798,14 +762,14 @@ export default function EditHumorPage() {
                   <input
                     type="text"
                     readOnly
-                    value={lampiranAttachments.length > 0 ? `${lampiranAttachments.length} file dipilih` : ''}
-                    placeholder="Berkas berupa .jpg/ .png/ .pdf"
+                    value={lampiranAttachments.length > 0 ? `${lampiranAttachments.length} berkas dipilih` : ''}
+                    placeholder="Maksimal 5 berkas berupa .pdf/ .docx/ .jpg/ .png"
                     className="flex-grow border border-[#c5c6d2] rounded-l p-3 text-sm sm:text-base outline-none bg-[#f4f3f9] text-[#1a1b20] placeholder-[#757682]"
                   />
                   <button
                     type="button"
                     onClick={() => lampiranInputRef.current?.click()}
-                    disabled={lampiranAttachments.length >= 10}
+                    disabled={lampiranAttachments.length >= 5}
                     className="bg-[#e3e2e8] border border-l-0 border-[#c5c6d2] px-6 py-3 rounded-r text-[#444650] font-medium text-sm sm:text-base hover:bg-[#dad9e0] transition-colors cursor-pointer disabled:opacity-50"
                   >
                     Upload
@@ -814,51 +778,83 @@ export default function EditHumorPage() {
                     ref={lampiranInputRef}
                     type="file"
                     multiple
-                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                    accept=".pdf,.docx,.doc,.jpg,.jpeg,.png,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword,image/jpeg,image/png"
                     onChange={handleLampiranFileChange}
                     className="hidden"
                     suppressHydrationWarning
                   />
                 </div>
-                <p className="text-xs text-[#757682] mt-1.5 font-normal">File Maksimal 5MB</p>
+                <p className="text-xs text-[#757682] mt-1.5 font-normal">Berkas maksimal 5MB</p>
               </div>
 
               {/* Previews */}
               {lampiranAttachments.length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 w-full">
-                  {lampiranAttachments.map((att, idx) => (
-                    <div
-                      key={idx}
-                      className="relative group bg-[#e9e7ee] border border-[#c5c6d2] rounded-md overflow-hidden aspect-square flex flex-col items-center justify-center"
-                    >
-                      {att.preview ? (
-                        <img
-                          src={att.preview}
-                          alt={att.name}
-                          className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                        />
-                      ) : (
-                        <div className="flex flex-col items-center gap-2 p-2">
-                          <FileText className="w-8 h-8 text-[#00113a]" />
-                          <span className="text-[10px] font-bold text-center break-all line-clamp-2 text-[#00113a]">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 w-full">
+                  {lampiranAttachments.map((att, idx) => {
+                    const isDocx = att.name.toLowerCase().endsWith('.docx') || att.name.toLowerCase().endsWith('.doc');
+                    const isPdf = att.name.toLowerCase().endsWith('.pdf');
+                    const isImage = Boolean(att.name.match(/\.(jpg|jpeg|png|webp|gif)$/i) || att.preview?.startsWith('data:image'));
+
+                    return (
+                      <div
+                        key={idx}
+                        className="relative group bg-[#e9e7ee] border border-[#c5c6d2] rounded-md overflow-hidden aspect-square flex flex-col items-center justify-center p-2"
+                      >
+                        {isImage && att.preview ? (
+                          <img
+                            src={att.preview}
+                            alt={att.name}
+                            className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
+                          />
+                        ) : (
+                          <div className="flex flex-col items-center justify-center gap-1.5 p-1 text-center w-full h-full">
+                            <div
+                              className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                                isDocx
+                                  ? 'bg-blue-100 text-blue-600'
+                                  : isPdf
+                                  ? 'bg-red-100 text-red-600'
+                                  : 'bg-slate-200 text-[#00113a]'
+                              }`}
+                            >
+                              <FileText className="w-5 h-5" />
+                            </div>
+                            <span className="text-[10px] font-medium text-slate-800 truncate w-full px-1 text-center" title={att.name}>
+                              {att.name}
+                            </span>
+                            {isPdf && (
+                              <span className="text-[8px] font-bold text-red-600 bg-white border border-red-200 px-2 py-0.5 rounded uppercase tracking-wider shadow-2xs">
+                                PDF
+                              </span>
+                            )}
+                            {isDocx && (
+                              <span className="text-[8px] font-bold text-blue-600 bg-white border border-blue-200 px-2 py-0.5 rounded uppercase tracking-wider shadow-2xs">
+                                DOCX
+                              </span>
+                            )}
+                            {!isPdf && !isDocx && (
+                              <span className="text-[8px] font-bold text-slate-600 bg-white border border-slate-200 px-2 py-0.5 rounded uppercase tracking-wider shadow-2xs">
+                                BERKAS
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveLampiran(idx)}
+                          className="absolute top-1 right-1 bg-black/60 hover:bg-red-600 text-white p-1 rounded-full transition-colors opacity-0 group-hover:opacity-100 cursor-pointer z-10"
+                          title="Hapus berkas"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                        {isImage && (
+                          <span className="absolute bottom-0 w-full bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center">
                             {att.name}
                           </span>
-                        </div>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveLampiran(idx)}
-                        className="absolute top-1 right-1 bg-black/60 hover:bg-black text-white p-1 rounded-full transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                      {att.preview && (
-                        <span className="absolute bottom-0 w-full bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 truncate text-center">
-                          {att.name}
-                        </span>
-                      )}
-                    </div>
-                  ))}
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>

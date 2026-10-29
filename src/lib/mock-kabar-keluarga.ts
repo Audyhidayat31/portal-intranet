@@ -10,6 +10,9 @@ export interface KabarKeluargaItem {
   authorId?: string;
   author?: any;
   categoryType?: string;
+  coverImageName?: string;
+  attachmentName?: string;
+  attachmentUrl?: string;
   attachments?: Array<{ id: number; label: string; src: string }>;
 }
 

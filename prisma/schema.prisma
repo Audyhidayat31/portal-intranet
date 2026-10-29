@@ -177,17 +177,19 @@ model PostComment {
 }
 
 model ConsultationTopic {
-  id        String              @id @default(cuid())
-  title     String
-  category  String // KEPEGAWAIAN, IT, KESEHATAN
-  question  String              @db.Text
-  authorId  String
-  author    User                @relation("UserConsultations", fields: [authorId], references: [id], onDelete: Cascade)
-  status    String              @default("OPEN") // OPEN, ANSWERED, CLOSED
-  isPrivate Boolean             @default(false)
-  replies   ConsultationReply[]
-  createdAt DateTime            @default(now())
-  updatedAt DateTime            @updatedAt
+  id             String              @id @default(cuid())
+  title          String
+  category       String // KEPEGAWAIAN, IT, KESEHATAN
+  question       String              @db.Text
+  authorId       String
+  author         User                @relation("UserConsultations", fields: [authorId], references: [id], onDelete: Cascade)
+  status         String              @default("OPEN") // OPEN, ANSWERED, CLOSED
+  isPrivate      Boolean             @default(false)
+  attachmentName String?             @db.VarChar(500)
+  attachmentUrl  String?             @db.LongText
+  replies        ConsultationReply[]
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
 
   @@map("topik_konsultasi")
 }

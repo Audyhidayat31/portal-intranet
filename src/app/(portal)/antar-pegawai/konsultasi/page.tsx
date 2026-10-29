@@ -81,7 +81,7 @@ export default function KonsultasiPage() {
               status: topic.status === 'OPEN' ? 'Menunggu' : 'Terbit',
               description: topic.question || topic.description || '',
               attachmentName: topic.attachmentName || undefined,
-              attachmentUrl: '#',
+              attachmentUrl: topic.attachmentUrl || undefined,
               authorName: topic.author?.name || 'Pegawai Perpusnas',
               replies: (topic.replies || []).map((r: any) => ({
                 id: r.id,

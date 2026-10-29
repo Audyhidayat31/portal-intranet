@@ -13,6 +13,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { formatDate, canManageContent } from '@/lib/utils';
+import AttachmentDetailList from '@/components/portal/AttachmentDetailList';
 import {
   STITCH_MOCK_KARYA_AKADEMIK,
   MOCK_KARYA_AKADEMIK_ATTACHMENTS_5,
@@ -76,6 +77,9 @@ export default function DetailKaryaAkademikPage() {
             createdAt: apiData.createdAt,
             updatedAt: apiData.updatedAt,
             attachments: apiData.attachments,
+            attachmentName: apiData.attachmentName,
+            attachmentUrl: apiData.attachmentUrl,
+            coverImageName: apiData.coverImageName,
             status: apiData.status === 'TERBIT' || apiData.status === 'Terbit' ? 'Terbit' : 'Menunggu',
             authorName: apiData.author?.name || apiData.authorName || 'Ahmad Fauzi',
             authorPosition: apiData.author?.profile?.position || apiData.authorPosition || 'Peneliti Ahli Madya',
@@ -230,36 +234,33 @@ export default function DetailKaryaAkademikPage() {
             </h2>
 
             <div className="text-xs sm:text-sm text-[#1a1b20] leading-relaxed whitespace-pre-line space-y-4">
-              {displayContent}
+              {displayContent && displayContent.includes('<') && displayContent.includes('>') ? (
+                <div
+                  className="prose max-w-none text-xs sm:text-sm text-[#1a1b20] leading-relaxed space-y-3 [&>p]:mb-3 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&>i]:italic [&>b]:font-bold [&>strong]:font-bold [&>em]:italic [&_source-footnote]:hidden"
+                  dangerouslySetInnerHTML={{ __html: displayContent }}
+                />
+              ) : (
+                <span>{displayContent}</span>
+              )}
             </div>
           </div>
 
-          {/* Divider Line */}
-          {attachments.length > 0 && <div className="border-t border-[#c5c6d2] my-8" />}
-
-          {/* Section: Lampiran matching Wireframe Gambar 3 */}
-          {attachments.length > 0 && (
-          <div>
-            <h3 className="text-xs font-bold text-[#1a1b20] mb-4">
-              Lampiran
-            </h3>
-
-            {/* 5 Attachment Thumbnails labeled "Gambar" matching Wireframe Gambar 3 & Gambar 2 */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
-              {attachments.map((att, idx) => (
-                <button
-                  key={att.id || idx}
-                  type="button"
-                  onClick={() => setPreviewImage(att.src)}
-                  className="aspect-square bg-[#e2e3ea] hover:bg-[#d8d9e2] border border-[#c5c6d2] rounded-md flex flex-col items-center justify-center text-xs text-[#757682] hover:text-[#00113a] font-medium transition-all group shadow-2xs cursor-pointer"
-                >
-                  <span className="text-xs font-medium text-[#757682] group-hover:text-[#1a1b20] transition-colors">
-                    Gambar
-                  </span>
-                </button>
-              ))}
+          {/* Section: LAMPIRAN (Shown if has attachments) */}
+          {(item?.attachmentName || item?.attachmentUrl || (item?.attachments && item.attachments.length > 0)) && (
+            <div className="mt-8 pt-6 border-t border-[#e2e3ea]">
+              <AttachmentDetailList
+                attachments={
+                  item?.attachments && (!item?.attachmentUrl && !item?.attachmentName)
+                    ? item.attachments.map((att: any) => ({
+                        name: att.label || `Lampiran ${att.id}`,
+                        url: att.src,
+                      }))
+                    : undefined
+                }
+                attachmentName={item?.attachmentName}
+                attachmentUrl={item?.attachmentUrl}
+              />
             </div>
-          </div>
           )}
 
           {/* Divider Line */}

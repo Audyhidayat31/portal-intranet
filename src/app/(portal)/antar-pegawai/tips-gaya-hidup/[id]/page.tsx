@@ -11,6 +11,7 @@ import {
   ImageIcon,
 } from 'lucide-react';
 import { formatDate, canManageContent } from '@/lib/utils';
+import AttachmentDetailList from '@/components/portal/AttachmentDetailList';
 import {
   STITCH_MOCK_TIPS_GAYA_HIDUP_9,
   TipsGayaHidupItem,
@@ -212,9 +213,34 @@ Mari jadikan gaya hidup sehat sebagai bagian tak terpisahkan dari dedikasi kita 
             </h2>
 
             <div className="text-xs sm:text-sm text-[#1a1b20] leading-relaxed whitespace-pre-line space-y-4">
-              {displayContent}
+              {displayContent && displayContent.includes('<') && displayContent.includes('>') ? (
+                <div
+                  className="prose max-w-none text-xs sm:text-sm text-[#1a1b20] leading-relaxed space-y-3 [&>p]:mb-3 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&>i]:italic [&>b]:font-bold [&>strong]:font-bold [&>em]:italic [&_source-footnote]:hidden"
+                  dangerouslySetInnerHTML={{ __html: displayContent }}
+                />
+              ) : (
+                <span>{displayContent}</span>
+              )}
             </div>
           </div>
+          {/* Section: LAMPIRAN (Shown if has attachments) */}
+          {(item?.attachmentName || item?.attachmentUrl || (item?.attachments && item.attachments.length > 0)) && (
+            <div className="mt-8 pt-6 border-t border-[#e2e3ea]">
+              <AttachmentDetailList
+                attachments={
+                  item?.attachments && (!item?.attachmentUrl && !item?.attachmentName)
+                    ? item.attachments.map((att: any) => ({
+                        name: att.label || `Lampiran ${att.id}`,
+                        url: att.src,
+                      }))
+                    : undefined
+                }
+                attachmentName={item?.attachmentName}
+                attachmentUrl={item?.attachmentUrl}
+              />
+            </div>
+          )}
+
           {/* Divider Line */}
           <div className="border-t border-[#c5c6d2] my-8" />
 

@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, category, question, description, status, attachmentName } = body;
+    const { title, category, question, description, status, attachmentName, attachmentUrl } = body;
 
     if (!title || !title.trim()) {
       return NextResponse.json({ success: false, message: 'Judul konsultasi wajib diisi' }, { status: 400 });
@@ -94,6 +94,8 @@ export async function POST(request: NextRequest) {
           isPrivate: false,
           authorId: authorId || 'default-user',
           status: status === 'Menunggu' ? 'OPEN' : 'ANSWERED',
+          attachmentName: attachmentName || null,
+          attachmentUrl: attachmentUrl || null,
         },
         include: {
           author: { select: { name: true, nip: true } },

@@ -60,7 +60,7 @@ function formatMockItem(mock: any) {
     title: mock.title || 'Postingan Pegawai',
     slug: mock.id,
     categorySlug: mock.categorySlug || 'opini',
-    body: mock.content || mock.quote || mock.body || mock.excerpt || '',
+    body: (mock.content || mock.quote || mock.body || mock.excerpt || '').replace(/&nbsp;/gi, ' ').replace(/&nbsp/gi, ' '),
     excerpt: mock.excerpt || '',
     coverImage: mock.coverImage || null,
     status: mock.status === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
@@ -180,6 +180,9 @@ export async function GET(
                   if (!attachmentUrl && details.attachmentUrl) {
                     attachmentUrl = details.attachmentUrl;
                   }
+                  if (!coverImageName && details.coverImageName) {
+                    coverImageName = details.coverImageName;
+                  }
                 }
               } catch {}
             }
@@ -190,8 +193,10 @@ export async function GET(
           success: true,
           data: {
             ...item,
+            body: item.body ? item.body.replace(/&nbsp;/gi, ' ').replace(/&nbsp/gi, ' ') : item.body,
             attachmentName,
             attachmentUrl,
+            coverImageName: coverImageName || null,
             publishedAt: item.createdAt,
             editor: editorName ? { name: editorName } : null,
             editorName: editorName || null,
@@ -248,7 +253,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { title, body: contentBody, coverImage, status, publishedAt, createdAt, attachmentName, attachmentUrl } = body;
+    const { title, body: contentBody, coverImage, coverImageName, status, publishedAt, createdAt, attachmentName, attachmentUrl } = body;
     const user = await getCurrentUser();
     const currentUserName = user?.name || body.editorName || null;
 
@@ -268,7 +273,7 @@ export async function PUT(
         where: { id: existing.id },
         data: {
           title: title !== undefined ? title : existing.title,
-          body: contentBody !== undefined ? contentBody : existing.body,
+          body: contentBody !== undefined ? (typeof contentBody === 'string' ? contentBody.replace(/&nbsp;/gi, ' ').replace(/&nbsp/gi, ' ') : contentBody) : existing.body,
           coverImage: existing.categorySlug === 'kalimat-bijak'
             ? '/images/logo-perpusnas.png'
             : (coverImage !== undefined ? coverImage : existing.coverImage),

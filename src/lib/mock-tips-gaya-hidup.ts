@@ -8,6 +8,9 @@ export interface TipsGayaHidupItem {
   status: 'Terbit' | 'Menunggu';
   authorName?: string;
   categoryType?: string;
+  coverImageName?: string;
+  attachmentName?: string;
+  attachmentUrl?: string;
   attachments?: Array<{ id: number; label: string; src: string }>;
 }
 
