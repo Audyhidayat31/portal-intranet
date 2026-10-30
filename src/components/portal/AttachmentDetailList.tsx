@@ -48,8 +48,11 @@ export default function AttachmentDetailList({
             : [];
           const totalCount = Math.max(names.length, parsed.length);
           for (let i = 0; i < totalCount; i++) {
-            const name = names[i] || `Lampiran ${i + 1}`;
-            const url = parsed[i] || `/uploads/${name}`;
+            const item = parsed[i];
+            const itemObj = typeof item === 'object' && item !== null ? item : null;
+            const name = itemObj?.name || itemObj?.label || names[i] || `Lampiran ${i + 1}`;
+            const rawUrl = itemObj?.url || itemObj?.src || itemObj?.preview || (typeof item === 'string' ? item : `/uploads/${name}`);
+            const url = rawUrl || `/uploads/${name}`;
             const isImage = Boolean(
               url?.startsWith('data:image') ||
                 name.match(/\.(jpg|jpeg|png|webp|gif)$/i) ||

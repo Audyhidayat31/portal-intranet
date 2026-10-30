@@ -23,12 +23,14 @@ import {
   FileText,
   Video,
   X,
+  Check,
 } from 'lucide-react';
 import {
   STITCH_MOCK_FIGURES_6,
   getStoredFigures,
   saveStoredFigures,
 } from '@/lib/mock-kupas-sosok';
+import { SATUAN_KERJA_OPTIONS } from '@/lib/constants';
 import { canManageContent } from '@/lib/utils';
 
 const compressImage = (file: File): Promise<string> => {
@@ -76,6 +78,19 @@ const readFileAsDataUrl = (file: File): Promise<string> => {
     reader.readAsDataURL(file);
   });
 };
+
+function getSafeFigureFileName(name?: string | null, url?: string | null, fallback = 'foto-sosok.jpg'): string {
+  if (name && name.trim()) return name.trim();
+  if (!url) return fallback;
+  if (url.startsWith('data:')) {
+    const mimeMatch = url.match(/data:image\/([a-zA-Z0-9]+);/);
+    const ext = mimeMatch ? (mimeMatch[1] === 'jpeg' ? 'jpg' : mimeMatch[1]) : 'png';
+    return `foto-tokoh.${ext}`;
+  }
+  const cleanUrl = url.split('?')[0].split('#')[0];
+  const last = cleanUrl.split('/').pop();
+  return last && last.length < 100 && !last.includes(';') ? last : fallback;
+}
 
 export default function EditKupasSosokPage() {
   const params = useParams();
@@ -134,6 +149,10 @@ export default function EditKupasSosokPage() {
   const [isStylingMenuOpen, setIsStylingMenuOpen] = useState(false);
   const stylingMenuRef = useRef<HTMLDivElement>(null);
 
+  // Unit / Satuan Kerja dropdown state
+  const [isUnitKerjaDropdownOpen, setIsUnitKerjaDropdownOpen] = useState(false);
+  const unitKerjaDropdownRef = useRef<HTMLDivElement>(null);
+
   // Editor and Input refs
   const editorRef = useRef<HTMLDivElement>(null);
   const gambarInputRef = useRef<HTMLInputElement>(null);
@@ -162,7 +181,7 @@ export default function EditKupasSosokPage() {
       if (matchedFigure.status) setStatus(matchedFigure.status);
       if (matchedFigure.photoUrl) {
         setGambarPreview(matchedFigure.photoUrl);
-        setGambarFileName(matchedFigure.coverImageName || matchedFigure.photoUrl.split('/').pop() || '');
+        setGambarFileName(getSafeFigureFileName(matchedFigure.coverImageName, matchedFigure.photoUrl));
       }
       const contentVal = matchedFigure.fullStory || '';
       setDeskripsiHtml(contentVal);
@@ -177,15 +196,29 @@ export default function EditKupasSosokPage() {
         try {
           const parsed = JSON.parse(matchedFigure.attachmentUrl);
           if (Array.isArray(parsed)) {
+            const names = (matchedFigure.attachmentName || '').split(',').map((n: string) => n.trim()).filter(Boolean);
             setLampiranAttachments(
-              parsed.map((att: any) => ({
-                name: att.name || 'Lampiran',
-                preview: att.url || null,
-              }))
+              parsed.map((att: any, idx: number) => {
+                if (typeof att === 'string') {
+                  return {
+                    name: names[idx] || `Lampiran ${idx + 1}`,
+                    preview: att,
+                  };
+                }
+                return {
+                  name: att.name || att.label || names[idx] || `Lampiran ${idx + 1}`,
+                  preview: att.url || att.src || att.preview || null,
+                };
+              })
             );
           }
         } catch {
-          // fallback
+          if (typeof matchedFigure.attachmentUrl === 'string') {
+            setLampiranAttachments([{
+              name: matchedFigure.attachmentName || 'Lampiran',
+              preview: matchedFigure.attachmentUrl,
+            }]);
+          }
         }
       } else if (matchedFigure.attachments && matchedFigure.attachments.length > 0) {
         setLampiranAttachments(
@@ -229,7 +262,7 @@ export default function EditKupasSosokPage() {
           setUnitKerja(item.unitKerja || '');
           if (item.photoUrl) {
             setGambarPreview(item.photoUrl);
-            setGambarFileName(item.coverImageName || item.photoUrl.split('/').pop() || '');
+            setGambarFileName(getSafeFigureFileName(item.coverImageName, item.photoUrl));
           }
           const bodyVal = item.fullStory || item.body || '';
           setDeskripsiHtml(bodyVal);
@@ -244,15 +277,29 @@ export default function EditKupasSosokPage() {
             try {
               const parsed = JSON.parse(item.attachmentUrl);
               if (Array.isArray(parsed)) {
+                const names = (item.attachmentName || '').split(',').map((n: string) => n.trim()).filter(Boolean);
                 setLampiranAttachments(
-                  parsed.map((att: any) => ({
-                    name: att.name || 'Lampiran',
-                    preview: att.url || null,
-                  }))
+                  parsed.map((att: any, idx: number) => {
+                    if (typeof att === 'string') {
+                      return {
+                        name: names[idx] || `Lampiran ${idx + 1}`,
+                        preview: att,
+                      };
+                    }
+                    return {
+                      name: att.name || att.label || names[idx] || `Lampiran ${idx + 1}`,
+                      preview: att.url || att.src || att.preview || null,
+                    };
+                  })
                 );
               }
             } catch {
-              // fallback
+              if (typeof item.attachmentUrl === 'string') {
+                setLampiranAttachments([{
+                  name: item.attachmentName || 'Lampiran',
+                  preview: item.attachmentUrl,
+                }]);
+              }
             }
           } else if (item.attachments && item.attachments.length > 0) {
             setLampiranAttachments(
@@ -328,6 +375,12 @@ export default function EditKupasSosokPage() {
         !statusMenuRef.current.contains(event.target as Node)
       ) {
         setIsStatusMenuOpen(false);
+      }
+      if (
+        unitKerjaDropdownRef.current &&
+        !unitKerjaDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsUnitKerjaDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -765,14 +818,54 @@ export default function EditKupasSosokPage() {
                   placeholder="Tuliskan jabatan"
                   className="w-full border border-[#c5c6d2] rounded p-3 text-sm sm:text-base text-[#1a1b20] placeholder-[#757682] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none transition-colors"
                 />
-                <input
-                  id="unitKerja"
-                  type="text"
-                  value={unitKerja}
-                  onChange={(e) => setUnitKerja(e.target.value)}
-                  placeholder="Tuliskan unit kerja"
-                  className="w-full border border-[#c5c6d2] rounded p-3 text-sm sm:text-base text-[#1a1b20] placeholder-[#757682] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none transition-colors"
-                />
+                <div className="relative" ref={unitKerjaDropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsUnitKerjaDropdownOpen(!isUnitKerjaDropdownOpen)}
+                    className="w-full flex items-center justify-between px-3.5 py-3 bg-[#5b6b82] text-white text-sm sm:text-base font-bold rounded-xl hover:bg-[#485568] transition-colors cursor-pointer shadow-xs text-left"
+                  >
+                    <span className="truncate pr-2">{unitKerja || 'Pilih Unit Kerja'}</span>
+                    <ChevronDown className={`w-4 h-4 shrink-0 transition-transform duration-200 ${isUnitKerjaDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {isUnitKerjaDropdownOpen && (
+                    <div className="absolute left-0 w-full max-h-60 overflow-y-auto mt-1.5 bg-white border border-[#c5c6d2] rounded-xl shadow-xl py-1 z-50 animate-in fade-in zoom-in-95 duration-150">
+                      {unitKerja && !SATUAN_KERJA_OPTIONS.includes(unitKerja) && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsUnitKerjaDropdownOpen(false);
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-xs sm:text-sm font-semibold transition-colors flex items-center justify-between cursor-pointer bg-slate-100 text-[#00113a]"
+                        >
+                          <span className="truncate pr-2">{unitKerja} (Nilai Saat Ini)</span>
+                          <Check className="w-4 h-4 text-[#007BFF] shrink-0" />
+                        </button>
+                      )}
+                      {SATUAN_KERJA_OPTIONS.map((item) => {
+                        const isSelected = unitKerja === item;
+                        return (
+                          <button
+                            key={item}
+                            type="button"
+                            onClick={() => {
+                              setUnitKerja(item);
+                              setIsUnitKerjaDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-2.5 text-xs sm:text-sm font-semibold transition-colors flex items-center justify-between cursor-pointer ${
+                              isSelected
+                                ? 'bg-slate-100 text-[#00113a] font-bold'
+                                : 'text-slate-700 hover:bg-slate-50'
+                            }`}
+                          >
+                            <span className="truncate pr-2">{item}</span>
+                            {isSelected && <Check className="w-4 h-4 text-[#007BFF] shrink-0" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* 5. Deskripsi / Kisah Lengkap */}
@@ -1153,7 +1246,7 @@ export default function EditKupasSosokPage() {
             </div>
 
             {/* Action Buttons matching Stitch */}
-            <div className="flex justify-end gap-3 pt-6 border-t border-[#c5c6d2]">
+            <div className="flex justify-start gap-3 pt-6 mt-8 border-t border-[#c5c6d2]">
               <button
                 type="submit"
                 disabled={isSubmitting}

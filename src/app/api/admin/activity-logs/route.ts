@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { parseLogDescription } from '@/lib/audit';
+import { STITCH_MOCK_BUSINESS_TRIPS_5 } from '@/lib/mock-business-trips';
+import { STITCH_MOCK_INTERNAL_DOCS_5 } from '@/lib/mock-internal-documents';
 
 export async function GET(request: NextRequest) {
   try {
@@ -163,16 +165,154 @@ export async function GET(request: NextRequest) {
       }
     ];
 
-    // Synchronize latest attributes (such as source) from live content records
+    // Synchronize latest attributes (such as source and full body) from live content records
     const targetIds = logs.map((l: any) => l.targetId).filter(Boolean);
     const contentMap = new Map<string, any>();
+    const fullContentMap = new Map<string, string>();
     if (targetIds.length > 0) {
       try {
-        const contents = await prisma.content.findMany({
-          where: { id: { in: targetIds } },
-          select: { id: true, source: true, title: true, coverImage: true, attachmentUrl: true, attachmentName: true }
+        const [posts, contents, beritas, pengumumans, figures] = await Promise.all([
+          prisma.employeePost.findMany({
+            where: { id: { in: targetIds } },
+            select: {
+              id: true,
+              body: true,
+              title: true,
+              coverImage: true,
+              categorySlug: true,
+              status: true,
+              author: { select: { name: true, nip: true } }
+            }
+          }).catch(() => []),
+          prisma.content.findMany({
+            where: { id: { in: targetIds } },
+            select: {
+              id: true,
+              body: true,
+              source: true,
+              title: true,
+              coverImage: true,
+              attachmentUrl: true,
+              attachmentName: true,
+              destinationCity: true,
+              eventStartDate: true,
+              eventEndDate: true,
+              eventLocation: true,
+              type: true,
+              status: true,
+              publishedAt: true,
+              author: { select: { name: true, nip: true } },
+              category: { select: { name: true, slug: true } }
+            }
+          }).catch(() => []),
+          (prisma as any).berita?.findMany({
+            where: { id: { in: targetIds } },
+            select: { id: true, isi: true, sumber: true, judul: true, gambarSampul: true, fileLampiran: true, namaLampiran: true }
+          }).catch(() => []),
+          (prisma as any).pengumuman?.findMany({
+            where: { id: { in: targetIds } },
+            select: { id: true, isi: true, judul: true, fileLampiran: true, namaLampiran: true }
+          }).catch(() => []),
+          prisma.figureProfile.findMany({
+            where: { id: { in: targetIds } },
+            select: {
+              id: true,
+              deskripsi: true,
+              fullStory: true,
+              quote: true,
+              photoUrl: true,
+              attachmentUrl: true,
+              attachmentName: true,
+              name: true,
+              position: true,
+              unitKerja: true,
+            }
+          }).catch(() => []),
+        ]);
+
+        posts.forEach((p: any) => {
+          contentMap.set(p.id, {
+            ...p,
+            authorName: p.author?.name || null,
+          });
+          if (p.body) fullContentMap.set(p.id, p.body);
         });
-        contents.forEach((c: any) => contentMap.set(c.id, c));
+        contents.forEach((c: any) => {
+          contentMap.set(c.id, {
+            ...c,
+            authorName: c.author?.name || null,
+            authorNip: c.author?.nip || null,
+            categoryName: c.category?.name || null,
+          });
+          if (c.body) fullContentMap.set(c.id, c.body);
+        });
+        (beritas || []).forEach((b: any) => {
+          contentMap.set(b.id, {
+            id: b.id,
+            title: b.judul,
+            source: b.sumber,
+            coverImage: b.gambarSampul,
+            attachmentUrl: b.fileLampiran,
+            attachmentName: b.namaLampiran,
+          });
+          if (b.isi) fullContentMap.set(b.id, b.isi);
+        });
+        (pengumumans || []).forEach((p: any) => {
+          contentMap.set(p.id, {
+            id: p.id,
+            title: p.judul,
+            coverImage: null,
+            attachmentUrl: p.fileLampiran,
+            attachmentName: p.namaLampiran,
+          });
+          if (p.isi) fullContentMap.set(p.id, p.isi);
+        });
+        (figures || []).forEach((f: any) => {
+          contentMap.set(f.id, {
+            id: f.id,
+            title: f.name,
+            name: f.name,
+            position: f.position,
+            unitKerja: f.unitKerja,
+            quote: f.quote,
+            coverImage: f.photoUrl,
+            attachmentUrl: f.attachmentUrl,
+            attachmentName: f.attachmentName,
+          });
+          if (f.deskripsi || f.fullStory) fullContentMap.set(f.id, f.deskripsi || f.fullStory);
+        });
+
+        // Enrich from mock data if targetId starts with trip- or doc-
+        STITCH_MOCK_BUSINESS_TRIPS_5.forEach((t: any) => {
+          if (targetIds.includes(t.id)) {
+            contentMap.set(t.id, {
+              id: t.id,
+              title: t.title,
+              destinationCity: t.destinationCity,
+              source: t.destinationCity?.includes(',') ? t.destinationCity.split(',')[1].trim() : 'Indonesia',
+              authorName: t.author?.name,
+              attachmentName: t.attachmentName,
+              body: t.content || t.body,
+              publishedAt: t.publishedAt,
+            });
+            if (t.content || t.body) fullContentMap.set(t.id, t.content || t.body);
+          }
+        });
+
+        STITCH_MOCK_INTERNAL_DOCS_5.forEach((d: any) => {
+          if (targetIds.includes(d.id)) {
+            contentMap.set(d.id, {
+              id: d.id,
+              title: d.title,
+              documentNumber: d.documentNumber,
+              categoryName: d.category,
+              attachmentName: d.attachmentName,
+              body: d.keterangan,
+              publishedAt: d.publishedAt,
+            });
+            if (d.keterangan) fullContentMap.set(d.id, d.keterangan);
+          }
+        });
       } catch (err) {
         console.warn('Failed to fetch live contents for activity logs sync:', err);
       }
@@ -183,8 +323,30 @@ export async function GET(request: NextRequest) {
       const { summary, details } = parseLogDescription(log.description);
       const live = log.targetId ? contentMap.get(log.targetId) : null;
 
-      const finalDetails = details ? { ...details } : null;
+      const finalDetails = details ? { ...details } : {};
       if (finalDetails) {
+        if (live) {
+          if (live.title && (!finalDetails.title || finalDetails.title === log.description)) finalDetails.title = live.title;
+          if (live.destinationCity && !finalDetails.destinationCity) finalDetails.destinationCity = live.destinationCity;
+          if (live.kotaTujuan && !finalDetails.kotaTujuan) finalDetails.kotaTujuan = live.kotaTujuan;
+          if (live.source && (!finalDetails.source || finalDetails.source === '-')) finalDetails.source = live.source;
+          if (live.negaraTujuan && !finalDetails.negaraTujuan) finalDetails.negaraTujuan = live.negaraTujuan;
+          if (live.eventStartDate && !finalDetails.eventStartDate) finalDetails.eventStartDate = live.eventStartDate;
+          if (live.eventEndDate && !finalDetails.eventEndDate) finalDetails.eventEndDate = live.eventEndDate;
+          if (live.eventLocation && !finalDetails.eventLocation) finalDetails.eventLocation = live.eventLocation;
+          if (live.authorName && !finalDetails.authorName) finalDetails.authorName = live.authorName;
+          if (live.documentNumber && !finalDetails.documentNumber) finalDetails.documentNumber = live.documentNumber;
+          if (live.nomorDokumen && !finalDetails.nomorDokumen) finalDetails.nomorDokumen = live.nomorDokumen;
+          if (live.categoryName && !finalDetails.categoryName) finalDetails.categoryName = live.categoryName;
+          if (live.categorySlug && !finalDetails.categorySlug) finalDetails.categorySlug = live.categorySlug;
+          if (live.position && !finalDetails.position) finalDetails.position = live.position;
+          if (live.unitKerja && !finalDetails.unitKerja) finalDetails.unitKerja = live.unitKerja;
+          if (live.quote && !finalDetails.quote) finalDetails.quote = live.quote;
+          if (live.photoUrl && !finalDetails.coverImage) finalDetails.coverImage = live.photoUrl;
+          if (live.status && (!finalDetails.status || finalDetails.status === 'TERBIT')) {
+            finalDetails.status = live.status === 'MENUNGGU' ? 'Menunggu' : 'Terbit';
+          }
+        }
         if (live && live.source !== undefined) {
           finalDetails.source = live.source?.trim() ? live.source.trim() : '-';
         } else if (!finalDetails.source || finalDetails.source === 'www.perpusnas.go.id') {
@@ -231,12 +393,19 @@ export async function GET(request: NextRequest) {
 
         // Sinkronisasi lampiran dari live content
         if (live) {
-          if (live.attachmentName && !finalDetails.attachmentName) {
+          if (live.attachmentName && (!finalDetails.attachmentName || finalDetails.attachmentName === '-' || finalDetails.attachmentName.startsWith('lampiran-'))) {
             finalDetails.attachmentName = live.attachmentName;
           }
-          if (live.attachmentUrl && !finalDetails.attachmentUrl) {
+          if (live.attachmentUrl && (!finalDetails.attachmentUrl || finalDetails.attachmentUrl === '-' || finalDetails.attachmentUrl === '#')) {
             finalDetails.attachmentUrl = live.attachmentUrl;
           }
+        }
+
+        // Sinkronisasi teks lengkap uraian / deskripsi dari entitas langsung
+        const liveFullBody = log.targetId ? fullContentMap.get(log.targetId) : null;
+        if (liveFullBody) {
+          finalDetails.fullContent = liveFullBody;
+          finalDetails.contentExcerpt = liveFullBody;
         }
       }
 

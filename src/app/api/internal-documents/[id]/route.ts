@@ -245,6 +245,18 @@ export async function PUT(
           module: 'INTERNAL_DOCUMENT',
           targetId: existing.id,
           description: `Mengubah dokumen internal: ${title || existing.title}`,
+          details: {
+            title: updated.title,
+            documentNumber: documentNumber !== undefined ? documentNumber : (updated.source || ''),
+            nomorDokumen: documentNumber !== undefined ? documentNumber : (updated.source || ''),
+            categoryName: categoryName || 'Dokumen Internal',
+            attachmentName: updated.attachmentName,
+            attachmentUrl: updated.attachmentUrl,
+            fullContent: keterangan !== undefined ? keterangan : (updated.excerpt || ''),
+            keterangan: keterangan !== undefined ? keterangan : (updated.excerpt || ''),
+            tanggal: updated.publishedAt?.toISOString(),
+            status: updated.status === 'TERBIT' ? 'Terbit' : 'Menunggu',
+          },
         });
 
         return NextResponse.json({

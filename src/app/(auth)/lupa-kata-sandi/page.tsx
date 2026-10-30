@@ -110,9 +110,9 @@ export default function LupaKataSandiPage() {
 
             {/* Error Message */}
             {errorMessage && (
-              <div className="w-full mb-3.5 flex items-start gap-2 p-2.5 rounded bg-red-50 border border-red-200 text-red-700 text-xs text-left animate-fadeIn">
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                <div className="flex-1">
+              <div className="w-full mb-4 flex items-start gap-2.5 p-3 rounded-lg bg-[#fff5f5] border border-[#ffc9c9] text-[#c92a2a] text-xs sm:text-[13px] text-left animate-in fade-in slide-in-from-top-2 duration-300 shadow-xs">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-[#e03131]" />
+                <div className="flex-1 font-medium leading-relaxed">
                   <span>{errorMessage}</span>
                 </div>
               </div>
@@ -160,7 +160,10 @@ export default function LupaKataSandiPage() {
                     required
                     autoFocus
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (errorMessage) setErrorMessage('');
+                    }}
                     placeholder="Masukkan Email Anda.."
                     className="block w-full px-3 py-2 border border-neutral-400 rounded-[3px] sm:rounded-md text-sm text-black placeholder:text-neutral-500 bg-white focus:outline-none focus:ring-1 focus:ring-[#007BFF] focus:border-[#007BFF] transition-all"
                   />

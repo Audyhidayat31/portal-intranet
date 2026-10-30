@@ -216,16 +216,20 @@ model FigureProfile {
   quote         String?  @db.LongText // Kutipan inspiratif
   fullStory     String?  @db.LongText // Cerita perjalanan dan kontribusi
   deskripsi     String?  @db.LongText // Deskripsi tokoh
-  photoUrl      String?  @db.LongText
-  achievements  String?  @db.LongText // JSON string or structured text of achievements
-  careerHistory String?  @db.LongText // Riwayat karier & jabatan penting
-  isSpotlight   Boolean  @default(false)
-  authorId      String?
-  authorName    String?
-  editorId      String?
-  editorName    String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  photoUrl       String?  @db.LongText
+  coverImageName String?  @db.VarChar(255)
+  attachmentUrl  String?  @db.LongText
+  attachmentName String?  @db.LongText
+  status         String?  @default("TERBIT")
+  achievements   String?  @db.LongText // JSON string or structured text of achievements
+  careerHistory  String?  @db.LongText // Riwayat karier & jabatan penting
+  isSpotlight    Boolean  @default(false)
+  authorId       String?
+  authorName     String?
+  editorId       String?
+  editorName     String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@map("profil_tokoh")
 }

@@ -234,7 +234,7 @@ export async function POST(request: NextRequest) {
         attachmentName: body.attachmentName || null,
         status: postStatus === 'TERBIT' ? 'Terbit' : 'Menunggu',
         publishedAt: postCreatedAt.toISOString(),
-        contentExcerpt: contentBody.slice(0, 200),
+        contentExcerpt: contentBody,
       },
     });
 

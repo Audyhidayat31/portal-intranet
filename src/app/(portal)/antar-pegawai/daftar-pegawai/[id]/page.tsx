@@ -24,7 +24,6 @@ import { MockEmployee } from '@/lib/mock-employees';
 import { isUserAdmin } from '@/lib/utils';
 
 const SATUAN_KERJA_OPTIONS = [
-  'Sistem Informasi',
   'Biro SDM dan Umum',
   'Pusat Data dan Informasi',
   'UPT Perpustakaan Bung Hatta',

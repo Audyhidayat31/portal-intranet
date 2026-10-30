@@ -69,12 +69,8 @@ export async function PUT(request: NextRequest) {
 
     // Password change check
     if (newPassword) {
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/;
-      if (!passwordRegex.test(newPassword)) {
-        return NextResponse.json({ success: false, message: 'Sandi baru minimal 8 karakter, mengandung huruf besar, huruf kecil, dan angka.' }, { status: 400 });
-      }
       if (!currentPassword) {
-        return NextResponse.json({ success: false, message: 'Masukkan password lama untuk mengubah password' }, { status: 400 });
+        return NextResponse.json({ success: false, message: 'Masukkan sandi lama untuk mengubah kata sandi' }, { status: 400 });
       }
 
       const existingUser = await prisma.user.findUnique({ where: { id: user.userId } });
@@ -82,7 +78,12 @@ export async function PUT(request: NextRequest) {
 
       const isMatch = await verifyPassword(currentPassword, existingUser.password);
       if (!isMatch) {
-        return NextResponse.json({ success: false, message: 'Password lama tidak sesuai' }, { status: 400 });
+        return NextResponse.json({ success: false, message: 'Sandi lama tidak sesuai' }, { status: 400 });
+      }
+
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+      if (!passwordRegex.test(newPassword)) {
+        return NextResponse.json({ success: false, message: 'Sandi baru minimal 8 karakter, mengandung huruf besar, huruf kecil, dan angka.' }, { status: 400 });
       }
 
       const newHash = await hashPassword(newPassword);

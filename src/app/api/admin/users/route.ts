@@ -240,21 +240,21 @@ export async function DELETE(request: NextRequest) {
       await tx.consultationTopic.deleteMany({ where: { authorId: id } });
       await tx.activityLog.deleteMany({ where: { userId: id } });
 
-      // Hapus entri tabel legacy jika ada
-      try { await (tx as any).berita?.deleteMany({ where: { authorId: id } }); } catch {}
-      try { await (tx as any).pengumuman?.deleteMany({ where: { authorId: id } }); } catch {}
-      try { await (tx as any).agendaKegiatan?.deleteMany({ where: { authorId: id } }); } catch {}
-      try { await (tx as any).laporanPerjalananDinas?.deleteMany({ where: { authorId: id } }); } catch {}
-      try { await (tx as any).dokumenIntern?.deleteMany({ where: { authorId: id } }); } catch {}
-      try { await (tx as any).coretanOpini?.deleteMany({ where: { authorId: id } }); } catch {}
-      try { await (tx as any).humorPegawai?.deleteMany({ where: { authorId: id } }); } catch {}
-      try { await (tx as any).jelajahBumi?.deleteMany({ where: { authorId: id } }); } catch {}
-      try { await (tx as any).kabarKeluarga?.deleteMany({ where: { authorId: id } }); } catch {}
-      try { await (tx as any).kalimatBijak?.deleteMany({ where: { authorId: id } }); } catch {}
-      try { await (tx as any).karyaAkademik?.deleteMany({ where: { authorId: id } }); } catch {}
-      try { await (tx as any).tipsGayaHidup?.deleteMany({ where: { authorId: id } }); } catch {}
-      try { await (tx as any).olahraga?.deleteMany({ where: { authorId: id } }); } catch {}
-      try { await (tx as any).tahukahAnda?.deleteMany({ where: { authorId: id } }); } catch {}
+      // Hapus entri tabel rubrik spesifik jika ada
+      try { await tx.berita.deleteMany({ where: { penulisId: id } }); } catch {}
+      try { await tx.pengumuman.deleteMany({ where: { penulisId: id } }); } catch {}
+      try { await tx.agendaKegiatan.deleteMany({ where: { penulisId: id } }); } catch {}
+      try { await tx.laporanPerjalananDinas.deleteMany({ where: { penulisId: id } }); } catch {}
+      try { await tx.dokumenIntern.deleteMany({ where: { penulisId: id } }); } catch {}
+      try { await tx.coretanOpini.deleteMany({ where: { penulisId: id } }); } catch {}
+      try { await tx.humorPegawai.deleteMany({ where: { penulisId: id } }); } catch {}
+      try { await tx.jelajahBumi.deleteMany({ where: { penulisId: id } }); } catch {}
+      try { await tx.kabarKeluarga.deleteMany({ where: { penulisId: id } }); } catch {}
+      try { await tx.kalimatBijak.deleteMany({ where: { penulisId: id } }); } catch {}
+      try { await tx.karyaAkademik.deleteMany({ where: { penulisId: id } }); } catch {}
+      try { await tx.tipsGayaHidup.deleteMany({ where: { penulisId: id } }); } catch {}
+      try { await tx.olahraga.deleteMany({ where: { penulisId: id } }); } catch {}
+      try { await tx.tahukahAnda.deleteMany({ where: { penulisId: id } }); } catch {}
 
       // Hapus user utama
       await tx.user.delete({ where: { id } });

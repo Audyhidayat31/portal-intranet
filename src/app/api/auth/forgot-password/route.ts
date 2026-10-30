@@ -32,12 +32,27 @@ export async function POST(request: NextRequest) {
         name: true,
         email: true,
         nip: true,
+        profile: {
+          select: {
+            fullName: true,
+          },
+        },
       },
     });
 
+    if (!user) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Tidak ada pegawai terdaftar dengan email ini.',
+        },
+        { status: 404 }
+      );
+    }
+
     // Generate reset token
     const token = Buffer.from(`${cleanEmail}:${Date.now()}`).toString('base64');
-    const userName = user ? user.name : (cleanEmail.split('@')[0] || 'Pengguna');
+    const userName = user.profile?.fullName || user.name || 'Pengguna';
 
     // Base URL for email link
     const origin = request.nextUrl.origin || process.env.APP_BASE_URL || 'http://localhost:3000';

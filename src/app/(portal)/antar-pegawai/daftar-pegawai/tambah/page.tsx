@@ -260,7 +260,7 @@ export default function TambahPegawaiPage() {
                   required
                   value={jabatan}
                   onChange={(e) => setJabatan(e.target.value)}
-                  placeholder="Contoh: Kepala Sistem Informasi"
+                  placeholder="Contoh: Pranata Komputer Ahli Muda"
                   className="w-full border border-[#c5c6d2] rounded-lg py-2.5 px-3.5 text-sm bg-white text-[#1a1b20] focus:outline-none focus:border-[#00113a]"
                 />
               </div>
@@ -352,7 +352,7 @@ export default function TambahPegawaiPage() {
                   rows={2}
                   value={careerHistory}
                   onChange={(e) => setCareerHistory(e.target.value)}
-                  placeholder="Contoh: Staf IT (2015-2019), Kasubbag Infrastruktur (2019-2023), Kepala Sistem Informasi (2023-Sekarang)"
+                  placeholder="Contoh: Staf IT (2015-2019), Kasubbag Infrastruktur (2019-2023), Pranata Komputer Ahli Muda (2023-Sekarang)"
                   className="w-full border border-[#c5c6d2] rounded-lg py-2.5 px-3.5 text-sm bg-white text-[#1a1b20] focus:outline-none focus:border-[#00113a]"
                 />
               </div>
