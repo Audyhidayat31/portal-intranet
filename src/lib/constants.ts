@@ -24,3 +24,24 @@ export const CATEGORIES_CONFIG = [
   { slug: 'olahraga', name: 'Olahraga', icon: Trophy, desc: 'Klub dan aktivitas olahraga' },
   { slug: 'tahukah-anda', name: 'Tahukah Anda', icon: Lightbulb, desc: 'Trivia unik kepustakaan' },
 ];
+
+export const SATUAN_KERJA_OPTIONS = [
+  'Biro SDM dan Umum',
+  'Pusat Data dan Informasi',
+  'UPT Perpustakaan Bung Hatta',
+  'Pusat Jasa Perpustakaan dan Pengelolaan Naskah Nusantara',
+  'Pusat Preservasi dan Alih Media Bahan Perpustakaan',
+  'Pusat Pengembagan Perpustakaan Sekolah/ Madrasah dan Perguruan Tinggi',
+  'Biro Perencanaan dan Keuangan',
+  'Pusat Pembinaan Pustakawan',
+  'UPT Perpustakaan Bung Karno',
+  'Pusat Bibliografi dan Pengolahan Bahan Perpustakaan',
+  'Direktorat Standardisasi dan Akreditasi Perpustakaan',
+  'Pusat Analisis Perpustakaan dan Pengembangan Budaya Baca',
+  'Biro Hukum, Organisasi, Kerjasama dan Humas',
+  'Pusat Pendidikan dan Pelatihan',
+  'Inspektorat',
+  'Direktorat Deposit dan Pengembangan Koleksi Perpustakaan',
+  'Pusat Pengembangan Perpustakaan Umum dan Khusus',
+];
+

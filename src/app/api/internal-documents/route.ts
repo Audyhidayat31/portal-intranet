@@ -212,6 +212,13 @@ export async function POST(request: NextRequest) {
       details: {
         title,
         documentNumber: docNumber,
+        nomorDokumen: docNumber,
+        categoryName: categoryName || created.category?.name || 'Dokumen Internal',
+        attachmentName: created.attachmentName,
+        attachmentUrl: created.attachmentUrl,
+        fullContent: cleanKeterangan,
+        keterangan: cleanKeterangan,
+        tanggal: created.publishedAt?.toISOString(),
         status: docStatus === 'TERBIT' ? 'Terbit' : 'Menunggu',
       },
     });

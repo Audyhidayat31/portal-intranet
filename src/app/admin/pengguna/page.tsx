@@ -231,7 +231,6 @@ export default function AdminPenggunaPage() {
   };
 
   const SATUAN_KERJA_OPTIONS = [
-    'Sistem Informasi',
     'Biro SDM dan Umum',
     'Pusat Data dan Informasi',
     'UPT Perpustakaan Bung Hatta',

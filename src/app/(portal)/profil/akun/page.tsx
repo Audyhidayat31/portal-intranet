@@ -43,7 +43,6 @@ export default function ProfilPegawaiPage() {
   const [isSatuanKerjaDropdownOpen, setIsSatuanKerjaDropdownOpen] = useState(false);
   const satuanKerjaDropdownRef = useRef<HTMLDivElement>(null);
   const SATUAN_KERJA_OPTIONS = [
-    'Sistem Informasi',
     'Biro SDM dan Umum',
     'Pusat Data dan Informasi',
     'UPT Perpustakaan Bung Hatta',
@@ -177,9 +176,31 @@ export default function ProfilPegawaiPage() {
     e.preventDefault();
     setStatusMessage(null);
 
-    if (newPassword) {
+    if (activeTab === 'ubah-kata-sandi') {
+      if (!currentPassword) {
+        setStatusMessage({ type: 'error', text: 'Masukkan sandi lama terlebih dahulu.' });
+        return;
+      }
+      if (!newPassword) {
+        setStatusMessage({ type: 'error', text: 'Masukkan sandi baru.' });
+        return;
+      }
       if (newPassword !== confirmPassword) {
-        setStatusMessage({ type: 'error', text: 'Konfirmasi password baru tidak cocok.' });
+        setStatusMessage({ type: 'error', text: 'Konfirmasi kata sandi baru tidak cocok.' });
+        return;
+      }
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+      if (!passwordRegex.test(newPassword)) {
+        setStatusMessage({ type: 'error', text: 'Sandi baru minimal 8 karakter, mengandung huruf besar, huruf kecil, dan angka.' });
+        return;
+      }
+    } else if (newPassword) {
+      if (!currentPassword) {
+        setStatusMessage({ type: 'error', text: 'Masukkan sandi lama terlebih dahulu.' });
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        setStatusMessage({ type: 'error', text: 'Konfirmasi kata sandi baru tidak cocok.' });
         return;
       }
       const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
@@ -208,7 +229,10 @@ export default function ProfilPegawaiPage() {
 
       const data = await res.json();
       if (data.success) {
-        setStatusMessage({ type: 'success', text: 'Data profil berhasil diperbarui!' });
+        setStatusMessage({
+          type: 'success',
+          text: activeTab === 'ubah-kata-sandi' ? 'Kata sandi berhasil diperbarui!' : 'Data profil berhasil diperbarui!'
+        });
         setIsEditModalOpen(false);
         setCurrentPassword('');
         setNewPassword('');

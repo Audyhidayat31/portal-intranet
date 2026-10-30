@@ -220,9 +220,7 @@ export async function GET() {
 
           return {
             ...chosen,
-            title: chosen.position
-              ? `${chosen.name.toUpperCase()} : ${chosen.position.toUpperCase()}`
-              : chosen.name.toUpperCase(),
+            title: chosen.name.toUpperCase(),
             bio: cleanBio,
             avatarUrl: chosen.photoUrl || null,
             photoUrl: chosen.photoUrl || null,

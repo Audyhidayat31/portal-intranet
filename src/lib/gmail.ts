@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import nodemailer from 'nodemailer';
+import nodemailer, { type Transporter } from 'nodemailer';
 
 export interface SendPasswordResetEmailParams {
   toEmail: string;
@@ -321,6 +321,44 @@ export function updateEnvTokens(refreshToken: string, senderEmail: string) {
   }
 }
 
+let cachedSmtpTransporter: Transporter | null = null;
+
+function getPooledSmtpTransporter(smtp: ReturnType<typeof getSmtpCredentials>) {
+  if (cachedSmtpTransporter) {
+    return cachedSmtpTransporter;
+  }
+
+  cachedSmtpTransporter = nodemailer.createTransport({
+    pool: true,
+    maxConnections: 1,
+    maxMessages: 100,
+    host: smtp.host,
+    port: smtp.port,
+    secure: smtp.secure,
+    auth: {
+      user: smtp.user,
+      pass: smtp.pass,
+    },
+    tls: {
+      rejectUnauthorized: false,
+    },
+    connectionTimeout: 25000,
+    greetingTimeout: 25000,
+    socketTimeout: 25000,
+  });
+
+  return cachedSmtpTransporter;
+}
+
+function resetSmtpTransporter() {
+  if (cachedSmtpTransporter) {
+    try {
+      cachedSmtpTransporter.close();
+    } catch {}
+    cachedSmtpTransporter = null;
+  }
+}
+
 /**
  * Send Email via SMTP (Primary) or Gmail API (Fallback)
  */
@@ -332,49 +370,45 @@ export async function sendPasswordResetEmail({
   // 1. Try sending via SMTP (mail.go.id / perpusnas.go.id)
   const smtp = getSmtpCredentials();
   if (smtp.host && smtp.user && smtp.pass) {
-    try {
-      const transporter = nodemailer.createTransport({
-        host: smtp.host,
-        port: smtp.port,
-        secure: smtp.secure,
-        requireTLS: smtp.port === 587,
-        auth: {
-          user: smtp.user,
-          pass: smtp.pass,
-        },
-        tls: {
-          rejectUnauthorized: false,
-          ciphers: 'DEFAULT@SECLEVEL=0',
-        },
-        connectionTimeout: 20000,
-        greetingTimeout: 20000,
-        socketTimeout: 20000,
-      });
+    const htmlBody = generatePasswordResetHtml({ recipientName, resetUrl });
+    const fromAddress = smtp.from || `Cakrawala Portal Intranet <${smtp.user}>`;
 
-      const htmlBody = generatePasswordResetHtml({ recipientName, resetUrl });
+    let lastSmtpError: any = null;
 
-      const info = await transporter.sendMail({
-        from: smtp.from || `Cakrawala Portal Intranet <${smtp.user}>`,
-        to: toEmail,
-        subject: 'Permintaan Atur Ulang Kata Sandi - Cakrawala Portal Intranet',
-        html: htmlBody,
-      });
+    // Retry up to 3 times to handle government gateway greeting timeouts / rate-limiting
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const transporter = getPooledSmtpTransporter(smtp);
+        const info = await transporter.sendMail({
+          from: fromAddress,
+          to: toEmail,
+          subject: 'Permintaan Atur Ulang Kata Sandi - Cakrawala Portal Intranet',
+          html: htmlBody,
+        });
 
-      return {
-        success: true,
-        messageId: info.messageId,
-        via: 'SMTP',
-      };
-    } catch (smtpError: any) {
-      console.error('[SMTP SEND ERROR]:', smtpError);
-      // If Gmail API is not configured, return SMTP error directly
-      const { clientId, clientSecret, refreshToken } = getGmailCredentials();
-      if (!clientId || !clientSecret || !refreshToken) {
         return {
-          success: false,
-          error: `Gagal mengirim email via SMTP (${smtp.host}): ${smtpError.message}`,
+          success: true,
+          messageId: info.messageId,
+          via: 'SMTP',
         };
+      } catch (smtpError: any) {
+        lastSmtpError = smtpError;
+        console.warn(`[SMTP SEND ATTEMPT ${attempt} FAILED]:`, smtpError.message);
+        resetSmtpTransporter();
+        if (attempt < 3) {
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        }
       }
+    }
+
+    console.error('[SMTP SEND ALL ATTEMPTS FAILED]:', lastSmtpError);
+    // If Gmail API is not configured, return SMTP error directly
+    const { clientId, clientSecret, refreshToken } = getGmailCredentials();
+    if (!clientId || !clientSecret || !refreshToken) {
+      return {
+        success: false,
+        error: `Gagal mengirim email via SMTP (${smtp.host}): ${lastSmtpError?.message || 'Koneksi ke mail server gagal'}`,
+      };
     }
   }
 

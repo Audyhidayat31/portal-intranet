@@ -24,8 +24,22 @@ export async function GET(request: NextRequest) {
       where,
       orderBy: { createdAt: 'desc' },
     });
+
+    let rawMap = new Map<string, any>();
+    try {
+      const rawFigures: any = await prisma.$queryRawUnsafe(
+        'SELECT id, attachmentUrl, attachmentName, coverImageName, status FROM `profil_tokoh`'
+      );
+      if (Array.isArray(rawFigures)) {
+        rawMap = new Map(rawFigures.map((r: any) => [r.id, r]));
+      }
+    } catch (e) {
+      console.warn('Failed to fetch raw profil_tokoh columns in GET list:', e);
+    }
+
     const mapped = figures.map((f) => ({
       ...f,
+      ...(rawMap.get(f.id) || {}),
       deskripsi: f.deskripsi || f.fullStory || f.quote || '',
       nama_tokoh: f.name,
     }));
@@ -46,6 +60,10 @@ export async function POST(request: NextRequest) {
       quote,
       fullStory,
       photoUrl,
+      coverImageName,
+      attachmentName,
+      attachmentUrl,
+      status,
       isSpotlight,
     } = body;
 
@@ -65,7 +83,7 @@ export async function POST(request: NextRequest) {
     const slug = `${baseSlug}-${Date.now().toString().slice(-4)}`;
 
     const user = await getCurrentUser();
-    const finalPhoto = photoUrl || '/images/logo-perpusnas.png';
+    const finalPhoto = photoUrl?.trim() && !photoUrl.includes('logo-perpusnas') ? photoUrl : null;
     const authorId = user?.userId || null;
     const authorName = user?.name || 'Administrator Perpusnas';
 
@@ -78,15 +96,19 @@ export async function POST(request: NextRequest) {
         unitKerja: unitKerja?.trim() || null,
         quote: (quote && quote !== 'Mendedikasikan karya untuk kemajuan literasi bangsa.') ? quote : (descContent.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim().slice(0, 160) || null),
         fullStory: descContent,
-        photoUrl: finalPhoto.length < 50000 ? finalPhoto : '/images/logo-perpusnas.png',
+        photoUrl: finalPhoto && finalPhoto.length < 50000 ? finalPhoto : null,
         isSpotlight: Boolean(isSpotlight),
       },
     });
 
     try {
       await prisma.$executeRawUnsafe(
-        `UPDATE \`profil_tokoh\` SET \`photoUrl\` = ?, \`authorId\` = ?, \`authorName\` = ?, \`editorId\` = ?, \`editorName\` = ? WHERE \`id\` = ?`,
+        `UPDATE \`profil_tokoh\` SET \`photoUrl\` = ?, \`coverImageName\` = ?, \`attachmentName\` = ?, \`attachmentUrl\` = ?, \`status\` = ?, \`authorId\` = ?, \`authorName\` = ?, \`editorId\` = ?, \`editorName\` = ? WHERE \`id\` = ?`,
         finalPhoto,
+        coverImageName || null,
+        attachmentName || null,
+        attachmentUrl || null,
+        status || 'TERBIT',
         authorId,
         authorName,
         authorId,
@@ -99,16 +121,20 @@ export async function POST(request: NextRequest) {
 
     try {
       await prisma.$executeRawUnsafe(
-        `INSERT INTO \`kupas_sosok\` (\`id\`, \`nama_tokoh\`, \`slug\`, \`deskripsi\`, \`foto_url\`, \`jabatan\`, \`unit_kerja\`, \`created_at\`, \`updated_at\`)
-         VALUES (?, ?, ?, ?, ?, ?, ?, NOW(3), NOW(3))
-         ON DUPLICATE KEY UPDATE \`nama_tokoh\` = VALUES(\`nama_tokoh\`), \`deskripsi\` = VALUES(\`deskripsi\`), \`foto_url\` = VALUES(\`foto_url\`), \`jabatan\` = VALUES(\`jabatan\`), \`unit_kerja\` = VALUES(\`unit_kerja\`)`,
+        `INSERT INTO \`kupas_sosok\` (\`id\`, \`nama_tokoh\`, \`slug\`, \`deskripsi\`, \`foto_url\`, \`jabatan\`, \`unit_kerja\`, \`lampiran_url\`, \`lampiran_nama\`, \`attachmentUrl\`, \`attachmentName\`, \`created_at\`, \`updated_at\`)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(3), NOW(3))
+         ON DUPLICATE KEY UPDATE \`nama_tokoh\` = VALUES(\`nama_tokoh\`), \`deskripsi\` = VALUES(\`deskripsi\`), \`foto_url\` = VALUES(\`foto_url\`), \`jabatan\` = VALUES(\`jabatan\`), \`unit_kerja\` = VALUES(\`unit_kerja\`), \`lampiran_url\` = VALUES(\`lampiran_url\`), \`lampiran_nama\` = VALUES(\`lampiran_nama\`), \`attachmentUrl\` = VALUES(\`attachmentUrl\`), \`attachmentName\` = VALUES(\`attachmentName\`)`,
         newFigure.id,
         name,
         slug,
         descContent,
         finalPhoto,
         position?.trim() || null,
-        unitKerja?.trim() || null
+        unitKerja?.trim() || null,
+        attachmentUrl || null,
+        attachmentName || null,
+        attachmentUrl || null,
+        attachmentName || null
       );
     } catch (err) {
       console.warn('Gagal sinkronisasi kupas_sosok:', err);

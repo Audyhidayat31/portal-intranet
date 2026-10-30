@@ -411,7 +411,6 @@ export const MOCK_EMPLOYEES: MockEmployee[] = [
 
 export const LIST_UNIT_KERJA = [
   'Semua Unit Kerja',
-  'Sistem Informasi',
   'Biro SDM dan Umum',
   'Pusat Data dan Informasi',
   'UPT Perpustakaan Bung Hatta',

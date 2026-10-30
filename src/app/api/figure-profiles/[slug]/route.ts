@@ -22,7 +22,7 @@ export async function GET(
     const { slug } = await params;
 
     try {
-      let figure = await prisma.figureProfile.findFirst({
+      let figure: any = await prisma.figureProfile.findFirst({
         where: {
           OR: [{ slug }, { id: slug }],
         },
@@ -40,6 +40,21 @@ export async function GET(
       }
 
       if (figure) {
+        try {
+          const rawRows: any = await prisma.$queryRawUnsafe(
+            'SELECT * FROM `profil_tokoh` WHERE `id` = ? LIMIT 1',
+            figure.id
+          );
+          if (rawRows && rawRows.length > 0) {
+            figure = {
+              ...figure,
+              ...rawRows[0],
+            };
+          }
+        } catch (rawErr) {
+          console.warn('Failed to query raw profil_tokoh in GET:', rawErr);
+        }
+
         let authorName = figure.authorName;
         let editorName = figure.editorName || figure.authorName;
 
@@ -117,7 +132,19 @@ export async function PUT(
   try {
     const { slug } = await params;
     const body = await request.json();
-    const { name, position, unitKerja, quote, fullStory, photoUrl, isSpotlight } = body;
+    const {
+      name,
+      position,
+      unitKerja,
+      quote,
+      fullStory,
+      photoUrl,
+      coverImageName,
+      attachmentName,
+      attachmentUrl,
+      status,
+      isSpotlight,
+    } = body;
     const user = await getCurrentUser();
 
     try {
@@ -141,7 +168,7 @@ export async function PUT(
           }
         }
 
-        const finalPhoto = photoUrl !== undefined ? photoUrl : existing.photoUrl;
+        const finalPhoto = photoUrl !== undefined ? (photoUrl?.trim() && !photoUrl.includes('logo-perpusnas') ? photoUrl : null) : existing.photoUrl;
         const editorId = user?.userId || existing.editorId || null;
         const editorName = user?.name || existing.editorName || 'Administrator Perpusnas';
 
@@ -159,8 +186,12 @@ export async function PUT(
 
         try {
           await prisma.$executeRawUnsafe(
-            `UPDATE \`profil_tokoh\` SET \`photoUrl\` = ?, \`editorId\` = ?, \`editorName\` = ? WHERE \`id\` = ?`,
+            `UPDATE \`profil_tokoh\` SET \`photoUrl\` = ?, \`coverImageName\` = ?, \`attachmentName\` = ?, \`attachmentUrl\` = ?, \`status\` = ?, \`editorId\` = ?, \`editorName\` = ? WHERE \`id\` = ?`,
             finalPhoto,
+            coverImageName !== undefined ? coverImageName : existing.coverImageName,
+            attachmentName !== undefined ? attachmentName : existing.attachmentName,
+            attachmentUrl !== undefined ? attachmentUrl : existing.attachmentUrl,
+            status !== undefined ? status : existing.status,
             editorId,
             editorName,
             existing.id
@@ -171,12 +202,16 @@ export async function PUT(
 
         try {
           await prisma.$executeRawUnsafe(
-            `UPDATE \`kupas_sosok\` SET \`nama_tokoh\` = ?, \`foto_url\` = ?, \`jabatan\` = ?, \`unit_kerja\` = ?, \`deskripsi\` = ? WHERE \`id\` = ? OR \`slug\` = ?`,
+            `UPDATE \`kupas_sosok\` SET \`nama_tokoh\` = ?, \`foto_url\` = ?, \`jabatan\` = ?, \`unit_kerja\` = ?, \`deskripsi\` = ?, \`lampiran_url\` = ?, \`lampiran_nama\` = ?, \`attachmentUrl\` = ?, \`attachmentName\` = ? WHERE \`id\` = ? OR \`slug\` = ?`,
             name || existing.name,
             finalPhoto,
             position !== undefined ? position : existing.position,
             unitKerja !== undefined ? unitKerja : existing.unitKerja,
             fullStory || existing.fullStory,
+            attachmentUrl !== undefined ? attachmentUrl : existing.attachmentUrl,
+            attachmentName !== undefined ? attachmentName : existing.attachmentName,
+            attachmentUrl !== undefined ? attachmentUrl : existing.attachmentUrl,
+            attachmentName !== undefined ? attachmentName : existing.attachmentName,
             existing.id,
             existing.slug
           );
@@ -200,6 +235,10 @@ export async function PUT(
           data: {
             ...updated,
             photoUrl: finalPhoto,
+            coverImageName: coverImageName !== undefined ? coverImageName : existing.coverImageName,
+            attachmentName: attachmentName !== undefined ? attachmentName : existing.attachmentName,
+            attachmentUrl: attachmentUrl !== undefined ? attachmentUrl : existing.attachmentUrl,
+            status: status !== undefined ? status : existing.status,
             editorId,
             editorName,
           },
@@ -223,8 +262,12 @@ export async function PUT(
 
       try {
         await prisma.$executeRawUnsafe(
-          `UPDATE \`profil_tokoh\` SET \`photoUrl\` = ?, \`authorId\` = ?, \`authorName\` = ?, \`editorId\` = ?, \`editorName\` = ? WHERE \`id\` = ?`,
+          `UPDATE \`profil_tokoh\` SET \`photoUrl\` = ?, \`coverImageName\` = ?, \`attachmentName\` = ?, \`attachmentUrl\` = ?, \`status\` = ?, \`authorId\` = ?, \`authorName\` = ?, \`editorId\` = ?, \`editorName\` = ? WHERE \`id\` = ?`,
           finalPhoto,
+          coverImageName || null,
+          attachmentName || null,
+          attachmentUrl || null,
+          status || 'TERBIT',
           user?.userId || null,
           user?.name || 'Administrator Perpusnas',
           user?.userId || null,

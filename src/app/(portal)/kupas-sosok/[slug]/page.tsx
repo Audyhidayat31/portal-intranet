@@ -9,8 +9,8 @@ import {
   Trash2,
   CheckCircle,
   AlertTriangle,
-  Download,
   ImageIcon,
+  User,
 } from 'lucide-react';
 import { formatDate, canManageContent } from '@/lib/utils';
 import { STITCH_MOCK_FIGURES_6, FigureItem } from '@/lib/mock-kupas-sosok';
@@ -227,8 +227,8 @@ Beliau memimpin proyek integrasi katalog induk nasional dan layanan akses reposi
 
           {/* Profile Header Section: Foto Profil Tokoh & Metadata */}
           <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 items-start mb-6 pr-8">
-            {/* Foto Profil Sosok (Jika diunggah) */}
-            {hasRealPhoto && (
+            {/* Foto Profil Sosok (Jika diunggah) / Icon Profil Fallback */}
+            {hasRealPhoto ? (
               <div className="shrink-0 w-36 sm:w-44 md:w-48 aspect-[3/4] rounded-lg border border-[#c5c6d2] overflow-hidden bg-[#f4f5f8] shadow-xs relative group flex items-center justify-center">
                 <img
                   src={figureItem.photoUrl}
@@ -239,18 +239,24 @@ Beliau memimpin proyek integrasi katalog induk nasional dan layanan akses reposi
                 <img
                   src={figureItem.photoUrl}
                   alt={displayTitle}
-                  className="relative z-10 max-w-full max-h-full object-contain p-1.5 group-hover:scale-105 transition-transform duration-300 drop-shadow-xs"
+                  className="relative z-10 max-w-full max-h-full object-contain p-1.5 drop-shadow-xs"
                 />
                 <button
                   type="button"
                   onClick={() => setPreviewImage(figureItem.photoUrl)}
-                  className="absolute inset-0 z-20 bg-black/0 group-hover:bg-black/25 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                  className="absolute inset-0 z-20 bg-black/0 group-hover:bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                   title="Klik untuk memperbesar foto profil"
                 >
-                  <span className="bg-white/95 text-[#00113a] text-xs font-bold px-2.5 py-1 rounded shadow-sm">
-                    Lihat Foto
+                  <span className="text-white text-xs sm:text-sm font-semibold tracking-wide drop-shadow-md select-none">
+                    Lihat foto
                   </span>
                 </button>
+              </div>
+            ) : (
+              <div className="shrink-0 w-36 sm:w-44 md:w-48 aspect-[3/4] rounded-lg border border-[#c5c6d2] overflow-hidden bg-[#f4f5f8] shadow-xs flex items-center justify-center">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white border border-[#d5d7e2] shadow-xs flex items-center justify-center">
+                  <User className="w-10 h-10 sm:w-12 sm:h-12 text-[#00113a]/50 stroke-[1.5]" />
+                </div>
               </div>
             )}
 
@@ -393,21 +399,9 @@ Beliau memimpin proyek integrasi katalog induk nasional dan layanan akses reposi
             </button>
             <img
               src={previewImage}
-              alt="Pratinjau Lampiran"
-              className="max-h-[75vh] w-auto mx-auto object-contain rounded-lg"
+              alt="Pratinjau Foto Profil"
+              className="max-h-[80vh] w-auto mx-auto object-contain rounded-lg"
             />
-            <div className="p-3 flex justify-between items-center bg-slate-50 border-t border-slate-100 mt-2">
-              <span className="text-xs font-semibold text-slate-700">{previewImage === figureItem?.photoUrl ? 'Foto Profil Tokoh' : 'Lampiran Berkas'}</span>
-              <a
-                href={previewImage}
-                target="_blank"
-                rel="noreferrer"
-                download
-                className="inline-flex items-center gap-1 text-xs font-bold text-[#00113a] hover:underline"
-              >
-                <Download className="w-3.5 h-3.5" /> Buka Ukuran Penuh
-              </a>
-            </div>
           </div>
         </div>
       )}

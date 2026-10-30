@@ -61,9 +61,7 @@ export default function BerandaPage() {
                 ...summaryData,
                 spotlightFigure: {
                   ...spotlight,
-                  title: spotlight.position
-                    ? `${spotlight.name.toUpperCase()} : ${spotlight.position.toUpperCase()}`
-                    : spotlight.name.toUpperCase(),
+                  title: spotlight.name.toUpperCase(),
                   bio: cleanBio,
                   avatarUrl: spotlight.photoUrl || null,
                   photoUrl: spotlight.photoUrl || null,
@@ -298,7 +296,10 @@ export default function BerandaPage() {
       {/* Kupas Sosok Section */}
       <section className="bg-[#f4f3f9] rounded-2xl p-6 sm:p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 md:gap-12 border border-[#e3e2e8]">
         <div className="w-full md:w-1/3 flex justify-center">
-          <div className="w-48 h-48 sm:w-56 sm:h-56 md:w-60 md:h-60 rounded-xl border border-[#c5c6d2] bg-white flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+          <Link
+            href={spotlightFigure?.slug ? `/kupas-sosok/${spotlightFigure.slug}` : '/kupas-sosok'}
+            className="w-48 h-48 sm:w-56 sm:h-56 md:w-60 md:h-60 rounded-xl border border-[#c5c6d2] bg-white flex items-center justify-center overflow-hidden shrink-0 shadow-sm hover:opacity-95 transition-opacity"
+          >
             {spotlightFigure?.photoUrl || spotlightFigure?.avatarUrl ? (
               <img
                 src={spotlightFigure.photoUrl || spotlightFigure.avatarUrl}
@@ -312,14 +313,21 @@ export default function BerandaPage() {
             ) : (
               <User className="w-24 h-24 sm:w-28 sm:h-28 text-[#c5c6d2] stroke-[1]" />
             )}
-          </div>
+          </Link>
         </div>
         <div className="w-full md:w-2/3 space-y-4 text-left">
           <h2 className="text-lg sm:text-xl font-bold text-[#00113a]">Kupas Sosok</h2>
           <h3 className="text-2xl sm:text-3xl font-bold text-[#1a1b20] uppercase tracking-wide leading-snug">
-            {spotlightFigure?.position 
-              ? `${spotlightFigure.name.toUpperCase()} : ${spotlightFigure.position.toUpperCase()}`
-              : (spotlightFigure?.title || spotlightFigure?.name?.toUpperCase() || 'JNB TAIRAS : PEJUANG PUSTAKAWAN')}
+            {spotlightFigure?.slug ? (
+              <Link
+                href={`/kupas-sosok/${spotlightFigure.slug}`}
+                className="hover:text-[#007BFF] transition-colors"
+              >
+                {spotlightFigure?.name?.toUpperCase() || spotlightFigure?.title?.toUpperCase() || 'JNB TAIRAS'}
+              </Link>
+            ) : (
+              spotlightFigure?.name?.toUpperCase() || spotlightFigure?.title?.toUpperCase() || 'JNB TAIRAS'
+            )}
           </h3>
           <p className="text-sm sm:text-base text-[#444650] leading-relaxed line-clamp-3">
             {spotlightFigure?.bio ||

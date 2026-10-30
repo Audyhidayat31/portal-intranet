@@ -23,12 +23,14 @@ import {
   FileText,
   Video,
   X,
+  Check,
 } from 'lucide-react';
 import {
   getStoredFigures,
   saveStoredFigures,
   FigureItem,
 } from '@/lib/mock-kupas-sosok';
+import { SATUAN_KERJA_OPTIONS } from '@/lib/constants';
 
 const compressImage = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -130,6 +132,10 @@ export default function TambahKupasSosokPage() {
   const [isStylingMenuOpen, setIsStylingMenuOpen] = useState(false);
   const stylingMenuRef = useRef<HTMLDivElement>(null);
 
+  // Unit / Satuan Kerja dropdown state
+  const [isUnitKerjaDropdownOpen, setIsUnitKerjaDropdownOpen] = useState(false);
+  const unitKerjaDropdownRef = useRef<HTMLDivElement>(null);
+
   // Editor and Input refs
   const editorRef = useRef<HTMLDivElement>(null);
   const gambarInputRef = useRef<HTMLInputElement>(null);
@@ -170,6 +176,12 @@ export default function TambahKupasSosokPage() {
         !statusMenuRef.current.contains(event.target as Node)
       ) {
         setIsStatusMenuOpen(false);
+      }
+      if (
+        unitKerjaDropdownRef.current &&
+        !unitKerjaDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsUnitKerjaDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -579,14 +591,42 @@ export default function TambahKupasSosokPage() {
                   placeholder="Tuliskan jabatan"
                   className="w-full border border-[#c5c6d2] rounded p-3 text-sm sm:text-base text-[#1a1b20] placeholder-[#757682] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none transition-colors"
                 />
-                <input
-                  id="unitKerja"
-                  type="text"
-                  value={unitKerja}
-                  onChange={(e) => setUnitKerja(e.target.value)}
-                  placeholder="Tuliskan unit kerja"
-                  className="w-full border border-[#c5c6d2] rounded p-3 text-sm sm:text-base text-[#1a1b20] placeholder-[#757682] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none transition-colors"
-                />
+                <div className="relative" ref={unitKerjaDropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsUnitKerjaDropdownOpen(!isUnitKerjaDropdownOpen)}
+                    className="w-full flex items-center justify-between px-3.5 py-3 bg-[#5b6b82] text-white text-sm sm:text-base font-bold rounded-xl hover:bg-[#485568] transition-colors cursor-pointer shadow-xs text-left"
+                  >
+                    <span className="truncate pr-2">{unitKerja || 'Pilih Unit Kerja'}</span>
+                    <ChevronDown className={`w-4 h-4 shrink-0 transition-transform duration-200 ${isUnitKerjaDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {isUnitKerjaDropdownOpen && (
+                    <div className="absolute left-0 w-full max-h-60 overflow-y-auto mt-1.5 bg-white border border-[#c5c6d2] rounded-xl shadow-xl py-1 z-50 animate-in fade-in zoom-in-95 duration-150">
+                      {SATUAN_KERJA_OPTIONS.map((item) => {
+                        const isSelected = unitKerja === item;
+                        return (
+                          <button
+                            key={item}
+                            type="button"
+                            onClick={() => {
+                              setUnitKerja(item);
+                              setIsUnitKerjaDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-2.5 text-xs sm:text-sm font-semibold transition-colors flex items-center justify-between cursor-pointer ${
+                              isSelected
+                                ? 'bg-slate-100 text-[#00113a] font-bold'
+                                : 'text-slate-700 hover:bg-slate-50'
+                            }`}
+                          >
+                            <span className="truncate pr-2">{item}</span>
+                            {isSelected && <Check className="w-4 h-4 text-[#007BFF] shrink-0" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* 5. Deskripsi / Kisah Lengkap */}

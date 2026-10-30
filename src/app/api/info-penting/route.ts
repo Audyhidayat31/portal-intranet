@@ -1,49 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { logActivity } from '@/lib/audit';
-import fs from 'fs';
-import path from 'path';
+import { getInfoPentingConfig, saveInfoPentingConfig } from '@/lib/info-penting';
 
-const INFO_PENTING_FILE = path.join(process.cwd(), 'src', 'lib', 'info-penting-config.json');
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
-const DEFAULT_CONFIG = {
-  headline: 'Pemberitahuan',
-  subheadline: 'Gunakan Nomor Induk Pegawai (NIP) resmi dan kata sandi kedinasan Anda. Jangan pernah membagikan kata sandi kepada siapapun demi menjaga integritas data kepegawaian Perpusnas RI.',
-  imageUrl: '/images/logo-perpusnas.png',
-  imageName: 'logo-perpusnas.png',
-  status: 'AKTIF',
-  updatedAt: new Date().toISOString(),
-  updatedBy: 'Administrator',
+const NO_CACHE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+  Pragma: 'no-cache',
+  Expires: '0',
 };
-
-function getInfoPentingConfig() {
-  try {
-    if (fs.existsSync(INFO_PENTING_FILE)) {
-      const content = fs.readFileSync(INFO_PENTING_FILE, 'utf-8');
-      return JSON.parse(content);
-    }
-  } catch (err) {
-    console.error('Error reading info penting config:', err);
-  }
-  return DEFAULT_CONFIG;
-}
-
-function saveInfoPentingConfig(data: any) {
-  try {
-    fs.writeFileSync(INFO_PENTING_FILE, JSON.stringify(data, null, 2), 'utf-8');
-    return true;
-  } catch (err) {
-    console.error('Error saving info penting config:', err);
-    return false;
-  }
-}
 
 export async function GET() {
   const config = getInfoPentingConfig();
-  return NextResponse.json({
-    success: true,
-    data: config,
-  });
+  return NextResponse.json(
+    {
+      success: true,
+      data: config,
+    },
+    {
+      headers: NO_CACHE_HEADERS,
+    }
+  );
 }
 
 export async function PUT(request: NextRequest) {
@@ -84,11 +63,16 @@ export async function PUT(request: NextRequest) {
       description: `Administrator memperbarui Pemberitahuan: "${headline}" [${updatedConfig.status}]`,
     });
 
-    return NextResponse.json({
-      success: true,
-      message: 'Pemberitahuan berhasil diperbarui!',
-      data: updatedConfig,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Pemberitahuan berhasil diperbarui!',
+        data: updatedConfig,
+      },
+      {
+        headers: NO_CACHE_HEADERS,
+      }
+    );
   } catch (error: any) {
     console.error('Error updating info penting:', error);
     return NextResponse.json({ success: false, message: 'Terjadi kesalahan pada server.' }, { status: 500 });

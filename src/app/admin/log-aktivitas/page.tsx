@@ -17,6 +17,7 @@ export default function AdminLogAktivitasPage() {
   const [logs, setLogs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedLog, setSelectedLog] = useState<any | null>(null);
+  const [isUraianExpanded, setIsUraianExpanded] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -24,6 +25,7 @@ export default function AdminLogAktivitasPage() {
   }, []);
 
   useEffect(() => {
+    setIsUraianExpanded(false);
     if (selectedLog) {
       document.body.style.overflow = 'hidden';
     } else {
@@ -112,32 +114,134 @@ export default function AdminLogAktivitasPage() {
     }
   };
 
-  // Humanize module name matching wireframe
+  // Format date to: dd/mm/yyyy
+  const formatLogDateOnly = (dateStr?: string | Date | null): string => {
+    if (!dateStr || dateStr === '-') return '-';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return String(dateStr);
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`;
+    } catch {
+      return String(dateStr);
+    }
+  };
+
+  // Format trip duration: dd/mm/yyyy Hingga dd/mm/yyyy
+  const formatTripDuration = (startDate?: string | Date | null, endDate?: string | Date | null): string => {
+    if (!startDate && !endDate) return '-';
+    const startStr = formatLogDateOnly(startDate);
+    const endStr = formatLogDateOnly(endDate);
+    if (startStr !== '-' && endStr !== '-') {
+      return `${startStr} Hingga ${endStr}`;
+    }
+    return startStr !== '-' ? startStr : endStr;
+  };
+
+  // Humanize module name matching front-end portal navigation
   const formatModule = (mod: string) => {
     if (!mod) return '-';
-    const upper = mod.toUpperCase();
-    if (upper === 'NEWS' || upper === 'BERITA') return 'Berita';
-    if (upper === 'ANNOUNCEMENTS' || upper === 'PENGUMUMAN') return 'Pengumuman';
-    if (upper === 'OPINION' || upper === 'CORETAN_OPINI' || upper === 'CORETAN OPINI') return 'Coretan Opini';
-    if (upper === 'SPORTS' || upper === 'OLAHRAGA') return 'Olahraga';
-    if (upper === 'LIFESTYLE' || upper === 'TIPS_DAN_GAYA_HIDUP' || upper === 'TIPS DAN GAYA HIDUP') return 'Tips dan Gaya Hidup';
-    if (upper === 'EARTH' || upper === 'JELAJAH_BUMI' || upper === 'JELAJAH BUMI') return 'Jelajah Bumi';
-    if (upper === 'DIDYOUKNOW' || upper === 'TAHUKAH_ANDA' || upper === 'TAHUKAH ANDA') return 'Tahukah Anda';
-    if (upper === 'FIGURE' || upper === 'KUPAS_SOSOK' || upper === 'KUPAS SOSOK') return 'Kupas Sosok';
-    if (upper === 'ACADEMIC' || upper === 'KARYA_AKADEMIK') return 'Karya Akademik';
-    if (upper === 'FAMILY' || upper === 'KABAR_KELUARGA') return 'Kabar Keluarga';
-    if (upper === 'HUMOR') return 'Humor';
-    if (upper === 'WISDOM' || upper === 'KALIMAT_BIJAK') return 'Kalimat Bijak';
-    if (upper === 'CONSULTATION' || upper === 'KONSULTASI') return 'Konsultasi';
-    if (upper === 'DOCUMENTS' || upper === 'DOKUMEN_INTERN') return 'Dokumen Intern';
-    if (upper === 'AGENDAS' || upper === 'AGENDA') return 'Agenda Kegiatan';
-    if (upper === 'BUSINESS_TRIP' || upper === 'PERJALANAN_DINAS') return 'Laporan Perjalanan';
-    if (upper === 'HOMEPAGE') return 'Homepage';
-    if (upper === 'AUTH' || upper === 'AUTENTIKASI') return 'Autentikasi';
-    if (upper === 'USERS' || upper === 'PENGGUNA') return 'Pengguna';
-    if (upper === 'ROLES' || upper === 'HAK_AKSES' || upper === 'HAK AKSES') return 'Hak Akses';
-    if (upper === 'POSTS') return 'Antar Pegawai';
-    return mod;
+    const clean = mod.trim().toUpperCase().replace(/[\s-]+/g, '_');
+
+    // 1. Kabar Kedinasan
+    if (clean === 'NEWS' || clean === 'BERITA') return 'Berita';
+    if (clean === 'ANNOUNCEMENTS' || clean === 'ANNOUNCEMENT' || clean === 'PENGUMUMAN') return 'Pengumuman';
+    if (clean === 'AGENDAS' || clean === 'AGENDA' || clean === 'AGENDA_KEGIATAN') return 'Agenda Kegiatan';
+    if (
+      clean === 'BUSINESS_TRIP' ||
+      clean === 'BUSINESS_TRIPS' ||
+      clean === 'PERJALANAN_DINAS' ||
+      clean === 'LAPORAN_PERJALANAN' ||
+      clean === 'LAPORAN_PERJALANAN_DINAS'
+    ) {
+      return 'Laporan Perjalanan Dinas';
+    }
+    if (
+      clean === 'INTERNAL_DOCUMENT' ||
+      clean === 'INTERNAL_DOCUMENTS' ||
+      clean === 'DOCUMENTS' ||
+      clean === 'DOCUMENT' ||
+      clean === 'DOKUMEN_INTERNAL' ||
+      clean === 'DOKUMEN_INTERN' ||
+      clean === 'DOKUMEN'
+    ) {
+      return 'Dokumen Internal';
+    }
+
+    // 2. Antar Pegawai
+    if (clean === 'EMPLOYEES' || clean === 'EMPLOYEE' || clean === 'DAFTAR_PEGAWAI') return 'Daftar Pegawai';
+    if (clean === 'OPINION' || clean === 'OPINI' || clean === 'CORETAN_OPINI') return 'Coretan Opini';
+    if (clean === 'HUMOR') return 'Humor';
+    if (clean === 'EARTH' || clean === 'JELAJAH_BUMI') return 'Jelajah Bumi';
+    if (clean === 'FAMILY' || clean === 'KABAR_KELUARGA') return 'Kabar Keluarga';
+    if (clean === 'WISDOM' || clean === 'KALIMAT_BIJAK') return 'Kalimat Bijak';
+    if (clean === 'ACADEMIC' || clean === 'KARYA_AKADEMIK') return 'Karya Akademik';
+    if (
+      clean === 'LIFESTYLE' ||
+      clean === 'TIPS_GAYA_HIDUP' ||
+      clean === 'TIPS_DAN_GAYA_HIDUP' ||
+      clean === 'TIPS_&_GAYA_HIDUP'
+    ) {
+      return 'Tips & Gaya Hidup';
+    }
+    if (clean === 'CONSULTATION' || clean === 'CONSULTATIONS' || clean === 'KONSULTASI') return 'Konsultasi';
+    if (clean === 'SPORTS' || clean === 'SPORT' || clean === 'OLAHRAGA') return 'Olahraga';
+    if (clean === 'DIDYOUKNOW' || clean === 'DID_YOU_KNOW' || clean === 'TAHUKAH_ANDA') return 'Tahukah Anda';
+    if (clean === 'POSTS' || clean === 'POST' || clean === 'POSTINGAN_PEGAWAI' || clean === 'ANTAR_PEGAWAI') {
+      return 'Antar Pegawai';
+    }
+
+    // 3. Kupas Sosok
+    if (
+      clean === 'FIGURE' ||
+      clean === 'FIGURES' ||
+      clean === 'FIGURE_PROFILE' ||
+      clean === 'FIGURE_PROFILES' ||
+      clean === 'KUPAS_SOSOK'
+    ) {
+      return 'Kupas Sosok';
+    }
+
+    // 4. Kelola Admin
+    if (clean === 'HOMEPAGE' || clean === 'HALAMAN_UTAMA' || clean === 'KELOLA_HALAMAN_UTAMA' || clean === 'INFO_PENTING') {
+      return 'Kelola Halaman Utama';
+    }
+    if (clean === 'USERS' || clean === 'USER' || clean === 'PENGGUNA' || clean === 'KELOLA_PENGGUNA') {
+      return 'Kelola Pengguna';
+    }
+    if (
+      clean === 'ROLES' ||
+      clean === 'ROLE' ||
+      clean === 'PERMISSIONS' ||
+      clean === 'PERMISSION' ||
+      clean === 'HAK_AKSES' ||
+      clean === 'KELOLA_HAK_AKSES'
+    ) {
+      return 'Kelola Hak Akses';
+    }
+    if (
+      clean === 'AUDIT' ||
+      clean === 'AUDIT_LOG' ||
+      clean === 'ACTIVITY_LOG' ||
+      clean === 'LOG' ||
+      clean === 'LOGS' ||
+      clean === 'LOG_AKTIVITAS'
+    ) {
+      return 'Log Aktivitas';
+    }
+
+    // 5. Autentikasi
+    if (clean === 'AUTH' || clean === 'AUTHENTICATION' || clean === 'AUTENTIKASI') {
+      return 'Autentikasi';
+    }
+
+    // Fallback formatting: title case words instead of raw enum
+    return mod
+      .replace(/_/g, ' ')
+      .toLowerCase()
+      .replace(/\b\w/g, (c) => c.toUpperCase());
   };
 
   // Humanize action name
@@ -160,6 +264,23 @@ export default function AdminLogAktivitasPage() {
       return 'Admin';
     }
     return 'Pegawai';
+  };
+
+  // Helper to safely strip HTML tags and decode common entities
+  const stripHtml = (html?: string | null): string => {
+    if (!html) return '';
+    return html
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
   };
 
   // Helper to safely convert data URL (base64) to a Blob URL
@@ -203,52 +324,167 @@ export default function AdminLogAktivitasPage() {
 
   // Helper to parse multiple attachments or array JSON string
   const parseAttachments = (
-    rawUrl?: string | null,
-    rawName?: string | null
+    rawUrl?: any,
+    rawName?: any,
+    fallbackTitle?: string | null
   ): { url: string; name: string }[] => {
     if (!rawUrl && !rawName) return [];
 
-    const cleanUrl = rawUrl?.trim() || '';
+    // Helper to determine extension from base64 data URL
+    const getExtFromDataUrl = (u: string): string => {
+      if (!u || typeof u !== 'string') return '';
+      if (u.startsWith('data:image/png')) return '.png';
+      if (u.startsWith('data:image/jpeg') || u.startsWith('data:image/jpg')) return '.jpg';
+      if (u.startsWith('data:image/webp')) return '.webp';
+      if (u.startsWith('data:image/gif')) return '.gif';
+      if (u.startsWith('data:image/svg')) return '.svg';
+      if (u.startsWith('data:application/pdf')) return '.pdf';
+      if (u.includes('wordprocessingml') || u.includes('msword')) return '.docx';
+      if (u.includes('spreadsheetml') || u.includes('vnd.ms-excel')) return '.xlsx';
+      if (u.includes('presentationml') || u.includes('powerpoint')) return '.pptx';
+      if (u.startsWith('data:text/plain')) return '.txt';
+      if (u.startsWith('data:text/csv')) return '.csv';
+      if (u.startsWith('data:image')) return '.jpg';
+      return '';
+    };
 
-    // If rawUrl is a JSON string array: ["data:...", "data:..."]
-    if (cleanUrl.startsWith('[') && cleanUrl.endsWith(']')) {
-      try {
-        const parsed = JSON.parse(cleanUrl);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const names = rawName ? rawName.split('|||') : [];
-          return parsed
-            .filter((u) => typeof u === 'string' && u.trim().length > 0)
-            .map((u: string, idx: number) => {
-              const fallbackExt = u.startsWith('data:image/png')
-                ? '.png'
-                : u.startsWith('data:image')
-                ? '.jpg'
-                : u.startsWith('data:application/pdf')
-                ? '.pdf'
-                : '';
-              const fallbackName = `lampiran-${idx + 1}${fallbackExt}`;
-              return {
-                url: u,
-                name: names[idx]?.trim() || fallbackName,
-              };
-            });
+    // 1. Extract array of file names
+    let names: string[] = [];
+    if (Array.isArray(rawName)) {
+      names = rawName
+        .map((n) => (typeof n === 'string' ? n.trim() : typeof n === 'object' && n ? (n.name || n.label || '') : ''))
+        .filter(Boolean);
+    } else if (typeof rawName === 'string') {
+      const cleanName = rawName.trim();
+      if (cleanName && cleanName !== '-' && cleanName !== 'null' && cleanName !== 'undefined') {
+        if (cleanName.startsWith('[') && cleanName.endsWith(']')) {
+          try {
+            const parsed = JSON.parse(cleanName);
+            if (Array.isArray(parsed)) {
+              names = parsed
+                .map((item) => {
+                  if (typeof item === 'string') return item.trim();
+                  if (typeof item === 'object' && item !== null) {
+                    return (item.name || item.label || item.fileName || '').trim();
+                  }
+                  return '';
+                })
+                .filter(Boolean);
+            }
+          } catch {}
+        } else if (cleanName.includes('|||')) {
+          names = cleanName.split('|||').map((s) => s.trim()).filter(Boolean);
+        } else if (cleanName.includes(',')) {
+          names = cleanName.split(',').map((s) => s.trim()).filter(Boolean);
+        } else {
+          names = [cleanName];
         }
-      } catch {}
+      }
     }
 
-    // If rawName contains multiple names separated by |||
-    if (rawName && rawName.includes('|||')) {
-      const names = rawName.split('|||');
-      const urls = cleanUrl.includes('|||') ? cleanUrl.split('|||') : [cleanUrl];
-      return names.map((name, idx) => ({
-        url: urls[idx] || cleanUrl,
-        name: name.trim() || `lampiran-${idx + 1}`,
-      }));
+    // 2. Extract array of URLs and any embedded names
+    let urlItems: { url: string; name?: string }[] = [];
+    if (Array.isArray(rawUrl)) {
+      urlItems = rawUrl
+        .filter((u) => u !== null && u !== undefined)
+        .map((u) => {
+          if (typeof u === 'string') return { url: u.trim() };
+          if (typeof u === 'object') {
+            const uUrl = (u.url || u.src || u.preview || '').trim();
+            const uName = (u.name || u.label || u.fileName || '').trim();
+            return { url: uUrl, name: uName };
+          }
+          return { url: '' };
+        })
+        .filter((item) => item.url.length > 0 || (item.name && item.name.length > 0));
+    } else if (typeof rawUrl === 'string') {
+      const cleanUrl = rawUrl.trim();
+      if (cleanUrl && cleanUrl !== '-' && cleanUrl !== '#' && cleanUrl !== 'null' && cleanUrl !== 'undefined') {
+        if (cleanUrl.startsWith('[') && cleanUrl.endsWith(']')) {
+          try {
+            const parsed = JSON.parse(cleanUrl);
+            if (Array.isArray(parsed)) {
+              urlItems = parsed
+                .filter((u) => u !== null && u !== undefined)
+                .map((u) => {
+                  if (typeof u === 'string') return { url: u.trim() };
+                  if (typeof u === 'object') {
+                    const uUrl = (u.url || u.src || u.preview || '').trim();
+                    const uName = (u.name || u.label || u.fileName || '').trim();
+                    return { url: uUrl, name: uName };
+                  }
+                  return { url: '' };
+                })
+                .filter((item) => item.url.length > 0 || (item.name && item.name.length > 0));
+            }
+          } catch {}
+        } else if (cleanUrl.includes('|||')) {
+          urlItems = cleanUrl.split('|||').map((u) => ({ url: u.trim() })).filter((item) => item.url.length > 0);
+        } else if (!cleanUrl.startsWith('data:') && cleanUrl.includes(',') && !cleanUrl.includes('data:')) {
+          urlItems = cleanUrl.split(',').map((u) => ({ url: u.trim() })).filter((item) => item.url.length > 0);
+        } else {
+          urlItems = [{ url: cleanUrl }];
+        }
+      }
     }
 
-    // Single item
-    const singleName = rawName?.trim() || getFileName(cleanUrl, null, 'lampiran');
-    return [{ url: cleanUrl, name: singleName }];
+    const totalCount = Math.max(urlItems.length, names.length);
+    if (totalCount === 0) return [];
+
+    const results: { url: string; name: string }[] = [];
+
+    for (let i = 0; i < totalCount; i++) {
+      const urlObj = urlItems[i];
+      const itemUrl = urlObj?.url || (urlItems.length === 1 && totalCount === 1 ? urlItems[0].url : '');
+      const embeddedName = urlObj?.name;
+      const explicitName = names[i];
+
+      let resolvedName = explicitName || embeddedName || '';
+
+      // Check if resolvedName is generic or missing (e.g. "lampiran", "lampiran-2.jpg", "file", "-")
+      const isGeneric =
+        !resolvedName ||
+        /^lampiran([-_ ]\d+)?(\.[a-z0-9]+)?$/i.test(resolvedName) ||
+        resolvedName.toLowerCase() === 'dokumen' ||
+        resolvedName.toLowerCase() === 'berkas' ||
+        resolvedName === '-';
+
+      if (isGeneric) {
+        if (itemUrl && !itemUrl.startsWith('data:')) {
+          const fromUrl = getFileName(itemUrl, null, '');
+          if (fromUrl && fromUrl !== '-' && !fromUrl.startsWith('lampiran-')) {
+            resolvedName = fromUrl;
+          }
+        } else if (itemUrl && itemUrl.startsWith('data:')) {
+          const ext = getExtFromDataUrl(itemUrl);
+          if (fallbackTitle) {
+            const cleanTitle = fallbackTitle
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/^-+|-+$/g, '')
+              .slice(0, 30);
+            resolvedName = `${cleanTitle}-lampiran-${i + 1}${ext || '.pdf'}`;
+          } else {
+            resolvedName = `lampiran-${i + 1}${ext || ''}`;
+          }
+        } else {
+          resolvedName = `lampiran-${i + 1}`;
+        }
+      }
+
+      // Add extension if data URL and resolvedName lacks an extension
+      if (itemUrl && itemUrl.startsWith('data:') && !resolvedName.includes('.')) {
+        const ext = getExtFromDataUrl(itemUrl);
+        if (ext) resolvedName += ext;
+      }
+
+      results.push({
+        url: itemUrl,
+        name: resolvedName,
+      });
+    }
+
+    return results;
   };
 
   // Safely open file in a new tab or trigger download, avoiding HTTP 431 errors
@@ -316,20 +552,55 @@ export default function AdminLogAktivitasPage() {
     );
   };
 
+  const renderAttachmentsList = (attachments: { url: string; name: string }[]) => {
+    if (attachments.length === 0) {
+      return <span className="text-slate-400 font-normal">-</span>;
+    }
+
+    return (
+      <div className="space-y-1.5">
+        {attachments.map((item, idx) => (
+          <div key={idx} className="flex items-start">
+            {item.url && item.url !== '#' && item.url !== '-' ? (
+              <button
+                type="button"
+                onClick={(e) => handleOpenFile(e, item.url, item.name)}
+                className="text-blue-600 hover:text-blue-800 hover:underline font-medium text-left break-all cursor-pointer inline-flex items-center gap-1 group text-xs sm:text-sm"
+                title={`Buka / Unduh lampiran: ${item.name}`}
+              >
+                <span>{item.name}</span>
+              </button>
+            ) : (
+              <span className="text-slate-700 font-medium text-xs sm:text-sm break-all">{item.name}</span>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   // Filter logic
   const filteredLogs = useMemo(() => {
     return logs.filter((log) => {
       const query = activeSearch.trim().toLowerCase();
       const moduleName = formatModule(log.module).toLowerCase();
       const description = (log.description || '').toLowerCase();
+      const rawDescription = (log.rawDescription || '').toLowerCase();
       const userName = (log.user?.name || 'Sistem').toLowerCase();
+      const userNip = (log.user?.nip || '').toLowerCase();
       const actionName = formatAction(log.action).toLowerCase();
+      const detailsTitle = (log.details?.title || '').toLowerCase();
+      const detailsSource = (log.details?.source || '').toLowerCase();
 
       const matchesSearch = query === '' ||
         moduleName.includes(query) ||
         description.includes(query) ||
+        rawDescription.includes(query) ||
         userName.includes(query) ||
-        actionName.includes(query);
+        userNip.includes(query) ||
+        actionName.includes(query) ||
+        detailsTitle.includes(query) ||
+        detailsSource.includes(query);
 
       const userRole = getUserRole(log);
       const matchesRole =
@@ -376,8 +647,12 @@ export default function AdminLogAktivitasPage() {
   }, [totalPages, currentPage]);
 
   const handleSearchSubmit = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    setActiveSearch(searchQuery);
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setActiveSearch(searchQuery.trim());
+    setCurrentPage(1);
   };
 
   const handleResetFilters = () => {
@@ -423,15 +698,25 @@ export default function AdminLogAktivitasPage() {
       </div>
 
       {/* Controls Bar matching wireframe: [ Search ] [ Peran v ] [ Cari ] [ Muat Ulang ] */}
-      <div className="flex flex-wrap items-center gap-2.5 pt-1">
+      <form onSubmit={handleSearchSubmit} className="flex flex-wrap items-center gap-2.5 pt-1">
         {/* Search input */}
         <div className="relative">
           <input
             type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              setSearchQuery(val);
+              if (!val.trim()) {
+                setActiveSearch('');
+              }
+            }}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') handleSearchSubmit();
+              if (e.key === 'Enter' || e.keyCode === 13) {
+                e.preventDefault();
+                e.stopPropagation();
+                handleSearchSubmit();
+              }
             }}
             placeholder="Cari modul, aktivitas, nama..."
             className="w-52 sm:w-64 px-3.5 py-2 text-xs bg-white border border-[#c5c6d2] rounded-md focus:outline-none focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a]/20 text-slate-900 placeholder-slate-400 shadow-2xs transition-colors"
@@ -520,8 +805,7 @@ export default function AdminLogAktivitasPage() {
 
         {/* Button Cari matching wireframe */}
         <button
-          type="button"
-          onClick={() => handleSearchSubmit()}
+          type="submit"
           className="px-5 py-2 bg-[#99ccff] hover:bg-[#80baff] active:scale-95 text-[#00113a] border border-[#6ea8e6] text-xs font-bold rounded-md shadow-2xs transition-all cursor-pointer flex items-center gap-1.5"
         >
           <Search className="w-3.5 h-3.5" />
@@ -537,7 +821,7 @@ export default function AdminLogAktivitasPage() {
           <RotateCcw className="w-3.5 h-3.5" />
           <span>Muat Ulang</span>
         </button>
-      </div>
+      </form>
 
       {/* Activity Logs Table Card matching nested header & full grid wireframe */}
       <div className="bg-white border border-[#c5c6d2] shadow-2xs rounded-lg">
@@ -851,114 +1135,589 @@ export default function AdminLogAktivitasPage() {
                 </h4>
 
                 <div className="p-4 bg-slate-50/80 rounded-lg border border-slate-200 space-y-3.5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    {/* Judul */}
-                    <div className="sm:col-span-2">
-                      <span className="text-slate-500 block mb-0.5 font-medium">Judul:</span>
-                      <span className="font-bold text-slate-900 text-[13px] leading-snug">
-                        {selectedLog.details?.title || selectedLog.description}
-                      </span>
-                    </div>
+                  {/* Dynamic Content Fields based on Source Page Module */}
+                  {(() => {
+                    const rawMod = selectedLog.module || '';
+                    const mod = rawMod.trim().toUpperCase().replace(/[\s-]+/g, '_');
+                    const descLower = (selectedLog.description || '').toLowerCase();
+                    const details = selectedLog.details || {};
+                    const rawUrl = details.attachmentUrl || details.fileUrl || details.attachments;
+                    const rawName = details.attachmentName || details.fileName || details.namaLampiran;
+                    const attachments = parseAttachments(rawUrl, rawName, details.title || details.keperluan || details.name);
 
-                    {/* Sumber */}
-                    <div>
-                      <span className="text-slate-500 block mb-0.5 font-medium">Sumber:</span>
-                      <span className="font-medium text-slate-800">
-                        {selectedLog.details?.source && selectedLog.details.source.trim() && selectedLog.details.source.trim() !== '-'
-                          ? selectedLog.details.source.trim()
-                          : '-'}
-                      </span>
-                    </div>
+                    // 1. LAPORAN PERJALANAN DINAS
+                    if (
+                      mod === 'BUSINESS_TRIP' ||
+                      mod === 'BUSINESS_TRIPS' ||
+                      mod === 'PERJALANAN_DINAS' ||
+                      mod === 'LAPORAN_PERJALANAN' ||
+                      mod === 'LAPORAN_PERJALANAN_DINAS' ||
+                      descLower.includes('perjalanan dinas')
+                    ) {
+                      const keperluan = details.keperluan || details.title || selectedLog.description;
+                      const nama = details.nama || details.authorName || selectedLog.user?.name || '-';
+                      const tglMulai = formatLogDateOnly(details.eventStartDate || details.startDate || details.tanggalMulai || details.tanggal || details.publishedAt || selectedLog.createdAt);
+                      const durasi = formatTripDuration(
+                        details.eventStartDate || details.startDate || details.tanggalMulai || details.tanggal || details.publishedAt || selectedLog.createdAt,
+                        details.eventEndDate || details.endDate
+                      );
+                      const kotaTujuan = details.destinationCity || details.kotaTujuan || '-';
+                      const negaraTujuan = details.negaraTujuan || (details.source && details.source !== '-' ? details.source : 'Indonesia');
 
-                    {/* Tanggal */}
-                    <div>
-                      <span className="text-slate-500 block mb-0.5 font-medium">Tanggal:</span>
-                      <span className="font-medium text-slate-800 font-mono">
-                        {selectedLog.details?.tanggal
-                          ? formatLogDate(selectedLog.details.tanggal, true)
-                          : selectedLog.details?.publishedAt
-                          ? formatLogDate(selectedLog.details.publishedAt, true)
-                          : formatLogDate(selectedLog.createdAt, true)}
-                      </span>
-                    </div>
-
-                    {/* Gambar */}
-                    <div>
-                      <span className="text-slate-500 block mb-0.5 font-medium">Gambar:</span>
-                      {renderFileItem(
-                        selectedLog.details?.coverImage || selectedLog.details?.image || selectedLog.details?.thumbnail,
-                        selectedLog.details?.coverImageName
-                      )}
-                    </div>
-
-                    {/* Lampiran */}
-                    <div>
-                      <span className="text-slate-500 block mb-0.5 font-medium">Lampiran:</span>
-                      {(() => {
-                        const rawUrl = selectedLog.details?.attachmentUrl || selectedLog.details?.fileUrl;
-                        const rawName = selectedLog.details?.attachmentName || selectedLog.details?.fileName;
-                        const attachments = parseAttachments(rawUrl, rawName);
-
-                        if (attachments.length === 0) {
-                          return <span className="text-slate-400 font-normal">-</span>;
-                        }
-
-                        return (
-                          <div className="space-y-1">
-                            {attachments.map((item, idx) => (
-                              <div key={idx}>
-                                {item.url && item.url !== '#' && item.url !== '-' ? (
-                                  <button
-                                    type="button"
-                                    onClick={(e) => handleOpenFile(e, item.url, item.name)}
-                                    className="text-blue-600 hover:text-blue-800 hover:underline font-medium text-left break-all cursor-pointer inline-flex items-center gap-1 group"
-                                    title={`Buka lampiran: ${item.name}`}
-                                  >
-                                    <span>{item.name}</span>
-                                  </button>
-                                ) : (
-                                  <span className="text-slate-700 font-medium">{item.name}</span>
-                                )}
-                              </div>
-                            ))}
+                      return (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                          {/* Keperluan */}
+                          <div className="sm:col-span-2">
+                            <span className="text-slate-500 block mb-0.5 font-medium">Keperluan:</span>
+                            <span className="font-bold text-slate-900 text-[13px] leading-snug">
+                              {keperluan}
+                            </span>
                           </div>
-                        );
-                      })()}
-                    </div>
 
-                    {/* Status */}
-                    <div>
-                      <span className="text-slate-500 block mb-0.5 font-medium">Status:</span>
-                      {(() => {
-                        const rawStatus =
-                          selectedLog.details?.status ||
-                          selectedLog.details?.changes?.find((c: any) => c.field?.toLowerCase() === 'status')?.new ||
-                          'Terbit';
-                        const isTerbit = String(rawStatus).toLowerCase().includes('terbit');
-                        return (
-                          <span
-                            className={`inline-block px-2.5 py-0.5 rounded text-[11px] font-bold ${
-                              isTerbit
-                                ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                                : 'bg-amber-100 text-amber-800 border border-amber-300'
-                            }`}
-                          >
-                            {isTerbit ? 'Terbit' : 'Menunggu'}
+                          {/* Tanggal Mulai */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Tanggal Mulai:</span>
+                            <span className="font-medium text-slate-800 font-mono">
+                              {tglMulai}
+                            </span>
+                          </div>
+
+                          {/* Durasi Penugasan */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Durasi Penugasan:</span>
+                            <span className="font-medium text-slate-800 font-mono">
+                              {durasi}
+                            </span>
+                          </div>
+
+                          {/* Nama */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Nama:</span>
+                            <span className="font-medium text-slate-800">
+                              {nama}
+                            </span>
+                          </div>
+
+                          {/* Kota/Kab Tujuan */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Kota/Kab Tujuan:</span>
+                            <span className="font-medium text-slate-800">
+                              {kotaTujuan}
+                            </span>
+                          </div>
+
+                          {/* Negara Tujuan */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Negara Tujuan:</span>
+                            <span className="font-medium text-slate-800">
+                              {negaraTujuan}
+                            </span>
+                          </div>
+
+                          {/* Lampiran */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Lampiran:</span>
+                            {renderAttachmentsList(attachments)}
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    // 2. DOKUMEN INTERNAL
+                    if (
+                      mod === 'INTERNAL_DOCUMENT' ||
+                      mod === 'INTERNAL_DOCUMENTS' ||
+                      mod === 'DOCUMENTS' ||
+                      mod === 'DOCUMENT' ||
+                      mod === 'DOKUMEN_INTERNAL' ||
+                      mod === 'DOKUMEN_INTERN' ||
+                      mod === 'DOKUMEN' ||
+                      descLower.includes('dokumen internal') ||
+                      descLower.includes('dokumen intern')
+                    ) {
+                      return (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                          {/* Judul Dokumen */}
+                          <div className="sm:col-span-2">
+                            <span className="text-slate-500 block mb-0.5 font-medium">Judul Dokumen:</span>
+                            <span className="font-bold text-slate-900 text-[13px] leading-snug">
+                              {details.title || selectedLog.description}
+                            </span>
+                          </div>
+
+                          {/* Nomor Dokumen */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Nomor Dokumen:</span>
+                            <span className="font-medium text-slate-800 font-mono">
+                              {details.documentNumber || details.nomorDokumen || '-'}
+                            </span>
+                          </div>
+
+                          {/* Jenis Dokumen */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Jenis Dokumen:</span>
+                            <span className="font-medium text-slate-800">
+                              {details.categoryName || details.category || details.jenisDokumen || '-'}
+                            </span>
+                          </div>
+
+                          {/* Tanggal */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Tanggal:</span>
+                            <span className="font-medium text-slate-800 font-mono">
+                              {formatLogDateOnly(details.tanggal || details.publishedAt || selectedLog.createdAt)}
+                            </span>
+                          </div>
+
+                          {/* Lampiran */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Lampiran:</span>
+                            {renderAttachmentsList(attachments)}
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    // 3. AGENDA KEGIATAN
+                    if (
+                      mod === 'AGENDAS' ||
+                      mod === 'AGENDA' ||
+                      mod === 'AGENDA_KEGIATAN' ||
+                      descLower.includes('agenda kegiatan') ||
+                      descLower.includes('agenda')
+                    ) {
+                      return (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                          {/* Judul Agenda */}
+                          <div className="sm:col-span-2">
+                            <span className="text-slate-500 block mb-0.5 font-medium">Judul Agenda:</span>
+                            <span className="font-bold text-slate-900 text-[13px] leading-snug">
+                              {details.title || selectedLog.description}
+                            </span>
+                          </div>
+
+                          {/* Lokasi */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Lokasi:</span>
+                            <span className="font-medium text-slate-800">
+                              {details.eventLocation || details.lokasi || '-'}
+                            </span>
+                          </div>
+
+                          {/* Tanggal / Waktu Pelaksanaan */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Tanggal Pelaksanaan:</span>
+                            <span className="font-medium text-slate-800 font-mono">
+                              {details.eventStartDate ? formatLogDate(details.eventStartDate, true) : formatLogDate(selectedLog.createdAt, true)}
+                            </span>
+                          </div>
+
+                          {/* Gambar Sampul */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Gambar:</span>
+                            {renderFileItem(
+                              details.coverImage || details.image || details.thumbnail,
+                              details.coverImageName
+                            )}
+                          </div>
+
+                          {/* Lampiran */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Lampiran:</span>
+                            {renderAttachmentsList(attachments)}
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    // 4. KUPAS SOSOK
+                    if (
+                      mod === 'FIGURE' ||
+                      mod === 'FIGURES' ||
+                      mod === 'FIGURE_PROFILE' ||
+                      mod === 'KUPAS_SOSOK' ||
+                      descLower.includes('kupas sosok') ||
+                      descLower.includes('sosok')
+                    ) {
+                      return (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                          {/* Nama Sosok */}
+                          <div className="sm:col-span-2">
+                            <span className="text-slate-500 block mb-0.5 font-medium">Nama Sosok:</span>
+                            <span className="font-bold text-slate-900 text-[13px] leading-snug">
+                              {details.name || details.title || selectedLog.description}
+                            </span>
+                          </div>
+
+                          {/* Jabatan */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Jabatan:</span>
+                            <span className="font-medium text-slate-800">
+                              {details.position || details.jabatan || '-'}
+                            </span>
+                          </div>
+
+                          {/* Unit Kerja */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Unit Kerja:</span>
+                            <span className="font-medium text-slate-800">
+                              {details.unitKerja || '-'}
+                            </span>
+                          </div>
+
+                          {/* Foto Profil */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Foto Profil:</span>
+                            {renderFileItem(
+                              details.photoUrl || details.coverImage || details.image || details.thumbnail,
+                              details.coverImageName || `${details.name || 'foto-sosok'}.jpg`
+                            )}
+                          </div>
+
+                          {/* Lampiran */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Lampiran:</span>
+                            {renderAttachmentsList(attachments)}
+                          </div>
+
+                          {/* Kutipan jika ada */}
+                          {details.quote && (
+                            <div className="sm:col-span-2 p-2 bg-amber-50/60 rounded border border-amber-200/80">
+                              <span className="text-slate-500 block mb-0.5 font-medium text-[11px]">Kutipan:</span>
+                              <p className="text-slate-800 italic font-medium">"{details.quote}"</p>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    // 5. ANTAR PEGAWAI (Opini, Karya Akademik, Tips & Gaya Hidup, Jelajah Bumi, Kabar Keluarga, Kalimat Bijak, Humor, Konsultasi, Olahraga, Tahukah Anda)
+                    if (
+                      mod === 'OPINION' ||
+                      mod === 'SPORTS' ||
+                      mod === 'LIFESTYLE' ||
+                      mod === 'EARTH' ||
+                      mod === 'DIDYOUKNOW' ||
+                      mod === 'ACADEMIC' ||
+                      mod === 'FAMILY' ||
+                      mod === 'HUMOR' ||
+                      mod === 'WISDOM' ||
+                      mod === 'CONSULTATION' ||
+                      mod === 'POSTS' ||
+                      mod === 'ANTAR_PEGAWAI'
+                    ) {
+                      return (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                          {/* Judul */}
+                          <div className="sm:col-span-2">
+                            <span className="text-slate-500 block mb-0.5 font-medium">Judul:</span>
+                            <span className="font-bold text-slate-900 text-[13px] leading-snug">
+                              {details.title || selectedLog.description}
+                            </span>
+                          </div>
+
+                          {/* Kategori */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Kategori:</span>
+                            <span className="font-medium text-slate-800">
+                              {formatModule(selectedLog.module)}
+                            </span>
+                          </div>
+
+                          {/* Penulis */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Penulis:</span>
+                            <span className="font-medium text-slate-800">
+                              {details.authorName || details.author || selectedLog.user?.name || '-'}
+                            </span>
+                          </div>
+
+                          {/* Tanggal */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Tanggal:</span>
+                            <span className="font-medium text-slate-800 font-mono">
+                              {details.tanggal
+                                ? formatLogDate(details.tanggal, true)
+                                : details.publishedAt
+                                ? formatLogDate(details.publishedAt, true)
+                                : formatLogDate(selectedLog.createdAt, true)}
+                            </span>
+                          </div>
+
+                          {/* Gambar */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Gambar:</span>
+                            {renderFileItem(
+                              details.coverImage || details.image || details.thumbnail,
+                              details.coverImageName
+                            )}
+                          </div>
+
+                          {/* Lampiran */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Lampiran:</span>
+                            {renderAttachmentsList(attachments)}
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    // 6. PENGUMUMAN
+                    if (
+                      mod === 'ANNOUNCEMENTS' ||
+                      mod === 'ANNOUNCEMENT' ||
+                      mod === 'PENGUMUMAN' ||
+                      descLower.includes('pengumuman')
+                    ) {
+                      return (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                          {/* Judul Pengumuman */}
+                          <div className="sm:col-span-2">
+                            <span className="text-slate-500 block mb-0.5 font-medium">Judul:</span>
+                            <span className="font-bold text-slate-900 text-[13px] leading-snug">
+                              {details.title || selectedLog.description}
+                            </span>
+                          </div>
+
+                          {/* Tanggal */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Tanggal:</span>
+                            <span className="font-medium text-slate-800 font-mono">
+                              {details.tanggal
+                                ? formatLogDate(details.tanggal, true)
+                                : details.publishedAt
+                                ? formatLogDate(details.publishedAt, true)
+                                : formatLogDate(selectedLog.createdAt, true)}
+                            </span>
+                          </div>
+
+                          {/* Lampiran */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Lampiran:</span>
+                            {renderAttachmentsList(attachments)}
+                          </div>
+
+                          {/* Gambar jika ada */}
+                          {(details.coverImage || details.image) && (
+                            <div>
+                              <span className="text-slate-500 block mb-0.5 font-medium">Gambar:</span>
+                              {renderFileItem(
+                                details.coverImage || details.image || details.thumbnail,
+                                details.coverImageName
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    // 7. KELOLA PENGGUNA
+                    if (
+                      mod === 'USERS' ||
+                      mod === 'USER' ||
+                      mod === 'PENGGUNA' ||
+                      mod === 'KELOLA_PENGGUNA' ||
+                      descLower.includes('pengguna')
+                    ) {
+                      return (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                          {/* Nama Pengguna */}
+                          <div className="sm:col-span-2">
+                            <span className="text-slate-500 block mb-0.5 font-medium">Nama Pengguna:</span>
+                            <span className="font-bold text-slate-900 text-[13px] leading-snug">
+                              {details.name || details.userName || selectedLog.user?.name || '-'}
+                            </span>
+                          </div>
+
+                          {/* NIP */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">NIP:</span>
+                            <span className="font-medium text-slate-800 font-mono">
+                              {details.nip || selectedLog.user?.nip || '-'}
+                            </span>
+                          </div>
+
+                          {/* Email */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Email:</span>
+                            <span className="font-medium text-slate-800">
+                              {details.email || '-'}
+                            </span>
+                          </div>
+
+                          {/* Peran */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Peran:</span>
+                            <span className="font-medium text-slate-800">
+                              {details.role || details.roleName || '-'}
+                            </span>
+                          </div>
+
+                          {/* Unit Kerja */}
+                          <div>
+                            <span className="text-slate-500 block mb-0.5 font-medium">Unit Kerja:</span>
+                            <span className="font-medium text-slate-800">
+                              {details.unitKerja || '-'}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    // 8. KELOLA HAK AKSES
+                    if (
+                      mod === 'ROLES' ||
+                      mod === 'ROLE' ||
+                      mod === 'HAK_AKSES' ||
+                      mod === 'PERMISSIONS' ||
+                      descLower.includes('hak akses') ||
+                      descLower.includes('peran')
+                    ) {
+                      return (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                          {/* Peran */}
+                          <div className="sm:col-span-2">
+                            <span className="text-slate-500 block mb-0.5 font-medium">Peran:</span>
+                            <span className="font-bold text-slate-900 text-[13px] leading-snug">
+                              {details.roleName || details.title || '-'}
+                            </span>
+                          </div>
+
+                          {/* Deskripsi */}
+                          <div className="sm:col-span-2">
+                            <span className="text-slate-500 block mb-0.5 font-medium">Deskripsi Peran:</span>
+                            <span className="font-medium text-slate-800">
+                              {details.description || selectedLog.description}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    // DEFAULT: BERITA & KONTEN UMUM
+                    return (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        {/* Judul */}
+                        <div className="sm:col-span-2">
+                          <span className="text-slate-500 block mb-0.5 font-medium">Judul:</span>
+                          <span className="font-bold text-slate-900 text-[13px] leading-snug">
+                            {details.title || selectedLog.description}
                           </span>
-                        );
-                      })()}
-                    </div>
+                        </div>
+
+                        {/* Sumber (hanya jika ada atau modul berita) */}
+                        <div>
+                          <span className="text-slate-500 block mb-0.5 font-medium">Sumber:</span>
+                          <span className="font-medium text-slate-800">
+                            {details.source && details.source.trim() && details.source.trim() !== '-'
+                              ? details.source.trim()
+                              : '-'}
+                          </span>
+                        </div>
+
+                        {/* Tanggal */}
+                        <div>
+                          <span className="text-slate-500 block mb-0.5 font-medium">Tanggal:</span>
+                          <span className="font-medium text-slate-800 font-mono">
+                            {details.tanggal
+                              ? formatLogDate(details.tanggal, true)
+                              : details.publishedAt
+                              ? formatLogDate(details.publishedAt, true)
+                              : formatLogDate(selectedLog.createdAt, true)}
+                          </span>
+                        </div>
+
+                        {/* Gambar */}
+                        <div>
+                          <span className="text-slate-500 block mb-0.5 font-medium">Gambar:</span>
+                          {renderFileItem(
+                            details.coverImage || details.image || details.thumbnail,
+                            details.coverImageName
+                          )}
+                        </div>
+
+                        {/* Lampiran */}
+                        <div>
+                          <span className="text-slate-500 block mb-0.5 font-medium">Lampiran:</span>
+                          {renderAttachmentsList(attachments)}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Status (Selalu di atas Uraian/ Deskripsi) */}
+                  <div className="pt-2 border-t border-slate-200">
+                    <span className="text-slate-500 block mb-1 font-medium">Status:</span>
+                    {(() => {
+                      const rawStatus =
+                        selectedLog.details?.status ||
+                        selectedLog.details?.changes?.find((c: any) => c.field?.toLowerCase() === 'status')?.new ||
+                        'Terbit';
+                      const isTerbit = String(rawStatus).toLowerCase().includes('terbit') || String(rawStatus).toLowerCase().includes('aktif');
+                      return (
+                        <span
+                          className={`inline-block px-2.5 py-0.5 rounded text-[11px] font-bold ${
+                            isTerbit
+                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                              : 'bg-amber-100 text-amber-800 border border-amber-300'
+                          }`}
+                        >
+                          {isTerbit ? (String(rawStatus).toLowerCase().includes('aktif') ? 'Aktif' : 'Terbit') : 'Menunggu'}
+                        </span>
+                      );
+                    })()}
                   </div>
 
-                  {/* Cuplikan Uraian / Konten jika ada */}
-                  {selectedLog.details?.contentExcerpt && (
-                    <div className="pt-2.5 border-t border-slate-200">
-                      <span className="text-slate-500 block mb-1 font-medium">Uraian / Cuplikan Konten:</span>
-                      <p className="text-slate-700 italic bg-white p-2.5 rounded border border-slate-200 leading-relaxed text-xs">
-                        "{selectedLog.details.contentExcerpt}..."
-                      </p>
-                    </div>
-                  )}
+                  {/* Uraian / Deskripsi jika ada */}
+                  {(() => {
+                    const rawContent =
+                      selectedLog.details?.fullContent ||
+                      selectedLog.details?.isi ||
+                      selectedLog.details?.body ||
+                      selectedLog.details?.uraian ||
+                      selectedLog.details?.deskripsi ||
+                      selectedLog.details?.contentExcerpt ||
+                      selectedLog.details?.description ||
+                      selectedLog.details?.content;
+
+                    const cleanContent = stripHtml(rawContent);
+                    if (!cleanContent) return null;
+
+                    const isLongContent = cleanContent.length > 140;
+
+                    return (
+                      <div className="pt-2.5 border-t border-slate-200">
+                        <span className="text-slate-500 block mb-1 font-medium">Uraian/ Deskripsi:</span>
+                        <div className="bg-white rounded border border-slate-200 overflow-hidden shadow-2xs">
+                          <div
+                            className={`p-2.5 text-slate-700 italic leading-relaxed text-xs transition-all duration-300 ${
+                              isUraianExpanded
+                                ? 'max-h-80 overflow-y-auto whitespace-pre-line'
+                                : isLongContent
+                                ? 'line-clamp-2'
+                                : ''
+                            }`}
+                          >
+                            "{cleanContent}"
+                          </div>
+                          {isLongContent && (
+                            <button
+                              type="button"
+                              onClick={() => setIsUraianExpanded(!isUraianExpanded)}
+                              className="w-full flex items-center justify-center py-1.5 bg-slate-50 hover:bg-slate-100/90 border-t border-slate-200 text-slate-500 hover:text-[#00113a] transition-all cursor-pointer group"
+                              title={isUraianExpanded ? 'Tutup Uraian / Deskripsi' : 'Buka teks Uraian/ Deskripsi secara menyeluruh'}
+                            >
+                              <ChevronDown
+                                className={`w-8 h-4.5 stroke-[2.5] transition-transform duration-300 ${
+                                  isUraianExpanded ? 'rotate-180 text-[#00113a]' : 'group-hover:translate-y-0.5'
+                                }`}
+                              />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
 
 
                 </div>

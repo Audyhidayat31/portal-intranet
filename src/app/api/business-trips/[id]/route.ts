@@ -222,6 +222,23 @@ export async function PUT(
           module: 'BUSINESS_TRIP',
           targetId: existing.id,
           description: `Mengubah laporan perjalanan dinas: ${title || existing.title}`,
+          details: {
+            title: updated.title,
+            keperluan: updated.title,
+            nama: authorNameValue || editorUser?.name || 'Ahmad Fauzi, S.Kom.',
+            destinationCity: updated.destinationCity,
+            kotaTujuan: updated.destinationCity,
+            negaraTujuan: updated.source || 'Indonesia',
+            source: updated.source || 'Indonesia',
+            eventStartDate: updated.eventStartDate?.toISOString(),
+            eventEndDate: updated.eventEndDate?.toISOString(),
+            startDate: updated.eventStartDate?.toISOString(),
+            endDate: updated.eventEndDate?.toISOString(),
+            attachmentName: updated.attachmentName,
+            fullContent: updated.body,
+            body: updated.body,
+            status: updated.status === 'TERBIT' ? 'Terbit' : 'Menunggu',
+          },
         });
 
         return NextResponse.json({
