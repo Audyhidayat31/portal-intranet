@@ -16,6 +16,29 @@ import {
 import { formatDate, canManageContent } from '@/lib/utils';
 import { STITCH_MOCK_AGENDAS_6, MOCK_AGENDA_ATTACHMENTS_5, AgendaItem } from '@/lib/mock-agendas';
 
+const formatAgendaHtml = (content: string | undefined | null): string => {
+  if (!content) return '-';
+
+  // Remove data-* attributes like data-path-to-node, data-index-in-node injected by editors/extensions
+  let clean = content
+    .replace(/\s+data-[a-z0-9\-]+="[^"]*"/gi, '')
+    .replace(/\s+data-[a-z0-9\-]+='[^']*'/gi, '');
+
+  // Normalize empty break divs from browser contentEditable
+  clean = clean.replace(/<div>\s*<br\s*\/?>\s*<\/div>/gi, '<br />');
+
+  // If already contains HTML tags, return clean HTML
+  if (/<[a-z][\s\S]*>/i.test(clean)) {
+    return clean.trim();
+  }
+
+  // If plain text: wrap in clean paragraphs
+  return clean
+    .split(/\n\s*\n/)
+    .map((p) => `<p>${p.replace(/\n/g, '<br />')}</p>`)
+    .join('');
+};
+
 export default function DetailAgendaKegiatanPage() {
   const params = useParams();
   const router = useRouter();
@@ -171,9 +194,12 @@ export default function DetailAgendaKegiatanPage() {
               Uraian Agenda Kegiatan
             </h2>
 
-            <div className="text-xs sm:text-sm text-[#1a1b20] leading-relaxed whitespace-pre-line space-y-4">
-              {displayContent}
-            </div>
+            <div
+              className="text-xs sm:text-sm text-[#1a1b20] leading-relaxed space-y-4 agenda-body [&>p]:mb-3 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&>a]:text-blue-600 [&>a]:underline"
+              dangerouslySetInnerHTML={{
+                __html: formatAgendaHtml(displayContent),
+              }}
+            />
           </div>
 
           {/* Divider Line */}

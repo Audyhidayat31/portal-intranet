@@ -270,6 +270,20 @@ export default function TambahPengumumanPage() {
       return;
     }
 
+    // Check if html contains actual rich formatting (b, i, u, a, ul, ol, li, strong, em)
+    const hasRichFormatting = /<(b|i|u|a|ul|ol|li|strong|em|strike|s)[\s>]/i.test(htmlContent);
+    let finalContent = '';
+    if (!hasRichFormatting) {
+      finalContent = rawText
+        .split(/\n\s*\n/)
+        .map((p) => `<p>${p.replace(/\n/g, '<br />')}</p>`)
+        .join('');
+    } else {
+      finalContent = htmlContent
+        .replace(/<div>\s*<br\s*\/?>\s*<\/div>/gi, '<br />')
+        .trim();
+    }
+
     setIsSubmitting(true);
     try {
       const res = await fetch('/api/announcements', {
@@ -278,7 +292,7 @@ export default function TambahPengumumanPage() {
         body: JSON.stringify({
           title: judul,
           excerpt: rawText.slice(0, 150) + (rawText.length > 150 ? '...' : ''),
-          content: htmlContent || rawText,
+          content: finalContent || rawText,
           attachmentName: attachments.length > 0 ? attachments.map(a => a.name).join(', ') : undefined,
           attachmentUrl: attachments.length > 0 ? JSON.stringify(attachments.map(a => a.preview || '')) : undefined,
           publishedAt: selectedDate.toISOString(),

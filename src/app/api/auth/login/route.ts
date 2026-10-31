@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json(
-        { success: false, message: 'NIP atau password yang Anda masukkan tidak sesuai.' },
+        { success: false, message: 'NIP atau sandi yang Anda masukkan tidak sesuai.' },
         { status: 401 }
       );
     }
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     const isMatch = await verifyPassword(password, user.password);
     if (!isMatch) {
       return NextResponse.json(
-        { success: false, message: 'NIP atau password yang Anda masukkan tidak sesuai.' },
+        { success: false, message: 'NIP atau sandi yang Anda masukkan tidak sesuai.' },
         { status: 401 }
       );
     }
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
       userId: user.id,
       nip: user.nip,
       name: user.name,
-      email: user.email,
+      email: user.email || '',
       role: user.role.name,
     });
 

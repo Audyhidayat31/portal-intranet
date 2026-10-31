@@ -64,7 +64,7 @@ export async function getCurrentUser(): Promise<(TokenPayload & { avatarUrl?: st
       userId: user.id,
       nip: user.nip,
       name: user.name,
-      email: user.email,
+      email: user.email || '',
       role: user.role.name,
       avatarUrl: user.profile?.avatarUrl,
       unitKerja: user.profile?.unitKerja,

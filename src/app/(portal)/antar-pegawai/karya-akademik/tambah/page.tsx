@@ -691,9 +691,9 @@ export default function TambahKaryaAkademikPage() {
               />
             </div>
 
-            {/* 4. Gambar Karya Akademik */}
+            {/* 4. Gambar */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Gambar Karya Akademik <span className="float-right hidden md:inline">:</span>
+              Gambar <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="flex flex-col gap-4">
               <div className="relative" suppressHydrationWarning>

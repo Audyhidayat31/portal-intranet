@@ -180,8 +180,40 @@ export const getStoredTipsGayaHidup = (): TipsGayaHidupItem[] => {
 export const saveStoredTipsGayaHidup = (items: TipsGayaHidupItem[]) => {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(STORAGE_KEY_TIPS, JSON.stringify(items));
+    // Sanitize item untuk menghindari penyimpanan base64 besar yang melebihi kuota 5MB browser
+    const sanitized = (items || []).slice(0, 20).map((it) => {
+      const isHugeCover = it.coverImage?.startsWith('data:') && it.coverImage.length > 50000;
+      const sanitizedAttachments = it.attachments?.map((att) => ({
+        ...att,
+        src: att.src?.startsWith('data:') && att.src.length > 30000 ? '/images/logo-perpusnas.png' : att.src,
+      }));
+
+      return {
+        ...it,
+        coverImage: isHugeCover ? '/images/logo-perpusnas.png' : it.coverImage,
+        attachments: sanitizedAttachments,
+      };
+    });
+
+    localStorage.setItem(STORAGE_KEY_TIPS, JSON.stringify(sanitized));
   } catch (err) {
-    console.error('Failed to save tips to storage', err);
+    try {
+      const minimal = (items || []).slice(0, 5).map((it) => ({
+        id: it.id,
+        title: it.title,
+        excerpt: it.excerpt,
+        content: it.content,
+        coverImage: '/images/logo-perpusnas.png',
+        publishedAt: it.publishedAt,
+        status: it.status,
+        authorName: it.authorName,
+      }));
+      localStorage.setItem(STORAGE_KEY_TIPS, JSON.stringify(minimal));
+    } catch {
+      try {
+        localStorage.removeItem(STORAGE_KEY_TIPS);
+      } catch {}
+      console.warn('Ukuran penyimpanan browser penuh (QuotaExceeded), cache lokal tips gaya hidup direset.');
+    }
   }
 };

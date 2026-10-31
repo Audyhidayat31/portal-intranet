@@ -629,10 +629,14 @@ export default function EditOlahragaPage() {
         : existingItem?.attachments || MOCK_OLAHRAGA_ATTACHMENTS_5,
     };
 
-    if (existingItem) {
-      saveStoredOlahraga(currentStored.map((it) => (it.id === rawId ? updatedItem : it)));
-    } else {
-      saveStoredOlahraga([updatedItem, ...currentStored]);
+    try {
+      if (existingItem) {
+        saveStoredOlahraga(currentStored.map((it) => (it.id === rawId ? updatedItem : it)));
+      } else {
+        saveStoredOlahraga([updatedItem, ...currentStored]);
+      }
+    } catch (storageErr) {
+      console.warn('Gagal menyimpan ke cache lokal olahraga:', storageErr);
     }
 
     try {
@@ -673,7 +677,9 @@ export default function EditOlahragaPage() {
           editorName: serverData.editorName,
           updatedAt: serverData.updatedAt || new Date().toISOString(),
         };
-        saveStoredOlahraga(currentStored.map((it) => (it.id === rawId ? (merged as any) : it)));
+        try {
+          saveStoredOlahraga(currentStored.map((it) => (it.id === rawId ? (merged as any) : it)));
+        } catch {}
       }
 
       setSuccessMessage('Perubahan Artikel Olahraga berhasil disimpan!');
@@ -982,9 +988,9 @@ export default function EditOlahragaPage() {
               />
             </div>
 
-            {/* 4. Gambar Olahraga */}
+            {/* 4. Gambar */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Gambar Olahraga <span className="float-right hidden md:inline">:</span>
+              Gambar <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="flex flex-col gap-4">
               <div className="relative" suppressHydrationWarning>

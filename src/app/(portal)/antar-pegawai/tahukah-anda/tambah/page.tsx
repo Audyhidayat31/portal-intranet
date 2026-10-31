@@ -438,9 +438,13 @@ export default function TambahArtikelTahukahAndaPage() {
         : MOCK_TAHUKAH_ANDA_ATTACHMENTS_5,
     };
 
-    // Save to localStorage
-    const currentStored = getStoredTahukahAnda();
-    saveStoredTahukahAnda([newItem, ...currentStored]);
+    // Save to localStorage safely
+    try {
+      const currentStored = getStoredTahukahAnda();
+      saveStoredTahukahAnda([newItem, ...currentStored]);
+    } catch (storageErr) {
+      console.warn('Gagal menyimpan ke cache lokal tahukah-anda:', storageErr);
+    }
 
     setSuccessMessage('Artikel Tahukah Anda berhasil disimpan!');
     setTimeout(() => {

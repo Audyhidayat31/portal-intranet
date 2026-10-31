@@ -663,100 +663,7 @@ export default function EditKonsultasiPage() {
               )}
             </div>
 
-            {/* 3. Jenis Konsultasi */}
-            <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Jenis Konsultasi{' '}
-              <span className="float-right hidden md:inline">:</span>
-            </label>
-            <div className="relative w-full md:w-56" ref={jenisMenuRef}>
-              <button
-                type="button"
-                onClick={() => setIsJenisMenuOpen(!isJenisMenuOpen)}
-                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${isJenisMenuOpen ? 'rounded-t-md' : 'rounded-md'
-                  }`}
-              >
-                <span className="truncate">
-                  {jenisKonsultasi || 'Pilih Jenis Konsultasi'}
-                </span>
-                <ChevronDown
-                  className={`w-4 h-4 text-white transition-transform ${isJenisMenuOpen ? 'rotate-180' : ''
-                    }`}
-                />
-              </button>
-
-              {isJenisMenuOpen && (
-                <div className="absolute top-full left-0 z-50 w-full bg-white border border-[#c5c6d2] border-t-0 rounded-b-md shadow-lg py-1 animate-fadeIn">
-                  {(['IT', 'Kesehatan', 'Pegawai'] as const).map((cat) => (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => {
-                        setJenisKonsultasi(cat);
-                        setIsJenisMenuOpen(false);
-                      }}
-                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${jenisKonsultasi === cat
-                          ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
-                          : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                        }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* 4. Status Dropdown */}
-            <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Status <span className="float-right hidden md:inline">:</span>
-            </label>
-            <div className="relative w-full md:w-56" ref={statusMenuRef}>
-              <button
-                type="button"
-                onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
-                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
-                  }`}
-              >
-                <span className="truncate">{status || 'Jenis Status'}</span>
-                <ChevronDown
-                  className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''
-                    }`}
-                />
-              </button>
-
-              {isStatusMenuOpen && (
-                <div className="absolute top-full left-0 z-50 w-full bg-white border border-[#c5c6d2] border-t-0 rounded-b-md shadow-lg py-1 animate-fadeIn">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStatus('Terbit');
-                      setIsStatusMenuOpen(false);
-                    }}
-                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Terbit'
-                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
-                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                      }`}
-                  >
-                    Terbit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStatus('Menunggu');
-                      setIsStatusMenuOpen(false);
-                    }}
-                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Menunggu'
-                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
-                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
-                      }`}
-                  >
-                    Menunggu
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* 5. Deskripsi */}
+            {/* 3. Deskripsi */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
               Deskripsi <span className="float-right hidden md:inline">:</span>
             </label>
@@ -856,7 +763,7 @@ export default function EditKonsultasiPage() {
               />
             </div>
 
-            {/* 6. Lampiran */}
+            {/* 4. Lampiran */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
               Lampiran <span className="float-right hidden md:inline">:</span>
             </label>
@@ -985,6 +892,99 @@ export default function EditKonsultasiPage() {
                       </div>
                     );
                   })}
+                </div>
+              )}
+            </div>
+
+            {/* 5. Jenis Konsultasi */}
+            <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
+              Jenis Konsultasi{' '}
+              <span className="float-right hidden md:inline">:</span>
+            </label>
+            <div className="relative w-full md:w-56" ref={jenisMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsJenisMenuOpen(!isJenisMenuOpen)}
+                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${isJenisMenuOpen ? 'rounded-t-md' : 'rounded-md'
+                  }`}
+              >
+                <span className="truncate">
+                  {jenisKonsultasi || 'Pilih Jenis Konsultasi'}
+                </span>
+                <ChevronDown
+                  className={`w-4 h-4 text-white transition-transform ${isJenisMenuOpen ? 'rotate-180' : ''
+                    }`}
+                />
+              </button>
+
+              {isJenisMenuOpen && (
+                <div className="absolute top-full left-0 z-50 w-full bg-white border border-[#c5c6d2] border-t-0 rounded-b-md shadow-lg py-1 animate-fadeIn">
+                  {(['IT', 'Kesehatan', 'Pegawai'] as const).map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => {
+                        setJenisKonsultasi(cat);
+                        setIsJenisMenuOpen(false);
+                      }}
+                      className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${jenisKonsultasi === cat
+                          ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                          : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                        }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* 6. Status Dropdown */}
+            <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
+              Status <span className="float-right hidden md:inline">:</span>
+            </label>
+            <div className="relative w-full md:w-56" ref={statusMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
+                className={`w-full bg-[#5a626a] hover:bg-[#4d545b] text-white py-2.5 px-4 font-medium text-sm flex items-center justify-between transition-colors shadow-xs cursor-pointer ${isStatusMenuOpen ? 'rounded-t-md' : 'rounded-md'
+                  }`}
+              >
+                <span className="truncate">{status || 'Jenis Status'}</span>
+                <ChevronDown
+                  className={`w-4 h-4 text-white transition-transform ${isStatusMenuOpen ? 'rotate-180' : ''
+                    }`}
+                />
+              </button>
+
+              {isStatusMenuOpen && (
+                <div className="absolute top-full left-0 z-50 w-full bg-white border border-[#c5c6d2] border-t-0 rounded-b-md shadow-lg py-1 animate-fadeIn">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatus('Terbit');
+                      setIsStatusMenuOpen(false);
+                    }}
+                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Terbit'
+                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                      }`}
+                  >
+                    Terbit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatus('Menunggu');
+                      setIsStatusMenuOpen(false);
+                    }}
+                    className={`w-full py-2 px-3 text-center text-sm font-medium transition-colors cursor-pointer block ${status === 'Menunggu'
+                        ? 'text-[#00113a] font-bold bg-[#f4f3f9]'
+                        : 'text-[#1a1b20] hover:bg-[#f4f3f9]'
+                      }`}
+                  >
+                    Menunggu
+                  </button>
                 </div>
               )}
             </div>

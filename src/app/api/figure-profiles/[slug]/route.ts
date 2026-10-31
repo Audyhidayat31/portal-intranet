@@ -172,17 +172,33 @@ export async function PUT(
         const editorId = user?.userId || existing.editorId || null;
         const editorName = user?.name || existing.editorName || 'Administrator Perpusnas';
 
-        const updated = await prisma.figureProfile.update({
-          where: { id: existing.id },
-          data: {
-            name: name !== undefined ? name : existing.name,
-            position: position !== undefined ? position : existing.position,
-            unitKerja: unitKerja !== undefined ? unitKerja : existing.unitKerja,
-            quote: quote !== undefined ? quote : existing.quote,
-            fullStory: fullStory !== undefined ? fullStory : existing.fullStory,
-            isSpotlight: isSpotlight !== undefined ? Boolean(isSpotlight) : existing.isSpotlight,
-          },
-        });
+        const finalStatus = status !== undefined ? status.toString().toUpperCase() : existing.status;
+
+        const updateData: any = {
+          name: name !== undefined ? name : existing.name,
+          position: position !== undefined ? position : existing.position,
+          unitKerja: unitKerja !== undefined ? unitKerja : existing.unitKerja,
+          quote: quote !== undefined ? quote : existing.quote,
+          fullStory: fullStory !== undefined ? fullStory : existing.fullStory,
+          isSpotlight: isSpotlight !== undefined ? Boolean(isSpotlight) : existing.isSpotlight,
+        };
+        if (status !== undefined) {
+          updateData.status = finalStatus;
+        }
+
+        let updated = existing;
+        try {
+          updated = await prisma.figureProfile.update({
+            where: { id: existing.id },
+            data: updateData,
+          });
+        } catch {
+          delete updateData.status;
+          updated = await prisma.figureProfile.update({
+            where: { id: existing.id },
+            data: updateData,
+          });
+        }
 
         try {
           await prisma.$executeRawUnsafe(
@@ -191,7 +207,7 @@ export async function PUT(
             coverImageName !== undefined ? coverImageName : existing.coverImageName,
             attachmentName !== undefined ? attachmentName : existing.attachmentName,
             attachmentUrl !== undefined ? attachmentUrl : existing.attachmentUrl,
-            status !== undefined ? status : existing.status,
+            finalStatus,
             editorId,
             editorName,
             existing.id
