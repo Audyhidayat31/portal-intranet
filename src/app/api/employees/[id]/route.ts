@@ -125,13 +125,21 @@ export async function PUT(
         const valEselon2 = body.eselon2 !== undefined ? (body.eselon2 && body.eselon2.trim() ? body.eselon2.trim() : null) : undefined;
         const valEselon3 = body.eselon3 !== undefined ? (body.eselon3 && body.eselon3.trim() ? body.eselon3.trim() : null) : undefined;
         const valLokasiKerja = body.lokasiKerja !== undefined ? (body.lokasiKerja && body.lokasiKerja.trim() ? body.lokasiKerja.trim() : null) : undefined;
+        const valEmail = body.email !== undefined ? (body.email && body.email.trim() ? body.email.trim() : null) : user.email;
+
+        if (valEmail === null) {
+          await prisma.$executeRawUnsafe(
+            'UPDATE pengguna SET email = NULL, updatedAt = NOW() WHERE id = ?',
+            user.id
+          );
+        }
 
         try {
           await (prisma.user as any).update({
             where: { id: user.id },
             data: {
               name: body.fullName || body.name || user.name,
-              email: body.email || user.email,
+              ...(valEmail !== null ? { email: valEmail } : {}),
               profile: {
                 upsert: {
                   create: {
@@ -165,7 +173,7 @@ export async function PUT(
               where: { id: user.id },
               data: {
                 name: body.fullName || body.name || user.name,
-                email: body.email || user.email,
+                ...(valEmail !== null ? { email: valEmail } : {}),
                 profile: {
                   upsert: {
                     create: {

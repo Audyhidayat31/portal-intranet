@@ -607,10 +607,14 @@ export default function EditArtikelTahukahAndaPage() {
         : existingItem?.attachments || MOCK_TAHUKAH_ANDA_ATTACHMENTS_5,
     };
 
-    if (existingItem) {
-      saveStoredTahukahAnda(currentStored.map((it) => (it.id === id ? updatedItem : it)));
-    } else {
-      saveStoredTahukahAnda([updatedItem, ...currentStored]);
+    try {
+      if (existingItem) {
+        saveStoredTahukahAnda(currentStored.map((it) => (it.id === id ? updatedItem : it)));
+      } else {
+        saveStoredTahukahAnda([updatedItem, ...currentStored]);
+      }
+    } catch (storageErr) {
+      console.warn('Gagal menyimpan ke cache lokal tahukah-anda:', storageErr);
     }
 
     try {
@@ -651,7 +655,9 @@ export default function EditArtikelTahukahAndaPage() {
           editorName: serverData.editorName,
           updatedAt: serverData.updatedAt || new Date().toISOString(),
         };
-        saveStoredTahukahAnda(currentStored.map((it) => (it.id === id ? (merged as any) : it)));
+        try {
+          saveStoredTahukahAnda(currentStored.map((it) => (it.id === id ? (merged as any) : it)));
+        } catch {}
       }
 
       setSuccessMessage('Perubahan Artikel Tahukah Anda berhasil disimpan!');

@@ -120,6 +120,13 @@ const readFileAsDataUrl = (file: File): Promise<string> => {
   });
 };
 
+const cleanEditorHtml = (html: string | undefined | null): string => {
+  if (!html) return '';
+  return html
+    .replace(/\s+data-[a-z0-9\-]+="[^"]*"/gi, '')
+    .replace(/\s+data-[a-z0-9\-]+='[^']*'/gi, '');
+};
+
 export default function EditAgendaPage() {
   const params = useParams();
   const router = useRouter();
@@ -198,9 +205,10 @@ export default function EditAgendaPage() {
         }
       }
       setStatus(foundStored.status === 'Menunggu' ? 'Menunggu' : 'Terbit');
-      setDeskripsiHtml(foundStored.content || foundStored.excerpt || '');
+      const cleanContent = cleanEditorHtml(foundStored.content || foundStored.excerpt || '');
+      setDeskripsiHtml(cleanContent);
       if (editorRef.current) {
-        editorRef.current.innerHTML = foundStored.content || foundStored.excerpt || '';
+        editorRef.current.innerHTML = cleanContent;
       }
       if (foundStored.coverImage) {
         setGambarPreview(foundStored.coverImage);
@@ -226,9 +234,10 @@ export default function EditAgendaPage() {
             }
           }
           setStatus(item.status === 'MENUNGGU' || item.status === 'Menunggu' ? 'Menunggu' : 'Terbit');
-          setDeskripsiHtml(item.body || item.content || '');
+          const cleanApiContent = cleanEditorHtml(item.body || item.content || '');
+          setDeskripsiHtml(cleanApiContent);
           if (editorRef.current) {
-            editorRef.current.innerHTML = item.body || item.content || '';
+            editorRef.current.innerHTML = cleanApiContent;
           }
           if (item.coverImage) {
             setGambarPreview(item.coverImage);
@@ -544,6 +553,22 @@ export default function EditAgendaPage() {
       gambarPreview ||
       '/images/logo-perpusnas.png';
 
+    // Clean data-* attributes and normalize HTML
+    const currentEditorHtml = editorRef.current?.innerHTML?.trim() || deskripsiHtml.trim();
+    const cleanedHtml = cleanEditorHtml(currentEditorHtml);
+    const hasRichFormatting = /<(b|i|u|a|ul|ol|li|strong|em|strike|s)[\s>]/i.test(cleanedHtml);
+    let finalContent = '';
+    if (!hasRichFormatting) {
+      finalContent = rawText
+        .split(/\n\s*\n/)
+        .map((p) => `<p>${p.replace(/\n/g, '<br />')}</p>`)
+        .join('');
+    } else {
+      finalContent = cleanedHtml
+        .replace(/<div>\s*<br\s*\/?>\s*<\/div>/gi, '<br />')
+        .trim();
+    }
+
     // Update in localStorage
     const currentStored = getStoredAgendas();
     const existingItem = currentStored.find((it) => it.id === id);
@@ -562,7 +587,7 @@ export default function EditAgendaPage() {
       id,
       title: judul,
       excerpt: (rawText || judul).slice(0, 140) + '...',
-      content: htmlContent || rawText || judul,
+      content: finalContent || rawText || judul,
       coverImage: fallbackImage,
       coverImageName: resolvedCoverName,
       publishedAt: tanggal.toISOString().split('T')[0],
@@ -588,8 +613,8 @@ export default function EditAgendaPage() {
         body: JSON.stringify({
           title: judul,
           excerpt: (rawText || judul).slice(0, 140),
-          body: htmlContent || rawText || judul,
-          content: htmlContent || rawText || judul,
+          body: finalContent || rawText || judul,
+          content: finalContent || rawText || judul,
           coverImage: fallbackImage,
           coverImageName: resolvedCoverName || null,
           eventStartDate: tanggal.toISOString(),

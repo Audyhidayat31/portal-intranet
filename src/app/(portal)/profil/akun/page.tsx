@@ -96,7 +96,7 @@ export default function ProfilPegawaiPage() {
             name: u.name,
             fullName: u.profile?.fullName || u.name,
             nip: u.nip,
-            email: u.email,
+            email: u.email || '',
             phone: u.profile?.phone || '',
             alamatDomisili: u.profile?.bio || '',
             tanggalLahir: bd,

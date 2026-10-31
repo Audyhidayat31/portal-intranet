@@ -131,7 +131,7 @@ export function generatePasswordResetHtml({ recipientName, resetUrl }: { recipie
     </div>
     
     <div class="footer">
-      © Copyright 2026, All Rights Reserved | Perpustakaan Nasional RI.
+      Hak Cipta Dilindungi © 2026. Perpustakaan Nasional Republik Indonesia.
     </div>
   </div>
 </body>

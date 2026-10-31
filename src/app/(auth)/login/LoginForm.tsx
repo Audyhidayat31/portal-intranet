@@ -83,7 +83,7 @@ export default function LoginForm({ initialInfoPenting }: LoginFormProps) {
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        setErrorMessage(data.message || 'NIP atau kata sandi tidak sesuai.');
+        setErrorMessage(data.message || 'NIP atau sandi yang Anda masukkan tidak sesuai.');
         setIsLoading(false);
         return;
       }

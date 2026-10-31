@@ -17,10 +17,8 @@ export default function TentangPage() {
       .catch(() => {});
   }, []);
 
-  const handlePanduanClick = (e: React.MouseEvent) => {
-    if (!tentangData?.panduanAplikasi) {
-      e.preventDefault();
-    }
+  const handlePanduanClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Allows native download while ensuring smooth behavior
   };
   return (
     <div className="relative min-h-[calc(100vh-80px)] w-full bg-cover bg-center bg-fixed" style={{ backgroundImage: "url('/images/tentang-bg.jpg')" }}>
@@ -101,11 +99,9 @@ export default function TentangPage() {
 
             <div className="pt-2">
               <a
-                href={tentangData?.panduanAplikasi ? `/uploads/${tentangData.panduanAplikasi}` : '#'}
-                onClick={handlePanduanClick}
-                target={tentangData?.panduanAplikasi ? '_blank' : undefined}
-                rel={tentangData?.panduanAplikasi ? 'noreferrer' : undefined}
-                className="inline-flex items-center justify-center bg-[#00113a] text-white font-bold px-8 py-3.5 rounded-md hover:bg-[#2a4386] transition-colors shadow-sm text-sm sm:text-base"
+                href="/api/tentang/download-panduan"
+                download={tentangData?.panduanAplikasi || 'Panduan Aplikasi - Cakrawala Portal Intranet_Manual Book.pdf'}
+                className="inline-flex items-center justify-center bg-[#00113a] text-white font-bold px-8 py-3.5 rounded-md hover:bg-[#2a4386] transition-colors shadow-sm text-sm sm:text-base cursor-pointer"
               >
                 Panduan Aplikasi
               </a>

@@ -260,6 +260,9 @@ export default function EditKupasSosokPage() {
           setNama(item.name || '');
           setJabatan(item.position || '');
           setUnitKerja(item.unitKerja || '');
+          if (item.status) {
+            setStatus(item.status.toString().toUpperCase() === 'MENUNGGU' ? 'Menunggu' : 'Terbit');
+          }
           if (item.photoUrl) {
             setGambarPreview(item.photoUrl);
             setGambarFileName(getSafeFigureFileName(item.coverImageName, item.photoUrl));

@@ -71,6 +71,13 @@ const readFileAsDataUrl = (file: File): Promise<string> => {
   });
 };
 
+const cleanEditorHtml = (html: string | undefined | null): string => {
+  if (!html) return '';
+  return html
+    .replace(/\s+data-[a-z0-9\-]+="[^"]*"/gi, '')
+    .replace(/\s+data-[a-z0-9\-]+='[^']*'/gi, '');
+};
+
 export default function TambahAgendaPage() {
   const router = useRouter();
 
@@ -367,11 +374,25 @@ export default function TambahAgendaPage() {
     }
 
     const rawText = editorRef.current?.innerText?.trim();
-    const htmlContent = editorRef.current?.innerHTML;
+    const currentEditorHtml = editorRef.current?.innerHTML?.trim() || deskripsiHtml?.trim() || '';
 
-    if (!rawText && !deskripsiHtml) {
+    if (!rawText && !currentEditorHtml) {
       alert('Silakan isi uraian deskripsi agenda');
       return;
+    }
+
+    const cleanedHtml = cleanEditorHtml(currentEditorHtml);
+    const hasRichFormatting = /<(b|i|u|a|ul|ol|li|strong|em|strike|s)[\s>]/i.test(cleanedHtml);
+    let finalContent = '';
+    if (!hasRichFormatting) {
+      finalContent = (rawText || '')
+        .split(/\n\s*\n/)
+        .map((p) => `<p>${p.replace(/\n/g, '<br />')}</p>`)
+        .join('');
+    } else {
+      finalContent = cleanedHtml
+        .replace(/<div>\s*<br\s*\/?>\s*<\/div>/gi, '<br />')
+        .trim();
     }
 
     setIsSubmitting(true);
@@ -385,7 +406,7 @@ export default function TambahAgendaPage() {
         body: JSON.stringify({
           title: judul,
           excerpt: rawText?.slice(0, 140) || judul,
-          content: htmlContent || rawText || judul,
+          content: finalContent || rawText || judul,
           coverImage: fallbackImage,
           coverImageName: gambarFileName || null,
           eventStartDate: tanggal.toISOString(),
@@ -403,7 +424,7 @@ export default function TambahAgendaPage() {
         id: createdId,
         title: judul,
         excerpt: (rawText || judul).slice(0, 140) + '...',
-        content: htmlContent || rawText || judul,
+        content: finalContent || rawText || judul,
         coverImage: fallbackImage,
         coverImageName: gambarFileName || undefined,
         publishedAt: tanggal.toISOString().split('T')[0],
@@ -428,7 +449,7 @@ export default function TambahAgendaPage() {
         id: `agenda-${Date.now()}`,
         title: judul,
         excerpt: (rawText || judul).slice(0, 140) + '...',
-        content: htmlContent || rawText || judul,
+        content: finalContent || rawText || judul,
         coverImage: fallbackImage,
         coverImageName: gambarFileName || undefined,
         publishedAt: tanggal.toISOString().split('T')[0],

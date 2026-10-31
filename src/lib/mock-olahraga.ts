@@ -95,9 +95,43 @@ export function getStoredOlahraga(): OlahragaItem[] {
 export function saveStoredOlahraga(items: OlahragaItem[]) {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    // Sanitize item untuk menghindari penyimpanan base64 besar yang melebihi kuota 5MB browser
+    const sanitized = (items || []).slice(0, 20).map((it) => {
+      const isHugeCover = it.coverImage?.startsWith('data:') && it.coverImage.length > 50000;
+      const sanitizedAttachments = it.attachments?.map((att) => ({
+        ...att,
+        src: att.src?.startsWith('data:') && att.src.length > 30000 ? '/images/logo-perpusnas.png' : att.src,
+      }));
+
+      return {
+        ...it,
+        coverImage: isHugeCover ? '/images/logo-perpusnas.png' : it.coverImage,
+        attachmentUrl: undefined, // Hindari duplikasi base64 attachment di localStorage
+        attachments: sanitizedAttachments,
+      };
+    });
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(sanitized));
   } catch (err) {
-    console.error('Failed to save olahraga items to localStorage', err);
+    // Tangani QuotaExceededError dengan menyimpan data minimal atau membersihkan cache lama
+    try {
+      const minimal = (items || []).slice(0, 5).map((it) => ({
+        id: it.id,
+        title: it.title,
+        excerpt: it.excerpt,
+        content: it.content,
+        coverImage: '/images/logo-perpusnas.png',
+        publishedAt: it.publishedAt,
+        status: it.status,
+        authorName: it.authorName,
+      }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(minimal));
+    } catch {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch {}
+      console.warn('Ukuran penyimpanan browser penuh (QuotaExceeded), cache lokal olahraga direset.');
+    }
   }
 }
 

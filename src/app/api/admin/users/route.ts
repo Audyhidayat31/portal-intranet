@@ -134,9 +134,17 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'Peran wajib dipilih' }, { status: 400 });
     }
 
+    const cleanEmail = email !== undefined ? (email && email.trim() ? email.trim() : null) : undefined;
+    if (cleanEmail === null) {
+      await prisma.$executeRawUnsafe(
+        'UPDATE pengguna SET email = NULL, updatedAt = NOW() WHERE id = ?',
+        id
+      );
+    }
+
     const dataToUpdate: any = {
       name: name !== undefined ? name.trim() : undefined,
-      email: email !== undefined ? email.trim() : undefined,
+      ...(cleanEmail !== null && cleanEmail !== undefined ? { email: cleanEmail } : {}),
       roleId: roleId !== undefined ? roleId : undefined,
       status: status !== undefined ? status : undefined,
     };

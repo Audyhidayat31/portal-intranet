@@ -374,6 +374,45 @@ export async function PUT(request: NextRequest) {
         ...currentTentang,
         ...tentang,
       };
+
+      // Simpan berkas panduan aplikasi jika dikirim dalam bentuk base64
+      if (mergedTentang.panduanAplikasiUrl && mergedTentang.panduanAplikasiUrl.startsWith('data:')) {
+        try {
+          const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+          if (!fs.existsSync(uploadsDir)) {
+            fs.mkdirSync(uploadsDir, { recursive: true });
+          }
+          const safeFileName = mergedTentang.panduanAplikasi || 'Panduan Aplikasi - Cakrawala Portal Intranet_Manual Book.pdf';
+          const filePath = path.join(uploadsDir, safeFileName);
+          const base64Data = mergedTentang.panduanAplikasiUrl.split(';base64,').pop();
+          if (base64Data) {
+            fs.writeFileSync(filePath, Buffer.from(base64Data, 'base64'));
+          }
+          mergedTentang.panduanAplikasiUrl = `/uploads/${encodeURIComponent(safeFileName)}`;
+        } catch (fileErr) {
+          console.error('Failed to write panduan aplikasi file:', fileErr);
+        }
+      }
+
+      // Simpan berkas latar belakang jika dikirim dalam bentuk base64
+      if (mergedTentang.latarBelakangUrl && mergedTentang.latarBelakangUrl.startsWith('data:')) {
+        try {
+          const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+          if (!fs.existsSync(uploadsDir)) {
+            fs.mkdirSync(uploadsDir, { recursive: true });
+          }
+          const safeBgFileName = mergedTentang.latarBelakang || 'Background.png';
+          const filePath = path.join(uploadsDir, safeBgFileName);
+          const base64Data = mergedTentang.latarBelakangUrl.split(';base64,').pop();
+          if (base64Data) {
+            fs.writeFileSync(filePath, Buffer.from(base64Data, 'base64'));
+          }
+          mergedTentang.latarBelakangUrl = `/uploads/${encodeURIComponent(safeBgFileName)}`;
+        } catch (fileErr) {
+          console.error('Failed to write latar belakang file:', fileErr);
+        }
+      }
+
       saveTentangConfig(mergedTentang);
       savedTentang = mergedTentang;
     }

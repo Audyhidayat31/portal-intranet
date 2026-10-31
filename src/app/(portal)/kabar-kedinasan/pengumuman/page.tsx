@@ -160,6 +160,53 @@ const parseAnnouncementAttachments = (
   return items;
 };
 
+// Helper: Convert HTML tags to clean plain text (for textarea edit and card excerpts)
+const htmlToPlainText = (html: string | undefined | null): string => {
+  if (!html) return '';
+  if (!/<[a-z][\s\S]*>/i.test(html)) return html;
+
+  let text = html
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/div>\s*<div>/gi, '\n')
+    .replace(/<\/p>\s*<p>/gi, '\n\n')
+    .replace(/<div>/gi, '')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<p>/gi, '')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<li>/gi, '• ')
+    .replace(/<\/li>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'");
+
+  return text.replace(/\n{3,}/g, '\n\n').trim();
+};
+
+// Helper: Format announcement content into clean HTML for display
+const formatAnnouncementHtml = (content: string | undefined | null): string => {
+  if (!content) {
+    return '<p>[Isi pengumuman lengkap akan ditampilkan di sini. Area ini mendukung format teks panjang, list, dan elemen tipografi standar lainnya sesuai dengan desain Corporate Modern.]</p>';
+  }
+
+  // If already contains HTML tags (like <div>, <p>, <br>, <b>, <ul>, etc.)
+  if (/<[a-z][\s\S]*>/i.test(content)) {
+    // Clean up empty break divs from browser contentEditable
+    return content
+      .replace(/<div>\s*<br\s*\/?>\s*<\/div>/gi, '<br />')
+      .trim();
+  }
+
+  // If plain text (e.g. from textarea): wrap in clean paragraphs
+  return content
+    .split(/\n\s*\n/)
+    .map((p) => `<p>${p.replace(/\n/g, '<br />')}</p>`)
+    .join('');
+};
+
 // 5 Mock Announcements matching Stitch
 const STITCH_MOCK_ANNOUNCEMENTS_5: any[] = [
 ];
@@ -384,7 +431,7 @@ export default function PengumumanPage() {
   const handleOpenEdit = (item: any) => {
     setEditTitle(item.title || '');
     setEditStatus((item.status === 'MENUNGGU' || item.status === 'Menunggu' || item.status === 'DRAFT') ? 'Menunggu' : 'Terbit');
-    setEditContent(item.content || item.body || item.excerpt || '');
+    setEditContent(htmlToPlainText(item.content || item.body || item.excerpt || ''));
     setEditAttachmentName(item.attachmentName || '');
 
     const parsed = parseAnnouncementAttachments(item.attachmentName, item.attachmentUrl);
@@ -406,6 +453,8 @@ export default function PengumumanPage() {
       return;
     }
 
+    const formattedPayloadContent = formatAnnouncementHtml(editContent);
+
     setIsUpdating(true);
     try {
       const res = await fetch(`/api/announcements/${selectedAnnouncement.id}`, {
@@ -413,7 +462,7 @@ export default function PengumumanPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: editTitle,
-          content: editContent,
+          content: formattedPayloadContent,
           attachmentName: editAttachmentName,
           attachmentUrl: editAttachments.length > 0 ? JSON.stringify(editAttachments.map((a) => a.preview || '')) : null,
           status: editStatus === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
@@ -424,8 +473,8 @@ export default function PengumumanPage() {
         const updated = {
           ...selectedAnnouncement,
           title: editTitle,
-          content: editContent,
-          body: editContent,
+          content: formattedPayloadContent,
+          body: formattedPayloadContent,
           attachmentName: editAttachmentName,
           attachmentUrl: editAttachments.length > 0 ? JSON.stringify(editAttachments.map((a) => a.preview || '')) : null,
           status: editStatus === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
@@ -442,8 +491,8 @@ export default function PengumumanPage() {
         const updated = {
           ...selectedAnnouncement,
           title: editTitle,
-          content: editContent,
-          body: editContent,
+          content: formattedPayloadContent,
+          body: formattedPayloadContent,
           attachmentName: editAttachmentName,
           status: editStatus === 'Menunggu' ? 'MENUNGGU' : 'TERBIT',
           updatedAt: new Date().toISOString(),
@@ -459,8 +508,8 @@ export default function PengumumanPage() {
       const updated = {
         ...selectedAnnouncement,
         title: editTitle,
-        content: editContent,
-        body: editContent,
+        content: formattedPayloadContent,
+        body: formattedPayloadContent,
         attachmentName: editAttachmentName,
         updatedAt: new Date().toISOString(),
         editor: currentUser,
@@ -655,7 +704,7 @@ export default function PengumumanPage() {
                         {item.title}
                       </h2>
                       <p className="text-xs sm:text-sm text-[#444650] mb-3 line-clamp-2 leading-relaxed">
-                        {item.excerpt || item.body?.slice(0, 140) || item.content?.slice(0, 140)}
+                        {htmlToPlainText(item.excerpt || item.body || item.content || '')}
                       </p>
                     </div>
                     <span className="text-xs font-bold text-[#757682] mt-3">
@@ -738,11 +787,14 @@ export default function PengumumanPage() {
             {/* Content Body (Uraian Pengumuman) */}
             <div className="prose max-w-none text-sm sm:text-base text-[#1a1b20] mb-8 flex-grow leading-relaxed">
               <p className="font-bold text-[#1a1b20] mb-2">Uraian Pengumuman</p>
-              <div className="text-[#1a1b20] space-y-3 whitespace-pre-line leading-relaxed">
-                {selectedAnnouncement.content ||
-                  selectedAnnouncement.body ||
-                  `[Isi pengumuman lengkap akan ditampilkan di sini. Area ini mendukung format teks panjang, list, dan elemen tipografi standar lainnya sesuai dengan desain Corporate Modern.]`}
-              </div>
+              <div
+                className="text-[#1a1b20] space-y-3 leading-relaxed announcement-body [&>p]:mb-3 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&>a]:text-blue-600 [&>a]:underline"
+                dangerouslySetInnerHTML={{
+                  __html: formatAnnouncementHtml(
+                    selectedAnnouncement.content || selectedAnnouncement.body
+                  ),
+                }}
+              />
             </div>
 
             {/* Attachments Section (Render real attachments uploaded by user) */}

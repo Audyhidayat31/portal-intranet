@@ -50,20 +50,25 @@ export default function KupasSosokPage() {
       .then((data) => {
         const apiItems = data.success && Array.isArray(data.data) ? data.data : [];
 
-        const formattedApiItems: FigureItem[] = apiItems.map((item: any) => ({
-          id: item.id,
-          name: item.name,
-          slug: item.slug,
-          position: item.position || '',
-          unitKerja: item.unitKerja || '',
-          quote: stripHtml(item.quote || ''),
-          fullStory: stripHtml(item.fullStory || item.deskripsi || ''),
-          photoUrl: item.photoUrl || '',
-          publishedAt: item.createdAt || new Date().toISOString(),
-          status: item.status || 'Terbit',
-          authorName: item.authorName || item.author?.name,
-          isSpotlight: item.isSpotlight,
-        }));
+        const formattedApiItems: FigureItem[] = apiItems.map((item: any) => {
+          const rawStatus = (item.status || 'TERBIT').toString().toUpperCase();
+          const normalizedStatus = rawStatus === 'MENUNGGU' ? 'Menunggu' : 'Terbit';
+
+          return {
+            id: item.id,
+            name: item.name,
+            slug: item.slug,
+            position: item.position || '',
+            unitKerja: item.unitKerja || '',
+            quote: stripHtml(item.quote || ''),
+            fullStory: stripHtml(item.fullStory || item.deskripsi || ''),
+            photoUrl: item.photoUrl || '',
+            publishedAt: item.publishedAt || item.createdAt || new Date().toISOString(),
+            status: normalizedStatus,
+            authorName: item.authorName || item.author?.name,
+            isSpotlight: item.isSpotlight,
+          };
+        });
 
         formattedApiItems.sort((a, b) => {
           const timeA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
@@ -294,7 +299,7 @@ export default function KupasSosokPage() {
                       {/* Top Metadata Row: Date & Status Badge */}
                       <div className="flex justify-between items-center mb-3 text-sm text-[#444650]">
                         <span className="text-sm text-[#444650]">{displayDate}</span>
-                        {item.status === 'Terbit' ? (
+                        {item.status === 'Terbit' || (item.status && item.status.toString().toUpperCase() === 'TERBIT') ? (
                           <span className="text-[#1b6d24] font-medium bg-[#a0f399]/40 border border-[#a0f399] px-2 py-1 rounded text-xs">
                             Status: Terbit
                           </span>

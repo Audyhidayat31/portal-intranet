@@ -105,13 +105,13 @@ export async function PUT(request: NextRequest) {
 
     const cleanNip = nip !== undefined && nip.trim() ? nip.trim() : undefined;
     const cleanName = name !== undefined && name.trim() ? name.trim() : undefined;
-    const cleanEmail = email !== undefined && email.trim() ? email.trim() : undefined;
+    const cleanEmail = email !== undefined ? (email && email.trim() ? email.trim() : null) : undefined;
     const valEselon2 = eselon2 !== undefined ? (eselon2 && eselon2.trim() ? eselon2.trim() : null) : undefined;
     const valEselon3 = eselon3 !== undefined ? (eselon3 && eselon3.trim() ? eselon3.trim() : null) : undefined;
     const valLokasiKerja = lokasiKerja !== undefined ? (lokasiKerja && lokasiKerja.trim() ? lokasiKerja.trim() : null) : undefined;
 
     // Validasi email agar tidak duplikat dengan akun lain
-    if (cleanEmail !== undefined) {
+    if (cleanEmail) {
       const existingEmail = await prisma.user.findFirst({
         where: {
           email: cleanEmail,
@@ -223,13 +223,46 @@ export async function PUT(request: NextRequest) {
     const userUpdateData: any = {};
     if (cleanName !== undefined) userUpdateData.name = cleanName;
     if (cleanNip !== undefined) userUpdateData.nip = cleanNip;
-    if (cleanEmail !== undefined) userUpdateData.email = cleanEmail;
+
+    if (cleanEmail !== undefined) {
+      if (cleanEmail === null) {
+        // Kosongkan email kedinasan langsung ke MySQL untuk mencegah PrismaClientValidationError pada runtime
+        await prisma.$executeRawUnsafe(
+          'UPDATE pengguna SET email = NULL, updatedAt = NOW() WHERE id = ?',
+          user.userId
+        );
+      } else {
+        userUpdateData.email = cleanEmail;
+      }
+    }
 
     if (Object.keys(userUpdateData).length > 0) {
-      await prisma.user.update({
-        where: { id: user.userId },
-        data: userUpdateData,
-      });
+      try {
+        await prisma.user.update({
+          where: { id: user.userId },
+          data: userUpdateData,
+        });
+      } catch (userErr: any) {
+        // Fallback jika Prisma Client runtime di dev server menolak argument email null
+        if (userErr?.message?.includes('email') || userErr?.message?.includes('must not be null')) {
+          delete userUpdateData.email;
+          if (Object.keys(userUpdateData).length > 0) {
+            await prisma.user.update({
+              where: { id: user.userId },
+              data: userUpdateData,
+            });
+          }
+          if (cleanEmail !== undefined) {
+            await prisma.$executeRawUnsafe(
+              'UPDATE pengguna SET email = ?, updatedAt = NOW() WHERE id = ?',
+              cleanEmail,
+              user.userId
+            );
+          }
+        } else {
+          throw userErr;
+        }
+      }
     }
 
     try {
@@ -256,7 +289,7 @@ export async function PUT(request: NextRequest) {
         userId: updatedUser.id,
         nip: updatedUser.nip,
         name: updatedUser.name,
-        email: updatedUser.email,
+        email: updatedUser.email || '',
         role: updatedUser.role.name,
       });
       setAuthCookie(response, newToken);

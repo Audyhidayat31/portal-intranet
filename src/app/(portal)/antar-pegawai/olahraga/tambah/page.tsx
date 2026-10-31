@@ -404,9 +404,13 @@ export default function TambahArtikelOlahragaPage() {
         : MOCK_OLAHRAGA_ATTACHMENTS_5,
     };
 
-    // Save to localStorage
-    const currentStored = getStoredOlahraga();
-    saveStoredOlahraga([newItem, ...currentStored]);
+    // Save to localStorage safely
+    try {
+      const currentStored = getStoredOlahraga();
+      saveStoredOlahraga([newItem, ...currentStored]);
+    } catch (storageErr) {
+      console.warn('Gagal menyimpan ke cache lokal olahraga:', storageErr);
+    }
 
     // Also persist via API if available
     try {
@@ -729,9 +733,9 @@ export default function TambahArtikelOlahragaPage() {
               />
             </div>
 
-            {/* 4. Gambar Olahraga */}
+            {/* 4. Gambar */}
             <label className="font-semibold text-sm sm:text-base text-[#1a1b20] pt-2">
-              Gambar Olahraga <span className="float-right hidden md:inline">:</span>
+              Gambar <span className="float-right hidden md:inline">:</span>
             </label>
             <div className="flex flex-col gap-4">
               <div className="relative" suppressHydrationWarning>

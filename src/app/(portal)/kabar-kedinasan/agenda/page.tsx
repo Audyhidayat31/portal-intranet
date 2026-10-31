@@ -289,7 +289,7 @@ export default function AgendaKegiatanPage() {
 
                       {/* Card Excerpt */}
                       <p className="text-sm text-[#444650] mb-6 line-clamp-3 leading-relaxed flex-grow">
-                        {item.excerpt}
+                        {(item.excerpt || '').replace(/<[^>]+>/g, '')}
                       </p>
                     </div>
 
