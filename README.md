@@ -54,12 +54,12 @@ cd portal-intranet
 ### 2. Konfigurasi Variabel Lingkungan (`.env`)
 Pastikan file `.env` di direktori utama telah sesuai dengan konfigurasi database MySQL lokal Anda:
 ```env
-DATABASE_URL="mysql://root:@127.0.0.1:3306/portal_intranet"
-JWT_SECRET="perpusnas_intranet_jwt_secure_secret_key_2026_production"
-PORT=3000
-NEXT_PUBLIC_RECAPTCHA_SITE_KEY="6Le-GL4tAAAAAN2WA-PAjvS7HIUX5tvcOtt9tf_P"
-RECAPTCHA_SECRET_KEY="6Le-GL4tAAAAADhlmUBuQtSfQpcaQ7i3u4914sWg"
-APP_BASE_URL="http://localhost:3000"
+DATABASE_URL=
+JWT_SECRET=
+PORT=
+NEXT_PUBLIC_RECAPTCHA_SITE_KEY=
+RECAPTCHA_SECRET_KEY=
+APP_BASE_URL=
 ```
 *(Sesuaikan username dan password MySQL pada `DATABASE_URL` jika database Anda menggunakan kata sandi).*
 
