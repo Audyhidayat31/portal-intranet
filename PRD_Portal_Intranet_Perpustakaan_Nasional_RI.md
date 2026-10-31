@@ -4,7 +4,7 @@
 ### Perpustakaan Nasional Republik Indonesia
 
 **Versi**: 2.5 (Final Release)  
-**Platform**: Web (Desktop, Tablet, Mobile)  
+**Platform**: Web (Desktop)  
 **Target Pengguna**: Pegawai dan Administrator Perpusnas RI  
 **Status**: Siap Produksi (*Production Ready*)  
 **Tanggal Pemutakhiran**: 30 Oktober 2026  

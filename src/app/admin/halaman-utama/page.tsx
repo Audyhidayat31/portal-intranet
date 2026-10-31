@@ -1804,8 +1804,8 @@ export default function AdminHomepageKelolaPage() {
                 </p>
               </div>
 
-              {/* Pop-up Alert Status Tentang: Muncul di bawah teks deskripsi dan di atas garis pembatas */}
-              {statusMsg && (
+              {/* Pop-up Alert Status Tentang: Muncul di bawah teks deskripsi dan di atas garis pembatas (kecuali Panduan Aplikasi & Latar Belakang yang tampil langsung di kotak field-nya) */}
+              {statusMsg && !statusMsg.text.toLowerCase().includes('panduan aplikasi') && !statusMsg.text.toLowerCase().includes('latar belakang') && (
                 <div
                   className={`p-3.5 rounded-xl flex items-center gap-2.5 text-xs font-medium shadow-xs transition-all animate-fadeIn ${statusMsg.type === 'success'
                     ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
@@ -1876,6 +1876,24 @@ export default function AdminHomepageKelolaPage() {
                 <label className="block text-xs font-bold text-slate-900">
                   Berkas Gambar Latar Belakang
                 </label>
+
+                {/* Pop up Berkas Gambar Latar Belakang berhasil disimpan muncul di antara label dan field */}
+                {statusMsg && statusMsg.text.toLowerCase().includes('latar belakang') && (
+                  <div
+                    className={`p-3.5 rounded-xl flex items-center gap-2.5 text-xs font-medium shadow-xs transition-all animate-fadeIn ${statusMsg.type === 'success'
+                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                      : 'bg-red-50 text-red-800 border border-red-200'
+                      }`}
+                  >
+                    {statusMsg.type === 'success' ? (
+                      <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                    ) : (
+                      <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                    )}
+                    <span>{statusMsg.text}</span>
+                  </div>
+                )}
+
                 <div className="flex items-center">
                   <input
                     ref={backgroundFileInputRef}
@@ -1884,7 +1902,15 @@ export default function AdminHomepageKelolaPage() {
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {
-                        setTentangData({ ...tentangData, latarBelakang: file.name });
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                          setTentangData((prev: any) => ({
+                            ...prev,
+                            latarBelakang: file.name,
+                            latarBelakangUrl: event.target?.result as string,
+                          }));
+                        };
+                        reader.readAsDataURL(file);
                       }
                     }}
                     className="hidden" suppressHydrationWarning />
@@ -1899,11 +1925,11 @@ export default function AdminHomepageKelolaPage() {
                     {tentangData.latarBelakang || 'Background.png'}
                   </div>
                 </div>
-                <p className="text-xs text-slate-500 mt-1">File maksimal berukuran 10MB</p>
+                <p className="text-xs text-slate-500 mt-1">Berkas maksimal berukuran 10MB</p>
                 <div className="flex justify-end">
                   <button
                     type="button"
-                    onClick={() => handleSaveTentangSection('Berkas Latar Belakang')}
+                    onClick={() => handleSaveTentangSection('Berkas Gambar Latar Belakang')}
                     disabled={isSaving}
                     className="px-5 py-2 rounded-xl bg-[#00113a] hover:bg-[#2a4386] text-white text-xs font-bold transition-all shadow-xs disabled:opacity-50 cursor-pointer"
                   >Simpan</button>
@@ -1914,6 +1940,24 @@ export default function AdminHomepageKelolaPage() {
                 <label className="block text-xs font-bold text-slate-900">
                   Berkas Panduan Aplikasi (PDF / Dokumen)
                 </label>
+
+                {/* Pop up Berkas Panduan Aplikasi berhasil disimpan muncul di antara label dan field */}
+                {statusMsg && statusMsg.text.toLowerCase().includes('panduan aplikasi') && (
+                  <div
+                    className={`p-3.5 rounded-xl flex items-center gap-2.5 text-xs font-medium shadow-xs transition-all animate-fadeIn ${statusMsg.type === 'success'
+                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                      : 'bg-red-50 text-red-800 border border-red-200'
+                      }`}
+                  >
+                    {statusMsg.type === 'success' ? (
+                      <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                    ) : (
+                      <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                    )}
+                    <span>{statusMsg.text}</span>
+                  </div>
+                )}
+
                 <div className="flex items-center">
                   <input
                     ref={panduanFileInputRef}
@@ -1922,7 +1966,15 @@ export default function AdminHomepageKelolaPage() {
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {
-                        setTentangData({ ...tentangData, panduanAplikasi: file.name });
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                          setTentangData((prev: any) => ({
+                            ...prev,
+                            panduanAplikasi: file.name,
+                            panduanAplikasiUrl: event.target?.result as string,
+                          }));
+                        };
+                        reader.readAsDataURL(file);
                       }
                     }}
                     className="hidden" suppressHydrationWarning />
@@ -1937,7 +1989,7 @@ export default function AdminHomepageKelolaPage() {
                     {tentangData.panduanAplikasi || 'panduan.pdf'}
                   </div>
                 </div>
-                <p className="text-xs text-slate-500 mt-1">File maksimal berukuran 10MB</p>
+                <p className="text-xs text-slate-500 mt-1">Berkas maksimal berukuran 10MB</p>
                 <div className="flex justify-end">
                   <button
                     type="button"
